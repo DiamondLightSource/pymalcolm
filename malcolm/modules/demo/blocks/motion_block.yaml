@@ -25,11 +25,11 @@
     mri: $(mri):COUNTERY
 
 # Add Parts to use the Counter blocks within Motion block
-- demo.parts.MotorMovePart:
+- demo.parts.CounterMovePart:
     name: x
     mri: $(mri):COUNTERX
 
-- demo.parts.MotorMovePart:
+- demo.parts.CounterMovePart:
     name: y
     mri: $(mri):COUNTERY
 

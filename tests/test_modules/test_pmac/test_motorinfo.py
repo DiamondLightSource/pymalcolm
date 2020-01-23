@@ -54,7 +54,7 @@ class TestMotorPVT(unittest.TestCase):
         distance = 0.1
         self.o.velocity_settle = 0.1
         p = self.o.make_velocity_profile(
-            v1, v2, distance, 0.0)
+            v1, v2, distance, 0.0, 0.001)
         p.quantize()
         time_array, velocity_array = p.make_arrays()
         self.check_distance(distance, time_array, velocity_array)

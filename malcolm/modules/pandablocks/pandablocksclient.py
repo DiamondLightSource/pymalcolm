@@ -1,5 +1,6 @@
 from collections import namedtuple, OrderedDict
 import logging
+import sys
 
 # Create a module level logger
 log = logging.getLogger(__name__)
@@ -17,6 +18,18 @@ def strip_ok(resp):
     assert resp.startswith("OK ="), "Expected 'OK =val', got %r" % resp
     value = resp[4:]
     return value
+
+
+if sys.version_info[0] >= 3:
+    def encode(obj):
+        return obj.encode('utf-8')
+    def decode(obj):
+        return obj.decode('utf-8')
+else:
+    def encode(obj):
+        return obj
+    def decode(obj):
+        return obj
 
 
 class PandABlocksClient(object):
@@ -118,7 +131,7 @@ class PandABlocksClient(object):
                 break
             try:
                 self._response_queues.put(response_queue)
-                self._socket.sendall(message)
+                self._socket.sendall(encode(message))
             except Exception:  # pylint:disable=broad-except
                 log.exception("Exception sending message %s", message)
 
@@ -130,7 +143,7 @@ class PandABlocksClient(object):
                 yield line
             buf = lines[-1]
             # Get something new from the socket
-            rx = self._socket.recv(4096)
+            rx = decode(self._socket.recv(4096))
             if not rx:
                 break
             buf += rx

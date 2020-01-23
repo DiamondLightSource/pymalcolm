@@ -17,7 +17,7 @@ class PandADatasetBussesPart(pandablocks.parts.PandABussesPart):
         super(PandADatasetBussesPart, self).setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ReportStatusHook,
-                       self.report_status)
+                       self.on_report_status)
 
     @staticmethod
     def _make_initial_bits_table(bit_names):
@@ -53,38 +53,40 @@ class PandADatasetBussesPart(pandablocks.parts.PandABussesPart):
         )
         return pos_table
 
-    def report_status(self):
+    def on_report_status(self):
         # type: () -> scanning.hooks.UInfos
         ret = []
         bits_table = self.bits.value  # type: DatasetBitsTable
         for i, capture in enumerate(bits_table.capture):
-            if capture:
-                ret.append(ADCore.infos.NDAttributeDatasetInfo(
-                    name=bits_table.datasetName[i],
-                    type=bits_table.datasetType[i],
-                    rank=2,
-                    attr=bits_table.name[i]))
+            ds_name = bits_table.datasetName[i]
+            if ds_name and capture:
+                ret.append(
+                    ADCore.infos.NDAttributeDatasetInfo.from_attribute_type(
+                        name=ds_name,
+                        type=bits_table.datasetType[i],
+                        attr=bits_table.name[i]))
         pos_table = self.positions.value  # type: DatasetPositionsTable
         for i, capture in enumerate(pos_table.capture):
             ds_name = pos_table.datasetName[i]
             if ds_name and capture != pandablocks.util.PositionCapture.NO:
-                info = None
-                capture_split = capture.value.split(" ")
-                for suffix in capture_split:
-                    info = ADCore.infos.NDAttributeDatasetInfo.\
-                        from_attribute_type(
+                suffixes = capture.value.split(" ")  # type: List[str]
+                # If we have multiple values, export Min and Max as such
+                if len(suffixes) > 1:
+                    for suffix in [x for x in ("Min", "Max") if x in suffixes]:
+                        suffixes.remove(suffix)
+                        type_name = "POSITION_%s" % suffix.upper()
+                        ret.append(ADCore.infos.NDAttributeDatasetInfo(
+                            name="%s.%s" % (ds_name, suffix.lower()),
+                            type=scanning.util.DatasetType[type_name],
+                            attr="%s.%s" % (pos_table.name[i], suffix)))
+                # There should now be 1 or 0 suffixes left to report
+                if suffixes:
+                    assert len(suffixes) == 1, \
+                        "Cannot deal with capture value %r" % capture.value
+                    suffix = suffixes[0]
+                    ret.append(
+                        ADCore.infos.NDAttributeDatasetInfo.from_attribute_type(
                             name=ds_name,
                             type=pos_table.datasetType[i],
-                            attr="%s.%s" % (pos_table.name[i], suffix),
-                            rank=2)
-                    # Override special cases
-                    if type == ADCore.infos.AttributeDatasetType.POSITION:
-                        if suffix == "Min":
-                            info.name = "%s.min" % ds_name
-                            info.type = scanning.infos.DatasetType.POSITION_MIN
-                        if suffix == "Max":
-                            info.name = "%s.max" % ds_name
-                            info.type = scanning.infos.DatasetType.POSITION_MAX
-                if info:
-                    ret.append(info)
+                            attr="%s.%s" % (pos_table.name[i], suffix)))
         return ret

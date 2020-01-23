@@ -214,7 +214,7 @@ Again we override ``__init__``, but after initializing some
 function. These call :meth:`~PartRegistrar.hook` to register a function to be
 run with one or more `Hook` classes. A Controller defines a a number of Hooks
 that define what methods of a Part will be run during a particular Method. For
-example, we are hooking our ``configure()`` method to the `ConfigureHook`.
+example, we are hooking our ``on_configure()`` method to the `ConfigureHook`.
 
 Let's take a look at its documentation:
 
@@ -233,13 +233,13 @@ in the documentation for the Hook).
 Passing Infos back to the Controller
 ------------------------------------
 
-You may have noticed that ``configure()`` takes extra ``fileDir``,
+You may have noticed that ``on_configure()`` takes extra ``fileDir``,
 ``formatName`` and ``fileTemplate`` arguments that are not documented in the
 Hook. How does the Controller know to ask for them at configure and pass them
 down to us? Well in ``setup()`` we report an `info_`. This is a way of telling
 our parent Controller something about us, either in response to a `hook_`, or
 asynchronously using `PartRegistrar.report`. In this case, we call
-`ConfigureHook.create_info` which scans our ``configure`` method for extra
+`ConfigureHook.create_info` which scans our ``on_configure`` method for extra
 arguments and puts them in a `ConfigureParamsInfo` object that we can
 ``report()`` back. The docstring for this info explains what the Controller
 will do with this:
@@ -247,7 +247,13 @@ will do with this:
 .. autoclass:: malcolm.modules.scanning.infos.ConfigureParamsInfo
     :noindex:
 
-After we have created our HDF file in configure, we make some more infos.
+After we have created our HDF file in configure, we make some more infos in
+``_create_infos``:
+
+.. literalinclude:: ../../malcolm/modules/demo/parts/filewritepart.py
+    :language: python
+    :pyobject: FileWritePart._create_infos
+
 This time they describe the datasets that we are going to produce. These will
 be used by the DatasetTablePart to put them in an Attribute that can be read
 by the client expecting a scan. The docstring for this info explains this:
@@ -256,18 +262,19 @@ by the client expecting a scan. The docstring for this info explains this:
     :noindex:
 
 In our case we will produce a main dataset, with a detector of the dimensions
-given when we instantiated the part, and a sum dataset which will provide a
-suitable single point for each detector frame to live visualize the scan.
+given when we instantiated the part, a sum dataset which will provide a
+suitable single point for each detector frame to live visualize the scan, and
+the axis setpoints of everything that moves in the scan.
 
 Hooking into run()
 ------------------
 
-We also hooked our ``run()`` method in ``__init__``. Let's take a look at
+We also hooked our ``on_run()`` method in ``__init__``. Let's take a look at
 what it does:
 
 .. literalinclude:: ../../malcolm/modules/demo/parts/filewritepart.py
     :language: python
-    :pyobject: FileWritePart.run
+    :pyobject: FileWritePart.on_run
 
 This is hooked to the `RunHook`. Let's take a look at its documentation:
 
@@ -294,13 +301,13 @@ how far the actual scan has progressed, and report it in the Block's
 Hooking into seek(), abort() and reset()
 ----------------------------------------
 
-The ``seek()`` Method stores completed_steps, and steps_to_do, then calculates
+The ``on_seek()`` Method stores completed_steps, and steps_to_do, then calculates
 a new UID offset so that any new frames are guaranteed to have an ID that has
 never been written before:
 
 .. literalinclude:: ../../malcolm/modules/demo/parts/filewritepart.py
     :language: python
-    :pyobject: FileWritePart.seek
+    :pyobject: FileWritePart.on_seek
 
 It is hooked into two Hooks:
 
@@ -314,11 +321,11 @@ Which means it will be called at when ``pause()`` is called, and when Malcolm
 has been asked to setup the next phase of a scan where it only moves a subset
 of the axes in the generator.
 
-The ``reset()`` Method just closes the HDF file if it isn't already closed:
+The ``on_reset()`` Method just closes the HDF file if it isn't already closed:
 
 .. literalinclude:: ../../malcolm/modules/demo/parts/filewritepart.py
     :language: python
-    :pyobject: FileWritePart.reset
+    :pyobject: FileWritePart.on_reset
 
 It again is hooked into two Hooks:
 
@@ -406,8 +413,10 @@ If we set fileDir to "/tmp", then click Configure, we will see the State change
 to Armed. We can then click on the "VIEW" button next to "Datasets" to see
 what the detector will write. Here we see that it will make a primary dataset
 in (containing detector data) ``/entry/data``, and a secondary dataset
-(containing summary data calculated from the detector data) ``/entry/sum``.
-Both of these will be written to a file called ``det.h5`` in the fileDir:
+(containing summary data calculated from the detector data) ``/entry/sum``. It
+will also write position_set datasets for ``x`` and ``y`` containing the
+generator positions to ``/entry/x_set`` and ``/entry/y_set``. All of these
+will be written to a file called ``det.h5`` in the fileDir:
 
 .. image:: detector_2.png
 

@@ -1,0 +1,9 @@
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg width="100px" height="70px" version="1.1" xmlns="http://www.w3.org/2000/svg">
+ <g transform="scale(1.4) translate(4 -7)" stroke="#00f" stroke-linejoin="round">
+  <path transform="matrix(0 -.57778 1.1096 0 -8.1474 46.865)" d="m34 36.182a8.2727 18.727 0 1 1-16.545 0 8.2727 18.727 0 1 1 16.545 0z" fill="none" stroke-width="1.2489"/>
+  <path transform="matrix(-.50037 -.28889 .5548 -.96094 25.163 74.019)" d="m34 36.182a8.2727 18.727 0 1 1-16.545 0 8.2727 18.727 0 1 1 16.545 0z" fill="none" stroke-width="1.2489"/>
+  <path transform="matrix(.50037 -.28889 -.5548 -.96094 38.837 74.565)" d="m34 36.182a8.2727 18.727 0 1 1-16.545 0 8.2727 18.727 0 1 1 16.545 0z" fill="none" stroke-width="1.2489"/>
+  <path transform="matrix(1.7739 0 0 1.2138 -24.605 -7.8331)" d="m33.091 32.818a1.1818 1.7273 0 1 1-2.3636 0 1.1818 1.7273 0 1 1 2.3636 0z" fill="#00f" stroke-width=".55"/>
+ </g>
+</svg>

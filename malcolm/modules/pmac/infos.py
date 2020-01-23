@@ -1,9 +1,6 @@
 # Treat all division as float division even in python2
 from __future__ import division
 
-import numpy as np
-import math
-
 from malcolm.core import Info
 from .velocityprofile import VelocityProfile
 
@@ -45,7 +42,7 @@ class MotorInfo(Info):
     def __init__(self,
                  cs_axis,  # type: str
                  cs_port,  # type: str
-                 acceleration,   # type: float
+                 acceleration,  # type: float
                  resolution,  # type: float
                  offset,  # type: float
                  max_velocity,  # type: float
@@ -78,7 +75,8 @@ class MotorInfo(Info):
         ramp_distance = (v1 + v2) * ramp_time / 2
         return ramp_distance
 
-    def make_velocity_profile(self, v1, v2, distance, min_time):
+    def make_velocity_profile(
+            self, v1, v2, distance, min_time, min_interval=0.002):
         """Calculate PVT points that will perform the move within motor params
 
         Args:
@@ -86,14 +84,16 @@ class MotorInfo(Info):
             v2 (float): Ending velocity in EGUs/s
             distance (float): Relative distance to travel in EGUs
             min_time (float): The minimum time the move should take
+            min_interval (float): Minimum time between profile points
 
         Returns:
             VelocityProfile: defining a list of times and velocities
         """
 
         # Create the time and velocity arrays
-        p = VelocityProfile(v1, v2, distance, min_time, self.acceleration,
-                            self.max_velocity, self.velocity_settle)
+        p = VelocityProfile(
+            v1, v2, distance, min_time, self.acceleration, self.max_velocity,
+            self.velocity_settle, min_interval)
         p.get_profile()
         return p
 
@@ -102,4 +102,3 @@ class MotorInfo(Info):
         """Return the position (in EGUs) translated to counts"""
         cts = int(round((position - self.offset) / self.resolution))
         return cts
-

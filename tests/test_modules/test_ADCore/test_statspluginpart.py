@@ -26,7 +26,7 @@ class TestStatsPluginPart(ChildTestCase):
         assert list(sorted(self.o.no_save_attribute_names)) == [
             "arrayCounter", "attributesFile", "computeStatistics",
             "enableCallbacks"]
-        infos = self.o.report_status()
+        infos = self.o.on_report_status()
         assert len(infos) == 1
         assert infos[0].name == "sum"
         assert infos[0].attr == "STATS_TOTAL"
@@ -37,7 +37,7 @@ class TestStatsPluginPart(ChildTestCase):
         self.process.start()
         fileDir = "/tmp"
         part_info = {}
-        infos = self.o.configure(self.context, part_info, fileDir)
+        infos = self.o.on_configure(self.context, part_info, fileDir)
         assert infos is None
         expected_filename = "/tmp/BLOCK-STAT-attributes.xml"
         assert self.child.handled_requests.mock_calls == [
@@ -58,7 +58,7 @@ class TestStatsPluginPart(ChildTestCase):
         self.process.start()
         fileDir = "/tmp"
         part_info = {"sth": [FilePathTranslatorInfo("X", "/tmp")]}
-        infos = self.o.configure(self.context, part_info, fileDir)
+        infos = self.o.on_configure(self.context, part_info, fileDir)
         assert infos is None
         expected_filename_unix = "/tmp/BLOCK-STAT-attributes.xml"
         expected_filename_windows = "X:\\BLOCK-STAT-attributes.xml"

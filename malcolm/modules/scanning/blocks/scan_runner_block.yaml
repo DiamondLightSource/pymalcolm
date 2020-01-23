@@ -1,0 +1,25 @@
+- builtin.parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- builtin.parameters.string:
+    name: config_dir
+    description: Directory to save configurations
+
+- builtin.parameters.string:
+    name: scan_block
+    description: Malcolm resource id of the scan block
+
+- builtin.parameters.string:
+    name: initial_design
+    description: Initial design to load for the controller
+
+- builtin.controllers.ManagerController:
+    mri: $(mri)
+    config_dir: $(config_dir)
+    initial_design: $(initial_design)
+
+- scanning.parts.ScanRunnerPart:
+    name: scanRunner
+    mri: $(scan_block)
+

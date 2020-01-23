@@ -1,31 +1,31 @@
 - builtin.parameters.string:
     name: pv_prefix
-    description: the root PV for the motor record
+    description: The root PV for the motor record
 
 - ca.parts.CADoublePart:
     name: demand
-    description: set the demand position of the motor
+    description: Demand the motor to move to a position
     pv: $(pv_prefix)
     config: 0
 
 - ca.parts.CADoublePart:
     name: readback
-    description: set the target position of the motor or get current position
+    description: The current position of the motor
     rbv: $(pv_prefix).RBV
 
 - ca.parts.CALongPart:
     name: doneMoving
-    description: set to zero when motor is stationary
+    description: Will be set to zero when motor is stationary
     rbv: $(pv_prefix).DMOV
 
 - ca.parts.CADoublePart:
     name: accelerationTime
-    description: time taken to accelerate to velocity
+    description: The time taken to accelerate to velocity
     rbv: $(pv_prefix).ACCL
 
 - ca.parts.CADoublePart:
     name: maxVelocity
-    description: maximum velocity
+    description: The maximum velocity the motor can move at
     rbv: $(pv_prefix).VMAX
 
 - ca.parts.CADoublePart:

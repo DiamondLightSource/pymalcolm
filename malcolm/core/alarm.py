@@ -69,6 +69,12 @@ class Alarm(Serializable):
         # type: () -> bool
         return self.severity == AlarmSeverity.NO_ALARM
 
+    def __ne__(self, other):
+        return type(other) != Alarm or other.to_dict() != self.to_dict()
+
+    def __eq__(self, other):
+        return not self != other
+
     ok = None  # filled in below
 
 

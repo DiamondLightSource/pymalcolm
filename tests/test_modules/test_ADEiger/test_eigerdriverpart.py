@@ -1,4 +1,3 @@
-import pytest
 from mock import call
 
 from scanpointgenerator import LineGenerator, CompoundGenerator
@@ -6,7 +5,6 @@ from malcolm.core import Context, Process
 from malcolm.modules.ADEiger.parts import EigerDriverPart
 from malcolm.modules.ADEiger.blocks import eiger_driver_block
 from malcolm.testutil import ChildTestCase
-import json
 
 
 class TestEigerDetectorDriverPart(ChildTestCase):
@@ -33,7 +31,7 @@ class TestEigerDetectorDriverPart(ChildTestCase):
         steps_to_do = 2000*3000
         # We wait to be armed, so set this here
         self.set_attributes(self.child, acquiring=True, fanStateReady=1)
-        self.o.configure(
+        self.o.on_configure(
             self.context, completed_steps, steps_to_do, {}, generator=generator,
             fileDir="/tmp")
 

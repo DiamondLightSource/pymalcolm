@@ -39,7 +39,8 @@ class TestCAParts(unittest.TestCase):
         assert b.attrname.meta.writeable
         catools.caget.assert_called_once_with(
             ["pv2", 'pv'], datatype=catools.DBR_LONG,
-            format=catools.FORMAT_CTRL)
+            format=catools.FORMAT_CTRL,
+            throw=True)
         catools.caget.reset_mock()
 
         class Update(int):
@@ -54,7 +55,8 @@ class TestCAParts(unittest.TestCase):
             timeout=10.0, wait=True)
         catools.caget.assert_called_once_with(
             "pv2", datatype=catools.DBR_LONG,
-            format=catools.FORMAT_TIME)
+            format=catools.FORMAT_TIME,
+            throw=True)
         assert b.attrname.value is True
         assert b.attrname.alarm.is_ok()
         assert b.attrname.timeStamp.to_time() == 34.000004355
@@ -73,7 +75,8 @@ class TestCAParts(unittest.TestCase):
         assert b.cattr.alarm.severity == AlarmSeverity.MINOR_ALARM
         catools.caget.assert_called_once_with(
             ["pvr"], datatype=catools.DBR_CHAR_STR,
-            format=catools.FORMAT_CTRL)
+            format=catools.FORMAT_CTRL,
+            throw=True)
 
     def test_cachoice(self, catools):
         from malcolm.modules.ca.parts import CAChoicePart
@@ -91,7 +94,8 @@ class TestCAParts(unittest.TestCase):
         assert b.attrname.meta.writeable
         catools.caget.assert_called_once_with(
             ["rbv", 'pv'], datatype=catools.DBR_ENUM,
-            format=catools.FORMAT_CTRL)
+            format=catools.FORMAT_CTRL,
+            throw=True)
         catools.caget.reset_mock()
 
         class Update(int):
@@ -106,7 +110,8 @@ class TestCAParts(unittest.TestCase):
             timeout=10.0, wait=True)
         catools.caget.assert_called_once_with(
             "rbv", datatype=catools.DBR_ENUM,
-            format=catools.FORMAT_TIME)
+            format=catools.FORMAT_TIME,
+            throw=True)
         assert b.attrname.value is "a"
         assert b.attrname.alarm.severity == AlarmSeverity.MAJOR_ALARM
         assert b.attrname.timeStamp.to_time() == 34.000004355
@@ -147,7 +152,8 @@ class TestCAParts(unittest.TestCase):
         assert b.attrname.meta.display.precision == 5
         catools.caget.assert_called_once_with(
             ["pv"], datatype=catools.DBR_DOUBLE,
-            format=catools.FORMAT_CTRL)
+            format=catools.FORMAT_CTRL,
+            throw=True)
         catools.caget.reset_mock()
 
         class Update(np.ndarray):
@@ -161,7 +167,8 @@ class TestCAParts(unittest.TestCase):
         assert list(catools.caput.call_args[0][1]) == []
         catools.caget.assert_called_once_with(
             "pv", datatype=catools.DBR_DOUBLE,
-            format=catools.FORMAT_TIME)
+            format=catools.FORMAT_TIME,
+            throw=True)
         assert list(b.attrname.value) == [1.2, 2.2, 3.2]
         assert b.attrname.alarm.severity == AlarmSeverity.UNDEFINED_ALARM
 
@@ -213,7 +220,8 @@ class TestCAParts(unittest.TestCase):
 
         catools.caget.assert_called_with(
             ("yPv", "xPv"), datatype=catools.DBR_DOUBLE,
-            format=catools.FORMAT_CTRL)
+            format=catools.FORMAT_CTRL,
+            throw=True)
 
         catools.caget.reset_mock()
 
@@ -242,7 +250,8 @@ class TestCAParts(unittest.TestCase):
 
         catools.caget.assert_called_once_with(
             ['pv'], datatype=catools.DBR_DOUBLE,
-            format=catools.FORMAT_CTRL)
+            format=catools.FORMAT_CTRL,
+            throw=True)
 
         l = []
         b.attrname.subscribe_value(l.append)
@@ -286,7 +295,8 @@ class TestCAParts(unittest.TestCase):
         assert b.attrname.meta.writeable
         catools.caget.assert_called_once_with(
             ["pv"], datatype=catools.DBR_LONG,
-            format=catools.FORMAT_CTRL)
+            format=catools.FORMAT_CTRL,
+            throw=True)
         catools.caget.reset_mock()
 
         class Update(np.ndarray):
@@ -303,7 +313,8 @@ class TestCAParts(unittest.TestCase):
         assert list(catools.caput.call_args[0][1]) == [4, 4]
         catools.caget.assert_called_once_with(
             "pv", datatype=catools.DBR_LONG,
-            format=catools.FORMAT_TIME)
+            format=catools.FORMAT_TIME,
+            throw=True)
         assert list(b.attrname.value) == [4, 5]
         assert b.attrname.alarm.is_ok()
 
@@ -322,7 +333,8 @@ class TestCAParts(unittest.TestCase):
         assert b.attrname.meta.writeable
         catools.caget.assert_called_once_with(
             ['pv'], datatype=catools.DBR_LONG,
-            format=catools.FORMAT_CTRL)
+            format=catools.FORMAT_CTRL,
+            throw=True)
 
     def test_castring(self, catools):
         from malcolm.modules.ca.parts import CAStringPart
@@ -339,7 +351,8 @@ class TestCAParts(unittest.TestCase):
         assert not b.attrname.meta.writeable
         catools.caget.assert_called_once_with(
             ['pv'], datatype=catools.DBR_STRING,
-            format=catools.FORMAT_CTRL)
+            format=catools.FORMAT_CTRL,
+            throw=True)
 
     def test_init_no_pv_no_rbv(self, catools):
         from malcolm.modules.ca.parts import CABooleanPart

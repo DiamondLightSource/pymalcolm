@@ -87,12 +87,16 @@ class PandABlocksRunnableControllerTest(unittest.TestCase):
         b.positions.put_value(pos_table)
         b.configure(generator=CompoundGenerator([StaticPointGenerator(1)], [], []))
         dataset_infos = p.part_info["busses"]
-        assert len(dataset_infos) == 2
-        assert dataset_infos[0].name == "x2.value"
-        assert dataset_infos[0].type == DatasetType.POSITION_VALUE
-        assert dataset_infos[0].rank == 2
-        assert dataset_infos[0].attr == "INENC3.VAL.Mean"
-        assert dataset_infos[1].name == "x3.data"
-        assert dataset_infos[1].type == DatasetType.MONITOR
-        assert dataset_infos[1].rank == 2
-        assert dataset_infos[1].attr == "INENC4.VAL.Diff"
+        assert len(dataset_infos) == 4
+        assert dataset_infos[0].name == "x2.min"
+        assert dataset_infos[0].type == DatasetType.POSITION_MIN
+        assert dataset_infos[0].attr == "INENC3.VAL.Min"
+        assert dataset_infos[1].name == "x2.max"
+        assert dataset_infos[1].type == DatasetType.POSITION_MAX
+        assert dataset_infos[1].attr == "INENC3.VAL.Max"
+        assert dataset_infos[2].name == "x2.value"
+        assert dataset_infos[2].type == DatasetType.POSITION_VALUE
+        assert dataset_infos[2].attr == "INENC3.VAL.Mean"
+        assert dataset_infos[3].name == "x3.data"
+        assert dataset_infos[3].type == DatasetType.MONITOR
+        assert dataset_infos[3].attr == "INENC4.VAL.Diff"

@@ -32,6 +32,8 @@ widget:table                Table of rows with a widget type for each column
 widget:checkbox             A box that can be checked or not
 widget:flowgraph            Boxes with lines for child block connections
 widget:tree                 A nested tree of object models editor
+widget:plot                 A waveform plot
+widget:meter                Progress meter
 =========================== ====================================================
 
 Linked Value Tag
@@ -45,6 +47,16 @@ displayed. It is the responsibility of the Controller to change these tags if
 the path to the Attribute that is to be displayed changes.
 
 These are created using the `linked_value_tag`.
+
+Badge Value Tag
+---------------
+
+A Badge Value tag can be attached to a Port Attribute to tell the GUI that there
+is another Attribute that can be monitored that should be displayed as a badge
+for this Port. This is used on PandA to display the additional delay that can
+be added for sink ports.
+
+These are created using the `badge_value_tag`.
 
 Port Tag
 --------
@@ -132,3 +144,8 @@ Version Tag
 A ``version:pymalcolm:<version>`` tag is created and attached to every Block so
 that clients know the version of pymalcolm that is hosting the Block.
 
+Hidden Method Tag
+-----------------
+
+All Methods are displayed in the GUI by default. To hide a method, add a 
+``method:hidden`` tag using the `method_hidden` function.

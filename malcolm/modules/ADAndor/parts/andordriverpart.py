@@ -1,6 +1,6 @@
-from annotypes import Anno, add_call_types, Any
+from annotypes import Anno, Any
 
-from malcolm.core import PartRegistrar
+from malcolm.core import PartRegistrar, Context, NumberMeta
 from malcolm.modules import ADCore, scanning, builtin
 
 # Pull re-used annotypes into our namespace in case we are subclassed
@@ -23,72 +23,86 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
         super(AndorDriverPart, self).setup(registrar)
         # Attributes
         registrar.add_attribute_model("exposure", self.exposure)
-        # Tell the controller to expose some extra configure parameters
-        registrar.report(scanning.hooks.ConfigureHook.create_info(
-            self.configure))
+        # Tell the controller to pass "exposure" to configure
+        info = scanning.infos.ConfigureParamsInfo(
+            metas=dict(exposure=NumberMeta.from_annotype(
+                scanning.hooks.AExposure, writeable=True)),
+            required=[],
+            defaults=dict(exposure=0.0))
+        registrar.report(info)
 
-    # Allow camelCase as arguments are serialized
-    # noinspection PyPep8Naming
-    @add_call_types
-    def configure(self,
-                  context,  # type: scanning.hooks.AContext
-                  completed_steps,  # type: scanning.hooks.ACompletedSteps
-                  steps_to_do,  # type: scanning.hooks.AStepsToDo
-                  part_info,  # type: scanning.hooks.APartInfo
-                  generator,  # type: scanning.hooks.AGenerator
-                  fileDir,  # type: scanning.hooks.AFileDir
-                  exposure=0.0,  # type: scanning.hooks.AExposure
-                  **kwargs  # type: **Any
-                  ):
-        # type: (...) -> None
-
+    def setup_detector(self,
+                       context,  # type: Context
+                       completed_steps,  # type: scanning.hooks.ACompletedSteps
+                       steps_to_do,  # type: scanning.hooks.AStepsToDo
+                       duration,  # type: float
+                       part_info,  # type: scanning.hooks.APartInfo
+                       **kwargs  # type: Any
+                       ):
         # Calculate the readout time
         child = context.block_view(self.mri)
-
         if child.andorFrameTransferMode.value:
             # Set exposure to zero and use accumulation period for readout time
-            child.exposure.put_value(0.0)
-            child.acquirePeriod.put_value(0.0)
+            exposure = 0.0
+            child.exposure.put_value(exposure)
+            child.acquirePeriod.put_value(exposure)
             readout_time = child.andorAccumulatePeriod.value
-            # We need to use the custom DeadTimeInfoPart to handle frame
-            # transfer mode
-            info_cls = Andor2FrameTransferModeDeadTimeInfo
+            # With frame transfer mode enabled, the exposure is the time between
+            # triggers. The epics 'acquireTime' (exposure) actually becomes the
+            # User Defined delay before acquisition start after the trigger. The
+            # duration floor becomes the readout time
+            assert duration > readout_time, \
+                "The duration: %s has to be longer than the Andor 2 readout " \
+                "time: %s." % (duration, readout_time)
+            period = readout_time
         else:
             # Behaves like a "normal" detector
-            child.exposure.put_value(generator.duration)
-            child.acquirePeriod.put_value(generator.duration)
+            child.exposure.put_value(duration)
+            child.acquirePeriod.put_value(duration)
             # Readout time can be approximated from difference in exposure time
             # and acquire period
             readout_time = child.acquirePeriod.value - child.exposure.value
-            # It seems that the difference between acquirePeriod and exposure
-            # doesn't tell the whole story, we seem to need an additional bit
-            # of readout (or something) time on top
-            fudge_factor = generator.duration * 0.004 + 0.001
-            readout_time = readout_time + fudge_factor
-            # Otherwise we can behave like a "normal" detector
-            info_cls = ADCore.infos.ExposureDeadtimeInfo
+            # Calculate the adjusted exposure time
+            (exposure, period) = \
+                self.get_adjusted_exposure_time_and_acquire_period(
+                    duration,
+                    readout_time,
+                    kwargs.get("exposure", 0))
 
-        # Create an ExposureInfo to pass to the superclass
-        info = info_cls(
-            readout_time, frequency_accuracy=50, min_exposure=0.0)
-        exposure = info.calculate_exposure(generator.duration, exposure)
+        # The real exposure
         self.exposure.set_value(exposure)
-        part_info[""] = [info]
+        kwargs['exposure'] = exposure
 
-        super(AndorDriverPart, self).configure(
-            context, completed_steps, steps_to_do, part_info, generator,
-            fileDir, **kwargs)
+        super(AndorDriverPart, self).setup_detector(
+            context,
+            completed_steps,
+            steps_to_do,
+            duration,
+            part_info,
+            **kwargs)
 
+        child.acquirePeriod.put_value(period)
 
-class Andor2FrameTransferModeDeadTimeInfo(ADCore.infos.ExposureDeadtimeInfo):
-    def calculate_exposure(self, duration, exposure=0.0):
-        """With frame transfer mode enabled, the exposure is the time between
-        triggers. The epics 'acquireTime' actually becomes the User Defined
-        delay before acquisition start after the trigger. The duration floor
-        becomes the readout time.
-        """
-        assert duration > self.readout_time, \
-            "The duration: %s has to be longer than the Andor 2 readout " \
-            "time: %s." % (duration, self.readout_time)
-        exposure = 0.0
-        return exposure
+    def get_adjusted_exposure_time_and_acquire_period(
+            self,
+            duration,  # type: float
+            readout_time,  # type: float
+            exposure_time  # type: float
+            ):
+        # type: (...) -> (float, float)
+        # It seems that the difference between acquirePeriod and exposure
+        # doesn't tell the whole story, we seem to need an additional bit
+        # of readout (or something) time on top
+        readout_time += self.get_additional_readout_factor(duration)
+        # Otherwise we can behave like a "normal" detector
+        info = scanning.infos.ExposureDeadtimeInfo(
+            readout_time, frequency_accuracy=50, min_exposure=0.0)
+        exposure_time = info.calculate_exposure(
+            duration, exposure_time)
+        acquire_period = exposure_time + readout_time
+        return exposure_time, acquire_period
+
+    @staticmethod
+    def get_additional_readout_factor(duration):
+        # type: (float) -> float
+        return duration * 0.004 + 0.001

@@ -8,7 +8,8 @@ from scanpointgenerator import LineGenerator, CompoundGenerator, \
 
 from malcolm.core import Context, Process
 from malcolm.modules.pmac.parts import PmacChildPart
-from malcolm.modules.scanning.infos import MotionTrigger, MotionTriggerInfo
+from malcolm.modules.scanning.infos import MotionTrigger, MotionTriggerInfo, \
+    MinTurnaroundInfo
 from malcolm.testutil import ChildTestCase
 from malcolm.yamlutil import make_block_creator
 
@@ -80,7 +81,7 @@ class TestPMACChildPart(ChildTestCase):
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
         generator = CompoundGenerator([ys, xs], [], [], duration)
         generator.prepare()
-        self.o.configure(
+        self.o.on_configure(
             self.context, completed_steps, steps_to_do, {"part": infos},
             generator, axes_to_scan)
 
@@ -89,7 +90,7 @@ class TestPMACChildPart(ChildTestCase):
         axesToMove = ["x"]
         # servoFrequency() return value
         self.child.handled_requests.post.return_value = 4919.300698316487
-        ret = self.o.validate(self.context, generator, axesToMove, {})
+        ret = self.o.on_validate(self.context, generator, axesToMove, {})
         expected = 0.010166
         assert ret.value.duration == expected
 
@@ -125,11 +126,7 @@ class TestPMACChildPart(ChildTestCase):
             0, 0, 1, 1, 2, 2, 3, 3, 3, 3,
             3, 3, 4, 4, 5, 5, 6, 6]
 
-    def do_check_output(self, user_programs=None):
-        if user_programs is None:
-            user_programs = [
-                1, 4, 1, 4, 1, 4, 2, 8, 8, 8, 1, 4, 1, 4, 1, 4, 2, 8
-            ]
+    def do_check_output(self):
         # use a slice here because I'm getting calls to __str__ in debugger
         assert self.child.handled_requests.mock_calls[:4] == [
             call.post('writeProfile',
@@ -150,7 +147,9 @@ class TestPMACChildPart(ChildTestCase):
                           [100000, 500000, 500000, 500000, 500000, 500000,
                            500000, 100000, 100000, 100000, 100000, 500000,
                            500000, 500000, 500000, 500000, 500000, 100000]),
-                      userPrograms=pytest.approx(user_programs),
+                      userPrograms=pytest.approx(
+                          [1, 4, 1, 4, 1, 4, 2, 8, 8, 8, 1, 4, 1, 4, 1, 4,
+                           2, 8]),
                       velocityMode=pytest.approx(
                           [1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0,
                            0, 0, 1, 3])
@@ -193,7 +192,9 @@ class TestPMACChildPart(ChildTestCase):
             0, 0, 1, 1, 2, 2, 3, 3, 3, 3, 3,
             3, 3, 4, 4, 5, 5, 6, 6]
 
-    def do_check_sparse_output(self):
+    def do_check_sparse_output(self, user_programs=None):
+        if user_programs is None:
+            user_programs = [1, 8, 0, 0, 0, 1, 8, 0]
         assert self.child.handled_requests.mock_calls == [
             call.post('writeProfile',
                       csPort='CS1', timeArray=[0.002], userPrograms=[8]),
@@ -214,7 +215,7 @@ class TestPMACChildPart(ChildTestCase):
                     100000, 3000000, 100000, 100000, 100000,
                     100000, 3000000, 100000
                 ]),
-                userPrograms=pytest.approx([1, 8, 0, 0, 0, 1, 8, 0]),
+                userPrograms=pytest.approx(user_programs),
                 velocityMode=pytest.approx([1, 1, 1, 1, 1, 1, 1, 3])
             )
         ]
@@ -225,7 +226,8 @@ class TestPMACChildPart(ChildTestCase):
         self.do_check_output()
 
     def test_configure_quantize(self):
-        self.do_configure(axes_to_scan=["x", "y"], duration=1.0005)
+        m = [MinTurnaroundInfo(0.002, 0.001)]
+        self.do_configure(axes_to_scan=["x", "y"], duration=1.0005, infos=m)
         self.do_check_output_quantized()
 
     def test_configure_slower_vmax(self):
@@ -236,7 +238,7 @@ class TestPMACChildPart(ChildTestCase):
     def test_configure_no_pulses(self):
         self.do_configure(axes_to_scan=["x", "y"],
                           infos=[MotionTriggerInfo(MotionTrigger.NONE)])
-        self.do_check_output(user_programs=[0] * 18)
+        self.do_check_sparse_output(user_programs=[0] * 8)
 
     def test_configure_start_of_row_pulses(self):
         self.do_configure(axes_to_scan=["x", "y"],
@@ -248,7 +250,7 @@ class TestPMACChildPart(ChildTestCase):
         generator = CompoundGenerator(
             [StaticPointGenerator(6)], [], [], duration=0.1)
         generator.prepare()
-        self.o.configure(self.context, 0, 6, {}, generator, [])
+        self.o.on_configure(self.context, 0, 6, {}, generator, [])
         assert self.child.handled_requests.mock_calls == [
             call.post('writeProfile',
                       csPort='CS1', timeArray=[0.002], userPrograms=[8]),
@@ -302,13 +304,13 @@ class TestPMACChildPart(ChildTestCase):
 
     def test_run(self):
         self.o.generator = ANY
-        self.o.run(self.context)
+        self.o.on_run(self.context)
         assert self.child.handled_requests.mock_calls == [
             call.post('executeProfile')]
 
     def test_reset(self):
         self.o.generator = ANY
-        self.o.reset(self.context)
+        self.o.on_reset(self.context)
         assert self.child.handled_requests.mock_calls == [
             call.post('abortProfile')]
 
@@ -416,9 +418,9 @@ class TestPMACChildPart(ChildTestCase):
 
         infos = [MotionTriggerInfo(MotionTrigger.ROW_GATE)]
         # infos = [MotionTriggerInfo(MotionTrigger.EVERY_POINT)]
-        self.o.configure(self.context, 0, gen.size,
-                         {"part": infos},
-                         gen, ["x", "y"])
+        self.o.on_configure(self.context, 0, gen.size,
+                            {"part": infos},
+                            gen, ["x", "y"])
 
         name, args, kwargs = self.child.handled_requests.mock_calls[2]
         assert name == "post"
@@ -496,3 +498,88 @@ class TestPMACChildPart(ChildTestCase):
         self.check_bounds(x2, "x2")
         self.check_bounds(y1, "y1")
         self.check_bounds(y2, "y2")
+
+    def test_step_scan(self):
+        axes_to_scan = ["x", "y"]
+        duration = 1.0005
+        self.set_motor_attributes(0.0, 0.0, "mm")
+        steps_to_do = 3 * len(axes_to_scan)
+        xs = LineGenerator("x", "mm", 0.0, 5, 3, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 10, 2)
+        generator = CompoundGenerator(
+            [ys, xs], [], [], duration, continuous=False)
+        generator.prepare()
+
+        self.o.on_configure(
+            self.context, 0, steps_to_do, {"part": None},
+            generator, axes_to_scan)
+
+        action, func, args = self.child.handled_requests.mock_calls[-1]
+        assert args['a'] == \
+            pytest.approx([
+               0.0, 0.0, 0.0, 0.2, 2.3, 2.5, 2.5, 2.5, 2.7, 4.8, 5.0, 5.0,
+               5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 4.8, 2.7, 2.5, 2.5, 2.5, 2.3,
+               0.2, 0, 0.0, 0.0, 0.0])
+        assert args['b'] == \
+            pytest.approx([
+               0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+               0.0, 0.2, 9.8, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0,
+               10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0])
+        assert args['timeArray'] == pytest.approx([
+               2000, 500250, 500250, 400000, 2100000, 400000, 500250,
+               500250, 400000, 2100000, 400000, 500250, 500250, 400000,
+               9600000, 400000, 500250, 500250, 400000, 2100000, 400000,
+               500250, 500250, 400000, 2100000, 400000, 500250, 500250,
+               2000])
+
+    def test_minimum_profile(self):
+        # tests that a turnaround that is >= minturnaround
+        # is reduced to a start and end point only
+        # this supports keeping the turnaround really short where
+        # the motors are fast e.g. j15
+        axes_to_scan = ["x", "y"]
+        duration = .005
+        self.set_motor_attributes(
+            0.0, 0.0, "mm", x_acceleration=100., x_velocity=2.,
+            y_acceleration=100., y_velocity=2.)
+        steps_to_do = 1 * len(axes_to_scan)
+
+        xs = LineGenerator("x", "mm", 0, .0001, 2)
+        ys = LineGenerator("y", "mm", 0, 0, 2)
+        generator = CompoundGenerator(
+            [ys, xs], [], [], duration, continuous=False)
+        generator.prepare()
+
+        m = [MinTurnaroundInfo(.002, .002)]
+        self.o.on_configure(
+            self.context, 0, steps_to_do, {"part": m},
+            generator, axes_to_scan)
+
+        action, func, args = self.child.handled_requests.mock_calls[-1]
+        assert args['a'] == \
+            pytest.approx([0, 0, 0, .0001, .0001, .0001, .0001])
+        assert args['b'] == \
+            pytest.approx([0, 0, 0, 0, 0, 0, 0])
+        assert args['timeArray'] == pytest.approx(
+            [2000, 2500, 2500, 2000, 2500, 2500, 2000])
+
+        # now make the acceleration slower so that the turnaround takes
+        # longer than the minimum interval
+        self.set_motor_attributes(
+            0.0, 0.0, "mm", x_acceleration=10., x_velocity=2.,
+            y_acceleration=100., y_velocity=2.)
+
+        self.o.on_configure(
+            self.context, 0, steps_to_do, {"part": m},
+            generator, axes_to_scan)
+
+        # this generates one mid point between the 1st upper and 2nd lower
+        # bounds. Note that the point is not exactly central due to time
+        # quantization
+        action, func, args = self.child.handled_requests.mock_calls[-1]
+        assert args['a'] == \
+            pytest.approx([0, 0, 0, 5.45454545e-05, .0001, .0001, .0001, .0001])
+        assert args['b'] == \
+            pytest.approx([0, 0, 0, 0, 0, 0, 0, 0])
+        assert args['timeArray'] == pytest.approx(
+            [2000, 2500, 2500, 6000, 5000, 2500, 2500, 2000])

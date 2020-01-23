@@ -41,7 +41,7 @@ class FilepathTranslatorPart(Part):
         # type: (PartRegistrar) -> None
         super(FilepathTranslatorPart, self).setup(registrar)
         # Hooks
-        registrar.hook(scanning.hooks.ReportStatusHook, self.report_status)
+        registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
         # Attributes
         registrar.add_attribute_model(
             "windowsDriveLetter", self.windows_drive_letter,
@@ -51,7 +51,7 @@ class FilepathTranslatorPart(Part):
             self.path_prefix.set_value)
 
     @add_call_types
-    def report_status(self):
+    def on_report_status(self):
         # type: () -> scanning.hooks.UInfos
         info = FilePathTranslatorInfo(
             self.windows_drive_letter.value, self.path_prefix.value)

@@ -174,6 +174,8 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
         subscribe.set_callback(queue.put)
         self.o.handle_request(subscribe)
         delta = queue.get()
+        capture_enums = delta.changes[0][1]["positions"]["meta"]["elements"]["capture"]["choices"]
+        assert capture_enums[0] == PositionCapture.NO
         table = delta.changes[0][1]["positions"]["value"]
         assert table.name == ['COUNTER.OUT']
         assert table.value == [0.0]

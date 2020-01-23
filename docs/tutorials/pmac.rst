@@ -1,13 +1,40 @@
 .. _pmac_tutorial:
 
-PMAC Tutorial
-=============
+PMAC Master Tutorial
+====================
 
 You should already know how to create a `block_` in the `scan_layer_` that
 can control multiple Detectors, and control a dummy motor controller. Let's
 look at how we can control a real motor controller (a Delta Tau Turbo PMAC
 based system like the `GeoBrick LV IMS-II`_) and capture encoder positions with
 a PandABox_.
+
+
+Strategy
+--------
+
+.. note::
+
+    A more in-depth overview of this topic can be found in
+    `trajectory_scan_triggering`.
+
+We will use the simplest triggering method possible here, the PMAC is master
+and generates a series of live pulses (marking a detector trigger, and the end
+of the last frame if there was one) and dead pulses (just marking the end of
+the last frame without starting a new one).
+
+In our snake scan example:
+
+.. image:: detector_0.png
+
+A live pulse would be output 5 times on the first row, at the beginning of each
+coloured frame. Where the colour changes at the turnaround, a dead pulse would
+be output. This pattern is repeated on each row.
+
+These live and dead pulses will be passed to the PandA which sends a trigger to
+the detector on each live pulse, and uses the signals itself to capture the
+average encoder position for each live frame.
+
 
 EPICS Prerequisites
 -------------------
@@ -18,7 +45,7 @@ We assume for this tutorial that you have created one or more IOCS that contain:
   that looks like ``BLxxI-MO-BRICK-01``.
 - A GeoBrick Trajectory template with the same prefix.
 - One or more CS templates.
-- One or more dls_pmac_asyn_motor or dls_pmac_cs_asyn_motor instances.
+- One or more dls_pmac_asyn_motor instances.
 - An ADPandABlocks template from the `ADPandaBlocks`_ module with a PV prefix
   that looks like ``BLxxI-MO-PANDA-01:DRV:``
 - NDPosPlugin and NDFileHDF5 `areaDetector`_ plugins with the PV prefixes of
@@ -56,6 +83,11 @@ Let's make a Process Definition in ``etc/malcolm/BLxxI-ML-MALC-01.yaml``::
         name: config_dir
         value: /dls_sw/ixx/epics/malcolm
 
+    # Scan the DLS redirector for IOCs to monitor, optional
+    - system.defines.redirector_iocs:
+        name: iocs
+        yamlname: $(yamlname)
+
     # Define the motion controllers
     - BLxxI.blocks.brick01_block:
         mri_prefix: BLxxI-ML-BRICK-01
@@ -82,11 +114,11 @@ Let's make a Process Definition in ``etc/malcolm/BLxxI-ML-MALC-01.yaml``::
     # More scans here...
 
     # Define the ServerComms
-    - web.blocks.web_server_block:
-        mri: $(yamlname):WEB
-
-    - pva.blocks.pva_server_block:
-        mri: $(yamlname):PVA
+    - system.blocks.system_block:
+        mri_prefix: $(yamlname)
+        iocs: $(iocs)
+        pv_prefix: $(yamlname)
+        config_dir: $(config_dir)
 
 The first thing to note is the ``#!`` line at the top of the file. This means
 that we can make the YAML file executable, and when it is executed
@@ -96,8 +128,8 @@ version of Malcolm.
 
 After this, we've defined a ``BLxxI`` module, and created two beamline specific
 Blocks from it (``brick01_block`` and ``scan_block``), and then
-created three Blocks from definitions already in Malcolm (
-``pandablocks_runnable_block``, ``web_server_block``, ``pva_server_block``).
+created two Blocks from definitions already in Malcolm (
+``pandablocks_runnable_block``, ``system_block``).
 Let's look at how those beamline specific Blocks are defined.
 
 
@@ -304,7 +336,7 @@ Setup the Devices
 
 We can now run up imalcolm by executing ``etc/malcolm/BLxxI-ML-MALC-01.yaml``,
 and open http://localhost:8008/gui/BLxxI-ML-SCAN-01 to see our scan Block. The
-first thing we should do it setup the motion controller. If we click the Auto
+first thing we should do is setup the motion controller. If we click the Auto
 Layout button, then click through to the ``BRICK-01`` layout and Auto Layout
 that, we will see the layout of motors in co-ordinate systems. We need to
 assign the two raw motors to any axes a-z in the co-ordinate system so that
@@ -313,7 +345,7 @@ they can be trajectory scanned, then save the brick design:
 .. image:: pmac_0.png
 
 The Brick is now in such a state that the `PmacChildPart` can run a scan on
-any motors in CS1.
+any motors in CS1, which correspond to the raw axes on the Pmac.
 
 .. note::
 

@@ -3,7 +3,7 @@ import re
 from enum import Enum
 from annotypes import TYPE_CHECKING
 
-from malcolm.version import __version__
+from .. import __version__
 
 if TYPE_CHECKING:
     from typing import Sequence, Union, Tuple, List
@@ -30,6 +30,7 @@ class Widget(Enum):
     FLOWGRAPH = "flowgraph"  #: Boxes with lines for child block connections
     TREE = "tree"  #: A nested tree of object models editor
     PLOT = "plot"  #: Waveform plot
+    METER = "meter"  #: progress meter
 
     def tag(self):
         """Return the actual tag for the given Widget
@@ -112,9 +113,9 @@ def without_group_tags(tags):
 
 
 def linked_value_tag(mri, attribute_name):
-    # type: (str) -> str
+    # type: (str, str) -> str
     """Marks this field as having another attribute in another Block that
-    should be displaed below it as a linked value"""
+    should be displayed below it as a linked value"""
     tag = "linkedvalue:%s:%s" % (attribute_name, mri)
     return tag
 
@@ -124,6 +125,22 @@ def without_linked_value_tags(tags):
     """Return a new list of tags without any group tags"""
     new_tags = [x for x in tags if not x.startswith("linkedvalue:")]
     return new_tags
+
+
+def badge_value_tag(mri, attribute_name, display="plus"):
+    # type: (str, str, str) -> str
+    """Marks this Port as having another attribute in another Block that
+    should be displayed as its badge.
+
+    Args:
+        mri: The mri of the Block that provides the badge value
+        attribute_name: The attribute name in the Block given by mri that
+            provides the badge value
+        display: The type of formatting to apply to the badge value:
+            "plus": If value < 1 then hide, otherwise display +%d
+    """
+    tag = "badgevalue:%s:%s:%s" % (display, attribute_name, mri)
+    return tag
 
 
 def config_tag(iteration=1):
@@ -160,4 +177,9 @@ def method_return_unpacked():
        hello.greet("me") -> "Hello me" not {"return": "Hello me"}
     """
     tag = "method:return:unpacked"
+    return tag
+
+def method_hidden():
+    """Hide this method on the GUI"""
+    tag = "method:hidden"
     return tag

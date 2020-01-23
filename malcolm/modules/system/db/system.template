@@ -1,0 +1,79 @@
+record(stringin, "$(prefix):KERNEL_VER") {
+  field(DESC, "Kernel Version")
+  field(VAL, "$(kernel)")
+  field(SEVR, 0)
+}
+
+record(stringin, "$(prefix):HOSTNAME") {
+  field(DESC, "Name of host machine")
+  field(VAL, "$(hostname)")
+  field(SEVR, 0)
+}
+
+record(waveform, "$(prefix):PYMALCOLM:PATH") {
+  field(FTVL, "CHAR")
+  field(NELM, "256")
+  field(DESC, "Pymalcolm Path")
+# field(VAL, "$(pymalcolm_path)")
+}
+
+record(stringin, "$(prefix):PYMALCOLM:VER") {
+  field(DESC, "Pymalcolm Version")
+  field(VAL, "$(pymalcolm_ver)")
+  field(SEVR, 0)
+}
+
+record(waveform, "$(prefix):YAML:PATH") {
+  field(FTVL, "CHAR")
+  field(NELM, "256")
+  field(DESC, "YAML configuration file Path")
+# field(VAL, "$(yaml_path)")
+}
+
+record(stringin, "$(prefix):YAML:VER") {
+  field(DESC, "YAML configuration file Version")
+  field(VAL, "$(yaml_ver)")
+  field(SEVR, 0)
+}
+
+record(stringin, "$(prefix):PID") {
+  field(DESC, "Process ID")
+  field(VAL, "$(pid)")
+  field(SEVR, 0)
+}
+
+record(ai, "$(prefix):UPTIME:RAW") {
+  field(SCAN, "Passive")
+  field(INP, "$(prefix):UPTIME:TICK")
+}
+
+record(calc, "$(prefix):UPTIME:TICK") {
+  field(SCAN, "1 second")
+  field(FLNK, "$(prefix):UPTIME:RAW")
+  field(CALC, "A+1")
+  field(INPA, "$(prefix):UPTIME:RAW.VAL")
+}
+
+record(calc, "$(prefix):UPTIME:SECS") {
+  field(SCAN, "1 second")
+  field(CALC, "A%60")
+  field(INPA, "$(prefix):UPTIME:RAW.VAL")
+}
+
+record(calc, "$(prefix):UPTIME:MINS") {
+  field(SCAN, "1 second")
+  field(CALC, "(A/60)%60")
+  field(INPA, "$(prefix):UPTIME:RAW.VAL")
+}
+
+record(calc, "$(prefix):UPTIME:HRS") {
+  field(SCAN, "1 second")
+  field(CALC, "(A/3600)%24")
+  field(INPA, "$(prefix):UPTIME:RAW.VAL")
+}
+
+record(calc, "$(prefix):UPTIME:DAYS") {
+  field(SCAN, "1 second")
+  field(CALC, "(A/(3600*24))")
+  field(INPA, "$(prefix):UPTIME:RAW.VAL")
+}

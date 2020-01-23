@@ -66,15 +66,13 @@ class TestUnrollingPart(unittest.TestCase):
         results = self.b.validate(generator, ["x"])
         assert generator == results["generator"]
 
-    @pytest.mark.skip(reason="need 'alternate' scanpointgenerator changes")
     def test_3d_generator(self):
-        generator = make_generator()
+        generator = make_generator(include_z=True)
         generator.prepare()
         assert len(generator.dimensions) == 3
         assert [dim.alternate for dim in generator.dimensions] == [
             False, False, True]
 
-    @pytest.mark.skip(reason="need 'alternate' scanpointgenerator changes")
     def test_3d_no_changes_needed_as_squashed(self):
         generator = make_generator(squashed=True, include_z=True)
         results = self.b.validate(generator, ["x", "y"])
@@ -82,16 +80,15 @@ class TestUnrollingPart(unittest.TestCase):
         generator.prepare()
         assert len(generator.dimensions) == 2
         assert [dim.alternate for dim in generator.dimensions] == [
-            False, True]
+            False, False]
 
-    @pytest.mark.skip(reason="need 'alternate' scanpointgenerator changes")
     def test_3d_changes_needed(self):
         results = self.b.validate(make_generator(include_z=True), ["x", "y"])
         generator = results["generator"]
         generator.prepare()
         assert len(generator.dimensions) == 2
         assert [dim.alternate for dim in generator.dimensions] == [
-            False, True]
+            False, False]
 
 
 

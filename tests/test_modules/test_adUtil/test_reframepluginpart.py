@@ -25,7 +25,7 @@ class TestReframePluginPart(ChildTestCase):
         self.process.stop(timeout=2)
 
     def test_report(self):
-        infos = self.o.report_status()
+        infos = self.o.on_report_status()
         assert len(infos) == 1
         assert infos[0].rank == 2
 
@@ -34,7 +34,7 @@ class TestReframePluginPart(ChildTestCase):
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
         generator = CompoundGenerator([ys, xs], [], [], 0.0002)
         generator.prepare()
-        self.o.validate(generator)
+        self.o.on_validate(generator)
 
     def test_validate_fails(self):
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
@@ -42,7 +42,7 @@ class TestReframePluginPart(ChildTestCase):
         generator = CompoundGenerator([ys, xs], [], [], 0.00009)
         generator.prepare()
         with self.assertRaises(AssertionError):
-            self.o.validate(generator)
+            self.o.on_validate(generator)
 
     def test_configure(self):
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
@@ -53,7 +53,7 @@ class TestReframePluginPart(ChildTestCase):
         steps_to_do = 6
         # We wait to be armed, so set this here
         self.set_attributes(self.child, acquiring=True)
-        self.o.configure(
+        self.o.on_configure(
             self.context, completed_steps, steps_to_do, {}, generator, fileDir="/tmp")
         assert self.child.handled_requests.mock_calls == [
             call.put('arrayCallbacks', True),

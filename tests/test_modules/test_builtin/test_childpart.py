@@ -138,12 +138,12 @@ class TestChildPart(unittest.TestCase):
     def test_load_save(self):
         b1 = self.c1.block_view()
         context = Context(self.p)
-        structure1 = self.p1.save(context)
+        structure1 = self.p1.on_save(context)
         expected = dict(sinkportConnector="Connector3")
         assert structure1 == expected
         b1.sinkportConnector.put_value("blah")
-        structure2 = self.p1.save(context)
+        structure2 = self.p1.on_save(context)
         expected = dict(sinkportConnector="blah")
         assert structure2 == expected
-        self.p1.load(context, dict(sinkportConnector="blah_again"))
+        self.p1.on_load(context, dict(sinkportConnector="blah_again"))
         assert b1.sinkportConnector.value == "blah_again"
