@@ -168,23 +168,23 @@ class TestHDFWriterPart(ChildTestCase):
         assert infos[1].path == "/entry/sum/sum"
         assert infos[1].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
 
-        assert infos[2].name == "I0"
+        assert infos[2].name == "I0.data"
         assert infos[2].filename == "thing-xspress3.h5"
-        assert infos[2].type == AttributeDatasetType.DETECTOR
+        assert infos[2].type == DatasetType.PRIMARY
         assert infos[2].rank == 4
         assert infos[2].path == "/entry/I0.data/I0.data"
         assert infos[2].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
 
-        assert infos[3].name == "It"
+        assert infos[3].name == "It.data"
         assert infos[3].filename == "thing-xspress3.h5"
-        assert infos[3].type == AttributeDatasetType.MONITOR
+        assert infos[3].type == DatasetType.MONITOR
         assert infos[3].rank == 4
         assert infos[3].path == "/entry/It.data/It.data"
         assert infos[3].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
 
-        assert infos[4].name == "t1x"
+        assert infos[4].name == "t1x.value"
         assert infos[4].filename == "thing-xspress3.h5"
-        assert infos[4].type == AttributeDatasetType.POSITION
+        assert infos[4].type == DatasetType.POSITION_VALUE
         assert infos[4].rank == 4
         assert infos[4].path == "/entry/t1x.value/t1x.value"
         assert infos[4].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
