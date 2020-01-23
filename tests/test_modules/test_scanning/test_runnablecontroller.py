@@ -720,3 +720,53 @@ class TestRunnableController(unittest.TestCase):
 
         self.b.run()
         self.checkState(self.ss.FINISHED)
+
+    def test_breakpoints_with_pause(self):
+        line1 = LineGenerator('x', 'mm', -10, -10, 5)
+        line2 = LineGenerator('x', 'mm', 0, 180, 10)
+        line3 = LineGenerator('x', 'mm', 190, 190, 2)
+        duration = 0.01
+        concat = ConcatGenerator([line1, line2, line3])
+        breakpoints = [2, 3, 10, 2]
+        self.b.configure(generator=CompoundGenerator([concat],
+                         [], [], duration),
+                         axesToMove=['x'],
+                         breakpoints=breakpoints,
+                         exceptionStep=0)
+
+        assert self.c.configure_params.generator.size == 17
+
+        self.checkSteps(2, 0, 17)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(5, 2, 17)
+        self.checkState(self.ss.ARMED)
+
+        # rewind
+        self.b.pause(lastGoodStep=1)
+        self.checkSteps(2, 1, 17)
+        self.checkState(self.ss.ARMED)
+        self.b.run()
+        self.checkSteps(5, 2, 17)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(15, 5, 17)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(17, 15, 17)
+        self.checkState(self.ss.ARMED)
+
+        #rewind
+        self.b.pause(lastGoodStep=11)
+        self.checkSteps(15, 11, 17)
+        self.checkState(self.ss.ARMED)
+        self.b.run()
+        self.checkSteps(17, 15, 17)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(17, 17, 17)
+        self.checkState(self.ss.FINISHED)
