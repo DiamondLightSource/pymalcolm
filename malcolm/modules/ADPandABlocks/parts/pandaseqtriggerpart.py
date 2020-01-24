@@ -10,7 +10,6 @@ from malcolm.modules.pmac.util import all_points_joined
 from ..util import SequencerTable, Trigger
 
 import numpy as np
-from itertools import izip
 
 if TYPE_CHECKING:
     from typing import List, Tuple, Dict
@@ -351,7 +350,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         seq_lengths = np.diff(np.append(start_indices, len(durations)))
 
         rows = []
-        for duration, count in izip(seq_durations, seq_lengths):
+        for duration, count in zip(seq_durations, seq_lengths):
             half_frame = int(round(duration / TICK / 2))
             complete_rows = count // MAX_REPEATS
             remaining = count % MAX_REPEATS
@@ -444,7 +443,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
             # This first row should not wait, and will trigger immediately
             rows.extend(self._generate_immediate_rows(points.duration[0:end]))
 
-        for start, end in izip(start_indices, end_indices):
+        for start, end in zip(start_indices, end_indices):
             # First row handled outside of loop
             self.last_point = points[start-1]
 
