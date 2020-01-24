@@ -52,10 +52,9 @@ class TestDirParsePart(unittest.TestCase):
         self.context = Context(self.p)
         self.c1 = RunnableController(
             mri="SYS", config_dir="/tmp", use_git=False)
-        try:
-            os.mkdir('/tmp/configure-%s' % now)
-        except OSError:
-            pass
+        self.tmp_dir = '/tmp/%s-%s' % (now, os.getpid())
+        os.mkdir(self.tmp_dir)
+        os.mkdir(self.tmp_dir + '/configure')
 
     def tearDown(self):
         try:
@@ -63,7 +62,8 @@ class TestDirParsePart(unittest.TestCase):
         except AssertionError:
             pass
         try:
-            os.rmdir('/tmp/configure-%s' % now)
+            os.rmdir(self.tmp_dir + '/configure')
+            os.rmdir(self.tmp_dir)
         except OSError:
             # directory doesn't exist
             pass
@@ -90,8 +90,8 @@ class TestDirParsePart(unittest.TestCase):
 
     def test_parses_dir(self):
         self.add_part_and_start()
-        self.part.dir = "/tmp"
-        with open('/tmp/configure-%s/RELEASE' % now, 'w') as f:
+        self.part.dir = self.tmp_dir
+        with open(self.tmp_dir + '/configure/RELEASE', 'w') as f:
             f.writelines(deps)
         self.part.parse_release()
         assert len(self.part.dependencies.value.module) == 2
@@ -101,7 +101,7 @@ class TestDirParsePart(unittest.TestCase):
         assert self.part.dependencies.value.path[0] == "/a/test"
         assert self.part.dependencies.value.path[1] == "/a/test/some/dependency"
 
-        os.remove('/tmp/configure-%s/RELEASE' % now)
+        os.remove(self.tmp_dir + '/configure/RELEASE')
 
     @patch("malcolm.core.alarm.Alarm")
     def test_sets_alarm_if_dir_doesnt_exist(self, alarm):
