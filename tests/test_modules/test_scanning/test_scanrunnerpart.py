@@ -1467,6 +1467,10 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
         # Our mocked scan block will return nicely for a success
         self.scan_block_mock.run.return_value = None
 
+        # Mock our context
+        context_mock = Mock(name="context_mock")
+        self.scan_runner_part.context = context_mock
+
         # Mock the scan_is_aborting method
         is_aborting_mock = Mock(name="is_aborting_mock")
         is_aborting_mock.side_effect = [
@@ -1485,7 +1489,7 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
             self.generator_mock)
 
         # Check we slept
-        self.scan_block_mock.sleep.assert_called_once_with(0.1)
+        context_mock.sleep.assert_called_once_with(0.1)
 
         # Check the standard method calls
         self.create_and_get_scan_directory_mock.assert_called_once_with(self.set_directory, self.scan_number)

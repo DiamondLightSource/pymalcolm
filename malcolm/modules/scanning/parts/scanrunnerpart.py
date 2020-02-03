@@ -404,7 +404,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
 
         # Check if scan can be reset or run
         while self.scan_is_aborting(scan_block):
-            scan_block.sleep(0.1)
+            self.context.sleep(0.1)
 
         # Run the scan and capture the outcome
         if scan_block.state.value is not RunnableStates.READY:
