@@ -32,7 +32,8 @@ class TestPMACChildPart(ChildTestCase):
         # CS1 needs to have the right port otherwise we will error
         self.set_attributes(self.child_cs1, port="CS1")
         self.o = PmacChildPart(name="pmac", mri="PMAC")
-        self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
+        self.context.set_notify_dispatch_request(
+            self.o.notify_dispatch_request)
         self.process.start()
 
     def tearDown(self):
@@ -60,7 +61,7 @@ class TestPMACChildPart(ChildTestCase):
     def set_motor_attributes(
             self, x_pos=0.5, y_pos=0.0, units="mm",
             x_acceleration=2.5, y_acceleration=2.5,
-            x_velocity=1.0, y_velocity=1.0):
+            x_velocity=1.0, y_velocity=1.0, settle=0.0):
         # create some parts to mock the motion controller and 2 axes in a CS
         self.set_attributes(
             self.child_x, cs="CS1,A",
@@ -71,15 +72,18 @@ class TestPMACChildPart(ChildTestCase):
             self.child_y, cs="CS1,B",
             accelerationTime=y_velocity / y_acceleration, resolution=0.001,
             offset=0.0, maxVelocity=y_velocity, readback=y_pos,
-            velocitySettle=0.0, units=units)
+            velocitySettle=settle, units=units)
 
     def do_configure(self, axes_to_scan, completed_steps=0, x_pos=0.5,
-                     y_pos=0.0, duration=1.0, units="mm", infos=None):
-        self.set_motor_attributes(x_pos, y_pos, units)
+                     y_pos=0.0, duration=1.0, units="mm", infos=None,
+                     settle=0.0, continuous=True):
+        self.set_motor_attributes(x_pos, y_pos, units, settle=settle)
         steps_to_do = 3 * len(axes_to_scan)
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
-        generator = CompoundGenerator([ys, xs], [], [], duration)
+        generator = CompoundGenerator(
+            [ys, xs], [], [], duration, continuous=continuous
+        )
         generator.prepare()
         self.o.on_configure(
             self.context, completed_steps, steps_to_do, {"part": infos},
@@ -126,7 +130,17 @@ class TestPMACChildPart(ChildTestCase):
             0, 0, 1, 1, 2, 2, 3, 3, 3, 3,
             3, 3, 4, 4, 5, 5, 6, 6]
 
-    def do_check_output(self):
+    a_positions = [-0.125, 0., 0.125, 0.25, 0.375, 0.5, 0.625, 0.6375,
+                   0.6375, 0.6375, 0.625, 0.5, 0.375, 0.25, 0.125, 0.,
+                   -0.125, -0.1375]
+    b_positions = [0., 0., 0., 0., 0., 0., 0., 0.0125, 0.05,
+                   0.0875, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+
+    def do_check_output(self, user_programs=None):
+        if user_programs is None:
+            user_programs = [
+                1, 4, 1, 4, 1, 4, 2, 8, 8, 8, 1, 4, 1, 4, 1, 4, 2, 8
+            ]
         # use a slice here because I'm getting calls to __str__ in debugger
         assert self.child.handled_requests.mock_calls[:4] == [
             call.post('writeProfile',
@@ -135,13 +149,8 @@ class TestPMACChildPart(ChildTestCase):
             call.post('moveCS1', a=-0.1375, b=0.0, moveTime=1.0375),
             # pytest.approx to allow sensible compare with numpy arrays
             call.post('writeProfile',
-                      a=pytest.approx(
-                          [-0.125, 0., 0.125, 0.25, 0.375, 0.5, 0.625, 0.6375,
-                           0.6375, 0.6375, 0.625, 0.5, 0.375, 0.25, 0.125, 0.,
-                           -0.125, -0.1375]),
-                      b=pytest.approx(
-                          [0., 0., 0., 0., 0., 0., 0., 0.0125, 0.05, 0.0875,
-                           0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]),
+                      a=pytest.approx(self.a_positions),
+                      b=pytest.approx(self.b_positions),
                       csPort='CS1',
                       timeArray=pytest.approx(
                           [100000, 500000, 500000, 500000, 500000, 500000,
@@ -517,20 +526,20 @@ class TestPMACChildPart(ChildTestCase):
         action, func, args = self.child.handled_requests.mock_calls[-1]
         assert args['a'] == \
             pytest.approx([
-               0.0, 0.0, 0.0, 0.2, 2.3, 2.5, 2.5, 2.5, 2.7, 4.8, 5.0, 5.0,
-               5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 4.8, 2.7, 2.5, 2.5, 2.5, 2.3,
-               0.2, 0, 0.0, 0.0, 0.0])
+                0.0, 0.0, 0.0, 0.2, 2.3, 2.5, 2.5, 2.5, 2.7, 4.8, 5.0, 5.0,
+                5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 4.8, 2.7, 2.5, 2.5, 2.5, 2.3,
+                0.2, 0, 0.0, 0.0, 0.0])
         assert args['b'] == \
             pytest.approx([
-               0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-               0.0, 0.2, 9.8, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0,
-               10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0])
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                0.0, 0.2, 9.8, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0,
+                10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0])
         assert args['timeArray'] == pytest.approx([
-               2000, 500250, 500250, 400000, 2100000, 400000, 500250,
-               500250, 400000, 2100000, 400000, 500250, 500250, 400000,
-               9600000, 400000, 500250, 500250, 400000, 2100000, 400000,
-               500250, 500250, 400000, 2100000, 400000, 500250, 500250,
-               2000])
+            2000, 500250, 500250, 400000, 2100000, 400000, 500250,
+            500250, 400000, 2100000, 400000, 500250, 500250, 400000,
+            9600000, 400000, 500250, 500250, 400000, 2100000, 400000,
+            500250, 500250, 400000, 2100000, 400000, 500250, 500250,
+            2000])
 
     def test_minimum_profile(self):
         # tests that a turnaround that is >= minturnaround
@@ -578,8 +587,28 @@ class TestPMACChildPart(ChildTestCase):
         # quantization
         action, func, args = self.child.handled_requests.mock_calls[-1]
         assert args['a'] == \
-            pytest.approx([0, 0, 0, 5.45454545e-05, .0001, .0001, .0001, .0001])
+            pytest.approx(
+                [0, 0, 0, 5.45454545e-05, .0001, .0001, .0001, .0001])
         assert args['b'] == \
             pytest.approx([0, 0, 0, 0, 0, 0, 0, 0])
         assert args['timeArray'] == pytest.approx(
             [2000, 2500, 2500, 6000, 5000, 2500, 2500, 2000])
+
+    def test_settle_time(self):
+        self.do_configure(axes_to_scan=["x", "y"], settle=.01)
+        self.do_check_output_settle()
+
+    def do_check_output_settle(self):
+        a = self.child.handled_requests.mock_calls[3].kwargs['a']
+        b = self.child.handled_requests.mock_calls[3].kwargs['b']
+
+        # this is the same as do_check_output with an extra time slot in the
+        # turnaround
+        a_pos = self.a_positions
+        a_pos.insert(10, 0.627375)
+        b_pos = self.b_positions
+        b_pos[9] = 0.089875
+        b_pos.insert(10, 0.1)
+
+        assert a == pytest.approx(a_pos)
+        assert b == pytest.approx(b_pos)
