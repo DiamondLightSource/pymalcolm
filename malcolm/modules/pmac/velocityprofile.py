@@ -40,7 +40,7 @@ class VelocityProfile:
         v1: start velocity
         v2: final velocity
         d: distance to travel
-        tv2: time between v1 and v2
+        t_total: desired minimum time between v1 and v2 (to include settle time)
         a: motor acceleration (always used for the slopes in the result)
         v_max: maximum speed of the motor
 
@@ -62,7 +62,7 @@ class VelocityProfile:
             v1,  # type: float
             v2,  # type: float
             d,  # type: float
-            tv2,  # type: float
+            t_total,  # type: float
             a,  # type: float
             v_max,  # type: float
             settle_time=0,  # type: float
@@ -83,7 +83,8 @@ class VelocityProfile:
         self.v1 = v1
         self.v2 = v2
         self.d = d - v2 * settle_time
-        self.tv2 = tv2 - settle_time
+        self.tv2 = t_total - settle_time
+        self.t_total = t_total
         self.a = a
         self.v_max = v_max
         self.settle_time = settle_time
@@ -235,6 +236,8 @@ class VelocityProfile:
             if self.d < dc:
                 self.tv2 += (dc - self.d) / self.v_max
 
+        self.t_total = self.tv2 + self.settle_time
+
     def calculate_vm(self):
         r"""
         to ensure this function will succeed, call stretch_time() first.
@@ -361,6 +364,7 @@ class VelocityProfile:
         """
         min_time = fabs(self.v1 - self.v2) / self.a
         self.tv2 = max(self.tv2, min_time)
+        self.t_total = self.tv2 + self.settle_time
 
         t = self.tv2
         self.stretch_time()
@@ -445,7 +449,9 @@ class VelocityProfile:
         # using the new times
         i1 = -2 * self.d + self.t1 * self.v1 + self.t2 * self.v2
         i2 = 2 * self.tm + self.t1 + self.t2
-        self.vm = - i1 / i2
+        self.vm = -i1 / i2
+
+        self.t_total = self.tv2 + self.settle_time
         self.quantized = True
 
     def make_arrays(self):
