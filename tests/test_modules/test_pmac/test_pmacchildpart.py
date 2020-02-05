@@ -130,17 +130,30 @@ class TestPMACChildPart(ChildTestCase):
             0, 0, 1, 1, 2, 2, 3, 3, 3, 3,
             3, 3, 4, 4, 5, 5, 6, 6]
 
-    a_positions = [-0.125, 0., 0.125, 0.25, 0.375, 0.5, 0.625, 0.6375,
-                   0.6375, 0.6375, 0.625, 0.5, 0.375, 0.25, 0.125, 0.,
-                   -0.125, -0.1375]
-    b_positions = [0., 0., 0., 0., 0., 0., 0., 0.0125, 0.05,
-                   0.0875, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+    a_positions = [
+        -0.125, 0., 0.125, 0.25, 0.375, 0.5, 0.625, 0.6375,
+        0.6375, 0.6375, 0.625, 0.5, 0.375, 0.25, 0.125, 0.,
+        -0.125, -0.1375
+    ]
+    b_positions = [
+        0., 0., 0., 0., 0., 0., 0., 0.0125, 0.05,
+        0.0875, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1
+    ]
+    user_programs = [
+        1, 4, 1, 4, 1, 4, 2, 8, 8, 8, 1, 4, 1, 4, 1, 4, 2, 8
+    ]
+    velocity_mode = [
+        1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 3
+    ]
+    time_array = [
+        100000, 500000, 500000, 500000, 500000, 500000,
+        500000, 100000, 100000, 100000, 100000, 500000,
+        500000, 500000, 500000, 500000, 500000, 100000
+    ]
 
     def do_check_output(self, user_programs=None):
         if user_programs is None:
-            user_programs = [
-                1, 4, 1, 4, 1, 4, 2, 8, 8, 8, 1, 4, 1, 4, 1, 4, 2, 8
-            ]
+            user_programs = self.user_programs
         # use a slice here because I'm getting calls to __str__ in debugger
         assert self.child.handled_requests.mock_calls[:4] == [
             call.post('writeProfile',
@@ -152,16 +165,9 @@ class TestPMACChildPart(ChildTestCase):
                       a=pytest.approx(self.a_positions),
                       b=pytest.approx(self.b_positions),
                       csPort='CS1',
-                      timeArray=pytest.approx(
-                          [100000, 500000, 500000, 500000, 500000, 500000,
-                           500000, 100000, 100000, 100000, 100000, 500000,
-                           500000, 500000, 500000, 500000, 500000, 100000]),
-                      userPrograms=pytest.approx(
-                          [1, 4, 1, 4, 1, 4, 2, 8, 8, 8, 1, 4, 1, 4, 1, 4,
-                           2, 8]),
-                      velocityMode=pytest.approx(
-                          [1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0,
-                           0, 0, 1, 3])
+                      timeArray=pytest.approx(self.time_array),
+                      userPrograms=pytest.approx(user_programs),
+                      velocityMode=pytest.approx(self.velocity_mode)
                       )
         ]
         assert self.o.completed_steps_lookup == [
@@ -595,20 +601,39 @@ class TestPMACChildPart(ChildTestCase):
             [2000, 2500, 2500, 6000, 5000, 2500, 2500, 2000])
 
     def test_settle_time(self):
+        """
+        Test the standard do_configure but with motor settle time
+        """
         self.do_configure(axes_to_scan=["x", "y"], settle=.01)
         self.do_check_output_settle()
 
     def do_check_output_settle(self):
-        a = self.child.handled_requests.mock_calls[3].kwargs['a']
-        b = self.child.handled_requests.mock_calls[3].kwargs['b']
+        wp = self.child.handled_requests.mock_calls[3]
 
-        # this is the same as do_check_output with an extra time slot in the
-        # turnaround
+        # this is the same as do_check_output but with an extra time slot in the
+        # turnaround: I jump through some hoops here to make it clear what the
+        # difference is (rather than writing out the writeProfile parameters in full)
         a_pos = self.a_positions
-        a_pos.insert(10, 0.627375)
-        b_pos = self.b_positions
-        b_pos[9] = 0.089875
-        b_pos.insert(10, 0.1)
+        a_pos = a_pos[:10] + [0.627375] + a_pos[10:]
 
-        assert a == pytest.approx(a_pos)
-        assert b == pytest.approx(b_pos)
+        b_pos = self.b_positions
+        b_pos = b_pos[:9] + [0.089875, 0.1] + b_pos[10:]
+
+        up = self.user_programs
+        up = up[:10] + [8] + up[10:]
+
+        ta = self.time_array
+        ta = ta[:9] + [110000, 90000, 10000] + ta[11:]
+
+        vm = self.velocity_mode
+        vm = vm[:10] + [1] + vm[10:]
+
+        assert wp == call.post(
+            'writeProfile',
+            a=pytest.approx(a_pos),
+            b=pytest.approx(b_pos),
+            csPort='CS1',
+            timeArray=pytest.approx(ta),
+            userPrograms=pytest.approx(up),
+            velocityMode=pytest.approx(vm)
+        )
