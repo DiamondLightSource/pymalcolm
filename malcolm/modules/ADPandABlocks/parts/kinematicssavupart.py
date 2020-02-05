@@ -6,7 +6,7 @@ import numpy as np
 
 from shutil import copyfile
 
-from annotypes import add_call_types, TYPE_CHECKING
+from annotypes import add_call_types, TYPE_CHECKING, Anno
 
 from malcolm.core import APartName, Info, PartRegistrar
 from malcolm.modules import builtin, scanning, pmac
@@ -19,6 +19,8 @@ if TYPE_CHECKING:
 # Pull re-used annotypes into our namespace in case we are subclassed
 APartName = APartName
 AMri = builtin.parts.AMri
+with Anno("name of CS port"):
+    ACsPort = str
 
 PVar = collections.namedtuple('PVar', 'path file p_number')
 
@@ -35,8 +37,8 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
     - <ID>-vds.nxs - VDS file linking to Savu processed data (when processed)
     """
 
-    def __init__(self, name, mri):
-        # type: (APartName, AMri) -> None
+    def __init__(self, name, mri, cs_port=None):
+        # type: (APartName, AMri, ACsPort) -> None
         super(KinematicsSavuPart, self).__init__(name, mri, stateful=False)
         self.nxs_full_filename = ""
         self.vds_full_filename = ""
@@ -49,7 +51,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         self.use_min_max = True
         self.savu_file = None
         self.layout_table = None
-        self.cs_port = None
+        self.cs_port = cs_port
         self.shape = None
         self.pmac_mri = None
 
@@ -114,14 +116,16 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         # Get the cs port mapping for this PMAC
         # {scannable: MotorInfo}
         self.layout_table = context.block_view(self.pmac_mri).layout.value
+        print("layout table is %s" % self.layout_table)
         axis_mapping = pmac.util.cs_axis_mapping(
             context, self.layout_table, axesToMove
         )
 
-        # All axes will be in the same cs_port, so just use the first cs_port
-        for mapping in axis_mapping.values():
-            self.cs_port = mapping.cs_port
-            break
+        if self.cs_port is None:
+            # All axes will be in the same cs_port, so just use the first cs_port
+            for mapping in axis_mapping.values():
+                self.cs_port = mapping.cs_port
+                break
 
         # Create the mapping of output q variables to axis names
         for mapping in axis_mapping.values():
@@ -138,8 +142,9 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         # Get the axis number for the inverse kinematics mapped in this cs_port
 
         axis_numbers = pmac.util.cs_axis_numbers(
-            context, self.layout_table, self.cs_port
+            context, self.layout_table, "BRICK01.CS2"  # self.cs_port
         )
+        print("axis numbers are %s" % axis_numbers)
 
         # Map these in the file
         dataset_infos = scanning.infos.DatasetProducedInfo.filter_values(
@@ -157,6 +162,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
                         value_i = info
             # Always make sure .value is there
             assert value_i, "No value dataset for %s" % scannable
+            print("adding dataset for %s" % scannable)
             self.p_vars.append(PVar(
                 path=value_i.path, file=value_i.filename,
                 p_number="p%dmean" % axis_num)
