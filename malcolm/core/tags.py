@@ -31,6 +31,7 @@ class Widget(Enum):
     TREE = "tree"  #: A nested tree of object models editor
     PLOT = "plot"  #: Waveform plot
     METER = "meter"  #: progress meter
+    FFMPEG = "ffmpeg"  #: ffmpeg viewer
 
     def tag(self):
         """Return the actual tag for the given Widget
