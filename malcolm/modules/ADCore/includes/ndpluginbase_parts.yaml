@@ -2,8 +2,18 @@
     name: prefix
     description: The root PV for the all records
 
+- builtin.parameters.string:
+    name: mri
+    description: MRI of the block which instantiated this
+
 - ADCore.includes.ndarraybase_parts:
     prefix: $(prefix)
+
+- ca.parts.CALongPart:
+    name: ndArrayAddress
+    description: asyn address for ND Array Port
+    pv: $(prefix):NDArrayAddress
+    rbv_suffix: _RBV
 
 - ca.parts.CAStringPart:
     name: input
@@ -11,6 +21,9 @@
     pv: $(prefix):NDArrayPort
     rbv_suffix: _RBV
     sink_port: NDArray
+    port_badge_mri: $(mri)
+    port_badge_attr: ndArrayAddress
+    port_badge_display: asynAddr
 
 - ca.parts.CABooleanPart:
     name: enableCallbacks

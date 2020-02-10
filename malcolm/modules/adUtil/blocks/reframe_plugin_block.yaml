@@ -15,6 +15,7 @@
 
 - ADCore.includes.ndpluginbase_parts:
     prefix: $(prefix)
+    mri: $(mri)
 
 - ca.parts.CAChoicePart:
     name: imageMode
