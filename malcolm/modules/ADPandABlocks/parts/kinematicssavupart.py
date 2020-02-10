@@ -19,8 +19,14 @@ if TYPE_CHECKING:
 # Pull re-used annotypes into our namespace in case we are subclassed
 APartName = APartName
 AMri = builtin.parts.AMri
+
 with Anno("name of CS port"):
     ACsPort = str
+
+
+with Anno("mri suffix of malcolm CS block [$(pmac_mri):$(suffix)]"):
+    ACsMriSuffix = str
+
 
 PVar = collections.namedtuple('PVar', 'path file p_number')
 
@@ -37,8 +43,8 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
     - <ID>-vds.nxs - VDS file linking to Savu processed data (when processed)
     """
 
-    def __init__(self, name, mri, cs_port=None):
-        # type: (APartName, AMri, ACsPort) -> None
+    def __init__(self, name, mri, cs_port=None, cs_mri_suffix=None):
+        # type: (APartName, AMri, ACsPort, ACsMriSuffix) -> None
         super(KinematicsSavuPart, self).__init__(name, mri, stateful=False)
         self.nxs_full_filename = ""
         self.vds_full_filename = ""
@@ -52,6 +58,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         self.savu_file = None
         self.layout_table = None
         self.cs_port = cs_port
+        self.cs_mri_suffix = cs_mri_suffix
         self.shape = None
         self.pmac_mri = None
 
@@ -142,7 +149,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         # Get the axis number for the inverse kinematics mapped in this cs_port
 
         axis_numbers = pmac.util.cs_axis_numbers(
-            context, self.layout_table, "BRICK01.CS2"  # self.cs_port
+            context, self.layout_table, self.cs_port
         )
         print("axis numbers are %s" % axis_numbers)
 
@@ -186,7 +193,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
                                    pmac_status_child.pVariables.value,
                                    pmac_status_child.mVariables.value])
 
-        pmac_cs_child = context.block_view(self.pmac_mri + ":" + self.cs_port)
+        pmac_cs_child = context.block_view(self.pmac_mri + ":" +_self.cs_mri_suffix)
 
         raw_kinematics_program_code = pmac_cs_child.forwardKinematic.value
         raw_input_vars += " " + pmac_cs_child.qVariables.value
