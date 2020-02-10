@@ -17,3 +17,9 @@
     description: Enable plugin to run when we get a new frame
     pv: $(prefix):EnableCallbacks
     rbv_suffix: _RBV
+
+- ca.parts.CALongPart:
+    name: ndArrayAddress
+    description: asyn address for ND Array Port
+    pv: $(prefix):NDArrayAddress
+    rbv_suffix: _RBV
