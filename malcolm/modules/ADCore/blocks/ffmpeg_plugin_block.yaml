@@ -24,4 +24,4 @@
     name: ffmpegStream
     description: FFMPEG stream
     pv: $(pv_prefix):MJPG_URL_RBV
-    widget: ffmpeg
+    widget: imgurl
