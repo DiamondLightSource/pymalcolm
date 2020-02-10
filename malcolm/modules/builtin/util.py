@@ -23,6 +23,9 @@ with Anno("If given, use this widget instead of the default"):
     AWidget = Widget
 with Anno("If given, mark this as a Sink Port of the given type"):
     ASinkPort = Port
+with Anno("If given, mark this Sink Port as having a badge" +
+          " value [tag constructed by badge_value_tag()]"):
+    APortBadge = str
 
 
 def set_tags(meta,  # type: VMeta
@@ -31,6 +34,7 @@ def set_tags(meta,  # type: VMeta
              group=None,  # type: AGroup
              widget=None,  # type: AWidget
              sink_port=None,  # type: ASinkPort
+             port_badge=None,  # type: APortBadge
              ):
     # type: (...) -> None
     tags = []
@@ -47,6 +51,8 @@ def set_tags(meta,  # type: VMeta
         tags.append(group_tag(group))
     if sink_port:
         tags.append(sink_port.sink_port_tag(disconnected_value=""))
+        if port_badge:
+            tags.append(port_badge)
     meta.set_tags(tags)
 
 
