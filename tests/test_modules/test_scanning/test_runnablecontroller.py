@@ -7,7 +7,7 @@ from annotypes import add_call_types
 
 from malcolm.modules.demo.parts.motionchildpart import AExceptionStep
 from malcolm.modules.scanning.hooks import ACompletedSteps, AContext, \
-    AStepsToDo, ValidateHook, UInfos, AAxesToMove, AGenerator
+    AStepsToDo, ValidateHook, UInfos, AAxesToMove, ABreakpoints, AGenerator
 from malcolm.core import Process, Context, AlarmStatus, \
     AlarmSeverity, AbortedError
 from malcolm.modules.demo.parts import MotionChildPart
@@ -47,6 +47,7 @@ class MisbehavingPart(MotionChildPart):
                      # The following were passed from the user calling configure()
                      generator,  # type: AGenerator
                      axesToMove,  # type: AAxesToMove
+                     breakpoints, # type: ABreakpoints
                      exceptionStep=0,  # type: AExceptionStep
                      ):
         # type: (...) -> None

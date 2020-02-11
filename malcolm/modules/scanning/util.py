@@ -46,6 +46,8 @@ class ConfigureParams(Serializable):
             axesToMove = generator.axes
         self.axesToMove = AAxesToMove(axesToMove)
 
+        if breakpoints is None:
+            breakpoints = []
         self.breakpoints = ABreakpoints(breakpoints)
 
 
