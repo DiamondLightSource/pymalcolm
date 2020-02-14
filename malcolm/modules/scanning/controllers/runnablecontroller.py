@@ -52,7 +52,7 @@ def get_steps_per_run(generator, axes_to_move, breakpoints):
         # Now multiply by the dimensions to get the number of steps
         steps[0] *= dim.size
 
-    if len(breakpoints) > 1:
+    if len(breakpoints) > 1 and sum(breakpoints) <= steps[0]:
         steps = breakpoints
 
     return steps
