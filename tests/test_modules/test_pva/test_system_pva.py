@@ -2,6 +2,7 @@ import shutil
 import tempfile
 import unittest
 
+import numpy as np
 import pytest
 from annotypes import json_encode, Array
 from scanpointgenerator import LineGenerator, CompoundGenerator
@@ -56,16 +57,17 @@ class TestSystemDetectorPVA(unittest.TestCase):
         block = self.process2.block_view("TESTDET")
         self.check_blocks_equal()
         generator = self.make_generator()
+        an_empty_list = pytest.approx([]) # see comment in validate()
         validated = dict(
             generator=generator.to_dict(), fileDir=self.tmpdir,
-            axesToMove=["y", "x"], breakpoints=Array[int](), fileTemplate='%s.h5',
+            axesToMove=["y", "x"], breakpoints=an_empty_list, fileTemplate='%s.h5',
             formatName='det', exposure=0.0489975,
         )
         assert validated == block.validate(generator, self.tmpdir)
         # Sent 2 things, other zeroed
         assert block.validate.took.value == dict(
             generator=generator.to_dict(), fileDir=self.tmpdir,
-            axesToMove=[], breakpoints=Array[int](), fileTemplate='',
+            axesToMove=[], breakpoints=an_empty_list, fileTemplate='',
             formatName='', exposure=0,
         )
         assert block.validate.took.present == [
@@ -85,20 +87,24 @@ class TestSystemDetectorPVA(unittest.TestCase):
         block = self.process2.block_view("TESTDET")
         self.check_blocks_equal()
         generator = self.make_generator()
+        #an_empty_list = np.ndarray(shape=(0,), dtype=np.int64)
+        # for some reason, the above is not equating to array([]) in Py3
+        an_empty_list = pytest.approx([])
         validated = dict(
             generator=generator.to_dict(), fileDir=self.tmpdir,
-            axesToMove=["x", "y"], breakpoints=Array[int](), fileTemplate='%s.h5',
+            axesToMove=["x", "y"], breakpoints=an_empty_list, fileTemplate='%s.h5',
             formatName='det', exposure=0.0489975,
         )
         params = block.configure(generator, self.tmpdir, axesToMove=["x", "y"])
-        assert params == validated
+
+        assert validated == params
         # TODO: ordering is not maintained in PVA, so may need to wait before
         #       get
         # block._context.sleep(0.1)
         assert "Armed" == block.state.value
         assert block.configure.took.value == dict(
             generator=generator.to_dict(), axesToMove=["x", "y"],
-            breakpoints=Array[int](), exposure=0.0, fileDir=self.tmpdir,
+            breakpoints=an_empty_list, exposure=0.0, fileDir=self.tmpdir,
             fileTemplate='', formatName='')
         assert block.configure.took.present == [
             "generator", "fileDir", "axesToMove"]
