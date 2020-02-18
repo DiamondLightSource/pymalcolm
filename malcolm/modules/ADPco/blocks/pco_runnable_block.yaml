@@ -42,6 +42,7 @@
     mri: $(mri_prefix):DRV
     soft_trigger_modes:
         - Off
+    runs_on_windows: True
 
 - scanning.parts.ExposureDeadtimePart:
     name: DEADTIME
