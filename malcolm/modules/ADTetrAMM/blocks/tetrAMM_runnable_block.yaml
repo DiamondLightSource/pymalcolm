@@ -1,0 +1,28 @@
+- builtin.parameters.string:
+    name: mri_prefix
+    description: Malcolm resource id of the Block and prefix for children
+
+- builtin.parameters.string:
+    name: pv_prefix
+    description: PV prefix for driver and all plugins
+
+- builtin.parameters.string:
+    name: config_dir
+    description: Where to store saved configs
+
+- scanning.controllers.RunnableController:
+    mri: $(mri_prefix)
+    config_dir: $(config_dir)
+
+- ADTetrAMM.blocks.tetrAMM_driver_block:
+    mri: $(mri_prefix):DRV
+    pv_prefix: $(pv_prefix):DRV
+
+- ADTetrAMM.parts.TetrAMMDriverPart:
+    name: TetrAMM
+    mri: $(mri_prefix):DRV
+
+- ADCore.includes.filewriting_collection:
+    pv_prefix: $(pv_prefix)
+    mri_prefix: $(mri_prefix)
+

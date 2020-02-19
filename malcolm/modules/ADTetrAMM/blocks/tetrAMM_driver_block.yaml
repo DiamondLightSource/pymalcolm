@@ -1,0 +1,37 @@
+- builtin.parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- builtin.parameters.string:
+    name: pv_prefix
+    description: The root PV for the all records
+
+- builtin.controllers.StatefulController:
+    mri: $(mri)
+
+- ADCore.includes.ndarraybase_parts:
+    prefix: $(pv_prefix)
+
+- ca.parts.CAActionPart:
+    name: start
+    description: Demand for starting acquisition
+    pv: $(pv_prefix):Acquire
+
+- ca.parts.CAActionPart:
+    name: stop
+    description: Stop acquisition
+    pv: $(pv_prefix):Acquire
+    value: 0
+    wait: False
+
+- ca.parts.CABooleanPart:
+    name: acquiring
+    description: If detector is currently acquiring
+    rbv: $(pv_prefix):Acquire
+
+- ca.parts.CAChoicePart:
+    name: triggerMode
+    description: What is triggering the detector to take frames
+    pv: $(pv_prefix):TriggerMode
+    rbv_suffix: _RBV
+
