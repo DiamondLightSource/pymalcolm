@@ -199,7 +199,7 @@ class RunnableController(builtin.controllers.ManagerController):
             tags=[Widget.TEXTUPDATE.tag()]
         ).create_attribute_model(0)
         self.field_registry.add_attribute_model("totalSteps", self.total_steps)
-        self._breakpoint = 0
+        self._iBreakpoint = 0
         # Create the method models
         self.field_registry.add_method_model(self.validate)
         self.set_writeable_in(
@@ -399,7 +399,8 @@ class RunnableController(builtin.controllers.ManagerController):
         # Run the configure command on all parts, passing them info from
         # ReportStatus. Parts should return any reporting info for PostConfigure
         completed_steps = 0
-        steps_to_do = self.steps_per_run[self._breakpoint]
+        self._iBreakpoint = 0
+        steps_to_do = self.steps_per_run[self._iBreakpoint]
         part_info = self.run_hooks(
             ConfigureHook(p, c, completed_steps, steps_to_do, part_info, **kw)
             for p, c, kw in self._part_params())
@@ -471,14 +472,14 @@ class RunnableController(builtin.controllers.ManagerController):
         completed_steps = self.configured_steps.value
         if completed_steps < self.total_steps.value:
             if len(self.steps_per_run) > 1:
-                self._breakpoint += 1
-                if self._breakpoint < len(self.steps_per_run):
-                    steps_to_do = self.steps_per_run[self._breakpoint]
+                self._iBreakpoint += 1
+                if self._iBreakpoint < len(self.steps_per_run):
+                    steps_to_do = self.steps_per_run[self._iBreakpoint]
                 # handle a case when the endpoint is not provided
                 else:
                     steps_to_do = self.total_steps.value - completed_steps
             else:
-                steps_to_do = self.steps_per_run[self._breakpoint]
+                steps_to_do = self.steps_per_run[self._iBreakpoint]
             part_info = self.run_hooks(
                 ReportStatusHook(p, c) for p, c in self.part_contexts.items())
             self.completed_steps.set_value(completed_steps)
@@ -488,6 +489,7 @@ class RunnableController(builtin.controllers.ManagerController):
                 for p, c, kwargs in self._part_params())
             self.configured_steps.set_value(completed_steps + steps_to_do)
         else:
+            self.completed_steps.set_value(completed_steps)
             self.run_hooks(
                 PostRunReadyHook(p, c) for p, c in self.part_contexts.items())
 
@@ -591,17 +593,22 @@ class RunnableController(builtin.controllers.ManagerController):
 
     def do_pause(self, completed_steps):
         # type: (int) -> None
+        """Recalculates the number of configured steps
+        Arguments:
+        completed_steps -- Last good step performed
+        """
         self.run_hooks(
             PauseHook(p, c) for p, c in self.create_part_contexts().items())
         if len(self.steps_per_run) > 1:
-            self._breakpoint -= 1
-            offset = sum(self.steps_per_run[0:self._breakpoint])
+            self._iBreakpoint -= 1
+            offset = sum(self.steps_per_run[0:self._iBreakpoint])
+            assert offset < completed_steps
             in_run_steps = (completed_steps - offset) % \
-                self.steps_per_run[self._breakpoint]
+                self.steps_per_run[self._iBreakpoint]
         else:
             in_run_steps = completed_steps % \
-                self.steps_per_run[self._breakpoint]
-        steps_to_do = self.steps_per_run[self._breakpoint] - in_run_steps
+                self.steps_per_run[self._iBreakpoint]
+        steps_to_do = self.steps_per_run[self._iBreakpoint] - in_run_steps
         part_info = self.run_hooks(
             ReportStatusHook(p, c) for p, c in self.part_contexts.items())
         self.completed_steps.set_value(completed_steps)
