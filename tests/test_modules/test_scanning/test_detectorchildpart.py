@@ -4,7 +4,8 @@ import unittest
 import os
 
 from annotypes import add_call_types, Anno
-from scanpointgenerator import LineGenerator, CompoundGenerator
+from scanpointgenerator import LineGenerator, CompoundGenerator, \
+    ConcatGenerator
 
 from malcolm.core import Part, Process, Context, APartName, PartRegistrar, \
     NumberMeta, AMri, BadValueError
@@ -117,23 +118,23 @@ class TestDetectorChildPart(unittest.TestCase):
 
         # And a top level one, this loads slow and fast designs for the
         # children on every configure (or load), but not at init
-        ct = RunnableController(
+        self.ct = RunnableController(
             mri="top", config_dir=DESIGN_PATH, use_git=False,
             initial_design="default"
         )
-        ct.add_part(
+        self.ct.add_part(
             DetectorChildPart(name="FAST", mri="fast", initial_visibility=True))
-        ct.add_part(
+        self.ct.add_part(
             DetectorChildPart(name="SLOW", mri="slow", initial_visibility=True))
-        ct.add_part(
+        self.ct.add_part(
             DetectorChildPart(name="BAD", mri="faulty", initial_visibility=False))
-        ct.add_part(
+        self.ct.add_part(
             DetectorChildPart(name="BAD2", mri="faulty", initial_visibility=False, initial_frames_per_step=0))
         self.fast_multi = MaybeMultiPart("fast")
         self.slow_multi = MaybeMultiPart("slow")
-        ct.add_part(self.fast_multi)
-        ct.add_part(self.slow_multi)
-        self.p.add_controller(ct)
+        self.ct.add_part(self.fast_multi)
+        self.ct.add_part(self.slow_multi)
+        self.p.add_controller(self.ct)
 
         # Some blocks to interface to them
         self.b = self.context.block_view("top")
@@ -381,3 +382,64 @@ class TestDetectorChildPart(unittest.TestCase):
         assert self.bf.design.value == "fast"
         assert self.b.design.value == "default"
         assert self.b.modified.value is False
+
+    def make_generator_breakpoints(self):
+        line1 = LineGenerator('x', 'mm', -10, -10, 5)
+        line2 = LineGenerator('x', 'mm', 0, 180, 10)
+        line3 = LineGenerator('x', 'mm', 190, 190, 2)
+        duration = 0.01
+        concat = ConcatGenerator([line1, line2, line3])
+
+        return CompoundGenerator([concat], [], [], duration)
+
+    def checkSteps(self, block, configured, completed, total):
+        assert block.configuredSteps.value == configured
+        assert block.completedSteps.value == completed
+        assert block.totalSteps.value == total
+
+    def test_breakpoints_tomo(self):
+        breakpoints = [2, 3, 10, 2]
+        # Configure RunnableController(mri='top')
+        self.b.configure(generator=self.make_generator_breakpoints(),
+                         fileDir=self.tmpdir,
+                         detectors=DetectorTable.from_rows([
+                         [False, 'SLOW', 'slow', 0.0, 1],
+                         [True, 'FAST', 'fast', 0.0, 1],
+                         ]),
+                         axesToMove=['x'],
+                         breakpoints=breakpoints)
+
+        assert self.ct.configure_params.generator.size == 17
+        self.checkSteps(self.b, 2, 0, 17)
+        self.checkSteps(self.bf, 2, 0, 17)
+        assert self.b.state.value == "Armed"
+        assert self.bs.state.value == "Ready"
+        assert self.bf.state.value == "Armed"
+
+        self.b.run()
+        self.checkSteps(self.b, 5, 2, 17)
+        self.checkSteps(self.bf, 5, 2, 17)
+        assert self.b.state.value == "Armed"
+        assert self.bs.state.value == "Ready"
+        assert self.bf.state.value == "Armed"
+
+        self.b.run()
+        self.checkSteps(self.b, 15, 5, 17)
+        assert self.b.state.value == "Armed"
+        assert self.bs.state.value == "Ready"
+        assert self.bf.state.value == "Armed"
+
+        self.b.run()
+        self.checkSteps(self.b, 17, 15, 17)
+        assert self.b.state.value == "Armed"
+        assert self.bs.state.value == "Ready"
+        assert self.bf.state.value == "Armed"
+
+        self.b.run()
+        self.checkSteps(self.b, 17, 17, 17)
+        self.checkSteps(self.bf, 17, 17, 17)
+        assert self.b.state.value == "Finished"
+        assert self.bs.state.value == "Ready"
+        assert self.bf.state.value == "Finished"
+
+        pass
