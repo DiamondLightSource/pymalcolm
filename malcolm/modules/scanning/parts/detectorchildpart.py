@@ -8,7 +8,8 @@ from ..infos import DatasetProducedInfo, DetectorMutiframeInfo
 from ..hooks import ConfigureHook, PostRunArmedHook, \
     SeekHook, RunHook, ACompletedSteps, AContext, ValidateHook, \
     UParameterTweakInfos, PostRunReadyHook, AbortHook, PreConfigureHook, \
-    AGenerator, AAxesToMove, UInfos, AFileDir, AFileTemplate, APartInfo
+    AGenerator, AAxesToMove, UInfos, AFileDir, AFileTemplate, APartInfo, \
+    ABreakpoints
 from ..infos import ParameterTweakInfo, RunProgressInfo
 from ..util import RunnableStates, DetectorTable, ADetectorTable
 
@@ -126,12 +127,14 @@ class DetectorChildPart(builtin.parts.ChildPart):
                     fileDir,  # type: AFileDir
                     detectors=None,  # type: ADetectorTable
                     axesToMove=None,  # type: AAxesToMove
+                    breakpoints=None, # type: ABreakpoints
                     fileTemplate="%s.h5",  # type: AFileTemplate
                     ):
         # type: (...) -> UParameterTweakInfos
         # Work out if we are taking part
         enable, frames_per_step, kwargs = self._configure_args(
-            generator, fileDir, detectors, axesToMove, fileTemplate)
+            generator, fileDir, detectors, axesToMove, breakpoints,
+            fileTemplate)
         ret = []
         tweak_detectors = False
         if self.name not in detectors.name:
@@ -222,6 +225,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
                         file_dir,  # type: AFileDir
                         detectors=None,  # type: ADetectorTable
                         axes_to_move=None,  # type: AAxesToMove
+                        breakpoints=None, # type: ABreakpoints
                         file_template="%s.h5",  # type: AFileTemplate
                         ):
         # type: (...) -> Tuple[bool, int, Dict[str, Any]]
@@ -255,6 +259,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
         kwargs = dict(
             generator=generator,
             axesToMove=axes_to_move,
+            breakpoints=breakpoints,
             fileDir=file_dir,
             # formatName is the unique part of the HDF filename, so use the part
             # name for this
@@ -274,12 +279,14 @@ class DetectorChildPart(builtin.parts.ChildPart):
                      fileDir,  # type: AFileDir
                      detectors=None,  # type: ADetectorTable
                      axesToMove=None,  # type: AAxesToMove
+                     breakpoints=None, # type: ABreakpoints
                      fileTemplate="%s.h5",  # type: AFileTemplate
                      ):
         # type: (...) -> UInfos
         # Work out if we are taking part
         enable, self.frames_per_step, kwargs = self._configure_args(
-            generator, fileDir, detectors, axesToMove, fileTemplate)
+            generator, fileDir, detectors, axesToMove, breakpoints,
+            fileTemplate)
         if not enable:
             # We aren't taking part in the scan
             self.frames_per_step = 0
