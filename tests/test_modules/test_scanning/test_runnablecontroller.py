@@ -487,7 +487,7 @@ class TestRunnableController(unittest.TestCase):
         compound.prepare()
 
         steps_per_run = get_steps_per_run(compound, ['x'], [])
-        assert steps_per_run[0] == 10
+        assert steps_per_run[0] == [10]
 
     def test_steps_per_run(self):
         line1 = LineGenerator('x', 'mm', -10, -10, 5)
@@ -503,7 +503,7 @@ class TestRunnableController(unittest.TestCase):
             generator=compound,
             axes_to_move=['x'],
             breakpoints=breakpoints)
-        assert steps_per_run == breakpoints
+        assert steps_per_run == (breakpoints, True)
 
     def test_breakpoints_without_last(self):
         line1 = LineGenerator('x', 'mm', -10, -10, 5)
