@@ -445,40 +445,42 @@ class TestRunnableController(unittest.TestCase):
         with self.assertRaises(AbortedError):
             f.result()
 
-    def test_breakpoints_tomo(self):
-        line1 = LineGenerator('x', 'mm', -10, -10, 5)
-        line2 = LineGenerator('x', 'mm', 0, 180, 10)
-        line3 = LineGenerator('x', 'mm', 190, 190, 2)
-        duration = 0.01
-        concat = ConcatGenerator([line1, line2, line3])
-        breakpoints = [2, 3, 10, 2]
-        self.b.configure(generator=CompoundGenerator([concat],
-                         [], [], duration),
-                         axesToMove=['x'],
-                         breakpoints=breakpoints,
-                         exceptionStep=0)
 
-        assert self.c.configure_params.generator.size == 17
-        self.checkSteps(2, 0, 17)
-        self.checkState(self.ss.ARMED)
+class TestRunnableControllerBreakpoints(unittest.TestCase):
+    def setUp(self):
+        self.p = Process('process1')
+        self.context = Context(self.p)
 
-        self.b.run()
-        self.checkSteps(5, 2, 17)
-        self.checkState(self.ss.ARMED)
+        self.p2 = Process('process2')
+        self.context2 = Context(self.p2)
 
-        self.b.run()
-        self.checkSteps(15, 5, 17)
-        self.checkState(self.ss.ARMED)
+        # Make a motion block to act as our child
+        for c in motion_block(mri="childBlock", config_dir="/tmp"):
+            self.p.add_controller(c)
+        self.b_child = self.context.block_view("childBlock")
 
-        self.b.run()
-        self.checkSteps(17, 15, 17)
-        self.checkState(self.ss.ARMED)
+        # create a root block for the RunnableController block to reside in
+        self.c = RunnableController(mri='mainBlock', config_dir="/tmp")
+        #self.c.add_part(part)
+        self.p.add_controller(self.c)
+        self.b = self.context.block_view("mainBlock")
+        self.ss = self.c.state_set
 
-        self.b.run()
-        self.checkSteps(17, 17, 17)
-        self.checkState(self.ss.FINISHED)
+        # start the process off
+        self.checkState(self.ss.DISABLED)
+        self.p.start()
+        self.checkState(self.ss.READY)
 
-        pass
+    def tearDown(self):
+        self.p.stop(timeout=1)
+
+    def checkState(self, state):
+        assert self.c.state.value == state
+
+    def checkSteps(self, configured, completed, total):
+        assert self.b.configuredSteps.value == configured
+        assert self.b.completedSteps.value == completed
+        assert self.b.totalSteps.value == total
 
     def test_steps_per_run_one_axis(self):
         line = LineGenerator('x', 'mm', 0, 180, 10)
@@ -489,7 +491,7 @@ class TestRunnableController(unittest.TestCase):
         steps_per_run = get_steps_per_run(compound, ['x'], [])
         assert steps_per_run[0] == [10]
 
-    def test_steps_per_run(self):
+    def test_steps_per_run_concat(self):
         line1 = LineGenerator('x', 'mm', -10, -10, 5)
         line2 = LineGenerator('x', 'mm', 0, 180, 10)
         line3 = LineGenerator('x', 'mm', 190, 190, 2)
@@ -505,6 +507,38 @@ class TestRunnableController(unittest.TestCase):
             breakpoints=breakpoints)
         assert steps_per_run == (breakpoints, True)
 
+    def test_breakpoints_tomo(self):
+        line1 = LineGenerator('x', 'mm', -10, -10, 5)
+        line2 = LineGenerator('x', 'mm', 0, 180, 10)
+        line3 = LineGenerator('x', 'mm', 190, 190, 2)
+        duration = 0.01
+        concat = ConcatGenerator([line1, line2, line3])
+        breakpoints = [2, 3, 10, 2]
+        self.b.configure(generator=CompoundGenerator([concat],
+                         [], [], duration),
+                         axesToMove=['x'],
+                         breakpoints=breakpoints)
+
+        assert self.c.configure_params.generator.size == 17
+        self.checkSteps(2, 0, 17)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(3, 2, 17)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(10, 3, 17)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(2, 10, 17)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(2, 2, 17)
+        self.checkState(self.ss.FINISHED)
+
     def test_breakpoints_without_last(self):
         line1 = LineGenerator('x', 'mm', -10, -10, 5)
         line2 = LineGenerator('x', 'mm', 0, 180, 10)
@@ -515,8 +549,7 @@ class TestRunnableController(unittest.TestCase):
         self.b.configure(generator=CompoundGenerator([concat],
                          [], [], duration),
                          axesToMove=['x'],
-                         breakpoints=breakpoints,
-                         exceptionStep=0)
+                         breakpoints=breakpoints)
 
         assert self.c.configure_params.generator.size == 17
         self.checkSteps(2, 0, 17)
@@ -549,8 +582,7 @@ class TestRunnableController(unittest.TestCase):
         self.b.configure(generator=CompoundGenerator([concat],
                          [], [], duration),
                          axesToMove=['x'],
-                         breakpoints=breakpoints,
-                         exceptionStep=0)
+                         breakpoints=breakpoints)
 
         assert self.c.configure_params.generator.size == 27
         self.checkSteps(2, 0, 27)
@@ -732,8 +764,7 @@ class TestRunnableController(unittest.TestCase):
         self.b.configure(generator=CompoundGenerator([concat],
                          [], [], duration),
                          axesToMove=['x'],
-                         breakpoints=breakpoints,
-                         exceptionStep=0)
+                         breakpoints=breakpoints)
 
         assert self.c.configure_params.generator.size == 17
 
