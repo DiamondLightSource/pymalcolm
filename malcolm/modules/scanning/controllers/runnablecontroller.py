@@ -37,6 +37,7 @@ ATemplateDesigns = builtin.controllers.ATemplateDesigns
 
 def get_steps_per_run(generator, axes_to_move, breakpoints):
     # type: (CompoundGenerator, List[str], List[int]) -> List[int]
+    useBreakpoints = False
     steps = [1]
     axes_set = set(axes_to_move)
     for dim in reversed(generator.dimensions):
@@ -52,10 +53,11 @@ def get_steps_per_run(generator, axes_to_move, breakpoints):
         # Now multiply by the dimensions to get the number of steps
         steps[0] *= dim.size
 
-    if len(breakpoints) > 1 and sum(breakpoints) <= steps[0]:
+    if len(breakpoints) > 0 and sum(breakpoints) <= steps[0]:
+        useBreakpoints = True
         steps = breakpoints
 
-    return steps
+    return steps, useBreakpoints
 
 def update_configure_model(configure_model, part_configure_infos):
     # type: (MethodMeta, List[ConfigureParamsInfo]) -> None
@@ -177,6 +179,8 @@ class RunnableController(builtin.controllers.ManagerController):
         self.abort_queue = None  # type: Queue
         # Stored for pause
         self.steps_per_run = []  # type: List[int]
+        # If the list of breakpoints is not empty, this will be true
+        self.use_breakpoints = False # type: bool
         # Create sometimes writeable attribute for the current completed scan
         # step
         self.completed_steps = NumberMeta(
@@ -186,6 +190,10 @@ class RunnableController(builtin.controllers.ManagerController):
         self.field_registry.add_attribute_model(
             "completedSteps", self.completed_steps, self.pause)
         self.set_writeable_in(self.completed_steps, ss.PAUSED, ss.ARMED)
+        # The above variables should be relative to the start of the run
+        # in the case breakpoints are used
+        # The absolute position of completed steps in that case is given by:
+        self.step_in_scan = 0
         # Create read-only attribute for the number of configured scan steps
         self.configured_steps = NumberMeta(
             "int32", "Number of steps currently configured",
@@ -232,6 +240,9 @@ class RunnableController(builtin.controllers.ManagerController):
         self.configured_steps.set_value(0)
         self.completed_steps.set_value(0)
         self.total_steps.set_value(0)
+
+        self._iBreakpoint = 0
+        self.step_in_scan = 0
 
     def update_configure_params(self, part=None, info=None):
         # type: (Part, ConfigureParamsInfo) -> None
@@ -391,8 +402,9 @@ class RunnableController(builtin.controllers.ManagerController):
         self.configured_steps.set_value(0)
         # TODO: We can be cleverer about this and support a different number
         # of steps per run for each run by examining the generator structure
-        self.steps_per_run = get_steps_per_run(
+        self.steps_per_run, self.use_breakpoints = get_steps_per_run(
             params.generator, params.axesToMove, params.breakpoints)
+        self.step_in_scan = 0
         # Get any status from all parts
         part_info = self.run_hooks(ReportStatusHook(p, c)
                                    for p, c in self.part_contexts.items())
@@ -469,9 +481,12 @@ class RunnableController(builtin.controllers.ManagerController):
         # type: (Type[ControllerHook]) -> None
         self.run_hooks(hook(p, c) for p, c in self.part_contexts.items())
         self.abortable_transition(ss.POSTRUN)
-        completed_steps = self.configured_steps.value
+        if self.use_breakpoints:
+            completed_steps = self.configured_steps.value
+        else:
+            completed_steps = self.configured_steps.value
         if completed_steps < self.total_steps.value:
-            if len(self.steps_per_run) > 1:
+            if self.use_breakpoints:
                 self._iBreakpoint += 1
                 if self._iBreakpoint < len(self.steps_per_run):
                     steps_to_do = self.steps_per_run[self._iBreakpoint]
@@ -599,7 +614,7 @@ class RunnableController(builtin.controllers.ManagerController):
         """
         self.run_hooks(
             PauseHook(p, c) for p, c in self.create_part_contexts().items())
-        if len(self.steps_per_run) > 1:
+        if self.use_breakpoints:
             self._iBreakpoint -= 1
             offset = sum(self.steps_per_run[0:self._iBreakpoint])
             assert offset < completed_steps
