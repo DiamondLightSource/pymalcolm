@@ -417,10 +417,10 @@ class VelocityProfile:
         # First round the times to remove any tiny fractions that would waste
         # an extra millisecond when doing math.ceil()
         #
-        # Next increase total time by 2 'size' and round up to the nearest
-        # even number of 'size' - this is then deterministic for all axes,
-        # and includes at least enough stretch to accommodate up to 'size' of
-        # stretch in each slope time.
+        # Next increase total time by 2 'interval' and round up to the nearest
+        # even number of 'interval' - this is then deterministic for all axes,
+        # and includes at least enough stretch to accommodate up to 'interval'
+        # of stretch in each slope time.
         #
         # For a flat hat, round up the two slope times and the flat time is
         # the remainder.
@@ -429,12 +429,13 @@ class VelocityProfile:
         #
         # This approach preserves symmetry but at the same time ensures that
         # total time is increased deterministically plus acceleration and
-        # vm are decreased (thus not exceeding mac acceleration, velocity)
+        # vm are decreased (thus not exceeding max acceleration, velocity)
         self.tv2 = np.round(self.tv2, decimals=14)
         self.t1 = np.round(self.t1, decimals=14)
         self.t2 = np.round(self.t2, decimals=14)
-        self.tv2 = np.ceil(self.tv2 / (self.interval / 2) + 4) * \
-                   (self.interval / 2)
+        self.tv2 = np.ceil(
+            (self.tv2 + self.interval * 2) / (self.interval * 2)
+        ) * (self.interval * 2)
         if self.tm == 0:
             # pointy hat
             self.t1 = np.ceil(self.t1 / self.interval + 1) * self.interval
