@@ -605,11 +605,11 @@ class TestPMACChildPart(ChildTestCase):
         action, func, args = self.child.handled_requests.mock_calls[-1]
         assert args['a'] == \
             pytest.approx(
-                [0, 0, 0, 5.45454545e-05, .0001, .0001, .0001, .0001])
+                [0, 0, 0, 5.0e-05, .0001, .0001, .0001, .0001])
         assert args['b'] == \
             pytest.approx([0, 0, 0, 0, 0, 0, 0, 0])
         assert args['timeArray'] == pytest.approx(
-            [2000, 2500, 2500, 6000, 5000, 2500, 2500, 2000])
+            [2000, 2500, 2500, 6000, 6000, 2500, 2500, 2000])
 
     def test_settle_time(self):
         """
