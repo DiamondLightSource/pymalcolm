@@ -4,7 +4,8 @@ from annotypes import Anno, TYPE_CHECKING
 
 from malcolm.core import AMri, Widget, group_tag, NumberMeta, ChoiceMeta, \
     config_tag, BooleanMeta, StringMeta, Port, TableMeta, TimeStamp, \
-    without_linked_value_tags, linked_value_tag, VMeta, snake_to_camel, Alarm
+    without_linked_value_tags, linked_value_tag, VMeta, snake_to_camel, Alarm, \
+    badge_value_tag
 from malcolm.modules import builtin
 from ..parts.pandaiconpart import PandAIconPart
 from ..parts.pandalabelpart import PandALabelPart
@@ -290,9 +291,12 @@ class PandABlockController(builtin.controllers.BasicController):
         group = self._make_group("inputs")
         labels = [x for x in field_data.labels if x in ("ZERO", "ONE")] + \
             sorted(x for x in field_data.labels if x not in ("ZERO", "ONE"))
-        meta = ChoiceMeta(field_data.description, labels, tags=[
-            group, port_type.sink_port_tag("ZERO"),
-            Widget.COMBO.tag()])
+        tags = [group, port_type.sink_port_tag("ZERO"), Widget.COMBO.tag()]
+        if port_type == Port.BOOL:
+            # Bits have a delay, use it as a badge
+            delay_name = snake_to_camel(field_name) + "Delay"
+            tags.append(badge_value_tag(self.mri, delay_name))
+        meta = ChoiceMeta(field_data.description, labels, tags=tags)
         self._make_field_part(field_name, meta, writeable=True)
         self.mux_metas[field_name] = meta
 

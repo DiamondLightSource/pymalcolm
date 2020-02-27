@@ -11,6 +11,7 @@ from malcolm.core import BlockModel, StringMeta, Alarm, \
     BooleanMeta, BooleanArrayMeta
 from malcolm.core.models import NTTable, MapMeta, BlockMeta, NTScalar, \
     Meta, MethodMeta, MethodLog
+from malcolm.core.notifier import DummyNotifier
 
 
 class TestAttribute(unittest.TestCase):
@@ -374,9 +375,9 @@ class TestMeta(unittest.TestCase):
 
     def setUp(self):
         self.o = Meta("desc")
-        self.o.notifier.add_squashed_change = Mock(
-            wraps=self.o.notifier.add_squashed_change)
-        self.o.set_notifier_path(self.o.notifier, ["path"])
+        notifier = DummyNotifier()
+        notifier.add_squashed_change = Mock()
+        self.o.set_notifier_path(notifier, ["path"])
         self.serialized = OrderedDict()
         self.serialized["typeid"] = "filled_in_by_subclass"
         self.serialized["description"] = "desc"

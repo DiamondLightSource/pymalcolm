@@ -8,6 +8,7 @@ from malcolm.modules import builtin
 
 if TYPE_CHECKING:
     from typing import Callable, Any, Union, Type, Sequence, Optional, List
+
     Hooks = Union[Type[Hook], Sequence[Type[Hook]]]
     ArgsGen = Callable[(), List[str]]
     Register = Callable[(Hooks, Callable, Optional[ArgsGen]), None]
@@ -19,6 +20,7 @@ AWidget = builtin.util.AWidget
 AGroup = builtin.util.AGroup
 AConfig = builtin.util.AConfig
 ASinkPort = builtin.util.ASinkPort
+APortBadge = builtin.util.APortBadge
 
 
 class CatoolsDeferred(object):
@@ -64,12 +66,13 @@ class CABase(Loggable):
                  config=1,  # type: AConfig
                  on_connect=None,  # type: Callable[[Any], None]
                  throw=True,  # type: AThrow
-                 callback=None  # type: ACallback
+                 callback=None,  # type: ACallback
+                 port_badge=None,  # type: APortBadge
                  ):
         # type: (...) -> None
         self.writeable = writeable
         builtin.util.set_tags(
-            meta, writeable, config, group, widget, sink_port)
+            meta, writeable, config, group, widget, sink_port, port_badge)
         self.throw = throw
         self.datatype = datatype
         self.min_delta = min_delta
@@ -172,7 +175,8 @@ class CAAttribute(CABase):
                  config=1,  # type: AConfig
                  on_connect=None,  # type: Callable[[Any], None]
                  throw=True,  # type: AThrow
-                 callback=None # type: Callable[[Any], None]
+                 callback=None,  # type: Callable[[Any], None]
+                 port_badge=None,  # type: APortBadge
                  ):
         # type: (...) -> None
         self.set_logger(pv=pv, rbv=rbv)
@@ -180,7 +184,8 @@ class CAAttribute(CABase):
         super(CAAttribute, self).__init__(meta, datatype, writeable,
                                           min_delta, timeout,
                                           sink_port, widget, group,
-                                          config, on_connect, throw, callback)
+                                          config, on_connect, throw, callback,
+                                          port_badge)
         if not rbv and not pv:
             raise ValueError('Must pass pv or rbv')
         if not rbv:
@@ -248,7 +253,8 @@ class WaveformTableAttribute(CABase):
                  limits_from_pv=False,  # type: AGetLimits
                  on_connect=None,  # type: Callable[[Any], None]
                  throw=True,  # type: AThrow
-                 callback=None  # type: ACallback
+                 callback=None,  # type: ACallback
+                 port_badge=None,  # type: APortBadge
                  ):
         # type: (...) -> None
         logs = {}
@@ -261,7 +267,8 @@ class WaveformTableAttribute(CABase):
                                                      min_delta, timeout,
                                                      None, widget,
                                                      group, config, on_connect,
-                                                     throw, callback)
+                                                     throw, callback,
+                                                     port_badge)
         if len(pv_list) == 0:
             raise ValueError('Must pass at least one PV')
         self.pv_list = pv_list

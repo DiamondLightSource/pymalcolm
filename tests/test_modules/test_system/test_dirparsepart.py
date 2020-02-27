@@ -36,7 +36,8 @@ def reset_alarms(mock):
 
 class TestDirParsePart(unittest.TestCase):
 
-    def add_part_and_start(self):
+    @patch("malcolm.modules.ca.util.catools")
+    def add_part_and_start(self, catools):
         self.part = DirParsePart("dir", "TS-DI-IOC-01")
 
         self.c1.add_part(self.part)

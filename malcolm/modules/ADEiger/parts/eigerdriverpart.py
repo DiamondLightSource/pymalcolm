@@ -40,7 +40,7 @@ class EigerDriverPart(ADCore.parts.DetectorDriverPart):
         # writer has completed at post run so stop the AD Acquisition
         child = context.block_view(self.mri)
         child.stop()
-        context.wait_all_futures(self.actions.start_future)
+        context.wait_all_futures(self.start_future)
 
     @add_call_types
     def on_post_run_armed(self, context):
@@ -50,4 +50,4 @@ class EigerDriverPart(ADCore.parts.DetectorDriverPart):
         # present
         child = context.block_view(self.mri)
         child.stop()
-        context.wait_all_futures(self.actions.start_future)
+        context.wait_all_futures(self.start_future)

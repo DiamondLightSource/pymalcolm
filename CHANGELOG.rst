@@ -8,6 +8,21 @@ Unreleased_
 
 Nothing yet
 
+`4-2b5`_ - 2020-01-27
+---------------------
+
+Added:
+
+- Added builtin.defines.tmp_dir and use it in tutorials
+- Web GUI now has editable meter and table row seek
+- Added +DELAY badge to PandA
+
+Fixed:
+
+- Updated docs for training course
+- Added BeamSelectorPart for DIAD
+
+
 `4-2b4`_ - 2019-12-04
 ---------------------
 
@@ -512,7 +527,8 @@ Added:
 - Initial release with hello world and websocket comms
 
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/4-2b4...HEAD
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/4-2b5...HEAD
+.. _4-2b5: https://github.com/dls-controls/pymalcolm/compare/4-2b4...4-2b5
 .. _4-2b4: https://github.com/dls-controls/pymalcolm/compare/4-2b3...4-2b4
 .. _4-2b3: https://github.com/dls-controls/pymalcolm/compare/4-2b2...4-2b3
 .. _4-2b2: https://github.com/dls-controls/pymalcolm/compare/4-2b1...4-2b2

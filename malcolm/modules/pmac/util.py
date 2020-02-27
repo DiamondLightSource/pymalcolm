@@ -199,7 +199,7 @@ def profile_between_points(
             )
             # Absolute time values that we are at that velocity
             profiles[axis_name] = p
-            new_min_time = max(new_min_time, p.tv2)
+            new_min_time = max(new_min_time, p.t_total)
         if np.isclose(new_min_time, min_time):
             # We've got our consistent set - see if they require quantization
             quantize = False

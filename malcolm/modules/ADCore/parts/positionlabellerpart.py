@@ -7,7 +7,7 @@ from malcolm.modules import builtin, scanning
 XML_MAX_SIZE = 1000000 - 2
 
 # How many to load each time
-POSITIONS_PER_XML = 1000
+POSITIONS_PER_XML = 5000
 
 # How far to load ahead
 N_LOAD_AHEAD = 4

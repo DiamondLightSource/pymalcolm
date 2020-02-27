@@ -1,0 +1,39 @@
+- builtin.parameters.string:
+    name: mri_prefix
+    description: Malcolm resource id of the Block and prefix for children
+
+- builtin.parameters.string:
+    name: pv_prefix
+    description: PV prefix for driver and all plugins
+
+- builtin.parameters.string:
+    name: config_dir
+    description: Where to store saved configs
+
+- scanning.controllers.RunnableController:
+    mri: $(mri_prefix)
+    config_dir: $(config_dir)
+
+- ADPilatus.blocks.ADPilatus_driver_block:
+    mri: $(mri_prefix):DRV
+    prefix: $(pv_prefix):CAM
+
+- ADCore.parts.DetectorDriverPart:
+    name: Pilatus
+    mri: $(mri_prefix):DRV
+
+- scanning.parts.ExposureDeadtimePart:
+    name: DEADTIME
+    initial_readout_time: 1e-3 
+
+- ADCore.blocks.stats_plugin_block:
+    mri: $(mri_prefix):STAT
+    prefix: $(pv_prefix):STAT
+
+- ADCore.parts.StatsPluginPart:
+    name: STAT
+    mri: $(mri_prefix):STAT
+
+- ADCore.includes.filewriting_collection:
+    pv_prefix: $(pv_prefix)
+    mri_prefix: $(mri_prefix)
