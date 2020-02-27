@@ -294,8 +294,13 @@ class RunnableController(builtin.controllers.ManagerController):
     # This will be serialized, so maintain camelCase for axesToMove
     # noinspection PyPep8Naming
     @add_call_types
-    def validate(self, generator, axesToMove=None, breakpoints=None, **kwargs):
-        # type: (AGenerator, AAxesToMove, ABreakpoints, **Any) -> AConfigureParams
+    def validate(self,
+                 generator,  # type: AGenerator
+                 axesToMove=None,  # type: AAxesToMove
+                 breakpoints=None,  # type: ABreakpoints
+                 **kwargs  # type: Any
+                 ):
+        # type: (...) -> AConfigureParams
         """Validate configuration parameters and return validated parameters.
 
         Doesn't take device state into account so can be run in any state
@@ -344,10 +349,10 @@ class RunnableController(builtin.controllers.ManagerController):
     # noinspection PyPep8Naming
     @add_call_types
     def configure(self,
-                  generator, # type: AGenerator
-                  axesToMove=None, # type: AAxesToMove
-                  breakpoints=None, # type: ABreakpoints
-                  **kwargs, # type: Any
+                  generator,  # type: AGenerator
+                  axesToMove=None,  # type: AAxesToMove
+                  breakpoints=None,  # type: ABreakpoints
+                  **kwargs  # type: Any
                   ):
         # type: (...) -> AConfigureParams
         """Validate the params then configure the device ready for run().
@@ -509,14 +514,14 @@ class RunnableController(builtin.controllers.ManagerController):
                 self.completed_steps.set_value(completed_steps)
                 self.run_hooks(
                     PostRunReadyHook(p, c) for p, c in
-                               self.part_contexts.items())
+                    self.part_contexts.items())
         else:
             completed_steps = self.configured_steps.value
             if completed_steps < self.total_steps.value:
                 steps_to_do = self.steps_per_run[self.iBreakpoint]
                 part_info = self.run_hooks(
                     ReportStatusHook(p, c) for p, c in
-                                           self.part_contexts.items())
+                    self.part_contexts.items())
                 self.completed_steps.set_value(completed_steps)
                 self.run_hooks(
                     PostRunArmedHook(p, c, completed_steps, steps_to_do,
@@ -527,7 +532,7 @@ class RunnableController(builtin.controllers.ManagerController):
                 self.completed_steps.set_value(completed_steps)
                 self.run_hooks(
                     PostRunReadyHook(p, c) for p, c in
-                               self.part_contexts.items())
+                    self.part_contexts.items())
 
     def update_completed_steps(self, part, completed_steps):
         # type: (object, RunProgressInfo) -> None

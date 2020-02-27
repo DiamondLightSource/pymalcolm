@@ -441,5 +441,3 @@ class TestDetectorChildPart(unittest.TestCase):
         assert self.b.state.value == "Finished"
         assert self.bs.state.value == "Ready"
         assert self.bf.state.value == "Finished"
-
-        pass
