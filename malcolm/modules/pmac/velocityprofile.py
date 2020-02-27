@@ -398,7 +398,7 @@ class VelocityProfile:
 
     def quantize(self):
         """
-        ensure that all time points are exactly on 'size' second boundaries
+        ensure that all time points are exactly on 'interval' second boundaries
         do this by:
             add 1 milliseconds to t1, tm, t2 and round down
             adjust vm downwards so that d is correct
