@@ -13,8 +13,7 @@ from malcolm.core import Process, Context, AlarmStatus, \
 from malcolm.modules.demo.parts import MotionChildPart
 from malcolm.modules.demo.blocks import motion_block
 from malcolm.compat import OrderedDict
-from malcolm.modules.scanning.controllers import \
-    RunnableController, get_steps_per_run
+from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.modules.scanning.infos import ParameterTweakInfo
 from malcolm.modules.scanning.util import RunnableStates
 
@@ -487,7 +486,10 @@ class TestRunnableControllerBreakpoints(unittest.TestCase):
         compound = CompoundGenerator([line], [], [], duration)
         compound.prepare()
 
-        steps_per_run = get_steps_per_run(compound, ['x'], [])
+        steps_per_run = self.c.get_steps_per_run(
+            generator=compound,
+            axes_to_move=['x'],
+            breakpoints=[])
         assert steps_per_run[0] == [10]
 
     def test_steps_per_run_concat(self):
@@ -500,7 +502,7 @@ class TestRunnableControllerBreakpoints(unittest.TestCase):
         compound.prepare()
         breakpoints = [2, 3, 10, 2]
 
-        steps_per_run = get_steps_per_run(
+        steps_per_run = self.c.get_steps_per_run(
             generator=compound,
             axes_to_move=['x'],
             breakpoints=breakpoints)

@@ -14,6 +14,7 @@ from ..hooks import ConfigureHook, ValidateHook, PostConfigureHook, \
     ReportStatusHook, AbortHook, PauseHook, SeekHook, ControllerHook, \
     PreConfigureHook, AAxesToMove, ABreakpoints
 
+
 if TYPE_CHECKING:
     from typing import Dict, Tuple, List, Iterable, Type, Callable
 
@@ -33,31 +34,6 @@ AInitialDesign = builtin.controllers.AInitialDesign
 ADescription = builtin.controllers.ADescription
 AUseGit = builtin.controllers.AUseGit
 ATemplateDesigns = builtin.controllers.ATemplateDesigns
-
-
-def get_steps_per_run(generator, axes_to_move, breakpoints):
-    # type: (CompoundGenerator, List[str], List[int]) -> (List[int], bool)
-    use_breakpoints = False
-    steps = [1]
-    axes_set = set(axes_to_move)
-    for dim in reversed(generator.dimensions):
-        # If the axes_set is empty and the dimension has axes then we have done
-        # as many dimensions as we can, so return
-        if dim.axes and not axes_set:
-            break
-        # Consume the axes that this generator scans
-        for axis in dim.axes:
-            assert axis in axes_set, \
-                "Axis %s is not in %s" % (axis, axes_to_move)
-            axes_set.remove(axis)
-        # Now multiply by the dimensions to get the number of steps
-        steps[0] *= dim.size
-
-    if len(breakpoints) > 0 and sum(breakpoints) <= steps[0]:
-        use_breakpoints = True
-        steps = breakpoints
-
-    return steps, use_breakpoints
 
 
 def update_configure_model(configure_model, part_configure_infos):
@@ -231,6 +207,38 @@ class RunnableController(builtin.controllers.ManagerController):
         # Allow Parts to request extra items from configure
         self.info_registry.add_reportable(
             ConfigureParamsInfo, self.update_configure_params)
+
+    def get_steps_per_run(self, generator, axes_to_move, breakpoints):
+        # type: (CompoundGenerator, List[str], List[int]) -> (List[int], bool)
+        use_breakpoints = False
+        steps = [1]
+        axes_set = set(axes_to_move)
+        for dim in reversed(generator.dimensions):
+            # If the axes_set is empty and the dimension has axes then we have
+            # done as many dimensions as we can, so return
+            if dim.axes and not axes_set:
+                break
+            # Consume the axes that this generator scans
+            for axis in dim.axes:
+                assert axis in axes_set, \
+                    "Axis %s is not in %s" % (axis, axes_to_move)
+                axes_set.remove(axis)
+            # Now multiply by the dimensions to get the number of steps
+            steps[0] *= dim.size
+
+        last_breakpoint = sum(breakpoints)
+        if len(breakpoints) > 0:
+            if last_breakpoint <= steps[0]:
+                use_breakpoints = True
+                if last_breakpoint < steps[0]:  # TODO Array has no append()
+                    # breakpoints.append(steps[0] - last_breakpoint)
+                    pass
+                steps = breakpoints
+            else:
+                self.log.warning("Breakpoints past the last configured \
+                step: %s > %s", last_breakpoint, steps[0])
+
+        return steps, use_breakpoints
 
     def do_reset(self):
         super(RunnableController, self).do_reset()
@@ -408,7 +416,7 @@ class RunnableController(builtin.controllers.ManagerController):
         self.configured_steps.set_value(0)
         # TODO: We can be cleverer about this and support a different number
         # of steps per run for each run by examining the generator structure
-        self.steps_per_run, self.use_breakpoints = get_steps_per_run(
+        self.steps_per_run, self.use_breakpoints = self.get_steps_per_run(
             params.generator, params.axesToMove, params.breakpoints)
         # Get any status from all parts
         part_info = self.run_hooks(ReportStatusHook(p, c)
