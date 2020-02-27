@@ -524,19 +524,19 @@ class TestRunnableControllerBreakpoints(unittest.TestCase):
         self.checkState(self.ss.ARMED)
 
         self.b.run()
-        self.checkSteps(3, 2, 17)
+        self.checkSteps(5, 2, 17)
         self.checkState(self.ss.ARMED)
 
         self.b.run()
-        self.checkSteps(10, 3, 17)
+        self.checkSteps(15, 5, 17)
         self.checkState(self.ss.ARMED)
 
         self.b.run()
-        self.checkSteps(2, 10, 17)
+        self.checkSteps(17, 15, 17)
         self.checkState(self.ss.ARMED)
 
         self.b.run()
-        self.checkSteps(2, 2, 17)
+        self.checkSteps(17, 17, 17)
         self.checkState(self.ss.FINISHED)
 
     def test_breakpoints_without_last(self):
