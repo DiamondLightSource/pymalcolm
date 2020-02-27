@@ -681,3 +681,51 @@ class TestPMACChildPart(ChildTestCase):
         # 'sparse' trajectory linear point removal
         self.long_configure(True)
 
+    def test_long_turnaround(self):
+        """
+        Verify that if the turnaround time exceeds maximum time between PVT
+        points then addtional points are added
+        """
+        duration = 2
+        axes_to_scan = ["x"]
+        # make the motors slow so that it takes 10 secs to do the turnaround
+        self.set_motor_attributes(
+            x_pos=0,
+            y_pos=0,
+            units="mm",
+            x_velocity=0.1,
+            y_velocity=0.1)
+
+        # very simple trajectory with two points and a turnaround between them
+        xs = LineGenerator("x", "mm", 0.0, 1.0, 2)
+        generator = CompoundGenerator(
+            [xs], [], [], duration, continuous=False
+        )
+        generator.prepare()
+        self.o.on_configure(
+            self.context, 0, 2, {"part": None},
+            generator, axes_to_scan)
+
+        assert self.child.handled_requests.mock_calls[-1] == call.post(
+            'writeProfile',
+            csPort='CS1',
+            a=pytest.approx([
+                0., 0., 0.,
+                0.002, 0.998, 1.,
+                1., 1., 1.,
+            ]),
+            timeArray=pytest.approx([
+                2000, 1000000, 1000000,
+                40000, 9960000, 40000,
+                1000000, 1000000, 2000
+            ]),
+            userPrograms=pytest.approx([
+                1, 4, 2,
+                8, 8, 1,
+                4, 2, 8
+            ]),
+            velocityMode=pytest.approx([
+                1, 0, 1,
+                1, 1, 1,
+                0, 1, 3
+            ]))
