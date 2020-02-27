@@ -447,6 +447,7 @@ class RunnableController(builtin.controllers.ManagerController):
         hook = PreRunHook
         self.do_pre_run(hook)
 
+        # TODO this is temporary split, probably not needed
         if self.use_breakpoints:
             if self.configured_steps.value < self.total_steps.value:
                 next_state = ss.ARMED
