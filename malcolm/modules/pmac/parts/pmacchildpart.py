@@ -425,13 +425,6 @@ class PmacChildPart(builtin.parts.ChildPart):
             time_intervals.append(t - prev_time)
             prev_time = t
 
-        self.profile["timeArray"] += time_intervals
-        self.profile["velocityMode"] += \
-            [VelocityModes.PREV_TO_CURRENT] * num_intervals
-        user_program = self.get_user_program(PointType.TURNAROUND)
-        self.profile["userPrograms"] += [user_program] * num_intervals
-        self.completed_steps_lookup += [completed_steps] * num_intervals
-
         # generate the profile positions in a temporary list of dict:
         turnaround_profile = [{} for n in range(num_intervals)]
         # Do this for each axis' velocity and time arrays
@@ -473,10 +466,15 @@ class PmacChildPart(builtin.parts.ChildPart):
                 position += part_position
                 turnaround_profile[i][axis_name] = position
 
+        user_program = self.get_user_program(PointType.TURNAROUND)
         for i in range(num_intervals):
-            for axis_name, motor_info in self.axis_mapping.items():
-                self.profile[motor_info.cs_axis.lower()].append(
-                    turnaround_profile[i][axis_name])
+            self.add_profile_point(
+                time_intervals[i],
+                VelocityModes.PREV_TO_CURRENT,
+                user_program,
+                completed_steps,
+                turnaround_profile[i]
+            )
 
     def add_profile_point(
         self, time_point, velocity_mode, user_program,
