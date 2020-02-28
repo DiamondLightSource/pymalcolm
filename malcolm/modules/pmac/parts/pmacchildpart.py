@@ -432,6 +432,8 @@ class PmacChildPart(builtin.parts.ChildPart):
         self.profile["userPrograms"] += [user_program] * num_intervals
         self.completed_steps_lookup += [completed_steps] * num_intervals
 
+        # generate the profile positions in a temporary list of dict:
+        turnaround_profile = [{} for n in range(num_intervals)]
         # Do this for each axis' velocity and time arrays
         for axis_name, motor_info in self.axis_mapping.items():
             axis_times = time_arrays[axis_name]
@@ -469,10 +471,17 @@ class PmacChildPart(builtin.parts.ChildPart):
                 prev_velocity = this_velocity
 
                 position += part_position
-                self.profile[motor_info.cs_axis.lower()].append(position)
+                turnaround_profile[i][axis_name] = position
 
-    def add_profile_point(self, time_point, velocity_mode, user_program,
-                          completed_step, axis_points):
+        for i in range(num_intervals):
+            for axis_name, motor_info in self.axis_mapping.items():
+                self.profile[motor_info.cs_axis.lower()].append(
+                    turnaround_profile[i][axis_name])
+
+    def add_profile_point(
+        self, time_point, velocity_mode, user_program,
+        completed_step, axis_points
+    ):
         # Add padding if the move time exceeds the max pmac move time
         if time_point > MAX_MOVE_TIME:
             assert self.profile["timeArray"], \
