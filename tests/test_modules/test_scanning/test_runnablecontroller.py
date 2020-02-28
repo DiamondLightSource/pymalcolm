@@ -490,7 +490,7 @@ class TestRunnableControllerBreakpoints(unittest.TestCase):
             generator=compound,
             axes_to_move=['x'],
             breakpoints=[])
-        assert steps_per_run[0] == [10]
+        assert steps_per_run == [10]
 
     def test_steps_per_run_concat(self):
         line1 = LineGenerator('x', 'mm', -10, -10, 5)
@@ -506,7 +506,7 @@ class TestRunnableControllerBreakpoints(unittest.TestCase):
             generator=compound,
             axes_to_move=['x'],
             breakpoints=breakpoints)
-        assert steps_per_run == (breakpoints, True)
+        assert steps_per_run == breakpoints
 
     def test_breakpoints_tomo(self):
         line1 = LineGenerator('x', 'mm', -10, -10, 5)

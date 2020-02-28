@@ -18,6 +18,7 @@ from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.modules.scanning.hooks import AFileDir, AFormatName, \
     AFileTemplate, RunHook, ConfigureHook, ReportStatusHook
 from malcolm.modules.scanning.util import DetectorTable
+from malcolm.modules.scanning.util import RunnableStates
 
 with Anno("How long to wait"):
     AWait = float
@@ -397,6 +398,9 @@ class TestDetectorChildPart(unittest.TestCase):
         assert block.completedSteps.value == completed
         assert block.totalSteps.value == total
 
+    def checkState(self, block, state):
+        assert block.state.value == state
+
     def test_breakpoints_tomo(self):
         breakpoints = [2, 3, 10, 2]
         # Configure RunnableController(mri='top')
@@ -441,3 +445,60 @@ class TestDetectorChildPart(unittest.TestCase):
         assert self.b.state.value == "Finished"
         assert self.bs.state.value == "Ready"
         assert self.bf.state.value == "Finished"
+
+    def test_breakpoints_with_pause(self):
+        breakpoints = [2, 3, 10, 2]
+        self.b.configure(generator=self.make_generator_breakpoints(),
+                         fileDir=self.tmpdir,
+                         detectors=DetectorTable.from_rows([
+                             [False, 'SLOW', 'slow', 0.0, 1],
+                             [True, 'FAST', 'fast', 0.0, 1],
+                         ]),
+                         axesToMove=['x'],
+                         breakpoints=breakpoints)
+
+        assert self.ct.configure_params.generator.size == 17
+
+        self.checkSteps(self.b, 2, 0, 17)
+        self.checkSteps(self.bf, 2, 0, 17)
+        self.checkState(self.b, RunnableStates.ARMED)
+
+        self.b.run()
+        self.checkSteps(self.b, 5, 2, 17)
+        self.checkSteps(self.bf, 5, 2, 17)
+        self.checkState(self.b, RunnableStates.ARMED)
+
+        # rewind
+        self.b.pause(lastGoodStep=1)
+        self.checkSteps(self.b, 2, 1, 17)
+        self.checkSteps(self.bf, 2, 1, 17)
+        self.checkState(self.b, RunnableStates.ARMED)
+        self.b.run()
+        self.checkSteps(self.b, 5, 2, 17)
+        self.checkSteps(self.bf, 5, 2, 17)
+        self.checkState(self.b, RunnableStates.ARMED)
+
+        self.b.run()
+        self.checkSteps(self.b, 15, 5, 17)
+        self.checkSteps(self.bf, 15, 5, 17)
+        self.checkState(self.b, RunnableStates.ARMED)
+
+        self.b.run()
+        self.checkSteps(self.b, 17, 15, 17)
+        self.checkSteps(self.bf, 17, 15, 17)
+        self.checkState(self.b, RunnableStates.ARMED)
+
+        # rewind
+        self.b.pause(lastGoodStep=11)
+        self.checkSteps(self.b, 15, 11, 17)
+        self.checkSteps(self.bf, 15, 11, 17)
+        self.checkState(self.b, RunnableStates.ARMED)
+        self.b.run()
+        self.checkSteps(self.b, 17, 15, 17)
+        self.checkSteps(self.bf, 17, 15, 17)
+        self.checkState(self.b, RunnableStates.ARMED)
+
+        self.b.run()
+        self.checkSteps(self.b, 17, 17, 17)
+        self.checkSteps(self.bf, 17, 17, 17)
+        self.checkState(self.b, RunnableStates.FINISHED)

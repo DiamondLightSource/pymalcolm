@@ -154,10 +154,14 @@ class RunnableController(builtin.controllers.ManagerController):
         self.resume_queue = None  # type: Queue
         # Queue so we can wait for aborts to complete
         self.abort_queue = None  # type: Queue
-        # Stored for pause
+        # Stored for pause. If using breakpoints, it is a list of steps
         self.steps_per_run = []  # type: List[int]
         # If the list of breakpoints is not empty, this will be true
         self.use_breakpoints = False  # type: bool
+        # Absolute steps where the run() returns
+        self.breakpoint_steps = []  # type: List[int]
+        # Breakpoint index, modified in run() and pause()
+        self.iBreakpoint = 0
         # Create sometimes writeable attribute for the current completed scan
         # step
         self.completed_steps = NumberMeta(
@@ -180,7 +184,6 @@ class RunnableController(builtin.controllers.ManagerController):
             tags=[Widget.TEXTUPDATE.tag()]
         ).create_attribute_model(0)
         self.field_registry.add_attribute_model("totalSteps", self.total_steps)
-        self.iBreakpoint = 0
         # Create the method models
         self.field_registry.add_method_model(self.validate)
         self.set_writeable_in(
@@ -229,16 +232,19 @@ class RunnableController(builtin.controllers.ManagerController):
         last_breakpoint = sum(breakpoints)
         if len(breakpoints) > 0:
             if last_breakpoint <= steps[0]:
-                use_breakpoints = True
+                self.use_breakpoints = True
                 if last_breakpoint < steps[0]:  # TODO Array has no append()
                     # breakpoints.append(steps[0] - last_breakpoint)
                     pass
                 steps = breakpoints
+                self.breakpoint_steps = [sum(steps[:i])
+                                         for i in range(1, len(steps) + 1)]
             else:
+                # Inconsistent breakpoints
                 self.log.warning("Breakpoints past the last configured \
                 step: %s > %s", last_breakpoint, steps[0])
 
-        return steps, use_breakpoints
+        return steps
 
     def do_reset(self):
         super(RunnableController, self).do_reset()
@@ -416,7 +422,7 @@ class RunnableController(builtin.controllers.ManagerController):
         self.configured_steps.set_value(0)
         # TODO: We can be cleverer about this and support a different number
         # of steps per run for each run by examining the generator structure
-        self.steps_per_run, self.use_breakpoints = self.get_steps_per_run(
+        self.steps_per_run = self.get_steps_per_run(
             params.generator, params.axesToMove, params.breakpoints)
         # Get any status from all parts
         part_info = self.run_hooks(ReportStatusHook(p, c)
@@ -629,6 +635,7 @@ class RunnableController(builtin.controllers.ManagerController):
         elif lastGoodStep >= total_steps:
             lastGoodStep = total_steps - 1
 
+        # TODO
         if self.use_breakpoints:
             if self.state.value in [ss.ARMED, ss.FINISHED]:
                 # We don't have a run process, free to go anywhere we want
@@ -665,11 +672,12 @@ class RunnableController(builtin.controllers.ManagerController):
 
         if self.use_breakpoints:
             self.iBreakpoint -= 1
-            offset = sum(self.steps_per_run[0:self.iBreakpoint])
-            assert offset < completed_steps
-            in_run_steps = (completed_steps - offset) % \
-                self.steps_per_run[self.iBreakpoint]
-            steps_to_do = self.steps_per_run[self.iBreakpoint] - in_run_steps
+            # offset = sum(self.steps_per_run[0:self.iBreakpoint])
+            # assert offset < completed_steps
+            in_run_steps = completed_steps % \
+                self.breakpoint_steps[self.iBreakpoint]
+            steps_to_do = self.breakpoint_steps[self.iBreakpoint] - \
+                          in_run_steps
             part_info = self.run_hooks(
                 ReportStatusHook(p, c) for p, c in self.part_contexts.items())
             self.completed_steps.set_value(completed_steps)
@@ -681,7 +689,6 @@ class RunnableController(builtin.controllers.ManagerController):
         else:
             in_run_steps = completed_steps % \
                 self.steps_per_run[self.iBreakpoint]
-
             steps_to_do = self.steps_per_run[self.iBreakpoint] - in_run_steps
             part_info = self.run_hooks(
                 ReportStatusHook(p, c) for p, c in self.part_contexts.items())
