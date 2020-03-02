@@ -513,7 +513,7 @@ class PmacChildPart(builtin.parts.ChildPart):
             {name: point.positions[name] for name in self.axis_mapping})
 
         # insert the lower bound of the next frame
-        if points_are_joined:
+        if points_are_joined and not point.delay_after:
             user_program = self.get_user_program(PointType.POINT_JOIN)
             velocity_point = VelocityModes.PREV_TO_NEXT
         else:
@@ -641,7 +641,9 @@ class PmacChildPart(builtin.parts.ChildPart):
                 same_velocities = velocities is None or velocities[
                     i - points_idx
                 ]
+                delay_after = points[i - points_idx].delay_after
             else:
+                delay_after = False
                 same_velocities = points_are_joined = False
 
             if self.output_triggers == scanning.infos.MotionTrigger.EVERY_POINT:
@@ -654,7 +656,7 @@ class PmacChildPart(builtin.parts.ChildPart):
                 )
 
             # add in the turnaround between non-contiguous points
-            if not (points_are_joined or last_point):
+            if not (points_are_joined or last_point) or delay_after:
                 self.insert_gap(
                     points[i - points_idx],
                     points[i - points_idx + 1],

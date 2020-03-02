@@ -87,7 +87,7 @@ class TestBeamSelectorPart(ChildTestCase):
             call.post('writeProfile',
                       a=pytest.approx([0.0, 0.25, 0.5, 0.625, 0.625,
                                        0.5, 0.25, 0.0,
-                                       -0.125, -0.125, 0.0 ]),
+                                       -0.125, -0.125, 0.0]),
                       csPort='CS1',
                       timeArray=pytest.approx([
                           250000, 250000,
