@@ -15,6 +15,11 @@
     description: If non-zero, check any client is in the same subnet as the host
     default: 1
 
+- builtin.parameters.int32:
+    name: web_port
+    description: Port number to run up under
+    default: 8008
+
 - builtin.parameters.string:
     name: config_dir
     description: Where to store saved configs
@@ -34,6 +39,7 @@
 - profiling.blocks.profiling_web_server_block:
     mri: $(mri_prefix):WEB
     subnet_validation: $(subnet_validation)
+    port: $(web_port)
 
 - builtin.parts.ChildPart:
     name: WEB
