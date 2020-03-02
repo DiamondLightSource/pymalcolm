@@ -78,19 +78,9 @@ class TestPMACChildPart(ChildTestCase):
             velocitySettle=settle, units=units)
 
     def do_configure(self, axes_to_scan, completed_steps=0, x_pos=0.5,
-<<<<<<< HEAD
                      y_pos=0.0, duration=1.0, units="mm", infos=None,
                      settle=0.0, continuous=True):
         self.set_motor_attributes(x_pos, y_pos, units, settle=settle)
-        steps_to_do = 3 * len(axes_to_scan)
-        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
-        ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
-        generator = CompoundGenerator(
-            [ys, xs], [], [], duration, continuous=continuous
-        )
-=======
-                     y_pos=0.0, duration=1.0, units="mm", infos=None):
-        self.set_motor_attributes(x_pos, y_pos, units)
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
 
@@ -101,8 +91,10 @@ class TestPMACChildPart(ChildTestCase):
             # otherwise we do xs for each step in ys
             steps_to_do = xs.size * ys.size
 
-        generator = CompoundGenerator([ys, xs], [], [], duration)
->>>>>>> now using get_points and nparray math in calculate_generator_profile
+        generator = CompoundGenerator(
+            [ys, xs], [], [], duration, continuous=continuous
+        )
+
         generator.prepare()
         self.o.on_configure(
             self.context, completed_steps, steps_to_do, {"part": infos},
