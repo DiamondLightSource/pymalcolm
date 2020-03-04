@@ -674,7 +674,7 @@ class TestPMACChildPart(ChildTestCase):
             generator, axes_to_scan)
         elapsed = datetime.now() - start
         # todo goal was sub 1 second but we achieved sub 3 secs
-        assert elapsed.total_seconds() < 3.0
+        assert elapsed.total_seconds() < 3.5
 
     def test_configure_long_trajectory(self):
         if 'diamond.ac.uk' not in socket.gethostname():

@@ -648,7 +648,7 @@ class PmacChildPart(builtin.parts.ChildPart):
                 same_velocities = velocities is None or velocities[
                     i - points_idx
                 ]
-                delay_after = points[i - points_idx].delay_after
+                delay_after = points.delay_after[i - points_idx]
             else:
                 delay_after = False
                 same_velocities = points_are_joined = False
