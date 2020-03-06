@@ -108,7 +108,7 @@ def cs_axis_mapping(context,  # type: Context
 
 
 def and_all_axes(axes):
-    # type: (Dict[Str, Array[bool]]) -> Array[bool]
+    # type: (Dict[str, Array[bool]]) -> Array[bool]
     result = None
     for axis in axes.values():
         if result is None:
@@ -142,24 +142,13 @@ def all_points_joined(points):
        to the point at the next index
     """
     results = {}
+    no_delay = points.delay_after[:-1] == 0
     for axis_name in points.upper.keys():
         uppers = points.upper[axis_name][:-1]
         lowers = points.lower[axis_name][1:]
-        results[axis_name] = uppers == lowers
+        results[axis_name] = np.logical_and(uppers == lowers, no_delay)
     result = and_all_axes(results)
     return result
-
-
-def points_joined(axis_mapping, point, next_point):
-    # type: (Dict[str, MotorInfo], Point, Point) -> bool
-    """Check for axes that need to move within the space between points"""
-    if getattr(point, "delay_after", None):
-        return False
-    for axis_name in axis_mapping:
-        if point.upper[axis_name] != next_point.lower[axis_name]:
-            return False
-
-    return True
 
 
 def point_velocities(axis_mapping, point, entry=True):
