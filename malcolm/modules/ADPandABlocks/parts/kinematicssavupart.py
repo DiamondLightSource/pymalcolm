@@ -23,13 +23,16 @@ AMri = builtin.parts.AMri
 with Anno("name of CS port"):
     ACsPort = str
 
-
 with Anno("mri suffix of malcolm CS block [$(pmac_mri):$(suffix)]"):
     ACsMriSuffix = str
 
-
 PVar = collections.namedtuple('PVar', 'path file p_number')
 
+def MRES_VAR(axis):
+    return "P48%02d" % axis
+
+def OFFSET_VAR(axis):
+    return "P49%02d" % axis
 
 # We will set these attributes on the child block, so don't save them
 @builtin.util.no_save("fileName", "filePath")
@@ -57,10 +60,13 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         self.use_min_max = True
         self.savu_file = None
         self.layout_table = None
+        self.pos_table = None
         self.cs_port = cs_port
         self.cs_mri_suffix = cs_mri_suffix
         self.shape = None
         self.pmac_mri = None
+        self.panda_mri = None
+        self.axis_numbers = {}
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
@@ -95,6 +101,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         # On initial configure, expect to get the demanded number of frames
         child = context.block_view(self.mri)
         self.pmac_mri = child.pmac.value
+        self.panda_mri = child.panda.value
 
         # Derive file path from template
         baseTemplate = os.path.splitext(fileTemplate)[0]
@@ -123,7 +130,6 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         # Get the cs port mapping for this PMAC
         # {scannable: MotorInfo}
         self.layout_table = context.block_view(self.pmac_mri).layout.value
-        print("layout table is %s" % self.layout_table)
         axis_mapping = pmac.util.cs_axis_mapping(
             context, self.layout_table, axesToMove
         )
@@ -146,18 +152,19 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
     @add_call_types
     def post_configure(self, context, part_info):
         # type: (scanning.hooks.AContext, scanning.hooks.APartInfo) -> None
-        # Get the axis number for the inverse kinematics mapped in this cs_port
 
-        axis_numbers = pmac.util.cs_axis_numbers(
+        self.pos_table = context.block_view(self.panda_mri).positions.value
+
+        # Get the axis number for the inverse kinematics mapped in this cs_port
+        self.axis_numbers = pmac.util.cs_axis_numbers(
             context, self.layout_table, self.cs_port
         )
-        print("axis numbers are %s" % axis_numbers)
 
         # Map these in the file
         dataset_infos = scanning.infos.DatasetProducedInfo.filter_values(
             part_info
         )
-        for scannable, axis_num in axis_numbers.items():
+        for scannable, axis_num in self.axis_numbers.items():
             min_i, max_i, value_i = None, None, None
             for info in dataset_infos:
                 if info.name.startswith(scannable + "."):
@@ -169,7 +176,6 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
                         value_i = info
             # Always make sure .value is there
             assert value_i, "No value dataset for %s" % scannable
-            print("adding dataset for %s" % scannable)
             self.p_vars.append(PVar(
                 path=value_i.path, file=value_i.filename,
                 p_number="p%dmean" % axis_num)
@@ -193,7 +199,8 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
                                    pmac_status_child.pVariables.value,
                                    pmac_status_child.mVariables.value])
 
-        pmac_cs_child = context.block_view(self.pmac_mri + ":" +_self.cs_mri_suffix)
+        pmac_cs_child = context.block_view(
+            self.pmac_mri + ":" + self.cs_mri_suffix)
 
         raw_kinematics_program_code = pmac_cs_child.forwardKinematic.value
         raw_input_vars += " " + pmac_cs_child.qVariables.value
@@ -203,6 +210,23 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
 
         self.create_files()
 
+    def check_mres_and_pos(self, split_var):
+        # if PandA has MRES/Offset, clear P variable so it isn't applied twice
+        for scannable, axis_num in self.axis_numbers.items():
+            posbus_ind = self.pos_table.datasetName.index(scannable)
+            panda_mres = self.pos_table.scale[posbus_ind]
+            panda_offset = self.pos_table.offset[posbus_ind]
+            if split_var[0] == MRES_VAR(axis_num):
+                brick_mres = float(split_var[1])
+                if panda_mres != 1.0:
+                    split_var[1] = "1.0"
+
+            elif split_var[0] == OFFSET_VAR(axis_num):
+                brick_offset = float(split_var[1])
+                if panda_offset != 0.0:
+                    split_var[1] = "0.0"
+        return split_var
+
     def parse_input_variables(self, raw_input_vars):
         try:
             for var in raw_input_vars.split(' '):
@@ -210,6 +234,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
                     split_var = var.split('=')
                     # ignore any values in hex
                     if not split_var[1].startswith('$'):
+                        split_var = self.check_mres_and_pos(split_var)
                         self.savu_variables[split_var[0]] = split_var[1]
         except IndexError:
             raise ValueError("Error getting kinematic input variables from %s"
