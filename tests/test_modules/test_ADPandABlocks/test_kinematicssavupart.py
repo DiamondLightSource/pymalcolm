@@ -161,7 +161,7 @@ class TestKinematicsSavuPart(ChildTestCase):
                     "/entry/NDAttributes/INENC1_MIN.VAL", "/p/uid"
                 ),
                 DatasetProducedInfo(
-                    "det.min", "fn1", 
+                    "det.min", "fn1",
                     DatasetType.SECONDARY, 0,
                     "/p/s2", "/p/uid"
                 )

@@ -217,12 +217,9 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
             panda_mres = self.pos_table.scale[posbus_ind]
             panda_offset = self.pos_table.offset[posbus_ind]
             if split_var[0] == MRES_VAR(axis_num):
-                brick_mres = float(split_var[1])
                 if panda_mres != 1.0:
                     split_var[1] = "1.0"
-
             elif split_var[0] == OFFSET_VAR(axis_num):
-                brick_offset = float(split_var[1])
                 if panda_offset != 0.0:
                     split_var[1] = "0.0"
         return split_var
