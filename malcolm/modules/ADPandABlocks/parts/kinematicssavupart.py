@@ -135,7 +135,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         )
 
         if self.cs_port is None:
-            # All axes will be in the same cs_port, so just use the first cs_port
+            # All axes will be in the same cs_port so just use the first
             for mapping in axis_mapping.values():
                 self.cs_port = mapping.cs_port
                 break
