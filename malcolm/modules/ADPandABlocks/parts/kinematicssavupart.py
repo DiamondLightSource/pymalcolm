@@ -67,6 +67,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         self.pmac_mri = None
         self.panda_mri = None
         self.axis_numbers = {}
+        self.generator = None
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
@@ -97,6 +98,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         self.savu_code_lines = []
         self.shape = generator.shape
         self.q_value_mapping = {}
+        self.generator = generator
 
         # On initial configure, expect to get the demanded number of frames
         child = context.block_view(self.mri)
@@ -107,7 +109,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         baseTemplate = os.path.splitext(fileTemplate)[0]
         # Create the various nexus files to pass to Savu and expected output
         fileName = baseTemplate.replace('%s', "savu") + ".nxs"
-        vds_fileName = baseTemplate.replace('%s', "vds") + ".nxs"
+        vds_fileName = baseTemplate.replace('%s', "kinematics-vds") + ".nxs"
         savu_pl_fileName = baseTemplate.replace('%s', "savu_pl") + ".nxs"
         savu_fileName = baseTemplate.replace('%s', "savu_processed") + ".nxs"
 
@@ -340,3 +342,12 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
                             '/entry/' + self.q_value_mapping[i + 1] + datatype,
                             layout, fillvalue=-1
                         )
+
+            # Add any setpoint dimensions
+            for dim in self.generator.dimensions:
+                for axis in dim.axes:
+                    f.create_dataset(
+                        name="/entry/%s_set/%s.value_set" % (axis, axis),
+                        dtype=np.float64,
+                        data=[p for p in dim.get_positions(axis)]
+                    )
