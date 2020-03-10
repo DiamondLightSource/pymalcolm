@@ -31,6 +31,7 @@ class TestKinematicsSavuPart(ChildTestCase):
         self.panda = ManagerController("PANDA", "/tmp")
         self.busses = PositionsPart("busses")
         self.panda.add_part(self.busses)
+        self.process.add_controller(self.panda)
 
         # And the PMAC
         pmac_block = make_block_creator(
@@ -46,7 +47,8 @@ class TestKinematicsSavuPart(ChildTestCase):
         self.child_cs1 = self.process.get_controller("PMAC:CS1")
         self.set_attributes(self.child_cs1, port="CS1")
         self.set_attributes(self.child_cs1, qVariables="Q22=12345 Q23=999")
-        self.set_attributes(self.child_cs1, forwardKinematic="Q1=P1+10 Q5=Q22+4 Q7=8+4 RET ")
+        self.set_attributes(self.child_cs1,
+                            forwardKinematic="Q1=P1+10 Q5=Q22+4 Q7=8+4 RET ")
         # Set up variables on CS1
         self.child_status = self.process.get_controller("PMAC:STATUS")
         self.set_attributes(self.child_status, iVariables="I12=3")
@@ -58,7 +60,8 @@ class TestKinematicsSavuPart(ChildTestCase):
             panda_kinematicssavu_block, self.process,
             mri="SCAN:KINSAV", panda="PANDA", pmac="PMAC")
 
-        self.o = KinematicsSavuPart(name="kinsav", mri="SCAN:KINSAV")
+        self.o = KinematicsSavuPart(name="kinsav", mri="SCAN:KINSAV",
+                                    cs_port="CS1", cs_mri_suffix="CS1")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
         self.set_attributes(self.pmac)
@@ -82,12 +85,12 @@ class TestKinematicsSavuPart(ChildTestCase):
         # create some parts to mock the motion controller and 2 axes in a CS
         self.set_attributes(
             self.child_x, cs="CS1,A",
-            accelerationTime=x_velocity/x_acceleration, resolution=0.001,
+            accelerationTime=x_velocity / x_acceleration, resolution=0.001,
             offset=0.0, maxVelocity=x_velocity, readback=x_pos,
             velocitySettle=0.0, units=units, axisNumber=1)
         self.set_attributes(
             self.child_y, cs="CS1,X",
-            accelerationTime=y_velocity/y_acceleration, resolution=0.001,
+            accelerationTime=y_velocity / y_acceleration, resolution=0.001,
             offset=0.0, maxVelocity=y_velocity, readback=y_pos,
             velocitySettle=0.0, units=units, axisNumber=23)
 
@@ -180,12 +183,12 @@ class TestKinematicsSavuPart(ChildTestCase):
 
         # Check the forward kinematics program has been written
         program_dataset = savu_file['/entry/inputs/program']
-        self.assertEquals(program_dataset.shape, (1, ))
+        self.assertEquals(program_dataset.shape, (1,))
         self.assertEquals(program_dataset[0], "Q1=P1+10 Q5=Q22+4 Q7=8+4 RET ")
 
         # Check the Q and I program variables have been written
         variables_dataset = savu_file['/entry/inputs/variables']
-        self.assertEquals(variables_dataset.shape, (5, ))
+        self.assertEquals(variables_dataset.shape, (5,))
 
         found = False
         for dataset in variables_dataset:
