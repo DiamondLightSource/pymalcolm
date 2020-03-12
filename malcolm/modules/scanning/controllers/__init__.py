@@ -1,6 +1,5 @@
 from .runnablecontroller import RunnableController, AMri, AConfigDir, \
     AInitialDesign, ADescription, AUseGit
-from .runnablecontroller import get_steps_per_run
 
 # Expose a nice namespace
 from malcolm.core import submodule_all

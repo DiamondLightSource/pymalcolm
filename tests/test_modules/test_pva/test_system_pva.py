@@ -57,11 +57,11 @@ class TestSystemDetectorPVA(unittest.TestCase):
         block = self.process2.block_view("TESTDET")
         self.check_blocks_equal()
         generator = self.make_generator()
-        an_empty_list = pytest.approx([]) # see comment in validate()
+        an_empty_list = pytest.approx([])  # see comment in test_configure()
         validated = dict(
             generator=generator.to_dict(), fileDir=self.tmpdir,
-            axesToMove=["y", "x"], breakpoints=an_empty_list, fileTemplate='%s.h5',
-            formatName='det', exposure=0.0489975,
+            axesToMove=["y", "x"], breakpoints=an_empty_list,
+            fileTemplate='%s.h5', formatName='det', exposure=0.0489975,
         )
         assert validated == block.validate(generator, self.tmpdir)
         # Sent 2 things, other zeroed
@@ -75,8 +75,8 @@ class TestSystemDetectorPVA(unittest.TestCase):
         # Got back defaulted things
         assert block.validate.returned.value == validated
         all_args = [
-            'generator', 'fileDir', 'axesToMove', 'breakpoints', 'exposure', 'formatName',
-            'fileTemplate',
+            'generator', 'fileDir', 'axesToMove', 'breakpoints', 'exposure',
+            'formatName', 'fileTemplate',
         ]
         assert list(block.validate.meta.takes.elements) == all_args
         assert src_block.validate.returned.present == all_args
@@ -87,13 +87,13 @@ class TestSystemDetectorPVA(unittest.TestCase):
         block = self.process2.block_view("TESTDET")
         self.check_blocks_equal()
         generator = self.make_generator()
-        #an_empty_list = np.ndarray(shape=(0,), dtype=np.int64)
+        # an_empty_list = np.ndarray(shape=(0,), dtype=np.int64)
         # for some reason, the above is not equating to array([]) in Py3
         an_empty_list = pytest.approx([])
         validated = dict(
             generator=generator.to_dict(), fileDir=self.tmpdir,
-            axesToMove=["x", "y"], breakpoints=an_empty_list, fileTemplate='%s.h5',
-            formatName='det', exposure=0.0489975,
+            axesToMove=["x", "y"], breakpoints=an_empty_list,
+            fileTemplate='%s.h5', formatName='det', exposure=0.0489975,
         )
         params = block.configure(generator, self.tmpdir, axesToMove=["x", "y"])
 

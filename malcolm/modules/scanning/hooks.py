@@ -126,7 +126,7 @@ class ConfigureHook(ControllerHook[UInfos]):
                  part_info,  # type: APartInfo
                  generator,  # type: AGenerator
                  axesToMove,  # type: AAxesToMove
-                 breakpoints, # type: ABreakpoints
+                 breakpoints,  # type: ABreakpoints
                  **kwargs  # type: **Any
                  ):
         # type: (...) -> None

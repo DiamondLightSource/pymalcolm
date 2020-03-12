@@ -124,7 +124,7 @@ class TestHDFWriterPart(ChildTestCase):
         self.process.add_controller(c)
         b = c.block_view()
         assert list(b.configure.meta.takes.elements) == [
-            'generator', 'fileDir', 'axesToMove', 'breakpoints','formatName',
+            'generator', 'fileDir', 'axesToMove', 'breakpoints', 'formatName',
             'fileTemplate']
 
     def configure_and_check_output(self, on_windows=False):

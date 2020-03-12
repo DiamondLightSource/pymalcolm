@@ -127,7 +127,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
                     fileDir,  # type: AFileDir
                     detectors=None,  # type: ADetectorTable
                     axesToMove=None,  # type: AAxesToMove
-                    breakpoints=None, # type: ABreakpoints
+                    breakpoints=None,  # type: ABreakpoints
                     fileTemplate="%s.h5",  # type: AFileTemplate
                     ):
         # type: (...) -> UParameterTweakInfos
@@ -225,7 +225,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
                         file_dir,  # type: AFileDir
                         detectors=None,  # type: ADetectorTable
                         axes_to_move=None,  # type: AAxesToMove
-                        breakpoints=None, # type: ABreakpoints
+                        breakpoints=None,  # type: ABreakpoints
                         file_template="%s.h5",  # type: AFileTemplate
                         ):
         # type: (...) -> Tuple[bool, int, Dict[str, Any]]
@@ -279,7 +279,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
                      fileDir,  # type: AFileDir
                      detectors=None,  # type: ADetectorTable
                      axesToMove=None,  # type: AAxesToMove
-                     breakpoints=None, # type: ABreakpoints
+                     breakpoints=None,  # type: ABreakpoints
                      fileTemplate="%s.h5",  # type: AFileTemplate
                      ):
         # type: (...) -> UInfos

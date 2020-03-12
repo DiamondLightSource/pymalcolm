@@ -13,8 +13,7 @@ from malcolm.core import Process, Context, AlarmStatus, \
 from malcolm.modules.demo.parts import MotionChildPart
 from malcolm.modules.demo.blocks import motion_block
 from malcolm.compat import OrderedDict
-from malcolm.modules.scanning.controllers import \
-    RunnableController, get_steps_per_run
+from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.modules.scanning.infos import ParameterTweakInfo
 from malcolm.modules.scanning.util import RunnableStates
 
@@ -47,7 +46,7 @@ class MisbehavingPart(MotionChildPart):
                      # The following were passed from the user calling configure()
                      generator,  # type: AGenerator
                      axesToMove,  # type: AAxesToMove
-                     breakpoints, # type: ABreakpoints
+                     breakpoints,  # type: ABreakpoints
                      exceptionStep=0,  # type: AExceptionStep
                      ):
         # type: (...) -> None
@@ -461,7 +460,6 @@ class TestRunnableControllerBreakpoints(unittest.TestCase):
 
         # create a root block for the RunnableController block to reside in
         self.c = RunnableController(mri='mainBlock', config_dir="/tmp")
-        #self.c.add_part(part)
         self.p.add_controller(self.c)
         self.b = self.context.block_view("mainBlock")
         self.ss = self.c.state_set
@@ -488,8 +486,11 @@ class TestRunnableControllerBreakpoints(unittest.TestCase):
         compound = CompoundGenerator([line], [], [], duration)
         compound.prepare()
 
-        steps_per_run = get_steps_per_run(compound, ['x'], [])
-        assert steps_per_run[0] == [10]
+        steps_per_run = self.c.get_steps_per_run(
+            generator=compound,
+            axes_to_move=['x'],
+            breakpoints=[])
+        assert steps_per_run == [10]
 
     def test_steps_per_run_concat(self):
         line1 = LineGenerator('x', 'mm', -10, -10, 5)
@@ -501,11 +502,11 @@ class TestRunnableControllerBreakpoints(unittest.TestCase):
         compound.prepare()
         breakpoints = [2, 3, 10, 2]
 
-        steps_per_run = get_steps_per_run(
+        steps_per_run = self.c.get_steps_per_run(
             generator=compound,
             axes_to_move=['x'],
             breakpoints=breakpoints)
-        assert steps_per_run == (breakpoints, True)
+        assert steps_per_run == breakpoints
 
     def test_breakpoints_tomo(self):
         line1 = LineGenerator('x', 'mm', -10, -10, 5)
@@ -720,10 +721,10 @@ class TestRunnableControllerBreakpoints(unittest.TestCase):
         self.checkState(self.ss.FINISHED)
 
     def test_breakpoints_helical_scan(self):
-        line1 = LineGenerator(['y','x'], ['mm','mm'],
+        line1 = LineGenerator(['y', 'x'], ['mm', 'mm'],
                               [-0.555556, -10], [-0.555556, -10], 5)
-        line2 = LineGenerator(['y','x'], ['mm','mm'], [0, 0], [10, 180], 10)
-        line3 = LineGenerator(['y','x'], ['mm','mm'],
+        line2 = LineGenerator(['y', 'x'], ['mm', 'mm'], [0, 0], [10, 180], 10)
+        line3 = LineGenerator(['y', 'x'], ['mm', 'mm'],
                               [10.555556, 190], [10.555556, 190], 2)
         duration = 0.01
         concat = ConcatGenerator([line1, line2, line3])
@@ -731,10 +732,10 @@ class TestRunnableControllerBreakpoints(unittest.TestCase):
         breakpoints = [2, 3, 10, 2]
         self.b.configure(generator=CompoundGenerator([concat],
                          [], [], duration),
-                         axesToMove=['y','x'],
+                         axesToMove=['y', 'x'],
                          breakpoints=breakpoints)
 
-        self.c.configure_params.generator.size == 17
+        assert self.c.configure_params.generator.size == 17
 
         self.checkState(self.ss.ARMED)
         self.checkSteps(2, 0, 17)
@@ -791,7 +792,7 @@ class TestRunnableControllerBreakpoints(unittest.TestCase):
         self.checkSteps(17, 15, 17)
         self.checkState(self.ss.ARMED)
 
-        #rewind
+        # rewind
         self.b.pause(lastGoodStep=11)
         self.checkSteps(15, 11, 17)
         self.checkState(self.ss.ARMED)
