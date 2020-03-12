@@ -1,5 +1,7 @@
 import os
 
+import socket
+import pytest
 from mock import MagicMock
 
 from scanpointgenerator import LineGenerator, CompoundGenerator, \
@@ -19,6 +21,8 @@ from malcolm.modules.builtin.util import ExportTable
 from malcolm.modules.pandablocks.util import PositionCapture
 from malcolm.testutil import ChildTestCase
 from malcolm.yamlutil import make_block_creator
+
+from datetime import datetime
 
 
 class PositionsPart(Part):
@@ -311,3 +315,24 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         axes_to_move = ["x", "y"]
 
         self.o.on_configure(self.context, completed_steps, steps_to_do, {}, generator, axes_to_move)
+
+    def test_configure_long_pcomp_row_trigger(self):
+        if 'diamond.ac.uk' not in socket.gethostname():
+            pytest.skip("performance test only")
+
+        x_steps, y_steps = 4000, 1000
+        xs = LineGenerator("x", "mm", 0.0, 10, x_steps, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 8, y_steps)
+        generator = CompoundGenerator([ys, xs], [], [], .005)
+        generator.prepare()
+        completed_steps = 0
+        steps_to_do = x_steps * y_steps
+        self.set_motor_attributes()
+        axes_to_move = ["x", "y"]
+
+        start = datetime.now()
+        self.o.on_configure(
+            self.context, completed_steps, steps_to_do, {}, generator,
+            axes_to_move)
+        elapsed = datetime.now() - start
+        assert elapsed.total_seconds() < 3.0

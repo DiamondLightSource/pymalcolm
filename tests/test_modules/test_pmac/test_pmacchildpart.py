@@ -1,5 +1,7 @@
+from datetime import datetime
 from os import environ
 
+import socket
 import numpy as np
 import pytest
 from mock import Mock, call, patch, ANY
@@ -41,7 +43,8 @@ class TestPMACChildPart(ChildTestCase):
         self.process.stop(timeout=1)
 
     # TODO: restore this tests when GDA does units right
-    def _______________test_bad_units(self):
+    def test_bad_units(self):
+        pytest.skip("awaiting GDA units fix")
         with self.assertRaises(AssertionError) as cm:
             self.do_configure(["x", "y"], units="m")
         assert str(cm.exception) == "x: Expected scan units of 'm', got 'mm'"
@@ -78,12 +81,20 @@ class TestPMACChildPart(ChildTestCase):
                      y_pos=0.0, duration=1.0, units="mm", infos=None,
                      settle=0.0, continuous=True):
         self.set_motor_attributes(x_pos, y_pos, units, settle=settle)
-        steps_to_do = 3 * len(axes_to_scan)
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
+
+        if len(axes_to_scan) == 1:
+            # when only scanning one axis, we only do xs once
+            steps_to_do = xs.size
+        else:
+            # otherwise we do xs for each step in ys
+            steps_to_do = xs.size * ys.size
+
         generator = CompoundGenerator(
             [ys, xs], [], [], duration, continuous=continuous
         )
+
         generator.prepare()
         self.o.on_configure(
             self.context, completed_steps, steps_to_do, {"part": infos},
@@ -637,3 +648,36 @@ class TestPMACChildPart(ChildTestCase):
             userPrograms=pytest.approx(up),
             velocityMode=pytest.approx(vm)
         )
+
+    def long_configure(self, row_gate=False):
+        # test 4,000,000 points configure - used to check performance
+        if row_gate:
+            infos = [MotionTriggerInfo(MotionTrigger.ROW_GATE), ]
+        else:
+            infos = None
+        self.set_motor_attributes(0, 0, "mm", x_velocity=300, y_velocity=300,
+                                  x_acceleration=30, y_acceleration=30)
+        axes_to_scan = ["x", "y"]
+        x_steps, y_steps = 4000, 1000
+        steps_to_do = x_steps * y_steps
+        xs = LineGenerator("x", "mm", 0.0, 10, x_steps, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 8, y_steps)
+        generator = CompoundGenerator([ys, xs], [], [], .0001)
+        generator.prepare()
+
+        start = datetime.now()
+        self.o.on_configure(
+            self.context, 0, steps_to_do, {"part": infos},
+            generator, axes_to_scan)
+        elapsed = datetime.now() - start
+        # todo goal was sub 1 second but we achieved sub 3 secs
+        assert elapsed.total_seconds() < 3.0
+
+    def test_configure_long_trajectory(self):
+        if 'diamond.ac.uk' not in socket.gethostname():
+            pytest.skip("performance test only")
+        # brick triggered
+        self.long_configure(False)
+        # 'sparse' trajectory linear point removal
+        self.long_configure(True)
+

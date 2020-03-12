@@ -1,0 +1,64 @@
+- builtin.parameters.string:
+    name: mri_prefix
+    description: Malcolm resource id of the Block and prefix for children
+
+- builtin.parameters.string:
+    name: pv_prefix
+    description: PV prefix for driver and all plugins
+
+- builtin.parameters.string:
+    name: config_dir
+    description: Where to store saved configs
+
+- builtin.parameters.string:
+    name: label
+    description: Beamline specific label for the detector
+    default: pco
+
+- builtin.defines.docstring:
+    value: |
+      Device block corresponding to PCO + stat + pos + hdf writer.
+
+      - Camera driver should have pv prefix $(pv_prefix):CAM
+      - Pos should have pv prefix $(pv_prefix):POS
+      - Stat should have pv prefix $(pv_prefix):STAT
+      - HDF should have pv prefix $(pv_prefix):HDF5
+
+- scanning.controllers.RunnableController:
+    mri: $(mri_prefix)
+    config_dir: $(config_dir)
+    description: |
+      PCO is a Windows areaDetector driver wrapping the PCO SDK libraries
+
+- builtin.parts.LabelPart:
+    value: $(label)
+
+- ADPco.blocks.pco_driver_block:
+    mri: $(mri_prefix):DRV
+    prefix: $(pv_prefix):CAM
+
+- ADCore.parts.DetectorDriverPart:
+    name: DRV
+    mri: $(mri_prefix):DRV
+    soft_trigger_modes:
+        - Off
+    runs_on_windows: True
+
+- scanning.parts.ExposureDeadtimePart:
+    name: DEADTIME
+    initial_readout_time: 200e-6
+
+- ADCore.blocks.stats_plugin_block:
+    mri: $(mri_prefix):STAT
+    prefix: $(pv_prefix):STAT
+
+- ADCore.parts.StatsPluginPart:
+    name: STAT
+    mri: $(mri_prefix):STAT
+
+- ADCore.includes.filewriting_collection:
+    pv_prefix: $(pv_prefix)
+    mri_prefix: $(mri_prefix)
+
+#- builtin.parts.IconPart:
+#    svg: $(yamldir)/../icons/Logo.svg
