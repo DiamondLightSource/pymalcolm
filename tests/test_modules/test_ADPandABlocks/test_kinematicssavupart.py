@@ -265,7 +265,7 @@ class TestKinematicsSavuPart(ChildTestCase):
         raw_savu.close()
 
         # Check xmean is there
-        vds_path = os.path.join(tmp_dir, data_name + '-vds.nxs')
+        vds_path = os.path.join(tmp_dir, data_name + '-kinematics-vds.nxs')
         vds_file = h5py.File(vds_path, "r")
         xmean = vds_file['/entry/xmean']
         self.assertEquals(xmean.shape, (5, 5))
