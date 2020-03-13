@@ -42,7 +42,7 @@
     mri: $(mri_prefix):DRV
     soft_trigger_modes:
         - Off
-    runs_on_windows: True
+    runs_on_windows: true
 
 - scanning.parts.ExposureDeadtimePart:
     name: DEADTIME
@@ -55,10 +55,16 @@
 - ADCore.parts.StatsPluginPart:
     name: STAT
     mri: $(mri_prefix):STAT
+    runs_on_windows: true
 
 - ADCore.includes.filewriting_collection:
     pv_prefix: $(pv_prefix)
     mri_prefix: $(mri_prefix)
+
+- ADCore.parts.FilepathTranslatorPart:
+    name: WINPATH
+    initial_windows_drive_letter: Z
+    initial_path_prefix: /dls
 
 #- builtin.parts.IconPart:
 #    svg: $(yamldir)/../icons/Logo.svg

@@ -9,6 +9,7 @@ from malcolm.modules.ADCore.parts import DetectorDriverPart
 from malcolm.modules.ADCore.util import ExtraAttributesTable, SourceType, DataType, AttributeDatasetType
 from malcolm.modules.builtin.controllers import StatefulController
 from malcolm.testutil import ChildTestCase
+from malcolm.modules.ADCore.infos import FilePathTranslatorInfo
 
 
 expected_xml = """\
@@ -124,3 +125,64 @@ class TestDetectorDriverPart(ChildTestCase):
         assert self.child.handled_requests.mock_calls == [
             call.post('stop'),
             call.when_value_matches('acquiring', False, None)]
+
+class TestDetectorDriverPartWindows(ChildTestCase):
+
+    def setUp(self):
+        self.process = Process("Process")
+        self.context = Context(self.process)
+
+        def child_block():
+            controllers, parts = adbase_parts(prefix="prefix")
+            controller = StatefulController("mri")
+            for part in parts:
+                controller.add_part(part)
+            return controllers + [controller]
+
+        self.child = self.create_child_block(child_block, self.process)
+        self.mock_when_value_matches(self.child)
+        self.o = DetectorDriverPart(
+            name="m", mri="mri", soft_trigger_modes=["Internal"],
+            runs_on_windows=True)
+        self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
+        self.process.start()
+
+    def tearDown(self):
+        self.process.stop(timeout=2)
+
+    def test_configure_on_windows(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
+        generator = CompoundGenerator([ys, xs], [], [], 0.1)
+        generator.prepare()
+        completed_steps = 0
+        steps_to_do = 6
+        expected_xml_filename = 'Z:\\mri-attributes.xml'
+        self.set_attributes(self.child, triggerMode="Internal")
+        extra_attributes = ExtraAttributesTable(
+            name=["test1", "test2", "test3"],
+            sourceId=["PV1", "PV2", "PARAM1"],
+            sourceType=[SourceType.PV, SourceType.PV, SourceType.PARAM],
+            description=["a test pv", "another test PV", "a param, for testing"],
+            dataType=[DataType.DBRNATIVE, DataType.DOUBLE, DataType.DOUBLE],
+            datasetType=[AttributeDatasetType.MONITOR, AttributeDatasetType.DETECTOR, AttributeDatasetType.POSITION],
+        )
+        self.o.extra_attributes.set_value(extra_attributes)
+        win_info = FilePathTranslatorInfo("Z", "/tmp")
+        part_info = dict(anyname=[win_info])
+        self.o.on_configure(
+            self.context, completed_steps, steps_to_do, part_info, generator,
+            fileDir="/tmp")
+        assert self.child.handled_requests.mock_calls == [
+            call.put('arrayCallbacks', True),
+            call.put('arrayCounter', 0),
+            call.put('imageMode', 'Multiple'),
+            call.put('numImages', 6),
+            call.put('attributesFile', expected_xml_filename),
+        ]
+        assert not self.o.is_hardware_triggered
+        # not running on windows
+        #with open(expected_xml_filename) as f:
+        #    actual_xml = f.read().replace(">", ">\n")
+
+        #assert actual_xml.splitlines() == expected_xml.splitlines()
