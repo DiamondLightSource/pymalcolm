@@ -66,6 +66,7 @@ class ProcessController(builtin.controllers.ManagerController):
         if self.bl_iocs[-1] == "":
             self.bl_iocs = self.bl_iocs[:-1]
         self.stats = dict()
+        # TODO: the following stuff is all Linux-specific....
         sys_call_bytes = open('/proc/%s/cmdline' % os.getpid(),
                               'rb').read().split(
             b'\0')
@@ -124,7 +125,7 @@ class ProcessController(builtin.controllers.ManagerController):
         self.field_registry.add_attribute_model("kernel", self.kernel)
         self.field_registry.add_attribute_model("pid", self.pid)
 
-        if self.stats["yaml_ver"] in ["Work", "unknown"]:
+        if self.stats["yaml_ver"] in ["work", "unknown"]:
             message = "Non-prod YAML config"
             alarm = Alarm(message=message, severity=AlarmSeverity.MINOR_ALARM)
             self.update_health("", builtin.infos.HealthInfo(alarm))
@@ -179,7 +180,7 @@ Yaml: %(yaml_path)s""" % self.stats
     def parse_yaml_version(self, file_path, work_area, prod_area):
         ver = "unknown"
         if file_path.startswith(work_area):
-            ver = "Work"
+            ver = "work"
         elif file_path.startswith(prod_area):
             ver = self._run_git_cmd('describe', '--tags', '--exact-match',
                                     cwd=os.path.split(file_path)[0])

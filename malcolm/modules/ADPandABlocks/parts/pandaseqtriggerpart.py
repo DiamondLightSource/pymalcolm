@@ -6,7 +6,10 @@ from scanpointgenerator import Point
 
 from malcolm.core import APartName, Block, Attribute, Context, PartRegistrar
 from malcolm.modules import builtin, scanning, pmac
+from malcolm.modules.pmac.util import all_points_joined
 from ..util import SequencerTable, Trigger
+
+import numpy as np
 
 if TYPE_CHECKING:
     from typing import List, Tuple, Dict
@@ -312,66 +315,146 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         blind = time_array[i]
         return blind
 
+    @staticmethod
+    def _get_row_indices(points):
+        """Generate list of start and end indices for separate rows
+
+        This excludes the initial row, which is handled separately.
+        """
+        points_joined = all_points_joined(points)
+
+        if points_joined is not None and len(points_joined) > 0:
+            results = np.nonzero(np.invert(points_joined))[0]
+            results += 1
+            start_indices = results
+        else:
+            start_indices = np.array([])
+
+        # end_index = start_index + size
+        end_indices = np.empty(len(start_indices), dtype=int)
+        if start_indices.size:
+            end_indices[:-1] = start_indices[1:]
+            end_indices[-1] = len(points)
+
+        return start_indices, end_indices
+
+    @staticmethod
+    def _generate_immediate_rows(durations):
+        """Create a series of immediate rows from `durations`"""
+        pairwise_equal = np.empty(len(durations), dtype=bool)
+        pairwise_equal[0] = True  # Initial duration starts first row
+
+        np.not_equal(durations[:-1], durations[1:], out=pairwise_equal[1:])
+        start_indices = np.nonzero(pairwise_equal)
+        seq_durations = durations[start_indices]
+        seq_lengths = np.diff(np.append(start_indices, len(durations)))
+
+        rows = []
+        for duration, count in zip(seq_durations, seq_lengths):
+            half_frame = int(round(duration / TICK / 2))
+            complete_rows = count // MAX_REPEATS
+            remaining = count % MAX_REPEATS
+
+            rows = [seq_row(repeats=MAX_REPEATS, half_duration=half_frame,
+                            live=1)] * complete_rows
+            rows.append(seq_row(repeats=remaining, half_duration=half_frame,
+                                live=1))
+
+        return rows
+
+    def _generate_triggered_rows(self, points, start_index, end_index,
+                                 add_blind):
+        """Generate sequencer rows corresponding to a triggered points row"""
+        rows = []
+        initial_point = points[start_index]
+        half_frame = int(round(initial_point.duration / TICK / 2))
+
+        if self.trigger_enums:
+            # Position compare
+            # First row, or rows not joined
+            # Work out which axis moves most during this point
+            axis_name, compare_cts, increasing = _what_moves_most(
+                initial_point, self.axis_mapping)
+
+            if add_blind:
+                # How long to be blind for during the turnaround
+                blind = self._how_long_moving_wrong_way(
+                    axis_name, initial_point, increasing)
+                half_blind = int(round(blind / TICK / 2))
+                rows.append(seq_row(half_duration=half_blind, dead=1))
+
+            # Create a compare point for the next row
+            rows.append(seq_row(
+                trigger=self.trigger_enums[(axis_name, increasing)],
+                position=compare_cts, half_duration=half_frame, live=1))
+        else:
+            # Row trigger coming in on BITA
+
+            if add_blind:
+                # Produce dead pulse as soon as row has finished
+                rows.append(seq_row(
+                    half_duration=MIN_PULSE, dead=1, trigger=Trigger.BITA_0))
+
+            rows.append(seq_row(
+                trigger=Trigger.BITA_1, half_duration=half_frame, live=1))
+
+        rows.extend(self._generate_immediate_rows(
+                points.duration[start_index+1:end_index]))
+
+        return rows
+
     def _fill_sequencer(self, seq_table):
         # type: (Attribute) -> None
+        points = self.generator.get_points(self.loaded_up_to, self.scan_up_to)
+
+        if points is None or len(points) == 0:
+            table = SequencerTable.from_rows([])
+            seq_table.put_value(table)
+            return
+
         rows = []
-        for i in range(self.loaded_up_to, self.scan_up_to):
-            point = self.generator.get_point(i)
-            half_frame = int(round(point.duration / TICK / 2))
-            start_of_row = False
 
-            if self.axis_mapping:
-                if self.last_point is None:
-                    # If no last point, we are the first point in
-                    # an acquisition.
-                    # If the motors are moving during this point then set
-                    # start_of_row so that we wait for triggers
-                    static = (point.positions == point.lower == point.upper)
-                    start_of_row = not static
-                elif not pmac.util.points_joined(self.axis_mapping,
-                                                 self.last_point, point):
-                    start_of_row = True
+        if not self.axis_mapping:
+            # No position compare or row triggering required
+            rows.extend(
+                self._generate_immediate_rows(points.duration))
 
-            if start_of_row and self.trigger_enums:
-                # Position compare
-                # First row, or rows not joined
-                # Work out which axis moves most during this point
-                axis_name, compare_cts, increasing = _what_moves_most(
-                    point, self.axis_mapping)
-                # If we have a previous point, how long to be blind for
-                # during the turnaround
-                if self.last_point is not None:
-                    blind = self._how_long_moving_wrong_way(
-                        axis_name, point, increasing)
-                    half_blind = int(round(blind / TICK / 2))
-                    rows.append(seq_row(half_duration=half_blind, dead=1))
-                # Create a compare point for the next row
-                rows.append(seq_row(
-                    trigger=self.trigger_enums[(axis_name, increasing)],
-                    position=compare_cts, half_duration=half_frame, live=1))
-            elif start_of_row:
-                # Row trigger coming in on BITA
-                # Produce dead pulse as soon as row has finished
-                if self.last_point is not None:
-                    rows.append(seq_row(
-                        half_duration=MIN_PULSE, dead=1,
-                        trigger=Trigger.BITA_0))
-                rows.append(seq_row(
-                    trigger=Trigger.BITA_1, half_duration=half_frame, live=1))
-            elif rows and rows[-1][1] == Trigger.IMMEDIATE and \
-                    rows[-1][3] == half_frame and rows[-1][0] < MAX_REPEATS:
-                # Repeated time row, just increment the last row repeats
-                rows[-1][0] += 1
-            else:
-                # New time section
-                rows.append(seq_row(half_duration=half_frame, live=1))
-            if i == self.scan_up_to - 1:
-                # Last row, one last dead frame signal
-                rows.append(seq_row(half_duration=LAST_PULSE, dead=1))
-            self.last_point = point
-            if len(rows) > SEQ_TABLE_ROWS - 3:
-                # If we don't have enough space for more rows, stop here
-                break
+            # one last dead frame signal
+            rows.append(seq_row(half_duration=LAST_PULSE, dead=1))
+
+            if len(rows) > SEQ_TABLE_ROWS:
+                raise Exception("Seq table: {} rows with {} maximum".format(
+                    len(rows), SEQ_TABLE_ROWS))
+
+            table = SequencerTable.from_rows(rows)
+            seq_table.put_value(table)
+            return
+
+        start_indices, end_indices = self._get_row_indices(points)
+
+        point = points[0]
+        first_point_static = point.positions == point.lower == point.upper
+        end = start_indices[0] if start_indices.size else len(points)
+        if not first_point_static:
+            # If the motors are moving during this point then
+            # wait for triggers
+            rows.extend(self._generate_triggered_rows(points, 0, end, False))
+        else:
+            # This first row should not wait, and will trigger immediately
+            rows.extend(self._generate_immediate_rows(points.duration[0:end]))
+
+        for start, end in zip(start_indices, end_indices):
+            # First row handled outside of loop
+            self.last_point = points[start-1]
+
+            rows.extend(self._generate_triggered_rows(points, start, end, True))
+
+        # one last dead frame signal
+        rows.append(seq_row(half_duration=LAST_PULSE, dead=1))
+
+        if len(rows) > SEQ_TABLE_ROWS:
+            raise Exception("Seq table: {} rows with {} maximum".format(
+                len(rows), SEQ_TABLE_ROWS))
 
         table = SequencerTable.from_rows(rows)
         seq_table.put_value(table)

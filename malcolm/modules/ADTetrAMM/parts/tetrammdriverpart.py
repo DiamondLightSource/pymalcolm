@@ -5,31 +5,20 @@ from malcolm.modules import ADCore, scanning, builtin
 
 
 @builtin.util.no_save('numImagesPerSeries')
-class EigerDriverPart(ADCore.parts.DetectorDriverPart):
-    """ Overrides default AD behaviour because the Eiger AD support
-        does not count frames when Odin is consuming the frames."""
-
+class TetrAMMDriverPart(ADCore.parts.DetectorDriverPart):
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
-        super(EigerDriverPart, self).setup(registrar)
+        super(TetrAMMDriverPart, self).setup(registrar)
         registrar.hook(
             scanning.hooks.PostRunReadyHook, self.on_post_run_ready)
         registrar.hook(
             scanning.hooks.PostRunArmedHook, self.on_post_run_armed)
 
-    def arm_detector(self, context):
-        # type: (Context) -> None
-        child = context.block_view(self.mri)
-        child.numImagesPerSeries.put_value(1)
-        super(EigerDriverPart, self).arm_detector(context)
-        # Wait for the fan to be ready before returning from configure
-        child.when_value_matches("fanStateReady", 1)
-
     @add_call_types
     def on_run(self, context):
         # type: (scanning.hooks.AContext) -> None
-        # this override removes the subscription to the array counter
-        # which is never updated by Eiger
+        # this override stops waiting on the start_future as we have to press
+        # stop in post_run below
         pass
 
     @add_call_types

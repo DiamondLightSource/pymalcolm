@@ -12,9 +12,11 @@ from malcolm.core import Future, Block, PartRegistrar, Put, Request
 from malcolm.modules import builtin, scanning
 from malcolm.modules.pmac.util import get_motion_trigger
 from ..infos import MotorInfo
-from ..util import cs_axis_mapping, points_joined, point_velocities, MIN_TIME, \
-    MIN_INTERVAL, profile_between_points, cs_port_with_motors_in,\
-    get_motion_axes
+from ..util import (
+    cs_axis_mapping, point_velocities, MIN_TIME,
+    MIN_INTERVAL, profile_between_points, cs_port_with_motors_in,
+    get_motion_axes, all_points_same_velocities, all_points_joined
+)
 
 if TYPE_CHECKING:
     from typing import Dict, List
@@ -25,12 +27,14 @@ TICK_S = 0.000001
 # Longest move time we can request
 MAX_MOVE_TIME = 4.0
 
+
 # velocity modes
 class VelocityModes:
     PREV_TO_NEXT = 0
     PREV_TO_CURRENT = 1
     CURRENT_TO_NEXT = 2
     ZERO_VELOCITY = 3
+
 
 # user programs
 class UserPrograms:
@@ -50,7 +54,9 @@ class PointType(Enum):
 
 
 # How many profile points to write each time
-PROFILE_POINTS = 10000
+PROFILE_POINTS = 2000
+# How many points to extract from a scanpointgenerator each time
+BATCH_POINTS = 20000
 
 # 80 char line lengths...
 AIV = builtin.parts.AInitialVisibility
@@ -354,7 +360,7 @@ class PmacChildPart(builtin.parts.ChildPart):
                         overflow -= 1
                         ticks += 1
                     time_array_ticks.append(ticks)
-                # TODO: overflow discarded overy 10000 points, is it a problem?
+                # TODO: overflow discarded every 10000 points, is it a problem?
                 v = np.array(time_array_ticks, np.int32)
             elif k in ("velocityMode", "userPrograms"):
                 v = np.array(v, np.int32)
@@ -364,30 +370,34 @@ class PmacChildPart(builtin.parts.ChildPart):
 
         child.writeProfile(**args)
 
+    user_program = {
+        scanning.infos.MotionTrigger.NONE: {
+            PointType.POINT_JOIN:   UserPrograms.NO_PROGRAM,
+            PointType.START_OF_ROW: UserPrograms.NO_PROGRAM,
+            PointType.MID_POINT:    UserPrograms.NO_PROGRAM,
+            PointType.END_OF_ROW:   UserPrograms.NO_PROGRAM,
+            PointType.TURNAROUND:   UserPrograms.NO_PROGRAM,
+        },
+        scanning.infos.MotionTrigger.ROW_GATE: {
+            PointType.POINT_JOIN:   UserPrograms.NO_PROGRAM,
+            PointType.START_OF_ROW: UserPrograms.LIVE_PROGRAM,
+            PointType.MID_POINT:    UserPrograms.NO_PROGRAM,
+            PointType.END_OF_ROW:   UserPrograms.ZERO_PROGRAM,
+            PointType.TURNAROUND:   UserPrograms.NO_PROGRAM,
+
+        },
+        scanning.infos.MotionTrigger.EVERY_POINT: {
+            PointType.POINT_JOIN:   UserPrograms.LIVE_PROGRAM,
+            PointType.START_OF_ROW: UserPrograms.LIVE_PROGRAM,
+            PointType.MID_POINT:    UserPrograms.MID_PROGRAM,
+            PointType.END_OF_ROW:   UserPrograms.DEAD_PROGRAM,
+            PointType.TURNAROUND:   UserPrograms.ZERO_PROGRAM,
+        }
+    }
+
     def get_user_program(self, point_type):
         # type: (PointType) -> int
-        if self.output_triggers == scanning.infos.MotionTrigger.NONE:
-            # Always produce no program
-            return UserPrograms.NO_PROGRAM
-        elif self.output_triggers == scanning.infos.MotionTrigger.ROW_GATE:
-            if point_type == PointType.START_OF_ROW:
-                # Produce a gate for the whole row
-                return UserPrograms.LIVE_PROGRAM
-            elif point_type == PointType.END_OF_ROW:
-                # Falling edge of row gate
-                return UserPrograms.ZERO_PROGRAM
-            else:
-                # Otherwise don't change anything
-                return UserPrograms.NO_PROGRAM
-        else:
-            if point_type in (PointType.START_OF_ROW, PointType.POINT_JOIN):
-                return UserPrograms.LIVE_PROGRAM
-            elif point_type == PointType.END_OF_ROW:
-                return UserPrograms.DEAD_PROGRAM
-            elif point_type == PointType.MID_POINT:
-                return UserPrograms.MID_PROGRAM
-            else:
-                return UserPrograms.ZERO_PROGRAM
+        return self.user_program[self.output_triggers][point_type]
 
     def calculate_profile_from_velocities(self, time_arrays, velocity_arrays,
                                           current_positions, completed_steps):
@@ -503,7 +513,7 @@ class PmacChildPart(builtin.parts.ChildPart):
             {name: point.positions[name] for name in self.axis_mapping})
 
         # insert the lower bound of the next frame
-        if points_are_joined:
+        if points_are_joined and not point.delay_after:
             user_program = self.get_user_program(PointType.POINT_JOIN)
             velocity_point = VelocityModes.PREV_TO_NEXT
         else:
@@ -514,23 +524,42 @@ class PmacChildPart(builtin.parts.ChildPart):
             point.duration / 2.0, velocity_point, user_program, point_num + 1,
             {name: point.upper[name] for name in self.axis_mapping})
 
-    def add_sparse_point(self, point, point_num, next_point, points_are_joined):
-        # todo when branch velocity-mode-changes is merged we will
-        #  need to set velocity mode CURRENT_TO_NEXT on the *previous*
-        #  point whenever we skip a point
+    def add_sparse_point(
+            self, points, point_num, points_are_joined, same_velocities
+    ):
+        """
+        Add in points but skip those that are linear to create a sparse
+        trajectory. Add the upper bound when the points are non-linear.
+        Always add the upper bound for the last point in a row (not joined to
+        the next point).
+
+        Joined| Same Vel|| Add Point | Add Upper
+        0     | 0       || Y         | Y
+        0     | 1       || N         | Y
+        1     | 0       || Y         | Y
+        1     | 1       || N         | N
+
+        NOTE:
+        This function may be called millions of times during the configure
+        phase and hence is highly optimized. In particular the use of variable
+        'point' looks like it may be referenced before assignment. The paths
+        controlled by the matrix above show that it will be always be assigned
+        or not used at all. Indexing into points[] is expensive so this is
+        intentional.
+        """
         if self.time_since_last_pvt > 0 and not points_are_joined:
             # assume we can skip if we are at the end of a row and we
             # just skipped the most recent point (i.e. time_since_last_pvt > 0)
             do_skip = True
         else:
-            # otherwise skip this point if is is linear to previous point
-            do_skip = next_point and points_are_joined and \
-                      self.is_same_velocity(point, next_point)
+            # otherwise skip this point if it is linear to previous point
+            do_skip = points_are_joined and same_velocities
 
         if do_skip:
-            self.time_since_last_pvt += point.duration
+            self.time_since_last_pvt += points.duration[point_num]
         else:
-            # not skipping - add this mid point
+            # not skipping - add this mid or end point
+            point = points[point_num]
             user_program = self.get_user_program(PointType.MID_POINT)
             self.add_profile_point(
                 self.time_since_last_pvt + point.duration / 2.0,
@@ -538,22 +567,41 @@ class PmacChildPart(builtin.parts.ChildPart):
                 {name: point.positions[name] for name in self.axis_mapping})
             self.time_since_last_pvt = point.duration / 2.0
 
-        # insert the lower bound of the next frame
-        if points_are_joined:
-            user_program = self.get_user_program(PointType.POINT_JOIN)
-            velocity_point = VelocityModes.PREV_TO_NEXT
-        else:
-            user_program = self.get_user_program(PointType.END_OF_ROW)
-            velocity_point = VelocityModes.PREV_TO_CURRENT
-
         # only add the lower bound if we did not skip this point OR if we are
         # at the end of a row where we always require a final point
         if not do_skip or not points_are_joined:
+            # insert the lower bound of the next frame (i.e. the upper bound for
+            # this frame)
+            if points_are_joined:
+                user_program = self.get_user_program(PointType.POINT_JOIN)
+                velocity_point = VelocityModes.PREV_TO_NEXT
+            else:
+                point = points[point_num]
+                user_program = self.get_user_program(PointType.END_OF_ROW)
+                velocity_point = VelocityModes.PREV_TO_CURRENT
+
             self.add_profile_point(
                 self.time_since_last_pvt, velocity_point,
                 user_program, point_num + 1,
                 {name: point.upper[name] for name in self.axis_mapping})
             self.time_since_last_pvt = 0
+
+    def get_some_points(self, start_index):
+        # calculate the indices of the next batch of points to get for
+        # the calculate_generator_profile loop
+        # cap at PROFILE_POINTS (+1 so we can always get next_point)
+        if start_index == self.steps_up_to:
+            return None, None, None
+        if self.steps_up_to - start_index > BATCH_POINTS:
+            up_to = BATCH_POINTS + start_index + 1
+            points = self.generator.get_points(start_index, up_to)
+        else:
+            points = self.generator.get_points(start_index, self.steps_up_to)
+
+        velocities = all_points_same_velocities(points)
+        joined = all_points_joined(points)
+
+        return points, joined, velocities
 
     def calculate_generator_profile(self, start_index, do_run_up=False):
         # If we are doing the first build, do_run_up will be passed to flag
@@ -578,32 +626,42 @@ class PmacChildPart(builtin.parts.ChildPart):
                 start_index, axis_points)
 
         self.time_since_last_pvt = 0
+
+        points, joined, velocities = self.get_some_points(start_index)
+        points_idx = start_index
         for i in range(start_index, self.steps_up_to):
-            point = self.generator.get_point(i)
+            if i - points_idx >= BATCH_POINTS:
+                points, joined, velocities = self.get_some_points(i)
+                points_idx = i
 
-            if i + 1 < self.steps_up_to:
-                # Check if we need to insert the lower bound of next_point
-                next_point = self.generator.get_point(i + 1)
-
-                points_are_joined = points_joined(
-                    self.axis_mapping, point, next_point
-                )
+            last_point = i + 1 == self.steps_up_to
+            if not last_point:
+                # cope with the zero axes case (where joined == None)
+                points_are_joined = joined is None or joined[i - points_idx]
+                same_velocities = velocities is None or velocities[
+                    i - points_idx
+                ]
+                delay_after = points[i - points_idx].delay_after
             else:
-                points_are_joined = False
-                next_point = None
+                delay_after = False
+                same_velocities = points_are_joined = False
 
             if self.output_triggers == scanning.infos.MotionTrigger.EVERY_POINT:
-                self.add_generator_point_pair(point, i, points_are_joined)
+                self.add_generator_point_pair(
+                    points[i - points_idx], i, points_are_joined
+                )
             else:
-                self.add_sparse_point(point, i, next_point, points_are_joined)
+                self.add_sparse_point(
+                    points, i - points_idx, points_are_joined, same_velocities
+                )
 
             # add in the turnaround between non-contiguous points
-            # or after the last point if delay_after is defined
-            if not points_are_joined:
-                if next_point is not None:
-                    self.insert_gap(point, next_point, i + 1)
-                elif getattr(point, "delay_after", None) is not None:
-                    pass
+            if not (points_are_joined or last_point) or delay_after:
+                self.insert_gap(
+                    points[i - points_idx],
+                    points[i - points_idx + 1],
+                    i + 1
+                )
 
             # Check if we have exceeded the points number and need to write
             # Strictly less than so we always add one more point to the time
@@ -664,19 +722,3 @@ class PmacChildPart(builtin.parts.ChildPart):
         self.profile["velocityMode"][-1] = VelocityModes.PREV_TO_CURRENT
         user_program = self.get_user_program(PointType.START_OF_ROW)
         self.profile["userPrograms"][-1] = user_program
-
-    def is_same_velocity(self, p1, p2):
-        result = False
-        if p2.duration == p2.duration:
-            result = True
-            for axis_name, _ in self.axis_mapping.items():
-                if not np.isclose(
-                    p1.lower[axis_name] - p1.positions[axis_name],
-                    p2.lower[axis_name] - p2.positions[axis_name]
-                ) or not np.isclose(
-                    p1.positions[axis_name] - p1.upper[axis_name],
-                    p2.positions[axis_name] - p2.upper[axis_name]
-                ):
-                    result = False
-                    break
-        return result
