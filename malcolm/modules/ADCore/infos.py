@@ -25,10 +25,16 @@ class FilePathTranslatorInfo(Info):
         assert filepath.startswith(translator.path_prefix), \
             "filepath %s does not start with expected prefix %s" % (
                 filepath, translator.path_prefix)
-        return filepath.replace(
-            translator.path_prefix,
-            translator.windows_drive_letter + ":"
-        ).replace("/", "\\")
+        if translator.windows_drive_letter is "":
+             win_path = filepath.replace(
+                 translator.path_prefix,
+                 "//dc" + translator.path_prefix).replace("/", "\\")  # TODO //dc should be a variable
+        else:
+            win_path = filepath.replace(
+                translator.path_prefix,
+                translator.windows_drive_letter + ":"
+            ).replace("/", "\\")
+        return win_path
 
 
 class NDArrayDatasetInfo(Info):

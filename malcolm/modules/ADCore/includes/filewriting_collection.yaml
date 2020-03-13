@@ -6,6 +6,11 @@
     name: mri_prefix
     description: Malcolm resource id prefix for all created blocks
 
+- builtin.parameters.string:
+    name: runs_on_windows
+    description: Translate directory paths if IOC runs on Windows
+    default: False
+
 - scanning.parts.DatasetTablePart:
     name: DSET
 
@@ -24,3 +29,4 @@
 - ADCore.parts.HDFWriterPart:
     name: HDF5
     mri: $(mri_prefix):HDF5
+    runs_on_windows: $(runs_on_windows)
