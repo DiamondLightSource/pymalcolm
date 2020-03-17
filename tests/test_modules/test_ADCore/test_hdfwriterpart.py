@@ -224,7 +224,7 @@ class TestHDFWriterPart(ChildTestCase):
             call.put('dimAttDatasets', True),
             call.put('enableCallbacks', True),
             call.put('fileName', 'xspress3'),
-            call.put('filePath', '/tmp/'),
+            call.put('filePath', 'Y:/'),
             call.put('fileTemplate', '%sthing-%s.h5'),
             call.put('fileWriteMode', 'Stream'),
             call.put('lazyOpen', True),
