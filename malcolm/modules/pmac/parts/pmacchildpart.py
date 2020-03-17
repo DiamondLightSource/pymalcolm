@@ -619,7 +619,7 @@ class PmacChildPart(builtin.parts.ChildPart):
             point = self.generator.get_point(start_index)
 
             # Calculate how long to leave for the run-up (at least MIN_TIME)
-            run_up_time = MIN_TIME
+            run_up_time = self.min_interval
             axis_points = {}
             for axis_name, velocity in point_velocities(
                     self.axis_mapping, point).items():
@@ -686,7 +686,7 @@ class PmacChildPart(builtin.parts.ChildPart):
         # Calculate how long to leave for the tail-off
         # #(at least MIN_TIME)
         axis_points = {}
-        tail_off_time = MIN_TIME
+        tail_off_time = self.min_interval
         for axis_name, velocity in point_velocities(
                 self.axis_mapping, point, entry=False).items():
             motor_info = self.axis_mapping[axis_name]
