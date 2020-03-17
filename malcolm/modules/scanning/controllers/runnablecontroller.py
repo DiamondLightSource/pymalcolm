@@ -213,7 +213,7 @@ class RunnableController(builtin.controllers.ManagerController):
 
     def get_steps_per_run(self, generator, axes_to_move, breakpoints):
         # type: (CompoundGenerator, List[str], List[int]) -> (List[int], bool)
-        use_breakpoints = False
+        self.use_breakpoints = False
         steps = [1]
         axes_set = set(axes_to_move)
         for dim in reversed(generator.dimensions):

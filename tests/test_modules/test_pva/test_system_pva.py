@@ -2,9 +2,8 @@ import shutil
 import tempfile
 import unittest
 
-import numpy as np
 import pytest
-from annotypes import json_encode, Array
+from annotypes import json_encode
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
 from malcolm.core import Process
