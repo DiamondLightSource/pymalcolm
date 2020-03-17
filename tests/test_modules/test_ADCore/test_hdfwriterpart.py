@@ -213,8 +213,10 @@ class TestHDFWriterPart(ChildTestCase):
         expected_xml_filename_local = "/tmp/BLOCK-HDF5-layout.xml"
         if on_windows:
             expected_xml_filename_remote = "Y:\\BLOCK-HDF5-layout.xml"
+            expected_filepath = "Y:" + os.sep
         else:
             expected_xml_filename_remote = expected_xml_filename_local
+            expected_filepath = "/tmp" + os.sep
         # Wait for the start_future so the post gets through to our child
         # even on non-cothread systems
         self.o.start_future.result(timeout=1)
@@ -224,7 +226,7 @@ class TestHDFWriterPart(ChildTestCase):
             call.put('dimAttDatasets', True),
             call.put('enableCallbacks', True),
             call.put('fileName', 'xspress3'),
-            call.put('filePath', 'Y:/'),
+            call.put('filePath', expected_filepath),
             call.put('fileTemplate', '%sthing-%s.h5'),
             call.put('fileWriteMode', 'Stream'),
             call.put('lazyOpen', True),
