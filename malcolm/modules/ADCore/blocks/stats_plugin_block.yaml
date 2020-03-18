@@ -19,6 +19,7 @@
 # This includes the input port
 - ADCore.includes.ndpluginbase_parts:
     prefix: $(prefix)
+    mri: $(mri)
 
 - ca.parts.CABooleanPart:
     name: computeStatistics

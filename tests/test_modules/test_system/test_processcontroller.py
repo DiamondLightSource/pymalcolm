@@ -29,14 +29,14 @@ class TestProcessController(unittest.TestCase):
 
     def test_sets_stats(self):
         # In unit tests, this depends on where the test-runner is run from
-        assert self.b.pymalcolmVer.value in ["Work", __version__]
+        assert self.b.pymalcolmVer.value in ["work", __version__]
         hostname = os.uname()[1]
         hostname = hostname if len(hostname) < 39 else hostname[:35] + '...'
         assert self.b.hostname.value == hostname
 
     def test_starts_ioc(self):
         cothread.Sleep(5)
-        assert catools.caget(self.prefix + ":PYMALCOLM:VER") in ["Work",
+        assert catools.caget(self.prefix + ":PYMALCOLM:VER") in ["work",
                                                                  __version__]
 
     def test_ioc_ticks(self):
@@ -71,7 +71,7 @@ class TestParseYamlVersion(unittest.TestCase):
                                   '/tmp/work/',
                                   '/tmp/prod') == 'unknown'
         assert self.obj.parse_yaml_version('/tmp/work/something.yaml', '/tmp/work/',
-                                  '/tmp/prod') == 'Work'
+                                  '/tmp/prod') == 'work'
         assert self.obj.parse_yaml_version(self.testArea + '/something.yaml',
                                   '/tmp/work/',
                                   self.testArea) == 'Prod (unknown version)'

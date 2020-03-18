@@ -320,7 +320,7 @@ if __name__ == "__main__":
         # DLS developed
         "annotypes==0.20",
         "cothread==2.14",
-        "scanpointgenerator==3.0",
+        "scanpointgenerator==3.1",
         "vdsgen==0.5.1"
     )
     #sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "cothread"))

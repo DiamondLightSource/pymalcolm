@@ -4,7 +4,12 @@ from __future__ import division
 from collections import Counter
 
 from annotypes import TYPE_CHECKING, Array, Sequence
-from scanpointgenerator import Point, CompoundGenerator, StaticPointGenerator
+from scanpointgenerator import (
+    Point, CompoundGenerator, StaticPointGenerator
+)
+# todo Points needs an import in core.__init__.py
+from scanpointgenerator.core.point import Points
+
 import numpy as np
 
 from malcolm.core import Context
@@ -129,6 +134,47 @@ def cs_axis_numbers(context,  # type: Context
                 else:
                     axis_numbers[name] = axis_number
     return axis_numbers
+def and_all_axes(axes):
+    # type: (Dict[Str, Array[bool]]) -> Array[bool]
+    result = None
+    for axis in axes.values():
+        if result is None:
+            result = axis
+        result = np.logical_and(result, axis)
+    return result
+
+
+def all_points_same_velocities(points):
+    # type: (Points) -> Array[bool]
+    """return a numpy array of bool where each element is true
+    if the corresponding element is points has the same velocity as the
+    next element (for all axes at this point) """
+    results = {}
+    for axis_name in points.upper.keys():
+        velocities = (
+            points.upper[axis_name] - points.lower[axis_name]) / \
+            points.duration
+        v1 = velocities[:-1]
+        v2 = velocities[1:]
+        results[axis_name] = np.isclose(v1, v2)
+    result = and_all_axes(results)
+    return result
+
+
+def all_points_joined(points):
+    # type: (Points) -> Array[bool]
+    """Check for axes that need to move within the space between points
+       this check is performed on all points and returns an array of
+       bool where True implies that the point at this index is joined
+       to the point at the next index
+    """
+    results = {}
+    for axis_name in points.upper.keys():
+        uppers = points.upper[axis_name][:-1]
+        lowers = points.lower[axis_name][1:]
+        results[axis_name] = uppers == lowers
+    result = and_all_axes(results)
+    return result
 
 
 def points_joined(axis_mapping, point, next_point):
@@ -228,7 +274,7 @@ def profile_between_points(
             )
             # Absolute time values that we are at that velocity
             profiles[axis_name] = p
-            new_min_time = max(new_min_time, p.tv2)
+            new_min_time = max(new_min_time, p.t_total)
         if np.isclose(new_min_time, min_time):
             # We've got our consistent set - see if they require quantization
             quantize = False

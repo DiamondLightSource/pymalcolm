@@ -1,5 +1,7 @@
 import os
 
+import socket
+import pytest
 from mock import MagicMock
 
 from scanpointgenerator import LineGenerator, CompoundGenerator, \
@@ -339,4 +341,4 @@ class TestPandaSeqTriggerPart(ChildTestCase):
             self.context, completed_steps, steps_to_do, {}, generator,
             axes_to_move)
         elapsed = datetime.now() - start
-        assert elapsed.total_seconds() < 1.0
+        assert elapsed.total_seconds() < 3.0
