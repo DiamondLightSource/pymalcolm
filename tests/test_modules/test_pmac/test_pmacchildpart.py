@@ -732,3 +732,58 @@ class TestPMACChildPart(ChildTestCase):
                 1, 0, 0, 1, 1,
                 0, 1, 3
             ]))
+
+    def test_configure_delay_after(self):
+        # a test to show that delay_after inserts a "loop_back" turnaround
+        delay = 1.0
+        axes_to_scan = ["x", "y"]
+        self.set_motor_attributes(0.5, 0.0, "mm")
+        steps_to_do = 3
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
+        generator = CompoundGenerator(
+            [ys, xs], [], [], 1.0, delay_after=delay)
+        generator.prepare()
+
+        self.o.on_configure(
+            self.context, 0, steps_to_do, {"part": None},
+            generator, axes_to_scan)
+
+        action, func, args = self.child.handled_requests.mock_calls[-1]
+
+        assert args['a'] == \
+            pytest.approx([
+                -0.125,  0.,  0.125,  0.13742472,  0.11257528,
+                0.125,  0.25,  0.375,  0.38742472,  0.36257528,
+                0.375,  0.5,  0.625,  0.6375
+            ])
+
+        assert args['b'] == \
+            pytest.approx([
+                0., 0., 0., 0., 0.,
+                0., 0., 0., 0., 0.,
+                0., 0., 0., 0.
+            ])
+
+        assert args['timeArray'] == pytest.approx([
+            100000, 500000, 500000, 114000, 776000,
+            114000, 500000, 500000, 114000, 776000,
+            114000, 500000, 500000, 100000
+        ])
+
+        # check the delay times are correct (in microsecs)
+        t = args['timeArray']
+        assert t[3] + t[4] + t[5] >= delay * 1000000
+        assert t[8] + t[9] + t[10] >= delay * 1000000
+
+        assert args['userPrograms'] == pytest.approx([
+            1, 4, 2, 8, 8,
+            1, 4, 2, 8, 8,
+            1, 4, 2, 8
+        ])
+
+        assert args['velocityMode'] == pytest.approx([
+            1, 0, 1, 1, 1,
+            1, 0, 1, 1, 1,
+            1, 0, 1, 3
+        ])
