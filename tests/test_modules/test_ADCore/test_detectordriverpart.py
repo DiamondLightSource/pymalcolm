@@ -151,13 +151,14 @@ class TestDetectorDriverPartWindows(ChildTestCase):
         self.process.stop(timeout=2)
 
     def test_configure_on_windows(self):
+        """Test the network mount drive on Windows"""
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
         generator = CompoundGenerator([ys, xs], [], [], 0.1)
         generator.prepare()
         completed_steps = 0
         steps_to_do = 6
-        expected_xml_filename = 'Z:\\mri-attributes.xml'
+        expected_xml_filename = '\\\\dc\\tmp\\mri-attributes.xml'
         self.set_attributes(self.child, triggerMode="Internal")
         extra_attributes = ExtraAttributesTable(
             name=["test1", "test2", "test3"],
@@ -168,7 +169,7 @@ class TestDetectorDriverPartWindows(ChildTestCase):
             datasetType=[AttributeDatasetType.MONITOR, AttributeDatasetType.DETECTOR, AttributeDatasetType.POSITION],
         )
         self.o.extra_attributes.set_value(extra_attributes)
-        win_info = FilePathTranslatorInfo("Z", "/tmp")
+        win_info = FilePathTranslatorInfo("", "/tmp")
         part_info = dict(anyname=[win_info])
         self.o.on_configure(
             self.context, completed_steps, steps_to_do, part_info, generator,
@@ -181,8 +182,3 @@ class TestDetectorDriverPartWindows(ChildTestCase):
             call.put('attributesFile', expected_xml_filename),
         ]
         assert not self.o.is_hardware_triggered
-        # not running on windows
-        #with open(expected_xml_filename) as f:
-        #    actual_xml = f.read().replace(">", ">\n")
-
-        #assert actual_xml.splitlines() == expected_xml.splitlines()

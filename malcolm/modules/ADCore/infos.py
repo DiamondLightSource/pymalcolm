@@ -10,11 +10,14 @@ class FilePathTranslatorInfo(Info):
     Args:
         windows_drive_letter: The drive letter assigned to the windows mount
         path_prefix: The location of the mount in linux (i.e. /dls or /dls_sw)
+        network_drive: The network drive prefix on Windows (e.g. //dc). If the
+        windows drive letter is an empty string, the network drive is prepended.
     """
 
-    def __init__(self, windows_drive_letter, path_prefix):
+    def __init__(self, windows_drive_letter, path_prefix, network_drive="//dc"):
         self.windows_drive_letter = windows_drive_letter
         self.path_prefix = path_prefix
+        self.network_drive = network_drive
 
     @classmethod
     def translate_filepath(cls, part_info, filepath):
@@ -28,7 +31,8 @@ class FilePathTranslatorInfo(Info):
         if translator.windows_drive_letter is "":
              win_path = filepath.replace(
                  translator.path_prefix,
-                 "//dc" + translator.path_prefix).replace("/", "\\")  # TODO //dc should be a variable
+                 translator.network_drive + 
+                 translator.path_prefix).replace("/", "\\")
         else:
             win_path = filepath.replace(
                 translator.path_prefix,
