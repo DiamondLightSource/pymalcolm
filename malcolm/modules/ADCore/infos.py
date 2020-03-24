@@ -29,10 +29,10 @@ class FilePathTranslatorInfo(Info):
             "filepath %s does not start with expected prefix %s" % (
                 filepath, translator.path_prefix)
         if translator.windows_drive_letter is "":
+             path_prefix = translator.network_drive + translator.path_prefix
              win_path = filepath.replace(
                  translator.path_prefix,
-                 translator.network_drive + 
-                 translator.path_prefix).replace("/", "\\")
+                 path_prefix).replace("/", "\\")
         else:
             win_path = filepath.replace(
                 translator.path_prefix,

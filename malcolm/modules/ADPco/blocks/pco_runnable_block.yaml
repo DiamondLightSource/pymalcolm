@@ -64,7 +64,7 @@
 
 - ADCore.parts.FilepathTranslatorPart:
     name: WINPATH
-    initial_windows_drive_letter:
+    initial_windows_drive_letter: ''
     initial_path_prefix: /dls
 
 #- builtin.parts.IconPart:
