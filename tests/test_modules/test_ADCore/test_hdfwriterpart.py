@@ -149,7 +149,7 @@ class TestHDFWriterPart(ChildTestCase):
             "STAT": [CalculatedNDAttributeDatasetInfo("sum", "StatsTotal")],
         }
         if on_windows:
-            part_info["WINPATH"] = [FilePathTranslatorInfo("Y", "/tmp")]
+            part_info["WINPATH"] = [FilePathTranslatorInfo("Y", "/tmp", "")]
         infos = self.o.on_configure(
             self.context, completed_steps, steps_to_do, part_info, generator,
             fileDir, formatName, fileTemplate)

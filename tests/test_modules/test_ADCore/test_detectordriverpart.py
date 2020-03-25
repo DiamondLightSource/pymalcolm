@@ -169,7 +169,7 @@ class TestDetectorDriverPartWindows(ChildTestCase):
             datasetType=[AttributeDatasetType.MONITOR, AttributeDatasetType.DETECTOR, AttributeDatasetType.POSITION],
         )
         self.o.extra_attributes.set_value(extra_attributes)
-        win_info = FilePathTranslatorInfo("", "/tmp")
+        win_info = FilePathTranslatorInfo("", "/tmp", "//dc")
         part_info = dict(anyname=[win_info])
         self.o.on_configure(
             self.context, completed_steps, steps_to_do, part_info, generator,
