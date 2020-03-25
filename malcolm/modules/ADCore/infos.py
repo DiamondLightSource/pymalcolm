@@ -14,10 +14,10 @@ class FilePathTranslatorInfo(Info):
         windows drive letter is an empty string, the network drive is prepended.
     """
 
-    def __init__(self, windows_drive_letter, path_prefix, network_drive="//dc"):
+    def __init__(self, windows_drive_letter, path_prefix, network_prefix):
         self.windows_drive_letter = windows_drive_letter
         self.path_prefix = path_prefix
-        self.network_drive = network_drive
+        self.network_prefix = network_prefix
 
     @classmethod
     def translate_filepath(cls, part_info, filepath):
@@ -28,11 +28,11 @@ class FilePathTranslatorInfo(Info):
         assert filepath.startswith(translator.path_prefix), \
             "filepath %s does not start with expected prefix %s" % (
                 filepath, translator.path_prefix)
-        if translator.windows_drive_letter is "":
-             path_prefix = translator.network_drive + translator.path_prefix
+        if translator.network_prefix != "":
              win_path = filepath.replace(
                  translator.path_prefix,
-                 path_prefix).replace("/", "\\")
+                 translator.network_prefix + translator.path_prefix
+                 ).replace("/", "\\")
         else:
             win_path = filepath.replace(
                 translator.path_prefix,
