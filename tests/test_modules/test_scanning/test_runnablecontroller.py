@@ -1,6 +1,8 @@
 import unittest
 import time
 
+import cothread
+
 from scanpointgenerator import LineGenerator, CompoundGenerator
 from annotypes import add_call_types
 
@@ -8,7 +10,7 @@ from malcolm.modules.demo.parts.motionchildpart import AExceptionStep
 from malcolm.modules.scanning.hooks import ACompletedSteps, AContext, \
     AStepsToDo, ValidateHook, UInfos, AAxesToMove, AGenerator
 from malcolm.core import Process, Context, AlarmStatus, \
-    AlarmSeverity, AbortedError
+    AlarmSeverity, AbortedError, PartRegistrar
 from malcolm.modules.demo.parts import MotionChildPart
 from malcolm.modules.demo.blocks import motion_block
 from malcolm.compat import OrderedDict
@@ -16,6 +18,7 @@ from malcolm.modules.scanning.controllers import \
     RunnableController
 from malcolm.modules.scanning.infos import ParameterTweakInfo
 from malcolm.modules.scanning.util import RunnableStates
+from malcolm.modules import builtin, scanning
 
 
 class MisbehavingPauseException(Exception):
@@ -54,6 +57,32 @@ class MisbehavingPart(MotionChildPart):
             exceptionStep)
         if completed_steps == 3:
             raise MisbehavingPauseException("Called magic number to make pause throw an exception")
+
+
+class RunForeverPart(builtin.parts.ChildPart):
+    """Part which runs forever and takes 1s to abort"""
+
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        super(RunForeverPart, self).setup(registrar)
+        # Hooks
+        registrar.hook(scanning.hooks.RunHook, self.on_run)
+        #registrar.hook(scanning.hooks.AbortHook, self.on_abort)
+        registrar.hook((scanning.hooks.AbortHook,
+                        scanning.hooks.PauseHook), self.on_abort)
+
+    @add_call_types
+    def on_run(self, context):
+        # type: (scanning.hooks.AContext) -> None
+        # Wait forever here
+        while True:
+            context.sleep(1.0)
+
+    @add_call_types
+    def on_abort(self, context):
+        # type: (scanning.hooks.AContext) -> None
+        # Sleep for 1s before returning
+        context.sleep(1.0)
 
 
 class TestRunnableStates(unittest.TestCase):
@@ -142,7 +171,7 @@ class TestRunnableController(unittest.TestCase):
         assert self.c.configured_steps.value == 0
         assert self.c.total_steps.value == 0
         assert list(self.b.configure.meta.takes.elements) == \
-               ["generator", "axesToMove", "exceptionStep"]
+            ["generator", "axesToMove", "exceptionStep"]
 
     def test_reset(self):
         self.c.disable()
@@ -443,3 +472,82 @@ class TestRunnableController(unittest.TestCase):
         with self.assertRaises(AbortedError):
             f.result()
 
+
+class TestRunnableControllerAborting(unittest.TestCase):
+    def setUp(self):
+        self.p = Process('process1')
+        self.context = Context(self.p)
+
+        # Make a motion block to act as our child
+        for c in motion_block(mri="childBlock", config_dir="/tmp"):
+            self.p.add_controller(c)
+        self.b_child = self.context.block_view("childBlock")
+
+        part = RunForeverPart(
+            mri='childBlock', name='part1', initial_visibility=True)
+
+        # create a root block for the RunnableController block to reside in
+        self.c = RunnableController(mri='mainBlock', config_dir="/tmp")
+        self.c.add_part(part)
+        self.p.add_controller(self.c)
+        self.b = self.context.block_view("mainBlock")
+        self.ss = self.c.state_set
+
+        # start the process off
+        self.checkState(self.ss.DISABLED)
+        self.p.start()
+        self.checkState(self.ss.READY)
+
+    def tearDown(self):
+        self.p.stop(timeout=1)
+
+    def checkState(self, state):
+        self.assertEqual(self.c.state.value, state)
+
+    def run_thread_func(self):
+        # Start running block
+        try:
+            print("Run thread: calling run()")
+            self.b.run()
+        except AbortedError:
+            # We expect this error when aborted
+            pass
+        else:
+            self.fail("Expected AbortedError from abort call")
+
+        print("Run thread: setting state")
+
+        # Main thread calls abort, we need to ensure we are in Aborted state
+        current_state = self.c.state.value
+        if current_state is not self.ss.ABORTED:
+            # Sleep so that main thread will be ready
+            cothread.Sleep(1.0)
+            self.fail("Expected block in Aborted state. Got: {state}".format(
+                state=current_state))
+
+    def test_run(self):
+        # Configure our block
+        duration = 0.1
+        line1 = LineGenerator('y', 'mm', 0, 2, 3)
+        line2 = LineGenerator('x', 'mm', 0, 2, 2, alternate=True)
+        compound = CompoundGenerator([line1, line2], [], [], duration)
+        self.b.configure(generator=compound, axesToMove=['x'])
+
+        # Spawn the run thread
+        print("Main thread: spawning run thread")
+        run_thread = cothread.Spawn(self.run_thread_func, raise_on_wait=True)
+
+        # Wait for thread to run
+        self.context.sleep(1.0)
+        self.checkState(self.ss.RUNNING)
+
+        # Now we call abort
+        print("Main thread: calling abort()")
+        # self.b.abort()
+        self.c.abort()
+        print("Main thread: getting state")
+        self.checkState(self.ss.ABORTED)
+
+        # Wait on run_thread so we can check for exceptions
+        print("Main thread: waiting")
+        run_thread.Wait(5.0)
