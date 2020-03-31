@@ -504,26 +504,14 @@ class TestRunnableControllerAborting(unittest.TestCase):
     def checkState(self, state):
         self.assertEqual(self.c.state.value, state)
 
-    def run_thread_func(self):
-        # Start running block
-        try:
-            print("Run thread: calling run()")
-            self.b.run()
-        except AbortedError:
-            # We expect this error when aborted
-            pass
-        else:
-            self.fail("Expected AbortedError from abort call")
-
-        print("Run thread: setting state")
-
-        # Main thread calls abort, we need to ensure we are in Aborted state
-        current_state = self.c.state.value
-        if current_state is not self.ss.ABORTED:
-            # Sleep so that main thread will be ready
-            cothread.Sleep(1.0)
-            self.fail("Expected block in Aborted state. Got: {state}".format(
-                state=current_state))
+    def abort_after_1s(self):
+        # Need a new context as in a different cothread
+        c = Context(self.p)
+        b = c.block_view("mainBlock")
+        c.sleep(1.0)
+        self.checkState(self.ss.RUNNING)
+        b.abort()
+        self.checkState(self.ss.ABORTED)
 
     def test_run(self):
         # Configure our block
@@ -533,21 +521,15 @@ class TestRunnableControllerAborting(unittest.TestCase):
         compound = CompoundGenerator([line1, line2], [], [], duration)
         self.b.configure(generator=compound, axesToMove=['x'])
 
-        # Spawn the run thread
-        print("Main thread: spawning run thread")
-        run_thread = cothread.Spawn(self.run_thread_func, raise_on_wait=True)
+        # Spawn the abort thread
+        abort_thread = cothread.Spawn(self.abort_after_1s, raise_on_wait=True)
 
-        # Wait for thread to run
-        self.context.sleep(1.0)
-        self.checkState(self.ss.RUNNING)
+        # Do the run, which will be aborted
+        with self.assertRaises(AbortedError):
+            self.b.run()
 
-        # Now we call abort
-        print("Main thread: calling abort()")
-        # self.b.abort()
-        self.c.abort()
-        print("Main thread: getting state")
         self.checkState(self.ss.ABORTED)
 
-        # Wait on run_thread so we can check for exceptions
-        print("Main thread: waiting")
-        run_thread.Wait(5.0)
+        # Check the abort thread didn't raise
+        abort_thread.Wait(1.0)
+
