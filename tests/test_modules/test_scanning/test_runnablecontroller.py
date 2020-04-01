@@ -463,38 +463,6 @@ class TestRunnableController(unittest.TestCase):
         with self.assertRaises(AbortedError):
             f.result()
 
-
-class TestRunnableControllerAborting(unittest.TestCase):
-    def setUp(self):
-        self.p = Process('process')
-        self.context = Context(self.p)
-
-        # Make a motion block to act as our child
-        for c in motion_block(mri="childBlock", config_dir="/tmp"):
-            self.p.add_controller(c)
-        self.b_child = self.context.block_view("childBlock")
-
-        part = RunForeverPart(
-            mri='childBlock', name='part', initial_visibility=True)
-
-        # create a root block for the RunnableController block to reside in
-        self.c = RunnableController(mri='mainBlock', config_dir="/tmp")
-        self.c.add_part(part)
-        self.p.add_controller(self.c)
-        self.b = self.context.block_view("mainBlock")
-        self.ss = self.c.state_set
-
-        # start the process off
-        self.checkState(self.ss.DISABLED)
-        self.p.start()
-        self.checkState(self.ss.READY)
-
-    def tearDown(self):
-        self.p.stop(timeout=1)
-
-    def checkState(self, state):
-        self.assertEqual(self.c.state.value, state)
-
     def abort_after_1s(self):
         # Need a new context as in a different cothread
         c = Context(self.p)
@@ -505,6 +473,11 @@ class TestRunnableControllerAborting(unittest.TestCase):
         self.checkState(self.ss.ABORTED)
 
     def test_run_returns_in_ABORTED_state_when_aborted(self):
+        # Add our forever running part
+        forever_part = RunForeverPart(
+            mri='childBlock', name='forever_part', initial_visibility=True)
+        self.c.add_part(forever_part)
+
         # Configure our block
         duration = 0.1
         line1 = LineGenerator('y', 'mm', 0, 2, 3)
