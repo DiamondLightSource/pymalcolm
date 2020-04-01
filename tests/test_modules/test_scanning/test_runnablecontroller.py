@@ -67,9 +67,7 @@ class RunForeverPart(builtin.parts.ChildPart):
         super(RunForeverPart, self).setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.RunHook, self.on_run)
-        #registrar.hook(scanning.hooks.AbortHook, self.on_abort)
-        registrar.hook((scanning.hooks.AbortHook,
-                        scanning.hooks.PauseHook), self.on_abort)
+        registrar.hook(scanning.hooks.AbortHook, self.on_abort)
 
     @add_call_types
     def on_run(self, context):
@@ -475,7 +473,7 @@ class TestRunnableController(unittest.TestCase):
 
 class TestRunnableControllerAborting(unittest.TestCase):
     def setUp(self):
-        self.p = Process('process1')
+        self.p = Process('process')
         self.context = Context(self.p)
 
         # Make a motion block to act as our child
@@ -484,7 +482,7 @@ class TestRunnableControllerAborting(unittest.TestCase):
         self.b_child = self.context.block_view("childBlock")
 
         part = RunForeverPart(
-            mri='childBlock', name='part1', initial_visibility=True)
+            mri='childBlock', name='part', initial_visibility=True)
 
         # create a root block for the RunnableController block to reside in
         self.c = RunnableController(mri='mainBlock', config_dir="/tmp")
@@ -513,7 +511,7 @@ class TestRunnableControllerAborting(unittest.TestCase):
         b.abort()
         self.checkState(self.ss.ABORTED)
 
-    def test_run(self):
+    def test_run_returns_in_ABORTED_state_when_aborted(self):
         # Configure our block
         duration = 0.1
         line1 = LineGenerator('y', 'mm', 0, 2, 3)
@@ -532,4 +530,3 @@ class TestRunnableControllerAborting(unittest.TestCase):
 
         # Check the abort thread didn't raise
         abort_thread.Wait(1.0)
-
