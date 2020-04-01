@@ -202,7 +202,7 @@ def main():
 
     args = parse_args()
 
-    # Make some log config, either fron command line or
+    # Make some log config using command line args or defaults
     log_config = make_logging_config(args)
 
     # Start it off, and tell it to stop when we quit
