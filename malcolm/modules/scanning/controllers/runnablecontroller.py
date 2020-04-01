@@ -497,10 +497,10 @@ class RunnableController(builtin.controllers.ManagerController):
         will return in Fault state. If the user disables then it will return in
         Disabled state.
         """
+        self.try_aborting_function(ss.ABORTING, ss.ABORTED, self.do_abort)
         # Tell _call_do_run not to resume
         if self.resume_queue:
             self.resume_queue.put(False)
-        self.try_aborting_function(ss.ABORTING, ss.ABORTED, self.do_abort)
 
     def do_abort(self):
         # type: () -> None
