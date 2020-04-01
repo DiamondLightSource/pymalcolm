@@ -55,7 +55,11 @@ class BlockHandler(Handler):
         assert isinstance(view, Method), \
             "%s.%s is not a Method so cannot do RPC" % tuple(path)
         add_wrapper = method_return_unpacked() in view.meta.tags
-
+        self.controller.log.debug(
+            "RPC method {method} called with params: {params}".format(
+                method=method,
+                params=parameters
+            ))
         post = Post(path=path, parameters=parameters)
 
         def handle_post_response(response):
