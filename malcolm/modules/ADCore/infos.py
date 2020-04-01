@@ -28,6 +28,8 @@ class FilePathTranslatorInfo(Info):
         assert filepath.startswith(translator.path_prefix), \
             "filepath %s does not start with expected prefix %s" % (
                 filepath, translator.path_prefix)
+
+        filepath = filepath.replace(":", "_")
         if translator.network_prefix != "":
              win_path = filepath.replace(
                  translator.path_prefix,
