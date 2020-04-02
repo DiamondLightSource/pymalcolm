@@ -71,9 +71,14 @@ class BlockHandler(Handler):
                 else:
                     ret = response.value
                 v = convert_dict_to_value(ret)
-                self.controller.log.debug(
-                    "%s: RPC method %s return value %s",
-                    self.controller.mri, method, ret)
+                if ret:
+                    self.controller.log.debug(
+                        "%s: RPC method %s returned with value %s",
+                        self.controller.mri, method, ret)
+                else:
+                    self.controller.log.debug(
+                        "%s: RPC method %s returned",
+                        self.controller.mri, method)
                 op.done(v)
             else:
                 if isinstance(response, Error):
