@@ -316,6 +316,48 @@ class TestPandaSeqTriggerPart(ChildTestCase):
 
         self.o.on_configure(self.context, completed_steps, steps_to_do, {}, generator, axes_to_move)
 
+    def test_configure_pcomp_row_trigger_with_single_point_rows(self):
+        x_steps, y_steps = 1, 5
+        xs = LineGenerator("x", "mm", 0.0, 0.5, x_steps, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 4, y_steps)
+        generator = CompoundGenerator([ys, xs], [], [], 1.0)
+        generator.prepare()
+        completed_steps = 0
+        steps_to_do = x_steps * y_steps
+        self.set_motor_attributes()
+        axes_to_move = ["x", "y"]
+
+        self.o.on_configure(
+            self.context, completed_steps, steps_to_do, {}, generator,
+            axes_to_move)
+
+        # Triggers
+        GT = Trigger.POSA_GT
+        LT = Trigger.POSA_LT
+        I = Trigger.IMMEDIATE
+        # Half a frame
+        hf = 62500000
+        # Half blind
+        hb = 75000000
+        self.seq_parts[1].table_set.assert_called_once()
+        table = self.seq_parts[1].table_set.call_args[0][0]
+        assert table.repeats == [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        assert table.trigger == [LT, I, GT, I, LT, I, GT, I, LT, I]
+        assert table.time1 == [hf, hb, hf, hb, hf, hb, hf, hb, hf, 125000000]
+        assert table.position == [0, 0, -500, 0, 0, 0, -500, 0, 0, 0]
+        assert table.outa1 == [1, 0, 1, 0, 1, 0, 1, 0, 1, 0]  # Live
+        assert table.outb1 == [0, 1, 0, 1, 0, 1, 0, 1, 0, 1]  # Dead
+        assert table.outc1 == table.outd1 == table.oute1 == table.outf1 == \
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        assert table.time2 == [hf, hb, hf, hb, hf, hb, hf, hb, hf, 125000000]
+        assert table.outa2 == table.outb2 == table.outc2 == table.outd2 == \
+            table.oute2 == table.outf2 == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        # Check we didn't press the gate part
+        self.gate_part.enable_set.assert_not_called()
+        self.o.on_run(self.context)
+        # Check we pressed the gate part
+        self.gate_part.enable_set.assert_called_once()
+
     def test_configure_long_pcomp_row_trigger(self):
         if 'diamond.ac.uk' not in socket.gethostname():
             pytest.skip("performance test only")
