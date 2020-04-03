@@ -341,6 +341,9 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
     @staticmethod
     def _generate_immediate_rows(durations):
         """Create a series of immediate rows from `durations`"""
+        if len(durations) == 0:
+            return []
+
         pairwise_equal = np.empty(len(durations), dtype=bool)
         pairwise_equal[0] = True  # Initial duration starts first row
 
