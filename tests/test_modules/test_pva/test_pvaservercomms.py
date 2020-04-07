@@ -1,9 +1,72 @@
 import unittest
-from mock import MagicMock, patch
-import sys
+from mock import MagicMock, patch, call
 
-import malcolm.modules.pva.controllers.pvaservercomms
-from malcolm.modules.pva.controllers import PvaServerComms
+from collections import OrderedDict
+
+from malcolm.core import Method
+from malcolm.modules.pva.controllers import PvaServerComms, BlockHandler
+
+
+class TestBlockHandler(unittest.TestCase):
+
+    def setUp(self):
+        self.controller_mock = MagicMock(name="controller_mock")
+        self.block_handler = BlockHandler(self.controller_mock)
+
+    @patch('malcolm.modules.pva.controllers.pvaservercomms.Post')
+    def test_rpc_handle_post_response_nested_function_with_bad_response(
+            self, post_mock):
+        pv_mock = MagicMock(name="pv_mock")
+        op_mock = MagicMock(name="op_mock")
+
+        # Set up the ID
+        value_mock = MagicMock(name="value_mock")
+        value_mock.getID.return_value = "value_id"
+        op_mock.value.return_value = value_mock
+
+        # Set up the mocked Post class to return a mocked instance
+        post_instance_mock = MagicMock(name="post_instance_mock")
+        post_mock.return_value = post_instance_mock
+
+        # Mock the callback method
+        response_mock = MagicMock(name="response_mock")
+        response_mock.to_dict.return_value = "this is a bad response indeed"
+
+        def mock_set_callback_func(*args):
+            args[0](response_mock)
+
+        post_instance_mock.set_callback.side_effect = mock_set_callback_func
+
+        # Set method name
+        method = "method_name"
+        self.block_handler.field = method
+
+        # Mock controller to return method
+        view_mock = MagicMock(name="view_mock", spec=Method)
+        self.controller_mock.block_view.return_value = {
+            method: view_mock
+        }
+
+        # Now we can call the RPC method
+        self.block_handler.rpc(pv_mock, op_mock)
+
+        # Perform our checks
+        bad_response_message = "BadResponse: this is a bad response indeed"
+        op_mock.done.assert_called_once_with(error=bad_response_message)
+
+        rpc_call = call(
+            "%s: RPC method %s called with params %s",
+            self.controller_mock.mri,
+            method,
+            OrderedDict([('typeid', 'value_id')]))
+
+        response_call = call(
+            "%s: RPC method %s got a bad response (%s)",
+            self.controller_mock.mri,
+            method,
+            bad_response_message
+        )
+        self.controller_mock.log.debug.assert_has_calls([rpc_call, response_call])
 
 
 class TestPvaServerComms(unittest.TestCase):
