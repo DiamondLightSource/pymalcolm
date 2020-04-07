@@ -1,6 +1,8 @@
 import unittest
-from mock import MagicMock
+from mock import MagicMock, patch
+import sys
 
+import malcolm.modules.pva.controllers.pvaservercomms
 from malcolm.modules.pva.controllers import PvaServerComms
 
 
@@ -60,3 +62,18 @@ class TestPvaServerComms(unittest.TestCase):
 
         self.assertEqual("return_value", result)
         mock_make_channel.assert_called_once_with(channel_name, source)
+
+    @patch('malcolm.modules.pva.controllers.pvaservercomms.cothread.CallbackResult')
+    def test_makeChannel_calls_cothread_CallbackResult(self, callback_mock):
+        # Add channel
+        channel_name = "CHANNEL1"
+        source = "Source1"
+        self.pva_server_comms._published.add(channel_name)
+
+        self.pva_server_comms.makeChannel(channel_name, source)
+
+        callback_mock.assert_called_once_with(
+            self.pva_server_comms._make_channel,
+            channel_name,
+            source,
+            callback_timeout=1.0)
