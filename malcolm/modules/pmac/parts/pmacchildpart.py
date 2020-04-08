@@ -184,7 +184,9 @@ class PmacChildPart(builtin.parts.ChildPart):
         for axis_name, velocity in point_velocities(
                 self.axis_mapping, first_point).items():
             motor_info = self.axis_mapping[axis_name]  # type: MotorInfo
-            acceleration_distance = motor_info.ramp_distance(0, velocity)
+            acceleration_distance = motor_info.ramp_distance(
+                0, velocity, min_ramp_time=MIN_TIME
+            )
             start_pos = first_point.lower[axis_name] - acceleration_distance
             args[motor_info.cs_axis.lower()] = start_pos
             # Time profile that the move is likely to take

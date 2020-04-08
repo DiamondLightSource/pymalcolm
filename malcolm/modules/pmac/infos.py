@@ -35,10 +35,12 @@ class MotorInfo(Info):
         ramp_time = abs(v2 - v1) / self.acceleration
         return ramp_time
 
-    def ramp_distance(self, v1, v2, ramp_time=None):
+    def ramp_distance(self, v1, v2, ramp_time=None, min_ramp_time=None):
         # The distance moved in the first part of the ramp
         if ramp_time is None:
             ramp_time = self.acceleration_time(v1, v2)
+        if min_ramp_time is not None:
+            ramp_time = max(ramp_time, min_ramp_time)
         ramp_distance = (v1 + v2) * ramp_time / 2
         return ramp_distance
 
