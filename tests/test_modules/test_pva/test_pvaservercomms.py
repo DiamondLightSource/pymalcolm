@@ -3,7 +3,7 @@ from mock import MagicMock, patch, call
 
 from collections import OrderedDict
 
-from malcolm.core import Method
+from malcolm.core import Method, Error
 from malcolm.modules.pva.controllers import PvaServerComms, BlockHandler
 
 
@@ -68,8 +68,8 @@ class TestBlockHandler(unittest.TestCase):
         )
         self.controller_mock.log.debug.assert_has_calls([rpc_call, response_call])
 
-    @patch('malcolm.modules.pva.controllers.pvaservercomms.Put')
     @patch('malcolm.modules.pva.controllers.pvaservercomms.convert_value_to_dict')
+    @patch('malcolm.modules.pva.controllers.pvaservercomms.Put')
     def test_put_method_handle_put_response_nested_function_handles_BadResponse(
             self, put_mock, convert_value_to_dict_mock):
         pv_mock = MagicMock(name="pv_mock")
@@ -107,6 +107,47 @@ class TestBlockHandler(unittest.TestCase):
         put_instance_mock.set_callback.assert_called_once()
 
         bad_response_message = "BadResponse: this is a bad response indeed"
+        op_mock.done.assert_called_once_with(error=bad_response_message)
+
+    @patch('malcolm.modules.pva.controllers.pvaservercomms.convert_value_to_dict')
+    @patch('malcolm.modules.pva.controllers.pvaservercomms.Put')
+    def test_put_method_handle_put_response_nested_function_handles_Error(
+            self, put_mock, convert_value_to_dict_mock):
+        pv_mock = MagicMock(name="pv_mock")
+        op_mock = MagicMock(name="op_mock")
+
+        # We need to mock value_changed
+        changed_fields_mock = MagicMock(name="changed_fields_mock")
+        value_mock = MagicMock(name="value_mock")
+        op_mock.value.return_value = value_mock
+        value_mock.changedSet.return_value = changed_fields_mock
+        changed_fields_mock.intersection.return_value = ["value"]
+
+        # Now the field can be set on the BlockHandler
+        self.block_handler.field = "field"
+
+        # Set up the mocked Post class to return a mocked instance
+        put_instance_mock = MagicMock(name="put_instance_mock")
+        put_mock.return_value = put_instance_mock
+
+        # Mock the callback method
+        response_mock = MagicMock(name="response_mock", spec=Error)
+        response_mock.message = "This is an error"
+
+        def mock_set_callback_func(*args):
+            args[0](response_mock)
+
+        put_instance_mock.set_callback.side_effect = mock_set_callback_func
+        put_mock.Put.set_callback.side_effect = mock_set_callback_func
+
+        # Now we can call the put method
+        self.block_handler.put(pv_mock, op_mock)
+
+        # Perform our checks
+        put_mock.assert_called_once()
+        put_instance_mock.set_callback.assert_called_once()
+
+        bad_response_message = "str: This is an error"
         op_mock.done.assert_called_once_with(error=bad_response_message)
 
 
