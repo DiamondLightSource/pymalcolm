@@ -13,16 +13,22 @@ class TestBlockHandler(unittest.TestCase):
         self.controller_mock = MagicMock(name="controller_mock")
         self.block_handler = BlockHandler(self.controller_mock)
 
+        self.pv_mock = MagicMock(name="pv_mock")
+        self.op_mock = MagicMock(name="op_mock")
+
+        # Set up the value mock and ID
+        self.value_mock = MagicMock(name="value_mock")
+        self.value_mock.getID.return_value = "value_id"
+        self.op_mock.value.return_value = self.value_mock
+
+        # Set up changed fields mock
+        changed_fields_mock = MagicMock(name="changed_fields_mock")
+        changed_fields_mock.intersection.return_value = ["value"]
+        self.value_mock.changedSet.return_value = changed_fields_mock
+
     @patch('malcolm.modules.pva.controllers.pvaservercomms.Post')
     def test_rpc_handle_post_response_nested_function_with_bad_response(
             self, post_mock):
-        pv_mock = MagicMock(name="pv_mock")
-        op_mock = MagicMock(name="op_mock")
-
-        # Set up the ID
-        value_mock = MagicMock(name="value_mock")
-        value_mock.getID.return_value = "value_id"
-        op_mock.value.return_value = value_mock
 
         # Set up the mocked Post class to return a mocked instance
         post_instance_mock = MagicMock(name="post_instance_mock")
@@ -48,11 +54,11 @@ class TestBlockHandler(unittest.TestCase):
         }
 
         # Now we can call the RPC method
-        self.block_handler.rpc(pv_mock, op_mock)
+        self.block_handler.rpc(self.pv_mock, self.op_mock)
 
         # Perform our checks
         bad_response_message = "BadResponse: this is a bad response indeed"
-        op_mock.done.assert_called_once_with(error=bad_response_message)
+        self.op_mock.done.assert_called_once_with(error=bad_response_message)
 
         rpc_call = call(
             "%s: RPC method %s called with params %s",
@@ -72,17 +78,7 @@ class TestBlockHandler(unittest.TestCase):
     @patch('malcolm.modules.pva.controllers.pvaservercomms.Put')
     def test_put_method_handle_put_response_nested_function_handles_BadResponse(
             self, put_mock, convert_value_to_dict_mock):
-        pv_mock = MagicMock(name="pv_mock")
-        op_mock = MagicMock(name="op_mock")
-
-        # We need to mock value_changed
-        changed_fields_mock = MagicMock(name="changed_fields_mock")
-        value_mock = MagicMock(name="value_mock")
-        op_mock.value.return_value = value_mock
-        value_mock.changedSet.return_value = changed_fields_mock
-        changed_fields_mock.intersection.return_value = ["value"]
-
-        # Now the field can be set on the BlockHandler
+        # Set field
         self.block_handler.field = "field"
 
         # Set up the mocked Post class to return a mocked instance
@@ -97,33 +93,22 @@ class TestBlockHandler(unittest.TestCase):
             args[0](response_mock)
 
         put_instance_mock.set_callback.side_effect = mock_set_callback_func
-        put_mock.Put.set_callback.side_effect = mock_set_callback_func
 
         # Now we can call the put method
-        self.block_handler.put(pv_mock, op_mock)
+        self.block_handler.put(self.pv_mock, self.op_mock)
 
         # Perform our checks
         put_mock.assert_called_once()
         put_instance_mock.set_callback.assert_called_once()
 
         bad_response_message = "BadResponse: this is a bad response indeed"
-        op_mock.done.assert_called_once_with(error=bad_response_message)
+        self.op_mock.done.assert_called_once_with(error=bad_response_message)
 
     @patch('malcolm.modules.pva.controllers.pvaservercomms.convert_value_to_dict')
     @patch('malcolm.modules.pva.controllers.pvaservercomms.Put')
     def test_put_method_handle_put_response_nested_function_handles_Error(
             self, put_mock, convert_value_to_dict_mock):
-        pv_mock = MagicMock(name="pv_mock")
-        op_mock = MagicMock(name="op_mock")
-
-        # We need to mock value_changed
-        changed_fields_mock = MagicMock(name="changed_fields_mock")
-        value_mock = MagicMock(name="value_mock")
-        op_mock.value.return_value = value_mock
-        value_mock.changedSet.return_value = changed_fields_mock
-        changed_fields_mock.intersection.return_value = ["value"]
-
-        # Now the field can be set on the BlockHandler
+        # Set field
         self.block_handler.field = "field"
 
         # Set up the mocked Post class to return a mocked instance
@@ -132,23 +117,23 @@ class TestBlockHandler(unittest.TestCase):
 
         # Mock the callback method
         response_mock = MagicMock(name="response_mock", spec=Error)
-        response_mock.message = "This is an error"
+        error_message = "Oh dear, an error was encountered"
+        response_mock.message = error_message
 
         def mock_set_callback_func(*args):
             args[0](response_mock)
 
         put_instance_mock.set_callback.side_effect = mock_set_callback_func
-        put_mock.Put.set_callback.side_effect = mock_set_callback_func
 
         # Now we can call the put method
-        self.block_handler.put(pv_mock, op_mock)
+        self.block_handler.put(self.pv_mock, self.op_mock)
 
         # Perform our checks
         put_mock.assert_called_once()
         put_instance_mock.set_callback.assert_called_once()
 
-        bad_response_message = "str: This is an error"
-        op_mock.done.assert_called_once_with(error=bad_response_message)
+        self.op_mock.done.assert_called_once_with(error="str: {msg}".format(
+            msg=error_message))
 
 
 class TestPvaServerComms(unittest.TestCase):
