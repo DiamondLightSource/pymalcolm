@@ -1,6 +1,8 @@
 import unittest
 import time
 
+import cothread
+
 from scanpointgenerator import LineGenerator, CompoundGenerator
 from annotypes import add_call_types
 
@@ -8,7 +10,7 @@ from malcolm.modules.demo.parts.motionchildpart import AExceptionStep
 from malcolm.modules.scanning.hooks import ACompletedSteps, AContext, \
     AStepsToDo, ValidateHook, UInfos, AAxesToMove, AGenerator
 from malcolm.core import Process, Context, AlarmStatus, \
-    AlarmSeverity, AbortedError
+    AlarmSeverity, AbortedError, PartRegistrar
 from malcolm.modules.demo.parts import MotionChildPart
 from malcolm.modules.demo.blocks import motion_block
 from malcolm.compat import OrderedDict
@@ -16,6 +18,7 @@ from malcolm.modules.scanning.controllers import \
     RunnableController
 from malcolm.modules.scanning.infos import ParameterTweakInfo
 from malcolm.modules.scanning.util import RunnableStates
+from malcolm.modules import builtin, scanning
 
 
 class MisbehavingPauseException(Exception):
@@ -54,6 +57,30 @@ class MisbehavingPart(MotionChildPart):
             exceptionStep)
         if completed_steps == 3:
             raise MisbehavingPauseException("Called magic number to make pause throw an exception")
+
+
+class RunForeverPart(builtin.parts.ChildPart):
+    """Part which runs forever and takes 1s to abort"""
+
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        super(RunForeverPart, self).setup(registrar)
+        # Hooks
+        registrar.hook(scanning.hooks.RunHook, self.on_run)
+        registrar.hook(scanning.hooks.AbortHook, self.on_abort)
+
+    @add_call_types
+    def on_run(self, context):
+        # type: (scanning.hooks.AContext) -> None
+        # Wait forever here
+        while True:
+            context.sleep(1.0)
+
+    @add_call_types
+    def on_abort(self, context):
+        # type: (scanning.hooks.AContext) -> None
+        # Sleep for 1s before returning
+        context.sleep(1.0)
 
 
 class TestRunnableStates(unittest.TestCase):
@@ -96,23 +123,16 @@ class TestRunnableStates(unittest.TestCase):
 
 class TestRunnableController(unittest.TestCase):
     def setUp(self):
-        self.p = Process('process1')
+        self.p = Process('process')
         self.context = Context(self.p)
-
-        self.p2 = Process('process2')
-        self.context2 = Context(self.p2)
 
         # Make a motion block to act as our child
         for c in motion_block(mri="childBlock", config_dir="/tmp"):
             self.p.add_controller(c)
         self.b_child = self.context.block_view("childBlock")
 
-        # Make a RunnableChildPart to control the ticker_block
-        # part2 = RunnableChildPart(
-        #     mri='childBlock', name='part2', initial_visibility=True)
-
         part = MisbehavingPart(
-            mri='childBlock', name='part2', initial_visibility=True)
+            mri='childBlock', name='part', initial_visibility=True)
 
         # create a root block for the RunnableController block to reside in
         self.c = RunnableController(mri='mainBlock', config_dir="/tmp")
@@ -142,7 +162,7 @@ class TestRunnableController(unittest.TestCase):
         assert self.c.configured_steps.value == 0
         assert self.c.total_steps.value == 0
         assert list(self.b.configure.meta.takes.elements) == \
-               ["generator", "axesToMove", "exceptionStep"]
+            ["generator", "axesToMove", "exceptionStep"]
 
     def test_reset(self):
         self.c.disable()
@@ -193,7 +213,7 @@ class TestRunnableController(unittest.TestCase):
         assert self.b.modified.alarm.severity == AlarmSeverity.MINOR_ALARM
         assert self.b.modified.alarm.status == AlarmStatus.CONF_STATUS
         assert self.b.modified.alarm.message == \
-            "part2.design.value = 'new_child' not 'init_child'"
+            "part.design.value = 'new_child' not 'init_child'"
         # Load the child again
         self.b_child.design.put_value("new_child")
         assert self.b.modified.value is True
@@ -255,7 +275,7 @@ class TestRunnableController(unittest.TestCase):
         self.b.run()
         self.checkState(self.ss.FINISHED)
 
-    def test_abort(self):
+    def test_abort_during_run(self):
         self.prepare_half_run()
         self.b.run()
         self.b.abort()
@@ -443,3 +463,36 @@ class TestRunnableController(unittest.TestCase):
         with self.assertRaises(AbortedError):
             f.result()
 
+    def abort_after_1s(self):
+        # Need a new context as in a different cothread
+        c = Context(self.p)
+        b = c.block_view("mainBlock")
+        c.sleep(1.0)
+        self.checkState(self.ss.RUNNING)
+        b.abort()
+        self.checkState(self.ss.ABORTED)
+
+    def test_run_returns_in_ABORTED_state_when_aborted(self):
+        # Add our forever running part
+        forever_part = RunForeverPart(
+            mri='childBlock', name='forever_part', initial_visibility=True)
+        self.c.add_part(forever_part)
+
+        # Configure our block
+        duration = 0.1
+        line1 = LineGenerator('y', 'mm', 0, 2, 3)
+        line2 = LineGenerator('x', 'mm', 0, 2, 2, alternate=True)
+        compound = CompoundGenerator([line1, line2], [], [], duration)
+        self.b.configure(generator=compound, axesToMove=['x'])
+
+        # Spawn the abort thread
+        abort_thread = cothread.Spawn(self.abort_after_1s, raise_on_wait=True)
+
+        # Do the run, which will be aborted
+        with self.assertRaises(AbortedError):
+            self.b.run()
+
+        self.checkState(self.ss.ABORTED)
+
+        # Check the abort thread didn't raise
+        abort_thread.Wait(1.0)

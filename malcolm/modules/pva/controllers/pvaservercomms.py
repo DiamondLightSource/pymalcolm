@@ -56,6 +56,9 @@ class BlockHandler(Handler):
             "%s.%s is not a Method so cannot do RPC" % tuple(path)
         add_wrapper = method_return_unpacked() in view.meta.tags
 
+        self.controller.log.debug(
+            "%s: RPC method %s called with params %s", self.controller.mri,
+            method, parameters)
         post = Post(path=path, parameters=parameters)
 
         def handle_post_response(response):
@@ -68,12 +71,26 @@ class BlockHandler(Handler):
                 else:
                     ret = response.value
                 v = convert_dict_to_value(ret)
+                if ret:
+                    self.controller.log.debug(
+                        "%s: RPC method %s returned with value %s",
+                        self.controller.mri, method, ret)
+                else:
+                    self.controller.log.debug(
+                        "%s: RPC method %s returned",
+                        self.controller.mri, method)
                 op.done(v)
             else:
                 if isinstance(response, Error):
                     message = stringify_error(response.message)
+                    self.controller.log.debug(
+                        "%s: RPC method %s resulted in an error (%s)",
+                        self.controller.mri, method, message)
                 else:
                     message = "BadResponse: %s" % response.to_dict()
+                    self.controller.log.debug(
+                        "%s: RPC method %s got a bad response (%s)",
+                        self.controller.mri, method, message)
                 op.done(error=message)
 
         post.set_callback(handle_post_response)

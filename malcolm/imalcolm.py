@@ -202,7 +202,7 @@ def main():
 
     args = parse_args()
 
-    # Make some log config, either fron command line or
+    # Make some log config using command line args or defaults
     log_config = make_logging_config(args)
 
     # Start it off, and tell it to stop when we quit
@@ -320,7 +320,7 @@ if __name__ == "__main__":
         # DLS developed
         "annotypes==0.20",
         "cothread==2.14",
-        "scanpointgenerator==3.0",
+        "scanpointgenerator==3.1",
         "vdsgen==0.5.1"
     )
     #sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "cothread"))
