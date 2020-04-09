@@ -483,7 +483,9 @@ class PmacChildPart(builtin.parts.ChildPart):
             for _ in range(nsplit):
                 self.profile["timeArray"].append(time_point / nsplit)
             for _ in range(nsplit - 1):
-                self.profile["velocityMode"].append(VelocityModes.AVERAGE_PREV_TO_NEXT)
+                self.profile["velocityMode"].append(
+                    VelocityModes.AVERAGE_PREV_TO_NEXT
+                )
                 self.profile["userPrograms"].append(UserPrograms.NO_PROGRAM)
             for k, v in axis_points.items():
                 cs_axis = self.axis_mapping[k].cs_axis.lower()
@@ -510,9 +512,11 @@ class PmacChildPart(builtin.parts.ChildPart):
     def add_generator_point_pair(self, point, point_num, points_are_joined):
         # Add position
         user_program = self.get_user_program(PointType.MID_POINT)
-        self.add_profile_point(point.duration / 2.0,
+        self.add_profile_point(
+            point.duration / 2.0,
             VelocityModes.AVERAGE_PREV_TO_NEXT, user_program, point_num,
-            {name: point.positions[name] for name in self.axis_mapping})
+            {name: point.positions[name] for name in self.axis_mapping}
+        )
 
         # insert the lower bound of the next frame
         if points_are_joined and not point.delay_after:
