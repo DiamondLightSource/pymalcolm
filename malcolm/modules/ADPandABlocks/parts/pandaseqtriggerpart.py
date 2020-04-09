@@ -293,8 +293,9 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         """Work out the turnaround for the axis with the given MotorInfo, and
         how long it is moving in the opposite direction from where we want it to
         be going for point"""
+        min_turnaround = max(self.min_turnaround, point.delay_after)
         time_arrays, velocity_arrays = pmac.util.profile_between_points(
-            self.axis_mapping, self.last_point, point, self.min_turnaround,
+            self.axis_mapping, self.last_point, point, min_turnaround,
             self.min_interval)
         info = self.axis_mapping[axis_name]
         time_array = time_arrays[info.scannable]
