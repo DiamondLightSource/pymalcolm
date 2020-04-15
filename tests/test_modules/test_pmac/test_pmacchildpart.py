@@ -242,7 +242,9 @@ class TestPMACChildPart(ChildTestCase):
                     100000, 3000000, 100000
                 ]),
                 userPrograms=pytest.approx(user_programs),
-                velocityMode=pytest.approx([1, 1, 1, 1, 1, 1, 1, 3])
+                # note the use of mode 2 AVERAGE_PREV_CURRENT at the end of each
+                # sparse linear row
+                velocityMode=pytest.approx([1, 2, 1, 1, 1, 1, 2, 3])
             )
         ]
         assert self.o.completed_steps_lookup == [0, 3, 3, 3, 3, 3, 6, 6]
