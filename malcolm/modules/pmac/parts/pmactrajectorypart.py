@@ -6,8 +6,9 @@ from malcolm.core import PartRegistrar, Widget, \
 from malcolm.modules import builtin
 from ..util import CS_AXIS_NAMES
 
-# expected trajectory program number
-TRAJECTORY_PROGRAM_NUM = 2
+# recommended trajectory program number and lowest allowed program number
+TRAJECTORY_PROGRAM_NUM = 3
+FALLBACK_TRAJ_PROGRAM_NUM = 2
 
 # The maximum number of points in a single trajectory scan
 MAX_NUM_POINTS = 4000000
@@ -96,14 +97,22 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
 
         # make sure a matching trajectory program is installed on the pmac
         if child.trajectoryProgVersion.value != TRAJECTORY_PROGRAM_NUM:
-            raise (
-                IncompatibleError(
-                    "pmac trajectory program {} detected. "
-                    "Malcolm requires {}".format(
-                        child.trajectoryProgVersion.value,
-                        TRAJECTORY_PROGRAM_NUM
-                    )
+            if child.trajectoryProgVersion.value >= FALLBACK_TRAJ_PROGRAM_NUM:
+                self.log.warning(
+                    "pmac trajectory program is version %d"
+                    " version %d is recommended",
+                    FALLBACK_TRAJ_PROGRAM_NUM,
+                    TRAJECTORY_PROGRAM_NUM
                 )
+            else:
+                raise (
+                    IncompatibleError(
+                        "pmac trajectory program {} detected. "
+                        "Malcolm requires {}".format(
+                            child.trajectoryProgVersion.value,
+                            TRAJECTORY_PROGRAM_NUM
+                        )
+                    )
             )
 
         # The axes taking part in the scan
