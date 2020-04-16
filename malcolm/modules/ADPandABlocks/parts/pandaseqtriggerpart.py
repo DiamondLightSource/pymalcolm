@@ -261,7 +261,15 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         assert seqb
 
         # load up the first SEQ
-        self._fill_sequencer(self.panda[SEQ_TABLES[0]])
+        rows = SequencerRows()
+        for rs in self._rows_generator():
+            rows.extend(rs)
+
+        if len(rows) > SEQ_TABLE_ROWS:
+            raise Exception("Seq table: {} rows with {} maximum".format(
+                len(rows), SEQ_TABLE_ROWS))
+
+        self.panda[SEQ_TABLES[0]].put_value(rows.get_table())
 
     def _how_long_moving_wrong_way(self, axis_name, point, increasing):
         # type: (str, Point, bool) -> float
@@ -315,7 +323,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         return start_indices, end_indices
 
     @staticmethod
-    def _generate_immediate_rows(durations):
+    def _create_immediate_rows(durations):
         """Create a series of immediate rows from `durations`"""
         if len(durations) == 0:
             return SequencerRows()
@@ -335,8 +343,8 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
 
         return rows
 
-    def _generate_triggered_rows(self, points, start_index, end_index,
-                                 add_blind):
+    def _create_triggered_rows(self, points, start_index, end_index,
+                               add_blind):
         """Generate sequencer rows corresponding to a triggered points row"""
         rows = []
         initial_point = points[start_index]
@@ -369,29 +377,24 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
                 rows.add_seq_entry(
                     half_duration=MIN_PULSE, dead=1, trigger=Trigger.BITA_0)
 
-            rows.add_seq_entry(trigger=Trigger.BITA_1, half_duration=half_frame,
-                               live=1)
+            rows.add_seq_entry(trigger=Trigger.BITA_1,
+                               half_duration=half_frame, live=1)
 
-        rows.extend(self._generate_immediate_rows(
+        rows.extend(self._create_immediate_rows(
                 points.duration[start_index+1:end_index]))
 
         return rows
 
-    def _fill_sequencer(self, seq_table):
+    def _rows_generator(self):
         # type: (Attribute) -> None
         points = self.generator.get_points(self.loaded_up_to, self.scan_up_to)
 
         if points is None or len(points) == 0:
-            table = SequencerTable.from_rows([])
-            seq_table.put_value(table)
             return
-
-        rows = SequencerRows()
 
         if not self.axis_mapping:
             # No position compare or row triggering required
-            rows.extend(
-                self._generate_immediate_rows(points.duration))
+            yield self._create_immediate_rows(points.duration)
         else:
             start_indices, end_indices = self._get_row_indices(points)
 
@@ -401,29 +404,20 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
             if not first_point_static:
                 # If the motors are moving during this point then
                 # wait for triggers
-                rows.extend(
-                    self._generate_triggered_rows(points, 0, end, False))
+                yield self._create_triggered_rows(points, 0, end, False)
             else:
                 # This first row should not wait, and will trigger immediately
-                rows.extend(
-                    self._generate_immediate_rows(points.duration[0:end]))
+                yield self._create_immediate_rows(points.duration[0:end])
 
             for start, end in zip(start_indices, end_indices):
                 # First row handled outside of loop
                 self.last_point = points[start-1]
+                yield self._create_triggered_rows(points, start, end, True)
 
-                rows.extend(
-                    self._generate_triggered_rows(points, start, end, True))
-
+        rows = SequencerRows()
         # one last dead frame signal
         rows.add_seq_entry(half_duration=LAST_PULSE, dead=1)
-
-        if len(rows) > SEQ_TABLE_ROWS:
-            raise Exception("Seq table: {} rows with {} maximum".format(
-                len(rows), SEQ_TABLE_ROWS))
-
-        table = rows.get_table()
-        seq_table.put_value(table)
+        yield rows
 
     @add_call_types
     def on_run(self, context):
