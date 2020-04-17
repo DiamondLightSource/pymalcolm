@@ -253,8 +253,10 @@ class TableGenerator(object):
                 yield self._create_triggered_rows(points, start, end, True)
 
         rows = SequencerRows()
-        # one last dead frame signal
+        # add one last dead frame signal
         rows.add_seq_entry(half_duration=LAST_PULSE, dead=1)
+        # add continuous loop to prevent sequencer switch
+        rows.add_seq_entry(count=0)
         yield rows
 
     def createTable(self, loaded_up_to, scan_up_to):

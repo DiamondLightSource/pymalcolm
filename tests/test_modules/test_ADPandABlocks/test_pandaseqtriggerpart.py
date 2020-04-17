@@ -14,6 +14,7 @@ from malcolm.modules.ADPandABlocks.blocks import panda_seq_trigger_block
 from malcolm.modules.ADPandABlocks.parts import PandASeqTriggerPart
 from malcolm.modules.ADPandABlocks.util import SequencerTable, Trigger, \
     DatasetPositionsTable
+from malcolm.modules.ADPandABlocks.seqgenerator import MIN_PULSE
 from malcolm.modules.builtin.controllers import ManagerController, \
     BasicController
 from malcolm.modules.builtin.parts import ChildPart
@@ -191,17 +192,17 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         hb = 22500000
         self.seq_parts[1].table_set.assert_called_once()
         table = self.seq_parts[1].table_set.call_args[0][0]
-        assert table.repeats == [1, 3, 1, 1, 3, 1]
-        assert table.trigger == [LT, I, I, GT, I, I]
-        assert table.position == [50, 0, 0, -350, 0, 0]
-        assert table.time1 == [hf, hf, hb, hf, hf, 125000000]
-        assert table.outa1 == [1, 1, 0, 1, 1, 0]  # Live
-        assert table.outb1 == [0, 0, 1, 0, 0, 1]  # Dead
+        assert table.repeats == [1, 3, 1, 1, 3, 1, 0]
+        assert table.trigger == [LT, I, I, GT, I, I, I]
+        assert table.position == [50, 0, 0, -350, 0, 0, 0]
+        assert table.time1 == [hf, hf, hb, hf, hf, 125000000, MIN_PULSE]
+        assert table.outa1 == [1, 1, 0, 1, 1, 0, 0]  # Live
+        assert table.outb1 == [0, 0, 1, 0, 0, 1, 0]  # Dead
         assert table.outc1 == table.outd1 == table.oute1 == table.outf1 == \
-               [0, 0, 0, 0, 0, 0]
-        assert table.time2 == [hf, hf, hb, hf, hf, 125000000]
+               [0, 0, 0, 0, 0, 0, 0]
+        assert table.time2 == [hf, hf, hb, hf, hf, 125000000, MIN_PULSE]
         assert table.outa2 == table.outb2 == table.outc2 == table.outd2 == \
-               table.oute2 == table.outf2 == [0, 0, 0, 0, 0, 0]
+               table.oute2 == table.outf2 == [0, 0, 0, 0, 0, 0, 0]
         # Check we didn't press the gate part
         self.gate_part.enable_set.assert_not_called()
         self.o.on_run(self.context)
@@ -234,17 +235,17 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         hf = 62500000
         self.seq_parts[1].table_set.assert_called_once()
         table = self.seq_parts[1].table_set.call_args[0][0]
-        assert table.repeats == [1, 3, 1, 1, 3, 1]
-        assert table.trigger == [B1, I, B0, B1, I, I]
-        assert table.time1 == [hf, hf, 1250, hf, hf, 125000000]
-        assert table.position == [0, 0, 0, 0, 0, 0]
-        assert table.outa1 == [1, 1, 0, 1, 1, 0]  # Live
-        assert table.outb1 == [0, 0, 1, 0, 0, 1]  # Dead
+        assert table.repeats == [1, 3, 1, 1, 3, 1, 0]
+        assert table.trigger == [B1, I, B0, B1, I, I, I]
+        assert table.time1 == [hf, hf, 1250, hf, hf, 125000000, MIN_PULSE]
+        assert table.position == [0, 0, 0, 0, 0, 0, 0]
+        assert table.outa1 == [1, 1, 0, 1, 1, 0, 0]  # Live
+        assert table.outb1 == [0, 0, 1, 0, 0, 1, 0]  # Dead
         assert table.outc1 == table.outd1 == table.oute1 == table.outf1 == \
-            [0, 0, 0, 0, 0, 0]
-        assert table.time2 == [hf, hf, 1250, hf, hf, 125000000]
+            [0, 0, 0, 0, 0, 0, 0]
+        assert table.time2 == [hf, hf, 1250, hf, hf, 125000000, MIN_PULSE]
         assert table.outa2 == table.outb2 == table.outc2 == table.outd2 == \
-            table.oute2 == table.outf2 == [0, 0, 0, 0, 0, 0]
+            table.oute2 == table.outf2 == [0, 0, 0, 0, 0, 0, 0]
         # Check we didn't press the gate part
         self.gate_part.enable_set.assert_not_called()
         self.o.on_run(self.context)
@@ -283,17 +284,17 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         hf = 62500000
         self.seq_parts[1].table_set.assert_called_once()
         table = self.seq_parts[1].table_set.call_args[0][0]
-        assert table.repeats == [5, 1]
-        assert table.trigger == [I, I]
-        assert table.position == [0, 0]
-        assert table.time1 == [hf, 125000000]
-        assert table.outa1 == [1, 0]  # Live
-        assert table.outb1 == [0, 1]  # Dead
+        assert table.repeats == [5, 1, 0]
+        assert table.trigger == [I, I, I]
+        assert table.position == [0, 0, 0]
+        assert table.time1 == [hf, 125000000, MIN_PULSE]
+        assert table.outa1 == [1, 0, 0]  # Live
+        assert table.outb1 == [0, 1, 0]  # Dead
         assert table.outc1 == table.outd1 == table.oute1 == table.outf1 == \
-            [0, 0]
-        assert table.time2 == [hf, 125000000]
+            [0, 0, 0]
+        assert table.time2 == [hf, 125000000, MIN_PULSE]
         assert table.outa2 == table.outb2 == table.outc2 == table.outd2 == \
-            table.oute2 == table.outf2 == [0, 0]
+            table.oute2 == table.outf2 == [0, 0, 0]
         # Check we didn't press the gate part
         self.gate_part.enable_set.assert_not_called()
 
@@ -341,17 +342,17 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         hb = 75000000
         self.seq_parts[1].table_set.assert_called_once()
         table = self.seq_parts[1].table_set.call_args[0][0]
-        assert table.repeats == [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-        assert table.trigger == [LT, I, GT, I, LT, I, GT, I, LT, I]
-        assert table.time1 == [hf, hb, hf, hb, hf, hb, hf, hb, hf, 125000000]
-        assert table.position == [0, 0, -500, 0, 0, 0, -500, 0, 0, 0]
-        assert table.outa1 == [1, 0, 1, 0, 1, 0, 1, 0, 1, 0]  # Live
-        assert table.outb1 == [0, 1, 0, 1, 0, 1, 0, 1, 0, 1]  # Dead
+        assert table.repeats == [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0]
+        assert table.trigger == [LT, I, GT, I, LT, I, GT, I, LT, I, I]
+        assert table.time1 == [hf, hb, hf, hb, hf, hb, hf, hb, hf, 125000000, MIN_PULSE]
+        assert table.position == [0, 0, -500, 0, 0, 0, -500, 0, 0, 0, 0]
+        assert table.outa1 == [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0]  # Live
+        assert table.outb1 == [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0]  # Dead
         assert table.outc1 == table.outd1 == table.oute1 == table.outf1 == \
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        assert table.time2 == [hf, hb, hf, hb, hf, hb, hf, hb, hf, 125000000]
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        assert table.time2 == [hf, hb, hf, hb, hf, hb, hf, hb, hf, 125000000, MIN_PULSE]
         assert table.outa2 == table.outb2 == table.outc2 == table.outd2 == \
-            table.oute2 == table.outf2 == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            table.oute2 == table.outf2 == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         # Check we didn't press the gate part
         self.gate_part.enable_set.assert_not_called()
         self.o.on_run(self.context)
@@ -388,20 +389,20 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         hrb = 56500000
         self.seq_parts[1].table_set.assert_called_once()
         table = self.seq_parts[1].table_set.call_args[0][0]
-        assert table.repeats == [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-        assert table.trigger == [LT, I, LT, I, LT, I, GT, I, GT, I, GT, I]
+        assert table.repeats == [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0]
+        assert table.trigger == [LT, I, LT, I, LT, I, GT, I, GT, I, GT, I, I]
         assert table.position == \
-            [125, 0, -125, 0, -375, 0, -625, 0, -375, 0, -125, 0]
+            [125, 0, -125, 0, -375, 0, -625, 0, -375, 0, -125, 0, 0]
         assert table.time1 == \
-            [hf, hfb, hf, hfb, hf, hrb, hf, hfb, hf, hfb, hf, 125000000]
-        assert table.outa1 == [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0]  # Live
-        assert table.outb1 == [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1]  # Dead
+            [hf, hfb, hf, hfb, hf, hrb, hf, hfb, hf, hfb, hf, 125000000, MIN_PULSE]
+        assert table.outa1 == [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0]  # Live
+        assert table.outb1 == [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0]  # Dead
         assert table.outc1 == table.outd1 == table.oute1 == table.outf1 == \
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         assert table.time2 == \
-            [hf, hfb, hf, hfb, hf, hrb, hf, hfb, hf, hfb, hf, 125000000]
+            [hf, hfb, hf, hfb, hf, hrb, hf, hfb, hf, hfb, hf, 125000000, MIN_PULSE]
         assert table.outa2 == table.outb2 == table.outc2 == table.outd2 == \
-            table.oute2 == table.outf2 == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            table.oute2 == table.outf2 == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         # Check we didn't press the gate part
         self.gate_part.enable_set.assert_not_called()
         self.o.on_run(self.context)
