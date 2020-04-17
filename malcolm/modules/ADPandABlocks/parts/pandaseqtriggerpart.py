@@ -5,7 +5,7 @@ from annotypes import add_call_types, Anno, TYPE_CHECKING
 
 from malcolm.core import APartName, Block, Context, PartRegistrar
 from malcolm.modules import builtin, scanning, pmac
-from ..seqtable import TableGenerator
+from ..seqgenerator import TableGenerator
 
 if TYPE_CHECKING:
     from typing import List, Dict
