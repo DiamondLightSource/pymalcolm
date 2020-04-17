@@ -546,17 +546,20 @@ class TestPMACChildPart(ChildTestCase):
         assert args['a'] == \
             pytest.approx([
                 0.0, 0.0, 0.0, 0.2, 2.3, 2.5, 2.5, 2.5, 2.7, 4.8, 5.0, 5.0,
+                5.0, 5.0,
                 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 4.8, 2.7, 2.5, 2.5, 2.5, 2.3,
                 0.2, 0, 0.0, 0.0, 0.0])
         assert args['b'] == \
             pytest.approx([
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                0.0, 0.2, 9.8, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0,
+                0.0, 0.2, 3.4, 6.6,
+                9.8, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0,
                 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0])
         assert args['timeArray'] == pytest.approx([
             2000, 500250, 500250, 400000, 2100000, 400000, 500250,
             500250, 400000, 2100000, 400000, 500250, 500250, 400000,
-            9600000, 400000, 500250, 500250, 400000, 2100000, 400000,
+            3200000, 3200000, 3200000,
+            400000, 500250, 500250, 400000, 2100000, 400000,
             500250, 500250, 400000, 2100000, 400000, 500250, 500250,
             2000])
 
@@ -607,11 +610,11 @@ class TestPMACChildPart(ChildTestCase):
         action, func, args = self.child.handled_requests.mock_calls[-1]
         assert args['a'] == \
             pytest.approx(
-                [0, 0, 0, 5.45454545e-05, .0001, .0001, .0001, .0001])
+                [0, 0, 0, 5.0e-05, .0001, .0001, .0001, .0001])
         assert args['b'] == \
             pytest.approx([0, 0, 0, 0, 0, 0, 0, 0])
         assert args['timeArray'] == pytest.approx(
-            [2000, 2500, 2500, 6000, 5000, 2500, 2500, 2000])
+            [2000, 2500, 2500, 6000, 6000, 2500, 2500, 2000])
 
     def test_settle_time(self):
         """
@@ -673,7 +676,7 @@ class TestPMACChildPart(ChildTestCase):
             generator, axes_to_scan)
         elapsed = datetime.now() - start
         # todo goal was sub 1 second but we achieved sub 3 secs
-        assert elapsed.total_seconds() < 3.0
+        assert elapsed.total_seconds() < 3.5
 
     def test_configure_long_trajectory(self):
         if 'diamond.ac.uk' not in socket.gethostname():
@@ -683,3 +686,106 @@ class TestPMACChildPart(ChildTestCase):
         # 'sparse' trajectory linear point removal
         self.long_configure(True)
 
+    def test_long_turnaround(self):
+        """
+        Verify that if the turnaround time exceeds maximum time between PVT
+        points then addtional points are added
+        """
+        duration = 2
+        axes_to_scan = ["x"]
+        # make the motors slow so that it takes 10 secs to do the turnaround
+        self.set_motor_attributes(
+            x_pos=0,
+            y_pos=0,
+            units="mm",
+            x_velocity=0.1,
+            y_velocity=0.1)
+
+        # very simple trajectory with two points and a turnaround between them
+        xs = LineGenerator("x", "mm", 0.0, 1.0, 2)
+        generator = CompoundGenerator(
+            [xs], [], [], duration, continuous=False
+        )
+        generator.prepare()
+        self.o.on_configure(
+            self.context, 0, 2, {"part": None},
+            generator, axes_to_scan)
+
+        assert self.child.handled_requests.mock_calls[-1] == call.post(
+            'writeProfile',
+            csPort='CS1',
+            a=pytest.approx([
+                0., 0., 0.,
+                0.002, 0.334, 0.666, 0.998, 1.,
+                1., 1., 1.,
+            ]),
+            timeArray=pytest.approx([
+                2000, 1000000, 1000000,
+                40000, 3320000, 3320000, 3320000, 40000,
+                1000000, 1000000, 2000
+            ]),
+            userPrograms=pytest.approx([
+                1, 4, 2,
+                8, 0, 0, 8, 1,
+                4, 2, 8
+            ]),
+            velocityMode=pytest.approx([
+                1, 0, 1,
+                1, 0, 0, 1, 1,
+                0, 1, 3
+            ]))
+
+    def test_configure_delay_after(self):
+        # a test to show that delay_after inserts a "loop_back" turnaround
+        delay = 1.0
+        axes_to_scan = ["x", "y"]
+        self.set_motor_attributes(0.5, 0.0, "mm")
+        steps_to_do = 3
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
+        generator = CompoundGenerator(
+            [ys, xs], [], [], 1.0, delay_after=delay)
+        generator.prepare()
+
+        self.o.on_configure(
+            self.context, 0, steps_to_do, {"part": None},
+            generator, axes_to_scan)
+
+        action, func, args = self.child.handled_requests.mock_calls[-1]
+
+        assert args['a'] == \
+            pytest.approx([
+                -0.125,  0.,  0.125,  0.13742472,  0.11257528,
+                0.125,  0.25,  0.375,  0.38742472,  0.36257528,
+                0.375,  0.5,  0.625,  0.6375
+            ])
+
+        assert args['b'] == \
+            pytest.approx([
+                0., 0., 0., 0., 0.,
+                0., 0., 0., 0., 0.,
+                0., 0., 0., 0.
+            ])
+
+        assert args['timeArray'] == pytest.approx([
+            100000, 500000, 500000, 114000, 776000,
+            114000, 500000, 500000, 114000, 776000,
+            114000, 500000, 500000, 100000
+        ])
+
+        # check the delay times are correct (in microsecs)
+        t = args['timeArray']
+        assert t[3] + t[4] + t[5] >= delay * 1000000
+        assert t[8] + t[9] + t[10] >= delay * 1000000
+
+        assert args['userPrograms'] == pytest.approx([
+            1, 4, 2, 8, 8,
+            1, 4, 2, 8, 8,
+            1, 4, 2, 8
+        ])
+
+        assert args['velocityMode'] == pytest.approx([
+            1, 0, 1, 1, 1,
+            1, 0, 1, 1, 1,
+            1, 0, 1, 3
+        ])
