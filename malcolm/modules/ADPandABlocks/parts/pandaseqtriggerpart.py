@@ -5,7 +5,7 @@ from annotypes import add_call_types, Anno, TYPE_CHECKING
 
 from malcolm.core import APartName, Block, Context, PartRegistrar
 from malcolm.modules import builtin, scanning, pmac
-from ..seqgenerator import TableGenerator
+from ..seqgenerator import RowsGenerator, DoubleBufferSeqTable
 
 if TYPE_CHECKING:
     from typing import List, Dict
@@ -89,6 +89,8 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         self.trigger_enums = {}
         # The panda Block we will be prodding
         self.panda = None
+        # The DoubleBufferSeqTable object used to load tables during a scan
+        self.db_seq_table = None
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
@@ -223,15 +225,30 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         assert seqb
 
         # load up the first SEQ
-        rg = TableGenerator(self.generator, self.axis_mapping,
-                            self.trigger_enums, self.min_turnaround,
-                            self.min_interval)
+        rg = RowsGenerator(self.generator, self.axis_mapping,
+                           self.trigger_enums, self.min_turnaround,
+                           self.min_interval)
 
-        table = rg.createTable(self.loaded_up_to, self.scan_up_to)
-        self.panda[SEQ_TABLES[0]].put_value(table)
+        self.db_seq_table = DoubleBufferSeqTable(rg, self.panda[SEQ_TABLES[0]],
+                                                 self.panda[SEQ_TABLES[1]])
+
+        self.db_seq_table.configure(self.loaded_up_to, self.scan_up_to)
 
     @add_call_types
     def on_run(self, context):
         # type: (scanning.hooks.AContext) -> None
+        # self.double_buf_seq.run()
         # Call sequence table enable
         self.panda.seqSetEnable()
+        self.db_seq_table.run()
+
+    # @add_call_types
+    # def on_reset(self, context):
+    #     # type: (builtin.hooks.AContext) -> None
+    #     super(PandASeqTriggerPart, self).on_reset(context)
+    #     self.on_abort(context)
+
+    # @add_call_types
+    # def on_abort(self, context):
+    #     # type: (builtin.hooks.AContext) -> None
+    #     self.double_buf_seq.abort()

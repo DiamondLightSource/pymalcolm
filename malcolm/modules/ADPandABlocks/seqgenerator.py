@@ -30,10 +30,22 @@ MAX_REPEATS = 4096
 # and disarm PCAP
 LAST_PULSE = 125000000  # ticks = 1s
 
+# The number of clock ticks required to switch between the two sequencers
+SEQ_TABLE_SWITCH_DELAY = 6
+
+# Default minimum table duration. This is the minimum time (in seconds) for a table
+# used by the double-buffering system.
+MIN_TABLE_DURATION = 30000.0
+
 
 class SequencerRows:
     def __init__(self, rows=None):
-        self._rows = rows if rows else []
+        if rows:
+            self._rows = rows
+            self._duration = self._calculate_duration(self._rows)
+        else:
+            self._rows = []
+            self._duration = 0
 
     def add_seq_entry(self, count=1, trigger=Trigger.IMMEDIATE, position=0,
                       half_duration=MIN_PULSE, live=0, dead=0, trim=0):
@@ -45,12 +57,59 @@ class SequencerRows:
         self._rows.extend(row * complete_rows)
         self._rows.append(self._seq_row(remaining, trigger, position,
                                         half_duration, live, dead, trim))
+        self._duration += count * (2 * half_duration - trim)
+
+    def split(self, count):
+        """Separate this object into two SequencerRows objects, deducting the time
+        delay required to switch between sequencers from the end of the current
+        object, and returning the remainder."""
+
+        assert len(self._rows) > 0, "Seq table with zero length should never be split"
+
+        if len(self._rows) >= count:
+            final_row = self._rows[count-1]
+            if final_row[0] == 0:  # Row in continuous loop
+                assert len(self._rows) == count
+                return SequencerRows()
+
+            if final_row[0] == 1:
+                remainder = SequencerRows(self._rows[count:])
+                self._rows = self._rows[:count]
+
+            elif final_row[0] > 1:
+                initial_remainder = final_row[:]
+                initial_remainder[0] -= 1
+                remainder = SequencerRows([initial_remainder])
+                remainder.extend(SequencerRows(self._rows[count:]))
+                self._rows = self._rows[:count]
+                self._rows[-1][0] = 1
+        else:
+            remainder = SequencerRows()
+
+            if self._rows[-1][0] == 0:
+                return remainder
+
+            if self._rows[-1][0] > 1:
+                final_row = self._rows[-1][:]
+                self._rows[-1][0] -= 1
+                final_row[0] = 1
+                self._rows += [final_row]
+
+        self._rows[-1][10] -= SEQ_TABLE_SWITCH_DELAY
+        self._duration -= SEQ_TABLE_SWITCH_DELAY
+        self.duration -= remainder.duration
+        return remainder
 
     def extend(self, other):
         self._rows += other._rows
+        self._duration += other._duration
 
     def get_table(self):
         return SequencerTable.from_rows(self._rows)
+
+    @property
+    def duration(self):
+        return self._duration * TICK
 
     def __len__(self):
         return len(self._rows)
@@ -69,8 +128,16 @@ class SequencerRows:
                 # Phase2
                 half_duration - trim, 0, 0, 0, 0, 0, 0]
 
+    @staticmethod
+    def _calculate_duration(rows):
+        duration = 0.0
+        for row in rows:
+            duration += row[0] * (row[3] + row[10])
 
-class TableGenerator(object):
+        return duration
+
+
+class RowsGenerator(object):
     """Class that provides Sequencer tables for input generator"""
 
     def __init__(self, generator, axis_mapping, trigger_enums, min_turnaround,
@@ -224,7 +291,7 @@ class TableGenerator(object):
 
         return rows
 
-    def _generate_rows(self, loaded_up_to, scan_up_to):
+    def get_rows(self, loaded_up_to, scan_up_to):
         points = self.generator.get_points(loaded_up_to, scan_up_to)
 
         if points is None or len(points) == 0:
@@ -259,13 +326,86 @@ class TableGenerator(object):
         rows.add_seq_entry(count=0)
         yield rows
 
-    def createTable(self, loaded_up_to, scan_up_to):
+
+class DoubleBufferSeqTable:
+    def __init__(self, rows_generator, seq_a, seq_b):
+        self._rows_generator = rows_generator
+        self._seq_a = seq_a
+        self._seq_b = seq_b
+        # self.current_table = None
+        # self._rows = SequencerRows()
+        self._table_map = {"seqA": self._seq_a, "seqB": self._seq_b}
+
+        # self._processing = False
+
+    # def update(self, finished_table, generator, req_duration):
+    #     start = datetime.now()
+
+    #     required_duration = max(req_duration, MINIMUM_DURATION)
+
+    #     if self._processing:
+    #         raise Exception("Seq table update called during previous table"
+    #                         "processing")
+    #     self._processing = True
+
+    #     if finished_table is not None and finished_table != self.current_table:
+    #         raise Exception("Seq tables out of sync with loading routine.")
+
+    #     if self.current_table is None or finished_table == "seqB":
+    #         next_table = "seqA"
+    #     else:
+    #         next_table = "seqB"
+
+    #     additional_duration = required_duration - self._rows.duration
+    #     self._rows.extend(generator.getRows(additional_duration))
+
+    #     extra_rows = self._rows.reduce_to_fit(SEQ_TABLE_ROWS)
+    #     if self._rows.duration < required_duration and len(extra_rows) > 0:
+    #         raise Exception("Filled seq table does not meet minimum duration")
+
+    #     self._fill_table(next_table, self._rows)
+    #     self._rows = extra_rows
+
+    #     time_elapsed = (datetime.now() - start).total_seconds()
+    #     if time_elapsed > required_duration:
+    #         raise Exception("SeqTable processing is longer than min duration,"
+    #                         "at %s seconds\nMin duration: %s"
+    #                         % (time_elapsed, required_duration))
+
+    #     self._processing = False
+
+    #     #TODO: 
+
+    def _fill_table(self, table, value):
+        seq_table = self._table_map[table]
+        seq_table.put_value(value)
+
+    @staticmethod
+    def _get_tables(rows_generator, loaded_up_to, scan_up_to,
+                    minimum_duration=MIN_TABLE_DURATION):
         rows = SequencerRows()
-        for rs in self._generate_rows(loaded_up_to, scan_up_to):
+        for rs in rows_generator.get_rows(loaded_up_to, scan_up_to):
+
             rows.extend(rs)
 
-            if len(rows) > SEQ_TABLE_ROWS:
-                raise Exception("Seq table: {} rows with {} maximum".format(
-                                len(rows), SEQ_TABLE_ROWS))
+            if rows.duration > minimum_duration or len(rows) > SEQ_TABLE_ROWS:
+                while True:
+                    remainder = rows.split(SEQ_TABLE_ROWS)
+                    yield rows.get_table()
+                    rows = remainder
 
-        return rows.get_table()
+                    if len(rows) <= SEQ_TABLE_ROWS:
+                        break
+
+        yield rows.get_table()
+
+    def configure(self, loaded_up_to, scan_up_to):
+        tables = list(self._get_tables(self._rows_generator, loaded_up_to, scan_up_to))
+
+        if len(tables) > 1:
+            raise Exception("Seq table: Too many rows")
+
+        self._fill_table("seqA", tables[0])
+
+    def run(self):
+        pass
