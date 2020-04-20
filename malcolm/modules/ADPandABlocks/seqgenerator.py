@@ -323,7 +323,10 @@ class RowsGenerator(object):
 
             if not self.axis_mapping:
                 # No position compare or row triggering required
-                yield self._create_immediate_rows(points.duration)
+                durations = points.duration[1:] if self.last_point \
+                    else points.duration
+                yield self._create_immediate_rows(durations)
+                self.last_point = points[-1]
             else:
                 start_indices, end_indices = self._get_row_indices(points)
 
