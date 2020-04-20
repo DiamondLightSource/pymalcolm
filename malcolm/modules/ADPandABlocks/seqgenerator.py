@@ -33,9 +33,12 @@ LAST_PULSE = 125000000  # ticks = 1s
 # The number of clock ticks required to switch between the two sequencers
 SEQ_TABLE_SWITCH_DELAY = 6
 
-# Default minimum table duration. This is the minimum time (in seconds) for a table
-# used by the double-buffering system.
+# Default minimum table duration. This is the minimum time (in seconds) for a
+# table used by the double-buffering system.
 MIN_TABLE_DURATION = 30000.0
+
+# Processing batch size
+BATCH_SIZE = 5000
 
 
 class SequencerRows:
@@ -60,11 +63,11 @@ class SequencerRows:
         self._duration += count * (2 * half_duration - trim)
 
     def split(self, count):
-        """Separate this object into two SequencerRows objects, deducting the time
-        delay required to switch between sequencers from the end of the current
-        object, and returning the remainder."""
+        """Separate this object into two SequencerRows objects, deducting the
+        time delay required to switch between sequencers from the end of the
+        current object, and returning the remainder."""
 
-        assert len(self._rows) > 0, "Seq table with zero length should never be split"
+        assert len(self._rows) > 0, "Zero length seq rows should never be split"
 
         if len(self._rows) >= count:
             final_row = self._rows[count-1]
@@ -209,14 +212,16 @@ class RowsGenerator(object):
     def _get_row_indices(points):
         """Generate list of start and end indices for separate rows
 
-        This excludes the initial row, which is handled separately.
+        The first point (index 0) is not registered as a separate row. This is
+        because for the first row of a scan, the triggering is handled
+        separately, and for later batches of points, the initial value is from
+        a previous row.
         """
         points_joined = pmac.util.all_points_joined(points)
 
         if points_joined is not None and len(points_joined) > 0:
-            results = np.nonzero(np.invert(points_joined))[0]
-            results += 1
-            start_indices = results
+            start_indices = np.nonzero(np.invert(points_joined))[0]
+            start_indices += 1
         else:
             start_indices = np.array([])
 
@@ -287,37 +292,67 @@ class RowsGenerator(object):
                                half_duration=half_frame, live=1)
 
         rows.extend(self._create_immediate_rows(
-                points.duration[start_index+1:end_index]))
+                points.duration[start_index + 1: end_index]))
 
         return rows
 
-    def get_rows(self, loaded_up_to, scan_up_to):
-        points = self.generator.get_points(loaded_up_to, scan_up_to)
+    @staticmethod
+    def _overlapping_points_range(generator, start, end):
+        """Create a series of points objects that cover the entire range.
 
-        if points is None or len(points) == 0:
+        Yielded points overlap by one point to identify whether the start of a
+        given batch corresponds to the middle of a row.
+        """
+        if start == end:
             return
 
-        if not self.axis_mapping:
-            # No position compare or row triggering required
-            yield self._create_immediate_rows(points.duration)
-        else:
-            start_indices, end_indices = self._get_row_indices(points)
+        low_index = start
+        high_index = min(start + BATCH_SIZE, end)
+        while True:
+            yield generator.get_points(low_index, high_index)
 
-            point = points[0]
-            first_point_static = point.positions == point.lower == point.upper
-            end = start_indices[0] if start_indices.size else len(points)
-            if not first_point_static:
-                # If the motors are moving during this point then
-                # wait for triggers
-                yield self._create_triggered_rows(points, 0, end, False)
+            if high_index == end:
+                break
+
+            low_index = high_index - 1  # Include final point from previous range
+            high_index = min(low_index + BATCH_SIZE + 1, end)
+
+    def get_rows(self, loaded_up_to, scan_up_to):
+        for points in self._overlapping_points_range(self.generator,
+                                                     loaded_up_to, scan_up_to):
+
+            if not self.axis_mapping:
+                # No position compare or row triggering required
+                yield self._create_immediate_rows(points.duration)
             else:
-                # This first row should not wait, and will trigger immediately
-                yield self._create_immediate_rows(points.duration[0:end])
+                start_indices, end_indices = self._get_row_indices(points)
 
-            for start, end in zip(start_indices, end_indices):
-                # First row handled outside of loop
-                self.last_point = points[start-1]
-                yield self._create_triggered_rows(points, start, end, True)
+                # Handle first row of batch
+                end = start_indices[0] if start_indices.size else len(points)
+                if self.last_point is None:
+                    # This is the beginning of the scan
+                    point = points[0]
+                    first_point_static = point.positions == point.lower == \
+                        point.upper
+
+                    if not first_point_static:
+                        # If the motors are moving during this point then
+                        # wait for triggers
+                        yield self._create_triggered_rows(points, 0, end, False)
+                    else:
+                        # This first row will trigger immediately
+                        yield self._create_immediate_rows(points.duration[0:end])
+
+                    self.last_point = points[end - 1]
+                else:  # This is the beginning of the batch
+                    # The first point is from the previous batch
+                    yield self._create_immediate_rows(points.duration[1:end])
+
+                for start_i, end_i in zip(start_indices, end_indices):
+                    # First row handled outside of loop
+                    yield self._create_triggered_rows(points, start_i, end_i,
+                                                      True)
+                    self.last_point = points[end_i - 1]
 
         rows = SequencerRows()
         # add one last dead frame signal
@@ -325,6 +360,8 @@ class RowsGenerator(object):
         # add continuous loop to prevent sequencer switch
         rows.add_seq_entry(count=0)
         yield rows
+
+        self.last_point = None
 
 
 class DoubleBufferSeqTable:
@@ -400,7 +437,8 @@ class DoubleBufferSeqTable:
         yield rows.get_table()
 
     def configure(self, loaded_up_to, scan_up_to):
-        tables = list(self._get_tables(self._rows_generator, loaded_up_to, scan_up_to))
+        tables = list(self._get_tables(self._rows_generator, loaded_up_to,
+                                       scan_up_to))
 
         if len(tables) > 1:
             raise Exception("Seq table: Too many rows")

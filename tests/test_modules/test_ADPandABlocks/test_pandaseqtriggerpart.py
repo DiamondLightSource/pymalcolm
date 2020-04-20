@@ -410,6 +410,7 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         self.gate_part.enable_set.assert_called_once()
 
     def test_configure_long_pcomp_row_trigger(self):
+        # Test that the configure() time is reasonable
         if 'diamond.ac.uk' not in socket.gethostname():
             pytest.skip("performance test only")
 

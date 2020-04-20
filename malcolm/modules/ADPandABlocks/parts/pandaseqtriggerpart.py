@@ -77,8 +77,6 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         self.scan_up_to = 0
         # If we are currently loading then block loading more points
         self.loading = False
-        # The last point we loaded
-        self.last_point = None
         # What is the mapping of scannable name to MotorInfo
         self.axis_mapping = {}
         # The minimum turnaround time for non-joined points
@@ -177,7 +175,6 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         self.loaded_up_to = completed_steps
         self.scan_up_to = completed_steps + steps_to_do
         self.loading = False
-        self.last_point = None
 
         # Get the panda and the pmac we will be using
         child = context.block_view(self.mri)
