@@ -5,7 +5,7 @@ from annotypes import add_call_types, Anno, TYPE_CHECKING
 
 from malcolm.core import APartName, Block, Context, PartRegistrar
 from malcolm.modules import builtin, scanning, pmac
-from ..seqgenerator import RowsGenerator, DoubleBufferSeqTable
+from ..seqgenerator import SeqTriggers, DoubleBufferSeqTable
 
 if TYPE_CHECKING:
     from typing import List, Dict
@@ -222,14 +222,16 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         assert seqb
 
         # load up the first SEQ
-        rg = RowsGenerator(self.generator, self.axis_mapping,
-                           self.trigger_enums, self.min_turnaround,
-                           self.min_interval)
+        seq_triggers = SeqTriggers(self.generator, self.axis_mapping,
+                                   self.trigger_enums, self.min_turnaround,
+                                   self.min_interval)
 
-        self.db_seq_table = DoubleBufferSeqTable(rg, self.panda[SEQ_TABLES[0]],
+        rows_gen = seq_triggers.get_rows(self.loaded_up_to, self.scan_up_to)
+
+        self.db_seq_table = DoubleBufferSeqTable(self.panda[SEQ_TABLES[0]],
                                                  self.panda[SEQ_TABLES[1]])
 
-        self.db_seq_table.configure(self.loaded_up_to, self.scan_up_to)
+        self.db_seq_table.configure(rows_gen)
 
     @add_call_types
     def on_run(self, context):

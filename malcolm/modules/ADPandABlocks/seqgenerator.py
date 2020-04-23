@@ -140,8 +140,8 @@ class SequencerRows:
         return duration
 
 
-class RowsGenerator(object):
-    """Class that provides Sequencer tables for input generator"""
+class SeqTriggers(object):
+    """Class that provides Sequencer triggers for input Points generator"""
 
     def __init__(self, generator, axis_mapping, trigger_enums, min_turnaround,
                  min_interval):
@@ -292,7 +292,7 @@ class RowsGenerator(object):
                                half_duration=half_frame, live=1)
 
         rows.extend(self._create_immediate_rows(
-                points.duration[start_index + 1: end_index]))
+            points.duration[start_index + 1: end_index]))
 
         return rows
 
@@ -368,12 +368,10 @@ class RowsGenerator(object):
 
 
 class DoubleBufferSeqTable:
-    def __init__(self, rows_generator, seq_a, seq_b):
-        self._rows_generator = rows_generator
+    def __init__(self, seq_a, seq_b):
         self._seq_a = seq_a
         self._seq_b = seq_b
         # self.current_table = None
-        # self._rows = SequencerRows()
         self._table_map = {"seqA": self._seq_a, "seqB": self._seq_b}
 
         # self._processing = False
@@ -414,18 +412,16 @@ class DoubleBufferSeqTable:
 
     #     self._processing = False
 
-    #     #TODO: 
+    #     #TODO:
 
     def _fill_table(self, table, value):
         seq_table = self._table_map[table]
         seq_table.put_value(value)
 
     @staticmethod
-    def _get_tables(rows_generator, loaded_up_to, scan_up_to,
-                    minimum_duration=MIN_TABLE_DURATION):
+    def _get_tables(rows_gen, minimum_duration=MIN_TABLE_DURATION):
         rows = SequencerRows()
-        for rs in rows_generator.get_rows(loaded_up_to, scan_up_to):
-
+        for rs in rows_gen:
             rows.extend(rs)
 
             if rows.duration > minimum_duration or len(rows) > SEQ_TABLE_ROWS:
@@ -439,9 +435,8 @@ class DoubleBufferSeqTable:
 
         yield rows.get_table()
 
-    def configure(self, loaded_up_to, scan_up_to):
-        tables = list(self._get_tables(self._rows_generator, loaded_up_to,
-                                       scan_up_to))
+    def configure(self, rows_gen):
+        tables = list(self._get_tables(rows_gen))
 
         if len(tables) > 1:
             raise Exception("Seq table: Too many rows")
