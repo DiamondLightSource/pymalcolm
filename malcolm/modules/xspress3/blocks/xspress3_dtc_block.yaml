@@ -24,5 +24,5 @@
 - ca.parts.CABooleanPart:
     name: squashAuxDim
     description: Reshape dataset to 2D if no resgrades (legacy support)
-    pv: $(prefix):squashAuxDim
-    rbv_suffix: _RBV
+    pv: $(prefix):SquashAuxDim
+#    rbv_suffix: _RBV
