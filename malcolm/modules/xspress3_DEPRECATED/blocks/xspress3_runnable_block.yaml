@@ -28,10 +28,6 @@
     mri: $(mri_prefix):DRV
     prefix: $(pv_prefix)
 
-- xspress3.blocks.xspress3_driver_block:
-    mri: $(mri_prefix):DTC
-    prefix: $(pv_prefix):DTC
-
 - ADCore.parts.DetectorDriverPart:
     name: Xspress3A
     mri: $(mri_prefix):DRV
