@@ -374,46 +374,6 @@ class DoubleBufferSeqTable:
         # self.current_table = None
         self._table_map = {"seqA": self._seq_a, "seqB": self._seq_b}
 
-        # self._processing = False
-
-    # def update(self, finished_table, generator, req_duration):
-    #     start = datetime.now()
-
-    #     required_duration = max(req_duration, MINIMUM_DURATION)
-
-    #     if self._processing:
-    #         raise Exception("Seq table update called during previous table"
-    #                         "processing")
-    #     self._processing = True
-
-    #     if finished_table is not None and finished_table != self.current_table:
-    #         raise Exception("Seq tables out of sync with loading routine.")
-
-    #     if self.current_table is None or finished_table == "seqB":
-    #         next_table = "seqA"
-    #     else:
-    #         next_table = "seqB"
-
-    #     additional_duration = required_duration - self._rows.duration
-    #     self._rows.extend(generator.getRows(additional_duration))
-
-    #     extra_rows = self._rows.reduce_to_fit(SEQ_TABLE_ROWS)
-    #     if self._rows.duration < required_duration and len(extra_rows) > 0:
-    #         raise Exception("Filled seq table does not meet minimum duration")
-
-    #     self._fill_table(next_table, self._rows)
-    #     self._rows = extra_rows
-
-    #     time_elapsed = (datetime.now() - start).total_seconds()
-    #     if time_elapsed > required_duration:
-    #         raise Exception("SeqTable processing is longer than min duration,"
-    #                         "at %s seconds\nMin duration: %s"
-    #                         % (time_elapsed, required_duration))
-
-    #     self._processing = False
-
-    #     #TODO:
-
     def _fill_table(self, table, value):
         seq_table = self._table_map[table]
         seq_table.put_value(value)
