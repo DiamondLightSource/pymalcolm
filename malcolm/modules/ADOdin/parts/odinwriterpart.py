@@ -351,6 +351,8 @@ class OdinWriterPart(builtin.parts.ChildPart):
         self.unique_id_offset = completed_steps - self.done_when_reaches
         self.done_when_reaches += steps_to_do
         child = context.block_view(self.mri)
+        # set UID offset for file writing
+        child.uidOffset.put_value(self.unique_id_offset)
         # Just reset the array counter_block
         child.arrayCounter.put_value(0)
         # Start a future waiting for the first array

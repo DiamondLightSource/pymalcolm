@@ -26,6 +26,8 @@ with Anno("The validated configure parameters"):
     AConfigureParams = ConfigureParams
 with Anno("Step to mark as the last completed step, -1 for current"):
     ALastGoodStep = int
+with Anno("Quantise seek to integer multiples of"):
+    ASeekMultiple = int
 
 # Pull re-used annotypes into our namespace in case we are subclassed
 AConfigDir = builtin.controllers.AConfigDir
@@ -149,6 +151,7 @@ class RunnableController(builtin.controllers.ManagerController):
                  initial_design="",  # type: AInitialDesign
                  use_git=True,  # type: AUseGit
                  description="",  # type: ADescription
+                 seek_multiples_of=1,  # type: ASeekMultiple
                  ):
         # type: (...) -> None
         super(RunnableController, self).__init__(
@@ -176,6 +179,8 @@ class RunnableController(builtin.controllers.ManagerController):
         self.steps_per_run = 0  # type: int
         # Create sometimes writeable attribute for the current completed scan
         # step
+        self.seek_multiples_of = seek_multiples_of
+        # Quantise seek to integer multiples of this value
         self.completed_steps = NumberMeta(
             "int32", "Readback of number of scan steps",
             tags=[Widget.METER.tag()]  # Widget.TEXTINPUT.tag()]
@@ -565,6 +570,8 @@ class RunnableController(builtin.controllers.ManagerController):
         elif lastGoodStep >= total_steps:
             lastGoodStep = total_steps - 1
 
+        lastGoodStep -= (lastGoodStep % self.seek_multiple_of) 
+
         if self.state.value in [ss.ARMED, ss.FINISHED]:
             # We don't have a run process, free to go anywhere we want
             next_state = ss.ARMED
@@ -581,10 +588,14 @@ class RunnableController(builtin.controllers.ManagerController):
         # type: (int) -> None
         self.run_hooks(
             PauseHook(p, c) for p, c in self.create_part_contexts().items())
+
+        completed_steps -= (completed_steps % self.seek_multiple_of)
+
         in_run_steps = completed_steps % self.steps_per_run
         steps_to_do = self.steps_per_run - in_run_steps
         part_info = self.run_hooks(
             ReportStatusHook(p, c) for p, c in self.part_contexts.items())
+
         self.completed_steps.set_value(completed_steps)
         self.run_hooks(
             SeekHook(p, c, completed_steps, steps_to_do, part_info, **kwargs)

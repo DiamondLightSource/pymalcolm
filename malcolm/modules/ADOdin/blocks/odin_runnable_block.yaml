@@ -45,6 +45,10 @@
     description: Name of secondary dataset to link in nxs file
     default: sum
 
+- builtin.parameters.int32:
+    name: num_frame_receivers
+    description: Number of FR processes (seek to integer multiples of this when pausing)
+    default: 1
 
 - builtin.defines.docstring:
     value: |
@@ -54,6 +58,7 @@
     mri: $(mri_prefix)
     config_dir: $(config_dir)
     initial_design: $(initial_design)
+    seek_multiples_of: $(num_frame_receivers)
     description: |
       Odin is a set of libraries for capturing data from high speed detectors
 

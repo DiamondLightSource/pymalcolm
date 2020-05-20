@@ -85,6 +85,12 @@
 #    pv: $(prefix):N# umFramesFlush
 #    rbv_suffix: _RB# V
 
+- ca.parts.CALongPart:
+    name: uidOffset
+    description: value to offset UID by
+    pv: $(prefix):PARAM:UID:Adjustment
+    rbv_suffix: _RBV
+
 # Filename
 - ca.parts.CACharArrayPart:
     name: filePath
