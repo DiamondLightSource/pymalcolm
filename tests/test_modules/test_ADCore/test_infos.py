@@ -17,7 +17,7 @@ class TestInfo(unittest.TestCase):
         win_path = info.translate_filepath(part_info, 
             "/foo/directory/file:name.xml")
 
-        assert "C:\\directory\file_name.xml" == win_path
+        assert "C:\\directory\\file_name.xml" == win_path
 
     def test_file_path_translator_network_mount(self):
         info = FilePathTranslatorInfo("", "/foo", "//dc")
