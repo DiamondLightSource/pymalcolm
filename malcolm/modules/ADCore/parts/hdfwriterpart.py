@@ -321,6 +321,12 @@ class HDFWriterPart(builtin.parts.ChildPart):
         child.positionMode.put_value(True)
         # Setup our required settings
         file_dir = fileDir.rstrip(os.sep)
+        if self.runs_on_windows:
+            h5_file_dir = FilePathTranslatorInfo.translate_filepath(
+                part_info, file_dir
+            )
+        else:
+            h5_file_dir = file_dir
         filename = fileTemplate % formatName
         assert "." in filename, \
             "File extension for %r should be supplied" % filename
@@ -332,7 +338,7 @@ class HDFWriterPart(builtin.parts.ChildPart):
             dimAttDatasets=True,
             lazyOpen=True,
             arrayCounter=0,
-            filePath=file_dir + os.sep,
+            filePath=h5_file_dir + os.sep,
             fileName=formatName,
             fileTemplate="%s" + fileTemplate))
         futures += set_dimensions(child, generator)
