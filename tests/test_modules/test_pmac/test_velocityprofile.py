@@ -32,7 +32,7 @@ class TestPmacStatusPart(unittest.TestCase):
             ts = np.arange(.01, 20, .1)
         for t in ts:
             d = 100
-            profile = VelocityProfile(v1, v2, d, t, 2.0, 10000, interval=.002)
+            profile = VelocityProfile(v1, v2, d, t, 2.0, 10, interval=.002)
             profile.get_profile()
             if quantize:
                 profile.quantize()
@@ -40,6 +40,10 @@ class TestPmacStatusPart(unittest.TestCase):
             assert np.isclose(d_res, 100), \
                 "Wrong d({}). Expected d {}, vm {}, v1 {}, v2 {}, t {}".format(
                     d_res, d, profile.vm, profile.v1, profile.v2, profile.tv2)
+            if quantize and profile.t_total >= .002:
+                assert profile.t1 > .002
+                assert profile.t2 > .002
+                assert profile.tm > .002 or profile.tm == 0
 
     @staticmethod
     def do_test_acceleration_range(v1, v2, quantize=False):
@@ -56,6 +60,11 @@ class TestPmacStatusPart(unittest.TestCase):
             assert np.isclose(d_res, d), \
                 "Wrong d({}). Expected d {}, vm {}, v1 {}, v2 {}, t {}".format(
                     d_res, d, profile.vm, profile.v1, profile.v2, profile.tv2)
+            if quantize and profile.t_total >= .009:
+                assert profile.t1 > .009
+                assert profile.t2 > .009
+                assert profile.tm > .009 or profile.tm == 0
+
             a /= 10
 
     @staticmethod

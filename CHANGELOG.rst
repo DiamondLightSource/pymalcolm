@@ -6,7 +6,19 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 Unreleased_
 -----------
 
-Nothing yet
+Added:
+
+- Fix for 'sharksfin issue' - start positions in trajectories were
+  incorrect for high acceleration motors
+- Fix for sparse trajectories accumlating errors - rename the velocity modes
+  as follows and use mode 2 at the end of each sparse row
+
+  - 0 = Average Previous to Next
+  - 1 = Real Previous to Current
+  - 2 = Average Previous to Current (replaces Average Current to Next)
+  - 3 = Zero Velocity
+- Recommend V3 of the pmac Trajectory Program but allow V2 (using V2 will
+  invalidate the fix above which only applies to long, sparse trajectories)
 
 `4-2b5`_ - 2020-01-27
 ---------------------
