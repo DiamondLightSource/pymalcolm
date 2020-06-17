@@ -151,7 +151,7 @@ class RunnableController(builtin.controllers.ManagerController):
                  initial_design="",  # type: AInitialDesign
                  use_git=True,  # type: AUseGit
                  description="",  # type: ADescription
-                 seek_multiples_of=1,  # type: ASeekMultiple
+                 seek_multiple_of=1,  # type: ASeekMultiple
                  ):
         # type: (...) -> None
         super(RunnableController, self).__init__(
@@ -179,7 +179,7 @@ class RunnableController(builtin.controllers.ManagerController):
         self.steps_per_run = 0  # type: int
         # Create sometimes writeable attribute for the current completed scan
         # step
-        self.seek_multiples_of = seek_multiples_of
+        self.seek_multiple_of = seek_multiple_of
         # Quantise seek to integer multiples of this value
         self.completed_steps = NumberMeta(
             "int32", "Readback of number of scan steps",
