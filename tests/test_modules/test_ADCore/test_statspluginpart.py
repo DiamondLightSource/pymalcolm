@@ -57,7 +57,7 @@ class TestStatsPluginPart(ChildTestCase):
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
         fileDir = "/tmp"
-        part_info = {"sth": [FilePathTranslatorInfo("X", "/tmp")]}
+        part_info = {"sth": [FilePathTranslatorInfo("X", "/tmp", "")]}
         infos = self.o.on_configure(self.context, part_info, fileDir)
         assert infos is None
         expected_filename_unix = "/tmp/BLOCK-STAT-attributes.xml"
