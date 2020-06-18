@@ -6,7 +6,7 @@ from scanpointgenerator import Point
 
 from malcolm.core import APartName, Block, Context, PartRegistrar
 from malcolm.modules import builtin, scanning, pmac
-from ..seqgenerator import DoubleBufferSeqTable, SequencerRows, TICK, \
+from ..doublebuffer import DoubleBufferSeqTable, SequencerRows, TICK, \
     MIN_PULSE, LAST_PULSE
 from ..util import Trigger
 

@@ -14,7 +14,7 @@ from malcolm.modules.ADPandABlocks.blocks import panda_seq_trigger_block
 from malcolm.modules.ADPandABlocks.parts import PandASeqTriggerPart
 from malcolm.modules.ADPandABlocks.util import SequencerTable, Trigger, \
     DatasetPositionsTable
-from malcolm.modules.ADPandABlocks.seqgenerator import MIN_PULSE
+from malcolm.modules.ADPandABlocks.doublebuffer import MIN_PULSE
 from malcolm.modules.builtin.controllers import ManagerController, \
     BasicController
 from malcolm.modules.builtin.parts import ChildPart
