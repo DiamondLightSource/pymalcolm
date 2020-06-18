@@ -5,7 +5,7 @@ from scanpointgenerator import CompoundGenerator
 from malcolm.core import AbortedError, Queue, Context, TimeoutError, AMri, \
     NumberMeta, Widget, Part, DEFAULT_TIMEOUT, Table
 from malcolm.compat import OrderedDict
-from malcolm.core.models import MapMeta, MethodMeta, TableMeta, Display, VMeta
+from malcolm.core.models import MethodMeta, TableMeta, VMeta
 from malcolm.modules import builtin
 from ..infos import ParameterTweakInfo, RunProgressInfo, ConfigureParamsInfo
 from ..util import RunnableStates, AGenerator, ConfigureParams
@@ -161,7 +161,7 @@ class RunnableController(builtin.controllers.ManagerController):
         # Absolute steps where the run() returns
         self.breakpoint_steps = []  # type: List[int]
         # Breakpoint index, modified in run() and pause()
-        self.iBreakpoint = 0
+        self.breakpoint_index = 0
         # Create sometimes writeable attribute for the current completed scan
         # step
         self.completed_steps = NumberMeta(
@@ -252,7 +252,7 @@ class RunnableController(builtin.controllers.ManagerController):
         self.completed_steps.set_value(0)
         self.total_steps.set_value(0)
 
-        self.iBreakpoint = 0
+        self.breakpoint_index = 0
 
     def update_configure_params(self, part=None, info=None):
         # type: (Part, ConfigureParamsInfo) -> None
@@ -430,8 +430,8 @@ class RunnableController(builtin.controllers.ManagerController):
         # Run the configure command on all parts, passing them info from
         # ReportStatus. Parts should return any reporting info for PostConfigure
         completed_steps = 0
-        self.iBreakpoint = 0
-        steps_to_do = self.steps_per_run[self.iBreakpoint]
+        self.breakpoint_index = 0
+        steps_to_do = self.steps_per_run[self.breakpoint_index]
         part_info = self.run_hooks(
             ConfigureHook(p, c, completed_steps, steps_to_do, part_info, **kw)
             for p, c, kw in self._part_params())
@@ -461,17 +461,10 @@ class RunnableController(builtin.controllers.ManagerController):
         hook = PreRunHook
         self.do_pre_run(hook)
 
-        # TODO this is temporary split, probably not needed
-        if self.use_breakpoints:
-            if self.configured_steps.value < self.total_steps.value:
-                next_state = ss.ARMED
-            else:
-                next_state = ss.FINISHED
+        if self.configured_steps.value < self.total_steps.value:
+            next_state = ss.ARMED
         else:
-            if self.configured_steps.value < self.total_steps.value:
-                next_state = ss.ARMED
-            else:
-                next_state = ss.FINISHED
+            next_state = ss.FINISHED
         try:
             self.transition(ss.RUNNING)
             hook = RunHook
@@ -510,9 +503,9 @@ class RunnableController(builtin.controllers.ManagerController):
         if self.use_breakpoints:
             completed_steps = self.configured_steps.value
             if completed_steps < self.total_steps.value:
-                self.iBreakpoint += 1
-                if self.iBreakpoint < len(self.steps_per_run):
-                    steps_to_do = self.steps_per_run[self.iBreakpoint]
+                self.breakpoint_index += 1
+                if self.breakpoint_index < len(self.steps_per_run):
+                    steps_to_do = self.steps_per_run[self.breakpoint_index]
                 # handle a case when the endpoint is not provided
                 else:
                     steps_to_do = self.total_steps.value - completed_steps
@@ -533,7 +526,7 @@ class RunnableController(builtin.controllers.ManagerController):
         else:
             completed_steps = self.configured_steps.value
             if completed_steps < self.total_steps.value:
-                steps_to_do = self.steps_per_run[self.iBreakpoint]
+                steps_to_do = self.steps_per_run[self.breakpoint_index]
                 part_info = self.run_hooks(
                     ReportStatusHook(p, c) for p, c in
                     self.part_contexts.items())
@@ -671,12 +664,12 @@ class RunnableController(builtin.controllers.ManagerController):
             PauseHook(p, c) for p, c in self.create_part_contexts().items())
 
         if self.use_breakpoints:
-            self.iBreakpoint -= 1
+            self.breakpoint_index -= 1
             # offset = sum(self.steps_per_run[0:self.iBreakpoint])
             # assert offset < completed_steps
             in_run_steps = completed_steps % \
-                self.breakpoint_steps[self.iBreakpoint]
-            steps_to_do = self.breakpoint_steps[self.iBreakpoint] - \
+                self.breakpoint_steps[self.breakpoint_index]
+            steps_to_do = self.breakpoint_steps[self.breakpoint_index] - \
                           in_run_steps
             part_info = self.run_hooks(
                 ReportStatusHook(p, c) for p, c in self.part_contexts.items())
@@ -688,8 +681,8 @@ class RunnableController(builtin.controllers.ManagerController):
             self.configured_steps.set_value(completed_steps + steps_to_do)
         else:
             in_run_steps = completed_steps % \
-                self.steps_per_run[self.iBreakpoint]
-            steps_to_do = self.steps_per_run[self.iBreakpoint] - in_run_steps
+                self.steps_per_run[self.breakpoint_index]
+            steps_to_do = self.steps_per_run[self.breakpoint_index] - in_run_steps
             part_info = self.run_hooks(
                 ReportStatusHook(p, c) for p, c in self.part_contexts.items())
             self.completed_steps.set_value(completed_steps)
