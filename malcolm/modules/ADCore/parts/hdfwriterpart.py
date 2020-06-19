@@ -346,14 +346,17 @@ class HDFWriterPart(builtin.parts.ChildPart):
                               self.write_all_nd_attributes.value)
         self.layout_filename = os.path.join(
             file_dir, "%s-layout.xml" % self.mri)
+        layout_filename_pv = self.layout_filename
+        if self.runs_on_windows:
+            # Filename for Windows IOC needs drive letter
+            layout_filename_pv = FilePathTranslatorInfo.translate_filepath(
+                part_info, self.layout_filename)
+            # We also need to adjust the Linux path to remove colons
+            self.layout_filename = self.layout_filename.replace(":", "_")
         with open(self.layout_filename, "w") as f:
             f.write(xml)
-        layout_filename = self.layout_filename
-        if self.runs_on_windows:
-            layout_filename = FilePathTranslatorInfo.translate_filepath(
-                part_info, self.layout_filename)
         futures += child.put_attribute_values_async(dict(
-            xmlLayout=layout_filename,
+            xmlLayout=layout_filename_pv,
             flushDataPerNFrames=steps_to_do,
             flushAttrPerNFrames=0))
         # Wait for the previous puts to finish

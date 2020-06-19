@@ -263,6 +263,8 @@ class TestHDFWriterPart(ChildTestCase):
         ]
         with open(expected_xml_filename_local) as f:
             actual_xml = f.read().replace(">", ">\n")
+        # Check the layout filename Malcolm uses for file creation
+        assert self.o.layout_filename == expected_xml_filename_local
         return actual_xml
 
     def test_configure(self):
