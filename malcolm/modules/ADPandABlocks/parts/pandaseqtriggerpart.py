@@ -6,8 +6,8 @@ from scanpointgenerator import Point
 
 from malcolm.core import APartName, Block, Context, PartRegistrar
 from malcolm.modules import builtin, scanning, pmac
-from ..doublebuffer import DoubleBufferSeqTable, SequencerRows, TICK, \
-    MIN_PULSE, LAST_PULSE
+from malcolm.modules.ADPandABlocks.doublebuffer import DoubleBuffer, \
+    SequencerRows, TICK, MIN_PULSE, LAST_PULSE
 from ..util import Trigger
 
 import numpy as np
@@ -322,7 +322,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         self.trigger_enums = {}
         # The panda Block we will be prodding
         self.panda = None
-        # The DoubleBufferSeqTable object used to load tables during a scan
+        # The DoubleBuffer object used to load tables during a scan
         self.db_seq_table = None
 
     def setup(self, registrar):
@@ -456,15 +456,14 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         assert seqa
         assert seqb
 
-        # load up the first SEQ
         seq_triggers = SeqTriggers(self.generator, self.axis_mapping,
                                    self.trigger_enums, self.min_turnaround,
                                    self.min_interval)
 
         rows_gen = seq_triggers.get_rows(self.loaded_up_to, self.scan_up_to)
 
-        self.db_seq_table = DoubleBufferSeqTable(self.panda[SEQ_TABLES[0]],
-                                                 self.panda[SEQ_TABLES[1]])
+        self.db_seq_table = DoubleBuffer(self.panda[SEQ_TABLES[0]],
+                                         self.panda[SEQ_TABLES[1]])
 
         self.db_seq_table.configure(rows_gen)
 

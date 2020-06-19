@@ -133,7 +133,14 @@ class SequencerRows:
         return duration
 
 
-class DoubleBufferSeqTable:
+class DoubleBuffer:
+    """Dummy class that represents a double-buffering system for two sequencers.
+
+    This is a cut-down stub class that lets us incrementally test the system.
+
+    TODO: Full functionality will be provided at a later time.
+    """
+
     def __init__(self, seq_a, seq_b):
         self._seq_a = seq_a
         self._seq_b = seq_b
@@ -164,6 +171,7 @@ class DoubleBufferSeqTable:
     def configure(self, rows_gen):
         tables = list(self._get_tables(rows_gen))
 
+        # TODO Remove this check when double buffer is fully implemented.
         if len(tables) > 1:
             raise Exception("Seq table: Too many rows")
 
