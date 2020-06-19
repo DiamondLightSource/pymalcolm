@@ -1,0 +1,12 @@
+- builtin.parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- builtin.parameters.int32:
+    name: port
+    description: Port number to run up under
+    default: 8008
+
+- web.controllers.WebsocketClientComms:
+    mri: $(mri)
+    port: $(port)

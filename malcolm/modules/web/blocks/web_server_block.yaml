@@ -1,0 +1,27 @@
+- builtin.parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- builtin.parameters.int32:
+    name: port
+    description: Port number to run up under
+    default: 8008
+
+- builtin.parameters.int32:
+    name: subnet_validation
+    description: If non-zero, check any client is in the same subnet as the host
+    default: 1
+
+- web.controllers.HTTPServerComms:
+    mri: $(mri)
+    port: $(port)
+
+- web.parts.RestfulServerPart:
+
+- web.parts.WebsocketServerPart:
+    subnet_validation: $(subnet_validation)
+
+- web.parts.GuiServerPart:
+
+- builtin.parts.IconPart:
+    svg: $(yamldir)/../icons/socket_alt.svg
