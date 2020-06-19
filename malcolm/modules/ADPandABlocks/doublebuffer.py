@@ -103,6 +103,10 @@ class SequencerRows:
     def get_table(self):
         return SequencerTable.from_rows(self._rows)
 
+    def as_tuple(self):
+        """Used for comparisons during testing."""
+        return tuple(tuple(row) for row in self._rows)
+
     @property
     def duration(self):
         return self._duration * TICK
