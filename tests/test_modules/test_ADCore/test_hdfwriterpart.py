@@ -110,14 +110,14 @@ class TestHDFWriterPart(ChildTestCase):
         self.context = Context(self.process)
         self.child = self.create_child_block(
             hdf_writer_block, self.process,
-            mri="BLOCK-HDF5", prefix="prefix")
+            mri="BLOCK:HDF5", prefix="prefix")
         self.process.start()
 
     def tearDown(self):
         self.process.stop(2)
 
     def test_init(self):
-        self.o = HDFWriterPart(name="m", mri="BLOCK-HDF5")
+        self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         c = RunnableController("mri", "/tmp")
         c.add_part(self.o)
@@ -210,11 +210,12 @@ class TestHDFWriterPart(ChildTestCase):
         assert infos[7].path == "/entry/detector/y_set"
         assert infos[7].uniqueid == ""
 
-        expected_xml_filename_local = "/tmp/BLOCK-HDF5-layout.xml"
         if on_windows:
-            expected_xml_filename_remote = "Y:\\BLOCK-HDF5-layout.xml"
+            expected_xml_filename_local = "/tmp/BLOCK_HDF5-layout.xml"
+            expected_xml_filename_remote = "Y:\\BLOCK_HDF5-layout.xml"
             expected_filepath = "Y:" + os.sep
         else:
+            expected_xml_filename_local = "/tmp/BLOCK:HDF5-layout.xml"
             expected_xml_filename_remote = expected_xml_filename_local
             expected_filepath = "/tmp" + os.sep
         # Wait for the start_future so the post gets through to our child
@@ -266,27 +267,27 @@ class TestHDFWriterPart(ChildTestCase):
 
     def test_configure(self):
         self.mock_when_value_matches(self.child)
-        self.o = HDFWriterPart(name="m", mri="BLOCK-HDF5")
+        self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         actual_xml = self.configure_and_check_output()
         assert actual_xml.splitlines() == expected_xml.splitlines()
 
     def test_honours_write_all_attributes_flag(self):
         self.mock_when_value_matches(self.child)
-        self.o = HDFWriterPart(name="m", mri="BLOCK-HDF5", write_all_nd_attributes=False)
+        self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5", write_all_nd_attributes=False)
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         actual_xml = self.configure_and_check_output()
         assert actual_xml.splitlines() == expected_xml_limited_attr.splitlines()
 
     def test_configure_windows(self):
         self.mock_when_value_matches(self.child)
-        self.o = HDFWriterPart(name="m", mri="BLOCK-HDF5", runs_on_windows=True)
+        self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5", runs_on_windows=True)
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         actual_xml = self.configure_and_check_output(on_windows=True)
         assert actual_xml.splitlines() == expected_xml.splitlines()
 
     def test_run(self):
-        self.o = HDFWriterPart(name="m", mri="BLOCK-HDF5")
+        self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.o.done_when_reaches = 38
         self.o.completed_offset = 0
@@ -304,7 +305,7 @@ class TestHDFWriterPart(ChildTestCase):
         assert self.o.registrar.report.call_args_list[0][0][0].steps == 38
 
     def test_run_and_flush(self):
-        self.o = HDFWriterPart(name="m", mri="BLOCK-HDF5")
+        self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
 
         def set_unique_id():
             # Sleep for 2.5 seconds to ensure 2 flushes, and then set value to finish
@@ -332,7 +333,7 @@ class TestHDFWriterPart(ChildTestCase):
 
     def test_seek(self):
         self.mock_when_value_matches(self.child)
-        self.o = HDFWriterPart(name="m", mri="BLOCK-HDF5")
+        self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.o.done_when_reaches = 10
         completed_steps = 4
@@ -345,7 +346,7 @@ class TestHDFWriterPart(ChildTestCase):
         assert self.o.done_when_reaches == 13
 
     def test_post_run_ready(self):
-        self.o = HDFWriterPart(name="m", mri="BLOCK-HDF5")
+        self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         # Say that we've returned from start
         self.o.start_future = Future(None)
@@ -363,7 +364,7 @@ class TestHDFWriterPart(ChildTestCase):
 
     def test_post_run_ready_not_done_flush(self):
         # Say that we've returned from start
-        self.o = HDFWriterPart(name="m", mri="BLOCK-HDF5")
+        self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
         self.o.start_future = Future(None)
         fname = "/tmp/test_filename"
         with open(fname, "w") as f:
