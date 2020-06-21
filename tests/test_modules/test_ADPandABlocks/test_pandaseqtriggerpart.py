@@ -15,7 +15,7 @@ from malcolm.modules.ADPandABlocks.parts import PandASeqTriggerPart
 from malcolm.modules.ADPandABlocks.util import SequencerTable, Trigger, \
     DatasetPositionsTable
 from malcolm.modules.ADPandABlocks.doublebuffer import SequencerRows, \
-    DoubleBuffer, MIN_PULSE
+    DoubleBuffer, MIN_PULSE, TICK
 from malcolm.modules.builtin.controllers import ManagerController, \
     BasicController
 from malcolm.modules.builtin.parts import ChildPart
@@ -25,6 +25,7 @@ from malcolm.testutil import ChildTestCase
 from malcolm.yamlutil import make_block_creator
 
 from datetime import datetime
+from numpy import isclose
 
 
 class PositionsPart(Part):
@@ -479,3 +480,88 @@ class TestDoubleBuffer(ChildTestCase):
         assert table.time2 == [900, 1800, 2700]
         assert table.outa2 == table.outb2 == table.outc2 == table.outd2 == \
             table.oute2 == table.outf2 == [0, 0, 0]
+
+
+class TestSequencerRows(ChildTestCase):
+
+    def test_initial_rows_parameter_for_constructor(self):
+        initial_list = [[1, Trigger.POSA_GT, 100, 3000, 1, 0, 0, 0, 0, 0,
+                         2700, 0, 0, 0, 0, 0, 0],
+                        [3, Trigger.BITA_0, 300, 2000, 0, 1, 0, 0, 0, 0,
+                         1900, 0, 0, 0, 0, 0, 0]]
+
+        seq_rows = SequencerRows(initial_list)
+        total_ticks = (3000 + 2700) + 3 * (2000 + 1900)
+        assert isclose(seq_rows.duration, total_ticks * TICK)
+        assert len(seq_rows) == 2
+
+        table = seq_rows.get_table()
+        assert table.repeats == [1, 3]
+        assert table.trigger == [Trigger.POSA_GT, Trigger.BITA_0]
+        assert table.position == [100, 300]
+        assert table.time1 == [3000, 2000]
+        assert table.outa1 == [1, 0]  # Live
+        assert table.outb1 == [0, 1]  # Dead
+        assert table.outc1 == table.outd1 == table.oute1 == table.outf1 == \
+            [0, 0]
+        assert table.time2 == [2700, 1900]
+        assert table.outa2 == table.outb2 == table.outc2 == table.outd2 == \
+            table.oute2 == table.outf2 == [0, 0]
+
+    def test_add_seq_entry(self):
+        seq_rows = SequencerRows()
+        # Check defaults:
+        seq_rows.add_seq_entry()
+        seq_rows.add_seq_entry(4, Trigger.POSB_LT, 400, 1000, 0, 1, 50)
+
+        total_ticks = (MIN_PULSE * 2) + 4 * (1000 + 950)
+        assert isclose(seq_rows.duration, total_ticks * TICK)
+        assert len(seq_rows) == 2
+
+        table = seq_rows.get_table()
+        assert table.repeats == [1, 4]
+        assert table.trigger == [Trigger.IMMEDIATE, Trigger.POSB_LT]
+        assert table.position == [0, 400]
+        assert table.time1 == [MIN_PULSE, 1000]
+        assert table.outa1 == [0, 0]  # Live
+        assert table.outb1 == [0, 1]  # Dead
+        assert table.outc1 == table.outd1 == table.oute1 == table.outf1 == \
+            [0, 0]
+        assert table.time2 == [MIN_PULSE, 950]
+        assert table.outa2 == table.outb2 == table.outc2 == table.outd2 == \
+            table.oute2 == table.outf2 == [0, 0]
+
+    def test_extend(self):
+        seq_rows = SequencerRows()
+        seq_rows.add_seq_entry()
+        seq_rows2 = SequencerRows()
+        seq_rows2.add_seq_entry(4, Trigger.POSB_LT, 400, 1000, 0, 1, 50)
+        seq_rows.extend(seq_rows2)
+
+        total_ticks = (MIN_PULSE * 2) + 4 * (1000 + 950)
+        assert isclose(seq_rows.duration, total_ticks * TICK)
+        assert len(seq_rows) == 2
+
+        table = seq_rows.get_table()
+        assert table.repeats == [1, 4]
+        assert table.trigger == [Trigger.IMMEDIATE, Trigger.POSB_LT]
+        assert table.position == [0, 400]
+        assert table.time1 == [MIN_PULSE, 1000]
+        assert table.outa1 == [0, 0]  # Live
+        assert table.outb1 == [0, 1]  # Dead
+        assert table.outc1 == table.outd1 == table.oute1 == table.outf1 == \
+            [0, 0]
+        assert table.time2 == [MIN_PULSE, 950]
+        assert table.outa2 == table.outb2 == table.outc2 == table.outd2 == \
+            table.oute2 == table.outf2 == [0, 0]
+
+    def test_as_tuple(self):
+        initial_list = [[1, Trigger.POSA_GT, 100, 3000, 1, 0, 0, 0, 0, 0,
+                         2700, 0, 0, 0, 0, 0, 0],
+                        [3, Trigger.BITA_0, 300, 2000, 0, 1, 0, 0, 0, 0,
+                         1900, 0, 0, 0, 0, 0, 0]]
+
+        expected = tuple(tuple(row) for row in initial_list)
+
+        seq_rows = SequencerRows(initial_list)
+        assert seq_rows.as_tuple() == expected
