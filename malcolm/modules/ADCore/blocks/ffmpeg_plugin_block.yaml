@@ -1,0 +1,27 @@
+- builtin.parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- builtin.parameters.string:
+    name: pv_prefix
+    description: The root PV for the all ffmpeg records
+
+- builtin.defines.docstring:
+    value: |
+      Hardware block corresponding to PVs used for the ffmpegViewer plugin
+
+      - ffmpegViewer.template should have pv prefix $(prefix)
+
+- builtin.controllers.StatefulController:
+    mri: $(mri)
+    description: $(docstring)
+
+# This includes the input port
+- ADCore.includes.ndpluginbase_parts:
+    prefix: $(pv_prefix)
+
+- ca.parts.CACharArrayPart:
+    name: ffmpegStream
+    description: FFMPEG stream
+    pv: $(pv_prefix):MJPG_URL_RBV
+    widget: imgurl
