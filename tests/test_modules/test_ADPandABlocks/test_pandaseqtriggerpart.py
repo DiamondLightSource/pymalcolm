@@ -15,7 +15,7 @@ from malcolm.modules.ADPandABlocks.parts import PandASeqTriggerPart
 from malcolm.modules.ADPandABlocks.util import SequencerTable, Trigger, \
     DatasetPositionsTable
 from malcolm.modules.ADPandABlocks.doublebuffer import SequencerRows, \
-    DoubleBuffer, MIN_PULSE, TICK
+    DoubleBuffer, MIN_PULSE, TICK, SEQ_TABLE_SWITCH_DELAY, MAX_REPEATS
 from malcolm.modules.builtin.controllers import ManagerController, \
     BasicController
 from malcolm.modules.builtin.parts import ChildPart
@@ -484,52 +484,40 @@ class TestDoubleBuffer(ChildTestCase):
 
 class TestSequencerRows(ChildTestCase):
 
-    def test_initial_rows_parameter_for_constructor(self):
-        initial_list = [[1, Trigger.POSA_GT, 100, 3000, 1, 0, 0, 0, 0, 0,
-                         2700, 0, 0, 0, 0, 0, 0],
-                        [3, Trigger.BITA_0, 300, 2000, 0, 1, 0, 0, 0, 0,
-                         1900, 0, 0, 0, 0, 0, 0]]
+    def test_get_table(self):
+        initial_list = [(1, Trigger.POSA_GT, 100, 3000, 1, 0, 0, 0, 0, 0,
+                         2700, 0, 0, 0, 0, 0, 0),
+                        (3, Trigger.BITA_0, 300, 2000, 0, 1, 0, 0, 0, 0,
+                         1900, 0, 0, 0, 0, 0, 0)]
+
+        total_ticks = (3000 + 2700) + 3 * (2000 + 1900)
 
         seq_rows = SequencerRows(initial_list)
-        total_ticks = (3000 + 2700) + 3 * (2000 + 1900)
-        assert isclose(seq_rows.duration, total_ticks * TICK)
-        assert len(seq_rows) == 2
-
-        table = seq_rows.get_table()
-        assert table.repeats == [1, 3]
-        assert table.trigger == [Trigger.POSA_GT, Trigger.BITA_0]
-        assert table.position == [100, 300]
-        assert table.time1 == [3000, 2000]
-        assert table.outa1 == [1, 0]  # Live
-        assert table.outb1 == [0, 1]  # Dead
-        assert table.outc1 == table.outd1 == table.oute1 == table.outf1 == \
-            [0, 0]
-        assert table.time2 == [2700, 1900]
-        assert table.outa2 == table.outb2 == table.outc2 == table.outd2 == \
-            table.oute2 == table.outf2 == [0, 0]
-
-    def test_add_seq_entry(self):
-        seq_rows = SequencerRows()
-        # Check defaults:
         seq_rows.add_seq_entry()
-        seq_rows.add_seq_entry(4, Trigger.POSB_LT, 400, 1000, 0, 1, 50)
+        seq_rows.add_seq_entry(4, Trigger.POSA_GT, 400, 1000, 0, 1, 50)
+        seq_rows.add_seq_entry(
+            (2 * MAX_REPEATS) + 20, Trigger.BITA_0, 300, 200, 1, 0, 100)
 
-        total_ticks = (MIN_PULSE * 2) + 4 * (1000 + 950)
+        total_ticks += ((MIN_PULSE * 2) + (4 * (1000 + 950)) +
+                        (2 * MAX_REPEATS + 20) * (200 + 100))
         assert isclose(seq_rows.duration, total_ticks * TICK)
-        assert len(seq_rows) == 2
+        assert len(seq_rows) == 7
 
         table = seq_rows.get_table()
-        assert table.repeats == [1, 4]
-        assert table.trigger == [Trigger.IMMEDIATE, Trigger.POSB_LT]
-        assert table.position == [0, 400]
-        assert table.time1 == [MIN_PULSE, 1000]
-        assert table.outa1 == [0, 0]  # Live
-        assert table.outb1 == [0, 1]  # Dead
+        GT = Trigger.POSA_GT
+        IM = Trigger.IMMEDIATE
+        B0 = Trigger.BITA_0
+        assert table.repeats == [1, 3, 1, 4, MAX_REPEATS, MAX_REPEATS, 20]
+        assert table.trigger == [GT, B0, IM, GT, B0, B0, B0]
+        assert table.position == [100, 300, 0, 400, 300, 300, 300]
+        assert table.time1 == [3000, 2000, MIN_PULSE, 1000, 200, 200, 200]
+        assert table.outa1 == [1, 0, 0, 0, 1, 1, 1]  # Live
+        assert table.outb1 == [0, 1, 0, 1, 0, 0, 0]  # Dead
         assert table.outc1 == table.outd1 == table.oute1 == table.outf1 == \
-            [0, 0]
-        assert table.time2 == [MIN_PULSE, 950]
+            [0, 0, 0, 0, 0, 0, 0]
+        assert table.time2 == [2700, 1900, MIN_PULSE, 950, 100, 100, 100]
         assert table.outa2 == table.outb2 == table.outc2 == table.outd2 == \
-            table.oute2 == table.outf2 == [0, 0]
+            table.oute2 == table.outf2 == [0, 0, 0, 0, 0, 0, 0]
 
     def test_extend(self):
         seq_rows = SequencerRows()
@@ -556,12 +544,83 @@ class TestSequencerRows(ChildTestCase):
             table.oute2 == table.outf2 == [0, 0]
 
     def test_as_tuple(self):
-        initial_list = [[1, Trigger.POSA_GT, 100, 3000, 1, 0, 0, 0, 0, 0,
-                         2700, 0, 0, 0, 0, 0, 0],
-                        [3, Trigger.BITA_0, 300, 2000, 0, 1, 0, 0, 0, 0,
-                         1900, 0, 0, 0, 0, 0, 0]]
+        initial_list = [(1, Trigger.POSA_GT, 100, 3000, 1, 0, 0, 0, 0, 0,
+                         2700, 0, 0, 0, 0, 0, 0),
+                        (3, Trigger.BITA_0, 300, 2000, 0, 1, 0, 0, 0, 0,
+                         1900, 0, 0, 0, 0, 0, 0)]
 
-        expected = tuple(tuple(row) for row in initial_list)
+        expected = tuple(initial_list)
 
         seq_rows = SequencerRows(initial_list)
         assert seq_rows.as_tuple() == expected
+
+    def test_split_below_max_table_size(self):
+        seq_rows = SequencerRows()
+        seq_rows.add_seq_entry(4, Trigger.POSB_LT, 400, 1000, 0, 1, 50)
+        seq_rows.add_seq_entry(3, Trigger.BITA_0, 300, 2000, 1, 0, 100)
+
+        expected = SequencerRows()
+        expected.add_seq_entry(4, Trigger.POSB_LT, 400, 1000, 0, 1, 50)
+        expected.add_seq_entry(2, Trigger.BITA_0, 300, 2000, 1, 0, 100)
+        expected.add_seq_entry(1, Trigger.BITA_0, 300, 2000, 1, 0, 100 +
+                               SEQ_TABLE_SWITCH_DELAY)
+
+        remainder = seq_rows.split(100)
+
+        assert seq_rows.as_tuple() == expected.as_tuple()
+        assert remainder.as_tuple() == SequencerRows().as_tuple()
+
+    def test_split_above_max_table_size(self):
+        seq_rows = SequencerRows()
+        seq_rows.add_seq_entry(4, Trigger.POSB_LT, 400, 1000, 0, 1, 50)
+        seq_rows.add_seq_entry(3, Trigger.BITA_0, 300, 2000, 1, 0, 100)
+        seq_rows.add_seq_entry(2, Trigger.POSB_GT, 300, 2000, 0, 1, 100)
+        seq_rows.add_seq_entry(3, Trigger.BITA_0, 300, 2000, 1, 0, 100)
+
+        expected = SequencerRows()
+        expected.add_seq_entry(4, Trigger.POSB_LT, 400, 1000, 0, 1, 50)
+        expected.add_seq_entry(3, Trigger.BITA_0, 300, 2000, 1, 0, 100)
+        expected.add_seq_entry(1, Trigger.POSB_GT, 300, 2000, 0, 1, 100 +
+                               SEQ_TABLE_SWITCH_DELAY)
+
+        exp_rem = SequencerRows()
+        exp_rem.add_seq_entry(1, Trigger.POSB_GT, 300, 2000, 0, 1, 100)
+        exp_rem.add_seq_entry(3, Trigger.BITA_0, 300, 2000, 1, 0, 100)
+
+        remainder = seq_rows.split(3)
+
+        assert seq_rows.as_tuple() == expected.as_tuple()
+        assert remainder.as_tuple() == exp_rem.as_tuple()
+
+    def test_split_with_final_row_zero_repeat(self):
+        seq_rows = SequencerRows()
+        seq_rows.add_seq_entry(4, Trigger.POSB_LT, 400, 1000, 0, 1, 50)
+        seq_rows.add_seq_entry(3, Trigger.BITA_0, 300, 2000, 1, 0, 100)
+        seq_rows.add_seq_entry(0, Trigger.IMMEDIATE, 300, 2000, 0, 1, 100)
+
+        expected = SequencerRows()  # End of scan - no switch delay
+        expected.add_seq_entry(4, Trigger.POSB_LT, 400, 1000, 0, 1, 50)
+        expected.add_seq_entry(3, Trigger.BITA_0, 300, 2000, 1, 0, 100)
+        expected.add_seq_entry(0, Trigger.IMMEDIATE, 300, 2000, 0, 1, 100)
+
+        remainder = seq_rows.split(3)
+
+        assert seq_rows.as_tuple() == expected.as_tuple()
+        assert remainder.as_tuple() == SequencerRows().as_tuple()
+
+    def test_split_with_final_row_one_repeat(self):
+        seq_rows = SequencerRows()
+        seq_rows.add_seq_entry(4, Trigger.POSB_LT, 400, 1000, 0, 1, 50)
+        seq_rows.add_seq_entry(3, Trigger.BITA_0, 300, 2000, 1, 0, 100)
+        seq_rows.add_seq_entry(1, Trigger.POSB_LT, 300, 2000, 0, 1, 100)
+
+        expected = SequencerRows()
+        expected.add_seq_entry(4, Trigger.POSB_LT, 400, 1000, 0, 1, 50)
+        expected.add_seq_entry(3, Trigger.BITA_0, 300, 2000, 1, 0, 100)
+        expected.add_seq_entry(1, Trigger.POSB_LT, 300, 2000, 0, 1, 100 +
+                               SEQ_TABLE_SWITCH_DELAY)
+
+        remainder = seq_rows.split(3)
+
+        assert seq_rows.as_tuple() == expected.as_tuple()
+        assert remainder.as_tuple() == SequencerRows().as_tuple()

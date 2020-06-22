@@ -50,7 +50,7 @@ class SequencerRows:
 
         row = self._seq_row(MAX_REPEATS, trigger, position, half_duration, live,
                             dead, trim)
-        self._rows.extend(row * complete_rows)
+        self._rows.extend([row] * complete_rows)
         self._rows.append(self._seq_row(remaining, trigger, position,
                                         half_duration, live, dead, trim))
         self._duration += count * (2 * half_duration - trim)
@@ -65,7 +65,7 @@ class SequencerRows:
         if len(self._rows) >= count:
             final_row = self._rows[count-1]
             if final_row[0] == 0:  # Row in continuous loop
-                assert len(self._rows) == count
+                assert len(self._rows) == count  # Continuous loop always at end
                 return SequencerRows()
 
             if final_row[0] == 1:
@@ -73,12 +73,13 @@ class SequencerRows:
                 self._rows = self._rows[:count]
 
             elif final_row[0] > 1:
-                initial_remainder = final_row[:]
-                initial_remainder[0] -= 1
-                remainder = SequencerRows([initial_remainder])
+                final_row = list(final_row)
+                final_row[0] -= 1
+                remainder = SequencerRows([tuple(final_row)])
                 remainder.extend(SequencerRows(self._rows[count:]))
-                self._rows = self._rows[:count]
-                self._rows[-1][0] = 1
+                final_row[0] = 1
+                self._rows = self._rows[:count-1]
+                self._rows.append(tuple(final_row))
         else:
             remainder = SequencerRows()
 
@@ -86,14 +87,17 @@ class SequencerRows:
                 return remainder
 
             if self._rows[-1][0] > 1:
-                final_row = self._rows[-1][:]
-                self._rows[-1][0] -= 1
+                final_row = list(self._rows[-1])
+                final_row[0] -= 1
+                self._rows[-1] = tuple(final_row)
                 final_row[0] = 1
                 self._rows += [final_row]
 
-        self._rows[-1][10] -= SEQ_TABLE_SWITCH_DELAY
+        final_self_row = list(self._rows[-1])
+        final_self_row[10] -= SEQ_TABLE_SWITCH_DELAY
+        self._rows[-1] = tuple(final_self_row)
         self._duration -= SEQ_TABLE_SWITCH_DELAY
-        self.duration -= remainder.duration
+        self._duration -= remainder.duration
         return remainder
 
     def extend(self, other):
@@ -105,7 +109,7 @@ class SequencerRows:
 
     def as_tuple(self):
         """Used for comparisons during testing."""
-        return tuple(tuple(row) for row in self._rows)
+        return tuple(self._rows)
 
     @property
     def duration(self):
@@ -122,11 +126,11 @@ class SequencerRows:
 
         If trim=0, there is a 50% duty cycle. Trim reduces the total duration
         """
-        return [repeats, trigger, position,
+        return (repeats, trigger, position,
                 # Phase1
                 half_duration, live, dead, 0, 0, 0, 0,
                 # Phase2
-                half_duration - trim, 0, 0, 0, 0, 0, 0]
+                half_duration - trim, 0, 0, 0, 0, 0, 0)
 
     @staticmethod
     def _calculate_duration(rows):
