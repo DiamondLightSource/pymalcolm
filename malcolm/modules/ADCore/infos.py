@@ -28,13 +28,15 @@ class FilePathTranslatorInfo(Info):
         assert filepath.startswith(translator.path_prefix), \
             "filepath %s does not start with expected prefix %s" % (
                 filepath, translator.path_prefix)
+        assert filepath.find(":") == -1, \
+            "filepath %s has unexpected colon (incompatible on Windows)" % (
+                filepath)
 
-        filepath = filepath.replace(":", "_")
         if translator.network_prefix != "":
-             win_path = filepath.replace(
-                 translator.path_prefix,
-                 translator.network_prefix + translator.path_prefix
-                 ).replace("/", "\\")
+            win_path = filepath.replace(
+                translator.path_prefix,
+                translator.network_prefix + translator.path_prefix
+                ).replace("/", "\\")
         else:
             win_path = filepath.replace(
                 translator.path_prefix,

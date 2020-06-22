@@ -210,12 +210,11 @@ class TestHDFWriterPart(ChildTestCase):
         assert infos[7].path == "/entry/detector/y_set"
         assert infos[7].uniqueid == ""
 
+        expected_xml_filename_local = "/tmp/BLOCK_HDF5-layout.xml"
         if on_windows:
-            expected_xml_filename_local = "/tmp/BLOCK_HDF5-layout.xml"
             expected_xml_filename_remote = "Y:\\BLOCK_HDF5-layout.xml"
             expected_filepath = "Y:" + os.sep
         else:
-            expected_xml_filename_local = "/tmp/BLOCK:HDF5-layout.xml"
             expected_xml_filename_remote = expected_xml_filename_local
             expected_filepath = "/tmp" + os.sep
         # Wait for the start_future so the post gets through to our child
