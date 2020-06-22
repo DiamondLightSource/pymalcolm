@@ -11,7 +11,7 @@ from malcolm.core import APartName, Future, Info, Block, PartRegistrar, \
 from malcolm.modules import builtin, scanning
 from ..infos import CalculatedNDAttributeDatasetInfo, NDArrayDatasetInfo, \
     NDAttributeDatasetInfo, FilePathTranslatorInfo
-from ..util import APartRunsOnWindows, FRAME_TIMEOUT, XmlLayout
+from ..util import APartRunsOnWindows, FRAME_TIMEOUT, make_xml_filename
 
 if TYPE_CHECKING:
     from typing import Iterator, List, Dict
@@ -344,7 +344,7 @@ class HDFWriterPart(builtin.parts.ChildPart):
         futures += set_dimensions(child, generator)
         xml = make_layout_xml(generator, part_info,
                               self.write_all_nd_attributes.value)
-        self.layout_filename = XmlLayout.get_layout_filename(
+        self.layout_filename = make_xml_filename(
             file_dir, self.mri, suffix="layout")
         with open(self.layout_filename, "w") as f:
             f.write(xml)

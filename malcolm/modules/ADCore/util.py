@@ -96,9 +96,7 @@ class ExtraAttributesTable(Table):
         self.datasetType = AAttributeTypes(datasetType)
 
 
-class XmlLayout:
-
-    @staticmethod
-    def get_layout_filename(file_dir, mri, suffix="attributes"):
-        return os.path.join(
-            file_dir, "%s-%s.xml" % (mri.replace(":", "_"), suffix))
+def make_xml_filename(file_dir, mri, suffix="attributes"):
+    """Return a Block-specific filename for attribute or layout XML file"""
+    return os.path.join(
+        file_dir, "%s-%s.xml" % (mri.replace(":", "_"), suffix))
