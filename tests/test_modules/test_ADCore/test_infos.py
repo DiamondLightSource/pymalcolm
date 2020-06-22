@@ -1,6 +1,6 @@
 import unittest
 
-from malcolm.modules.ADCore.infos import FilePathTranslatorInfo
+from malcolm.modules.ADCore.infos import FilePathTranslatorInfo, NDAttributeDatasetInfo
 
 
 class TestInfo(unittest.TestCase):
@@ -34,3 +34,9 @@ class TestInfo(unittest.TestCase):
 
         self.assertRaises(AssertionError, info.translate_filepath, part_info, filepath)
 
+
+class TestNDAttributeDatasetInfo(unittest.TestCase):
+
+    def test_from_attribute_type_raises_AttributeError_with_bad_dataset_type(self):
+
+        self.assertRaises(AttributeError, NDAttributeDatasetInfo.from_attribute_type, "POSITION", float, "POSITION.X")
