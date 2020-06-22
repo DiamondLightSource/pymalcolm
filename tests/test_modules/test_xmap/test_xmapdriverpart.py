@@ -36,7 +36,7 @@ class TestXmap3DetectorDriverPart(ChildTestCase):
     def test_configure(self):
         completed_steps = 0
         steps_to_do = 456
-        part_info = {"sth": [FilePathTranslatorInfo("Z", "/tmp")]}
+        part_info = {"sth": [FilePathTranslatorInfo("Z", "/tmp", "")]}
         self.o.post_configure = MagicMock()
         # We wait to be armed, so set this here
         self.set_attributes(self.child, acquiring=True)
