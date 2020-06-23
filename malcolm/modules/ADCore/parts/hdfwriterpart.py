@@ -365,10 +365,15 @@ class HDFWriterPart(builtin.parts.ChildPart):
         # Start a future waiting for the first array
         self.array_future = child.when_value_matches_async(
             "arrayCounterReadback", greater_than_zero)
+        self._check_xml_is_valid(child)
         # Return the dataset information
         dataset_infos = list(create_dataset_infos(
             formatName, part_info, generator, filename))
         return dataset_infos
+
+    def _check_xml_is_valid(self, child):
+        assert child.xmlLayoutValid.value, \
+            "%s: invalid XML layout file (%s)" % (self.mri, child.xmlErrorMsg.value)
 
     @add_call_types
     def on_seek(self,
