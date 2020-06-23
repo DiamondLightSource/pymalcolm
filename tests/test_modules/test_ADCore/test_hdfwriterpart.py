@@ -266,9 +266,16 @@ class TestHDFWriterPart(ChildTestCase):
         assert self.o.layout_filename == expected_xml_filename_local
         return actual_xml
 
+    @staticmethod
+    def mock_xml_is_valid_check(part):
+        mock_xml_layout_value = MagicMock(name="mock_xml_layout_value")
+        mock_xml_layout_value.return_value = True
+        part._check_xml_is_valid = mock_xml_layout_value
+
     def test_configure(self):
         self.mock_when_value_matches(self.child)
         self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
+        self.mock_xml_is_valid_check(self.o)
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         actual_xml = self.configure_and_check_output()
         assert actual_xml.splitlines() == expected_xml.splitlines()
@@ -276,6 +283,7 @@ class TestHDFWriterPart(ChildTestCase):
     def test_honours_write_all_attributes_flag(self):
         self.mock_when_value_matches(self.child)
         self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5", write_all_nd_attributes=False)
+        self.mock_xml_is_valid_check(self.o)
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         actual_xml = self.configure_and_check_output()
         assert actual_xml.splitlines() == expected_xml_limited_attr.splitlines()
@@ -283,6 +291,7 @@ class TestHDFWriterPart(ChildTestCase):
     def test_configure_windows(self):
         self.mock_when_value_matches(self.child)
         self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5", runs_on_windows=True)
+        self.mock_xml_is_valid_check(self.o)
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         actual_xml = self.configure_and_check_output(on_windows=True)
         assert actual_xml.splitlines() == expected_xml.splitlines()
@@ -378,3 +387,20 @@ class TestHDFWriterPart(ChildTestCase):
         self.o.on_reset(self.context)
         assert not os.path.isfile(fname)
 
+    def test_check_xml_is_valid_method_succeeds_for_valid_value(self):
+        self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
+        child = MagicMock(name="child_mock")
+        child.xmlLayoutValid.value = True
+
+        try:
+            self.o._check_xml_is_valid(child)
+        except AssertionError:
+            self.fail("_check_xml_is_valid() threw unexpected AssertionError")
+
+    def test_check_xml_is_valid_method_throws_AssertionError_for_bad_value(self):
+        self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
+        child = MagicMock(name="child_mock")
+        child.xmlLayoutValid.value = False
+        child.xmlErrorMsg.value = "XML description file cannot be opened"
+
+        self.assertRaises(AssertionError, self.o._check_xml_is_valid, child)

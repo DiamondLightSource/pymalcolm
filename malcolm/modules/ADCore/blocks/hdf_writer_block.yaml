@@ -87,6 +87,16 @@
     pv: $(prefix):XMLFileName
     rbv_suffix: _RBV
 
+- ca.parts.CABooleanPart:
+    name: xmlLayoutValid
+    description: Reports XML layout validity
+    rbv: $(prefix):XMLValid_RBV
+
+- ca.parts.CACharArrayPart:
+    name: xmlErrorMsg
+    description: XML layout error message
+    rbv: $(prefix):XMLErrorMsg_RBV
+
 # Filename
 - ca.parts.CACharArrayPart:
     name: filePath
