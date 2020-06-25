@@ -94,22 +94,6 @@ class TestKinematicsSavuPart(ChildTestCase):
             offset=0.0, maxVelocity=y_velocity, readback=y_pos,
             velocitySettle=0.0, units=units, axisNumber=23)
 
-    def test_configure(self):
-        tmp_dir = mkdtemp() + os.path.sep
-        self.set_motor_attributes(0.5, 0.0, "mm")
-
-        xs = LineGenerator("x", "mm", 0.0, 0.4, 5, alternate=False)
-        ys = LineGenerator("y", "mm", 1.2, 1.6, 5)
-        generator = CompoundGenerator([ys, xs], [], [], 1.0)
-        generator.prepare()
-
-        self.o.configure(
-            self.context, fileDir=tmp_dir, generator=generator,
-            axesToMove=AXES
-        )
-
-        rmtree(tmp_dir)
-
     def test_file_creation(self):
         tmp_dir = mkdtemp() + os.path.sep
         data_name = "p00-1234"
