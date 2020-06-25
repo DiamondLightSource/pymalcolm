@@ -35,7 +35,6 @@ def OFFSET_VAR(axis):
     return "P49%02d" % axis
 
 # We will set these attributes on the child block, so don't save them
-@builtin.util.no_save("fileName", "filePath")
 class KinematicsSavuPart(builtin.parts.ChildPart):
     """Part for writing out files to send to Savu for post processing
     of forward kinematics. Creates the following files:
@@ -72,7 +71,6 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         super(KinematicsSavuPart, self).setup(registrar)
-        print("In kinsav setup")
         # Tell the controller to expose some extra configure parameters
         registrar.report(scanning.hooks.ConfigureHook.create_info(
             self.configure))
@@ -300,9 +298,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         else:
             kinematics_file = "only_mean.nxs"
 
-        src = os.path.join(src, "..")
-        src = os.path.join(src, "kinematics")
-        src = os.path.join(src, kinematics_file)
+        src = os.path.join(src, "..", "kinematics", kinematics_file)
 
         copyfile(src, self.savu_pl_filename)
 
