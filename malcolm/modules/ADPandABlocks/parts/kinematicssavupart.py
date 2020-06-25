@@ -106,10 +106,10 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         # Derive file path from template
         baseTemplate = os.path.splitext(fileTemplate)[0]
         # Create the various nexus files to pass to Savu and expected output
-        fileName = baseTemplate.replace('%s', "savu") + ".nxs"
-        vds_fileName = baseTemplate.replace('%s', "kinematics-vds") + ".nxs"
-        savu_pl_fileName = baseTemplate.replace('%s', "savu_pl") + ".nxs"
-        savu_fileName = baseTemplate.replace('%s', "savu_processed") + ".nxs"
+        fileName = (baseTemplate % "savu") + ".nxs"
+        vds_fileName = (baseTemplate % "kinematics-vds") + ".nxs"
+        savu_pl_fileName = (baseTemplate % "savu_pl") + ".nxs"
+        savu_fileName = (baseTemplate % "savu_processed") + ".nxs"
 
         # This is path to the file to pass to Savu
         self.nxs_full_filename = os.path.join(fileDir, fileName)
@@ -123,8 +123,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
 
         # This is the path the the processed file created by Savu after having
         # done the processing
-        savu_path = os.path.join(fileDir,
-                                 baseTemplate.replace('%s', "savuproc"))
+        savu_path = os.path.join(fileDir, (baseTemplate % "savuproc"))
         self.savu_full_filename = os.path.join(savu_path, savu_fileName)
 
         # Get the cs port mapping for this PMAC
