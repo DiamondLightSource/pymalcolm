@@ -28,7 +28,7 @@ install_requires = [
 
 tests_require = [
     'mock>=2.0.0', 'nose>=1.3.0', 'coverage>=3.7.1', 'pytest>=3.10.1',
-    'pytest-cov>=2.6.1']
+    'pytest-cov>=2.6.1', 'pytest-timeout>=1.4.1']
 
 # Place the directory containing _version_git on the path
 for path, _, filenames in os.walk(os.path.dirname(os.path.abspath(__file__))):

@@ -15,6 +15,16 @@
     description: Beamline specific label for the detector
     default: pco
 
+- builtin.parameters.string:
+    name: windows_drive
+    description: Windows drive letter for Linux path translation
+    default: C
+
+- builtin.parameters.string:
+    name: path_prefix
+    description: "Linux path base which is replaced with windows_drive letter"
+    default: /dls
+
 - builtin.defines.docstring:
     value: |
       Device block corresponding to PCO + stat + pos + hdf writer.
@@ -55,10 +65,18 @@
 - ADCore.parts.StatsPluginPart:
     name: STAT
     mri: $(mri_prefix):STAT
+    runs_on_windows: True
 
 - ADCore.includes.filewriting_collection:
     pv_prefix: $(pv_prefix)
     mri_prefix: $(mri_prefix)
+    runs_on_windows: True
+
+- ADCore.parts.FilepathTranslatorPart:
+    name: WINPATH
+    initial_windows_drive_letter: $(windows_drive)
+    initial_path_prefix: $(path_prefix)
+    initial_network_prefix: ''
 
 #- builtin.parts.IconPart:
 #    svg: $(yamldir)/../icons/Logo.svg

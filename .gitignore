@@ -24,6 +24,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+venv27/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -71,3 +72,6 @@ target/
 # VS Code
 .vscode
 .history/
+# Eclipse
+.project
+.pydevproject

@@ -10,11 +10,14 @@ class FilePathTranslatorInfo(Info):
     Args:
         windows_drive_letter: The drive letter assigned to the windows mount
         path_prefix: The location of the mount in linux (i.e. /dls or /dls_sw)
+        network_drive: The network drive prefix on Windows (e.g. //dc). If the
+        windows drive letter is an empty string, the network drive is prepended.
     """
 
-    def __init__(self, windows_drive_letter, path_prefix):
+    def __init__(self, windows_drive_letter, path_prefix, network_prefix):
         self.windows_drive_letter = windows_drive_letter
         self.path_prefix = path_prefix
+        self.network_prefix = network_prefix
 
     @classmethod
     def translate_filepath(cls, part_info, filepath):
@@ -25,10 +28,21 @@ class FilePathTranslatorInfo(Info):
         assert filepath.startswith(translator.path_prefix), \
             "filepath %s does not start with expected prefix %s" % (
                 filepath, translator.path_prefix)
-        return filepath.replace(
-            translator.path_prefix,
-            translator.windows_drive_letter + ":"
-        ).replace("/", "\\")
+        assert filepath.find(":") == -1, \
+            "filepath %s has unexpected colon (incompatible on Windows)" % (
+                filepath)
+
+        if translator.network_prefix != "":
+            win_path = filepath.replace(
+                translator.path_prefix,
+                translator.network_prefix + translator.path_prefix
+                ).replace("/", "\\")
+        else:
+            win_path = filepath.replace(
+                translator.path_prefix,
+                translator.windows_drive_letter + ":"
+            ).replace("/", "\\")
+        return win_path
 
 
 class NDArrayDatasetInfo(Info):

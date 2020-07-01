@@ -14,13 +14,13 @@ class TestStatsPluginPart(ChildTestCase):
         self.context = Context(self.process)
         self.child = self.create_child_block(
             stats_plugin_block, self.process,
-            mri="BLOCK-STAT", prefix="prefix")
+            mri="BLOCK:STAT", prefix="prefix")
 
     def tearDown(self):
         self.process.stop(timeout=2)
 
     def test_report_info(self):
-        self.o = StatsPluginPart(name="m", mri="BLOCK-STAT")
+        self.o = StatsPluginPart(name="m", mri="BLOCK:STAT")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
         assert list(sorted(self.o.no_save_attribute_names)) == [
@@ -32,14 +32,14 @@ class TestStatsPluginPart(ChildTestCase):
         assert infos[0].attr == "STATS_TOTAL"
 
     def test_configure(self):
-        self.o = StatsPluginPart(name="m", mri="BLOCK-STAT")
+        self.o = StatsPluginPart(name="m", mri="BLOCK:STAT")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
         fileDir = "/tmp"
         part_info = {}
         infos = self.o.on_configure(self.context, part_info, fileDir)
         assert infos is None
-        expected_filename = "/tmp/BLOCK-STAT-attributes.xml"
+        expected_filename = "/tmp/BLOCK_STAT-attributes.xml"
         assert self.child.handled_requests.mock_calls == [
             call.put('computeStatistics', True),
             call.put('enableCallbacks', True),
@@ -53,15 +53,15 @@ class TestStatsPluginPart(ChildTestCase):
         assert actual_xml.splitlines() == expected_xml.splitlines()
 
     def test_configure_windows(self):
-        self.o = StatsPluginPart(name="m", mri="BLOCK-STAT", runs_on_windows=True)
+        self.o = StatsPluginPart(name="m", mri="BLOCK:STAT", runs_on_windows=True)
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
         fileDir = "/tmp"
-        part_info = {"sth": [FilePathTranslatorInfo("X", "/tmp")]}
+        part_info = {"sth": [FilePathTranslatorInfo("X", "/tmp", "")]}
         infos = self.o.on_configure(self.context, part_info, fileDir)
         assert infos is None
-        expected_filename_unix = "/tmp/BLOCK-STAT-attributes.xml"
-        expected_filename_windows = "X:\\BLOCK-STAT-attributes.xml"
+        expected_filename_unix = "/tmp/BLOCK_STAT-attributes.xml"
+        expected_filename_windows = "X:\\BLOCK_STAT-attributes.xml"
         assert self.child.handled_requests.mock_calls == [
             call.put('computeStatistics', True),
             call.put('enableCallbacks', True),

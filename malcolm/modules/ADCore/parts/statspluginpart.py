@@ -7,7 +7,7 @@ from malcolm.compat import et_to_string
 from malcolm.core import APartName, PartRegistrar
 from malcolm.modules import builtin, scanning
 from ..infos import CalculatedNDAttributeDatasetInfo, FilePathTranslatorInfo
-from ..util import StatisticsName, APartRunsOnWindows
+from ..util import StatisticsName, APartRunsOnWindows, make_xml_filename
 
 with Anno("Which statistic to capture"):
     AStatsName = StatisticsName
@@ -78,8 +78,7 @@ class StatsPluginPart(builtin.parts.ChildPart):
             enableCallbacks=True,
             computeStatistics=True))
         xml = self._make_attributes_xml()
-        self.attributes_filename = os.path.join(
-            fileDir, "%s-attributes.xml" % self.mri)
+        self.attributes_filename = make_xml_filename(fileDir, self.mri)
         with open(self.attributes_filename, "w") as f:
             f.write(xml)
         attributes_filename = self.attributes_filename
