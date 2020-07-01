@@ -433,6 +433,13 @@ class Context(object):
             if response.id in self._subscriptions:
                 func, args = self._subscriptions[response.id]
                 func(response.value, *args)
+            # func() may call wait_for_futures() which may call set_result on
+            # some futures that aren't known to it. This means that some of
+            # our futures list are now concluded, so filter them out. If we
+            # didn't do this we would hang forever
+            for future in futures:
+                if future not in self._requests:
+                    futures.remove(future)
         elif isinstance(response, Return):
             future = self._futures.pop(response.id)
             del self._requests[future]
