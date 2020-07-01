@@ -18,7 +18,7 @@ class Info(object):
     something from a hooked function"""
 
     def __repr__(self):
-        spec = inspect.getargspec(self.__init__)
+        spec = inspect.getfullargspec(self.__init__)
         args = ", ".join(repr(getattr(self, x)) for x in spec.args[1:])
         return "%s(%s)" % (self.__class__.__name__, args)
 

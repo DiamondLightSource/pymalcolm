@@ -5,7 +5,7 @@ import inspect
 
 from annotypes import Any, TYPE_CHECKING, Anno, NO_DEFAULT
 from ruamel import yaml
-from collections import MutableSequence
+from collections.abc import MutableSequence
 
 from malcolm.compat import str_, raise_with_traceback, OrderedDict
 from malcolm.core import YamlError, Controller, Part, Define, MethodMeta

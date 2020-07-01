@@ -1,5 +1,4 @@
-import collections
-import math
+import collections.abc
 from xml.etree import cElementTree as ET
 
 from annotypes import Anno, Array, Union, Sequence, TYPE_CHECKING
@@ -168,7 +167,7 @@ def no_save(*attribute_names):
         # type: (Type[ChildPart]) -> Type[ChildPart]
         additions = set()
         for attribute_name in attribute_names:
-            if isinstance(attribute_name, collections.Iterable) \
+            if isinstance(attribute_name, collections.abc.Iterable) \
                     and not isinstance(attribute_name, str_):
                 additions |= set(attribute_name)
             else:

@@ -1,4 +1,4 @@
-#!/dls_sw/prod/tools/RHEL7-x86_64/defaults/bin/dls-python
+#!/dls_sw/prod/tools/RHEL7-x86_64/defaults/bin/dls-python3
 import logging.config
 import threading
 import argparse
@@ -297,32 +297,10 @@ block = self.block_view("<mri>")
 
 
 if __name__ == "__main__":
-    from pkg_resources import require
-    print("Loading external modules...")
-
     os.environ["EPICS_CA_MAX_ARRAY_BYTES"] = "6000000"
 
     sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-    require(
-        # External
-        "enum34==1.1.6",
-        "tornado==4.5.1",
-        "numpy==1.13.1",
-        "ruamel.yaml==0.15.33",
-        "h5py==2.9.0",
-        "p4p==3.2.0",
-        "pygelf==0.3.5",
-        "plop==0.3.0",
-        "typing==3.6.1",
-        # scipy only needed for scanpointgenerator.plot_generator
-        "scipy==0.19.1",
-        # DLS developed
-        "annotypes==0.20",
-        "cothread==2.14",
-        "scanpointgenerator==3.1",
-        "vdsgen==0.5.1"
-    )
     #sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "cothread"))
     #sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "annotypes"))
     main()

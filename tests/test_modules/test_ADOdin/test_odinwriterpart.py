@@ -158,22 +158,22 @@ class TestOdinWriterPart(ChildTestCase):
         detector_dataset = vds_file['/entry/detector/data']
 
         # Check values at indices 0,0
-        self.assertEquals(detector_dataset[0][0][756][393], 1)
-        self.assertEquals(detector_dataset[0][0][756][394], 1)
-        self.assertEquals(detector_dataset[0][0][756][395], 1)
-        self.assertEquals(detector_dataset[0][0][756][396], 1)
+        self.assertEqual(detector_dataset[0][0][756][393], 1)
+        self.assertEqual(detector_dataset[0][0][756][394], 1)
+        self.assertEqual(detector_dataset[0][0][756][395], 1)
+        self.assertEqual(detector_dataset[0][0][756][396], 1)
 
         # Change first index
-        self.assertEquals(detector_dataset[1][0][756][393], 4)
-        self.assertEquals(detector_dataset[1][0][756][394], 4)
-        self.assertEquals(detector_dataset[1][0][756][395], 4)
-        self.assertEquals(detector_dataset[1][0][756][396], 4)
+        self.assertEqual(detector_dataset[1][0][756][393], 4)
+        self.assertEqual(detector_dataset[1][0][756][394], 4)
+        self.assertEqual(detector_dataset[1][0][756][395], 4)
+        self.assertEqual(detector_dataset[1][0][756][396], 4)
 
         # Change second index
-        self.assertEquals(detector_dataset[0][2][756][393], 3)
-        self.assertEquals(detector_dataset[0][2][756][394], 3)
-        self.assertEquals(detector_dataset[0][2][756][395], 3)
-        self.assertEquals(detector_dataset[0][2][756][396], 3)
+        self.assertEqual(detector_dataset[0][2][756][393], 3)
+        self.assertEqual(detector_dataset[0][2][756][394], 3)
+        self.assertEqual(detector_dataset[0][2][756][395], 3)
+        self.assertEqual(detector_dataset[0][2][756][396], 3)
 
         # Todo there are no gaps in my test data at present:-
         #  update the test data with Alans Gap fill and fix this

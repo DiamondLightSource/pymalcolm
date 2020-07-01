@@ -1,3 +1,5 @@
+import pytest
+
 import unittest
 from mock import MagicMock, ANY, call
 import time
@@ -104,6 +106,26 @@ class TestContext(unittest.TestCase):
         self.o._q.put(Return(1))
         self.o.wait_all_futures(f, 0.01)
         assert f.done()
+
+    @pytest.mark.timeout(1)
+    def test_subscription_with_callback_calling_unsubscribe(self):
+        # This test was designed to trigger a bug. Concluding a future inside a
+        # callback, as is done here by unsubscribe() followed by sleep(0), would
+        # not be recognised by the call to wait_all_futures(...). This would
+        # result in an indefinite hang.
+
+        def cb(value):
+            self.o.unsubscribe_all()
+            self.o._q.put(Return(1))  # Return from subscribe
+            self.o.sleep(0)  # Service futures
+
+        self.o.subscribe(["block", "attr", "value"], cb)  # id=1
+        self.o._q.put(Update(1, "original_value"))  # Update from initial value
+
+        future = self.o.put_async(["block", "attr2", "value"], "new")  # id=2
+        self.o._q.put(Return(2))  # Return from put to attr2
+
+        self.o.wait_all_futures(future)
 
     def test_many_puts(self):
         fs = [self.o.put_async(["block", "attr", "value"], 32),
@@ -212,4 +234,3 @@ class TestContext(unittest.TestCase):
         future = self.o.put_async(["block", "attr", "value"], 32)
         self.o._q.put(Return(1))
         self.o.wait_all_futures(future, event_timeout=0.01)
-
