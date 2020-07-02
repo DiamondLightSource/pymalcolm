@@ -105,11 +105,6 @@ class TestKinematicsSavuPart(ChildTestCase):
         generator = CompoundGenerator([ys, xs], [], [], 1.0)
         generator.prepare()
 
-        self.o.configure(
-            self.context, fileDir=tmp_dir, generator=generator,
-            axesToMove=AXES, fileTemplate=file_template
-        )
-
         part_info = dict(
             HDF=[
                 DatasetProducedInfo(
@@ -149,6 +144,14 @@ class TestKinematicsSavuPart(ChildTestCase):
                 )
             ]
         )
+   
+        kin_infos = [DatasetProducedInfo('lab_y.mean', 'p00-1234-savuproc/p00-1234-savu_processed.nxs', DatasetType.POSITION_VALUE, 2, '/entry/ymean', None), DatasetProducedInfo('lab_y.max', 'p00-1234-savuproc/p00-1234-savu_processed.nxs', DatasetType.POSITION_MAX, 0, '/entry/ymax', None), DatasetProducedInfo('lab_y.min', 'p00-1234-savuproc/p00-1234-savu_processed.nxs', DatasetType.POSITION_MIN, 0, '/entry/ymin', None)]
+
+        infos = self.o.configure(
+            self.context, fileDir=tmp_dir, generator=generator,
+            axesToMove=AXES, fileTemplate=file_template, part_info=part_info
+        )
+        self.assertEquals(infos, kin_infos)        
 
         self.o.post_configure(self.context, part_info)
 

@@ -26,6 +26,9 @@ with Anno("name of CS port"):
 with Anno("mri suffix of malcolm CS block [$(pmac_mri):$(suffix)]"):
     ACsMriSuffix = str
 
+with Anno("mri suffix of malcolm Status block [$(pmac_mri):$(suffix)]"):
+    AStatusMriSuffix = str
+
 PVar = collections.namedtuple('PVar', 'path file p_number')
 
 def MRES_VAR(axis):
@@ -45,8 +48,8 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
     - <ID>-vds.nxs - VDS file linking to Savu processed data (when processed)
     """
 
-    def __init__(self, name, mri, cs_port=None, cs_mri_suffix=None):
-        # type: (APartName, AMri, ACsPort, ACsMriSuffix) -> None
+    def __init__(self, name, mri, cs_port=None, cs_mri_suffix=":CS", status_mri_suffix=":STATUS"):
+        # type: (APartName, AMri, ACsPort, ACsMriSuffix, AStatusMriSuffix) -> None
         super(KinematicsSavuPart, self).__init__(name, mri, stateful=False)
         self.nxs_full_filename = ""
         self.vds_full_filename = ""
@@ -62,6 +65,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         self.pos_table = None
         self.cs_port = cs_port
         self.cs_mri_suffix = cs_mri_suffix
+        self.status_mri_suffix = status_mri_suffix
         self.shape = None
         self.pmac_mri = None
         self.panda_mri = None
@@ -86,9 +90,10 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
                   fileDir,  # type: scanning.hooks.AFileDir
                   generator,  # type: scanning.hooks.AGenerator
                   axesToMove,  # type: scanning.hooks.AAxesToMove
+                  part_info,   # type: scanning.hooks.APartInfo
                   fileTemplate="%s.nxs",  # type: scanning.hooks.AFileTemplate
                   ):
-        # type: (...) -> None
+        # type: (...) -> scanning.hooks.UInfos
 
         self.p_vars = []
         self.use_min_max = True
@@ -123,8 +128,8 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
 
         # This is the path the the processed file created by Savu after having
         # done the processing
-        savu_path = os.path.join(fileDir, (baseTemplate % "savuproc"))
-        self.savu_full_filename = os.path.join(savu_path, savu_fileName)
+        savu_rel_path = os.path.join((baseTemplate % "savuproc"), savu_fileName)
+        self.savu_full_filename = os.path.join(fileDir, savu_rel_path)
 
         # Get the cs port mapping for this PMAC
         # {scannable: MotorInfo}
@@ -148,10 +153,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         assert "." in self.nxs_full_filename, \
             "File extension for %r should be supplied" % self.nxs_full_filename
 
-    @add_call_types
-    def post_configure(self, context, part_info):
-        # type: (scanning.hooks.AContext, scanning.hooks.APartInfo) -> None
-
+        
         self.pos_table = context.block_view(self.panda_mri).positions.value
 
         # Get the axis number for the inverse kinematics mapped in this cs_port
@@ -159,20 +161,32 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
             context, self.layout_table, self.cs_port
         )
 
-        # Map these in the file
         dataset_infos = scanning.infos.DatasetProducedInfo.filter_values(
             part_info
         )
+        # TODO: check if this works
+        produced_datasets = []
         for scannable, axis_num in self.axis_numbers.items():
             min_i, max_i, value_i = None, None, None
-            for info in dataset_infos:
+            for info in dataset_infos:                
                 if info.name.startswith(scannable + "."):
+                    name = "lab_" + scannable + "."
                     if info.type == scanning.infos.DatasetType.POSITION_MIN:
                         min_i = info
+                        name += "min"                        
+                        PATH='/entry/' + self.q_value_mapping[axis_num + 1] + "min"
+                        produced_datasets += [scanning.infos.DatasetProducedInfo(name, savu_rel_path, info.type, info.rank, PATH, None)]
                     elif info.type == scanning.infos.DatasetType.POSITION_MAX:
                         max_i = info
+                        name += "max"                        
+                        PATH='/entry/' + self.q_value_mapping[axis_num + 1] + "max"
+                        produced_datasets += [scanning.infos.DatasetProducedInfo(name, savu_rel_path, info.type, info.rank, PATH, None)]
                     elif info.type == scanning.infos.DatasetType.POSITION_VALUE:
                         value_i = info
+                        name += "mean"                        
+                        PATH='/entry/' + self.q_value_mapping[axis_num + 1] + "mean"
+                        produced_datasets += [scanning.infos.DatasetProducedInfo(name, savu_rel_path, info.type, info.rank, PATH, None)]
+                    
             # Always make sure .value is there
             assert value_i, "No value dataset for %s" % scannable
             self.p_vars.append(PVar(
@@ -191,8 +205,15 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
             else:
                 self.use_min_max = False
 
+        return produced_datasets        
+            
+
+    @add_call_types
+    def post_configure(self, context, part_info):
+        # type: (scanning.hooks.AContext, scanning.hooks.APartInfo) -> None     
+
         # Get Forward Kinematics code lines and I,P,M,Q input variables
-        pmac_status_child = context.block_view(self.pmac_mri + ":STATUS")
+        pmac_status_child = context.block_view(self.pmac_mri + self.status_mri_suffix)
 
         raw_input_vars = " ".join([pmac_status_child.iVariables.value,
                                    pmac_status_child.pVariables.value,
