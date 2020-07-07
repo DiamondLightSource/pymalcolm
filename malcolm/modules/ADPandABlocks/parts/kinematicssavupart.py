@@ -9,7 +9,7 @@ from shutil import copyfile
 from annotypes import add_call_types, TYPE_CHECKING, Anno
 
 from malcolm.core import APartName, Info, PartRegistrar
-from malcolm.modules import builtin, scanning, pmac
+from malcolm.modules import builtin, scanning, pmac, pandablocks
 
 if TYPE_CHECKING:
     from typing import List, Dict
@@ -168,20 +168,21 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         produced_datasets = []
         for scannable, axis_num in self.axis_numbers.items():
             min_i, max_i, value_i = None, None, None
-            for info in dataset_infos:                
-                if info.name.startswith(scannable + "."):
-                    name = "lab_" + scannable + "."
-                    if info.type == scanning.infos.DatasetType.POSITION_MIN:
+            for ind, name in enumerate(self.pos_table.datasetName):      
+                if name == scannable:
+                    name = "lab_" + scannable + "." 
+                    pos_type = self.pos_table.capture[ind]
+                    if pos_type == scanning.infos.DatasetType.POSITION_MIN:
                         min_i = info
                         name += "min"                        
                         PATH='/entry/' + self.q_value_mapping[axis_num + 1] + "min"
                         produced_datasets += [scanning.infos.DatasetProducedInfo(name, savu_rel_path, info.type, info.rank, PATH, None)]
-                    elif info.type == scanning.infos.DatasetType.POSITION_MAX:
+                    elif pos_type == pandablocks.util.PositionCapture.MIN_MAX_MEAN:
                         max_i = info
                         name += "max"                        
                         PATH='/entry/' + self.q_value_mapping[axis_num + 1] + "max"
                         produced_datasets += [scanning.infos.DatasetProducedInfo(name, savu_rel_path, info.type, info.rank, PATH, None)]
-                    elif info.type == scanning.infos.DatasetType.POSITION_VALUE:
+                    elif pos_type == scanning.infos.DatasetType.POSITION_VALUE:
                         value_i = info
                         name += "mean"                        
                         PATH='/entry/' + self.q_value_mapping[axis_num + 1] + "mean"
