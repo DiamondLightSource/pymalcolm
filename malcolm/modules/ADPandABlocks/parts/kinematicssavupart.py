@@ -167,27 +167,55 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         # TODO: check if this works
         produced_datasets = []
         for scannable, axis_num in self.axis_numbers.items():
-            min_i, max_i, value_i = None, None, None
+            dataset_i = None
             for ind, name in enumerate(self.pos_table.datasetName):      
                 if name == scannable:
+                    dataset_i = ind
                     name = "lab_" + scannable + "." 
                     pos_type = self.pos_table.capture[ind]
-                    if pos_type == scanning.infos.DatasetType.POSITION_MIN:
-                        min_i = info
-                        name += "min"                        
-                        PATH='/entry/' + self.q_value_mapping[axis_num + 1] + "min"
-                        produced_datasets += [scanning.infos.DatasetProducedInfo(name, savu_rel_path, info.type, info.rank, PATH, None)]
-                    elif pos_type == pandablocks.util.PositionCapture.MIN_MAX_MEAN:
-                        max_i = info
-                        name += "max"                        
+                    if pos_type == pandablocks.util.PositionCapture.MIN_MAX_MEAN:             
                         PATH='/entry/' + self.q_value_mapping[axis_num + 1] + "max"
-                        produced_datasets += [scanning.infos.DatasetProducedInfo(name, savu_rel_path, info.type, info.rank, PATH, None)]
-                    elif pos_type == scanning.infos.DatasetType.POSITION_VALUE:
-                        value_i = info
+                        produced_datasets += [scanning.infos.DatasetProducedInfo(name + "max", savu_rel_path, info.type, info.rank, PATH, None)]
+                        PATH='/entry/' + self.q_value_mapping[axis_num + 1] + "min"
+                        produced_datasets += [scanning.infos.DatasetProducedInfo(name + "min", savu_rel_path, info.type, info.rank, PATH, None)]
+                        PATH='/entry/' + self.q_value_mapping[axis_num + 1] + "mean"
+                        produced_datasets += [scanning.infos.DatasetProducedInfo(name + "mean", savu_rel_path, info.type, info.rank, PATH, None)]
+                        
+                    elif pos_type == pandablocks.util.PositionCapture.MEAN:
+                        self.use_min_max = False
                         name += "mean"                        
                         PATH='/entry/' + self.q_value_mapping[axis_num + 1] + "mean"
                         produced_datasets += [scanning.infos.DatasetProducedInfo(name, savu_rel_path, info.type, info.rank, PATH, None)]
                     
+            # Always make sure .value is there
+            assert dataset_i, "No value dataset for %s" % scannable
+
+        return produced_datasets        
+            
+
+    @add_call_types
+    def post_configure(self, context, part_info):
+        # type: (scanning.hooks.AContext, scanning.hooks.APartInfo) -> None
+
+        # Get the axis number for the inverse kinematics mapped in this cs_port
+        self.axis_numbers = pmac.util.cs_axis_numbers(
+            context, self.layout_table, self.cs_port
+        )
+
+        # Map these in the file
+        dataset_infos = scanning.infos.DatasetProducedInfo.filter_values(
+            part_info
+        )
+        for scannable, axis_num in self.axis_numbers.items():
+            min_i, max_i, value_i = None, None, None
+            for info in dataset_infos:
+                if info.name.startswith(scannable + "."):
+                    if info.type == scanning.infos.DatasetType.POSITION_MIN:
+                        min_i = info
+                    elif info.type == scanning.infos.DatasetType.POSITION_MAX:
+                        max_i = info
+                    elif info.type == scanning.infos.DatasetType.POSITION_VALUE:
+                        value_i = info
             # Always make sure .value is there
             assert value_i, "No value dataset for %s" % scannable
             self.p_vars.append(PVar(
@@ -206,15 +234,8 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
             else:
                 self.use_min_max = False
 
-        return produced_datasets        
-            
-
-    @add_call_types
-    def post_configure(self, context, part_info):
-        # type: (scanning.hooks.AContext, scanning.hooks.APartInfo) -> None     
-
         # Get Forward Kinematics code lines and I,P,M,Q input variables
-        pmac_status_child = context.block_view(self.pmac_mri + self.status_mri_suffix)
+        pmac_status_child = context.block_view(self.pmac_mri + ":STATUS")
 
         raw_input_vars = " ".join([pmac_status_child.iVariables.value,
                                    pmac_status_child.pVariables.value,
