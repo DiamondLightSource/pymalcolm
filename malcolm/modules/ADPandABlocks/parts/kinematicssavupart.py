@@ -161,11 +161,10 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
             context, self.layout_table, self.cs_port
         )
 
-        dataset_infos = scanning.infos.DatasetProducedInfo.filter_values(
-            part_info
-        )
-        # TODO: check if this works
+        # TODO: how to map encoder axes to cs datasets?
         produced_datasets = []
+        print(self.q_value_mapping)
+        print(self.axis_numbers)
         for scannable, axis_num in self.axis_numbers.items():
             dataset_i = None
             for ind, name in enumerate(self.pos_table.datasetName):      
@@ -181,15 +180,14 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
                         PATH='/entry/' + self.q_value_mapping[axis_num + 1] + "mean"
                         produced_datasets += [scanning.infos.DatasetProducedInfo(name + "mean", savu_rel_path, info.type, info.rank, PATH, None)]
                         
-                    elif pos_type == pandablocks.util.PositionCapture.MEAN:
+                    elif pos_type == pandablocks.util.PositionCapture.MEAN or pos_type == pandablocks.util.PositionCapture.VALUE:
                         self.use_min_max = False
                         name += "mean"                        
                         PATH='/entry/' + self.q_value_mapping[axis_num + 1] + "mean"
                         produced_datasets += [scanning.infos.DatasetProducedInfo(name, savu_rel_path, info.type, info.rank, PATH, None)]
-                    
-            # Always make sure .value is there
+            # Check there was a dataset for the axis
             assert dataset_i, "No value dataset for %s" % scannable
-
+        print(produced_datasets)
         return produced_datasets        
             
 
