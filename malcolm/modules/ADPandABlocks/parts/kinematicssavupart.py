@@ -182,7 +182,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
 	
         if self.use_min_max:
             dtypes += ["min", "max"]
-        for axis in self.q_value_mapping[axis_num + 1].values():
+        for axis in self.q_value_mapping.values():
             for dtype in dtypes:   
                 PATH='/entry/' + axis + "." + dtype
                 produced_datasets += [
