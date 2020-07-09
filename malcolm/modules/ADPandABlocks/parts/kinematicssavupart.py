@@ -161,32 +161,36 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
             context, self.layout_table, self.cs_port
         )
 
-        # TODO: how to map encoder axes to cs datasets?
         produced_datasets = []
         print(self.q_value_mapping)
         print(self.axis_numbers)
+        dtypes = ["mean"]
         for scannable, axis_num in self.axis_numbers.items():
             dataset_i = None
             for ind, name in enumerate(self.pos_table.datasetName):      
                 if name == scannable:
-                    dataset_i = ind
-                    name = "lab_" + scannable + "." 
                     pos_type = self.pos_table.capture[ind]
-                    if pos_type == pandablocks.util.PositionCapture.MIN_MAX_MEAN:             
-                        PATH='/entry/' + self.q_value_mapping[axis_num + 1] + "max"
-                        produced_datasets += [scanning.infos.DatasetProducedInfo(name + "max", savu_rel_path, info.type, info.rank, PATH, None)]
-                        PATH='/entry/' + self.q_value_mapping[axis_num + 1] + "min"
-                        produced_datasets += [scanning.infos.DatasetProducedInfo(name + "min", savu_rel_path, info.type, info.rank, PATH, None)]
-                        PATH='/entry/' + self.q_value_mapping[axis_num + 1] + "mean"
-                        produced_datasets += [scanning.infos.DatasetProducedInfo(name + "mean", savu_rel_path, info.type, info.rank, PATH, None)]
-                        
-                    elif pos_type == pandablocks.util.PositionCapture.MEAN or pos_type == pandablocks.util.PositionCapture.VALUE:
+                    if pos_type == pandablocks.util.PositionCapture.MIN_MAX_MEAN: 
+                        dataset_i = ind
+                    elif pos_type == pandablocks.util.PositionCapture.MEAN or\
+                         pos_type == pandablocks.util.PositionCapture.VALUE:                        
+                        dataset_i = ind
                         self.use_min_max = False
-                        name += "mean"                        
-                        PATH='/entry/' + self.q_value_mapping[axis_num + 1] + "mean"
-                        produced_datasets += [scanning.infos.DatasetProducedInfo(name, savu_rel_path, info.type, info.rank, PATH, None)]
+
             # Check there was a dataset for the axis
             assert dataset_i, "No value dataset for %s" % scannable
+	
+        if self.use_min_max:
+            dtypes += ["min", "max"]
+        for axis in self.q_value_mapping[axis_num + 1].values():
+            for dtype in dtypes:   
+                PATH='/entry/' + axis + "." + dtype
+                produced_datasets += [
+                    scanning.infos.DatasetProducedInfo(
+                                                        name + "." + dtype,
+                                                        savu_rel_path, info.type,
+                                                        info.rank, PATH, None
+                                                      )]
         print(produced_datasets)
         return produced_datasets        
             
