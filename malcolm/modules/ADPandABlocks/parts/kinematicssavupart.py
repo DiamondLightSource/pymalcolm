@@ -182,7 +182,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
 	
         if self.use_min_max:
             dtypes["min"] = scanning.infos.DatasetType.POSITION_MIN
-            dtype["max"] = scanning.infos.DatasetType.POSITION_MAX
+            dtypes["max"] = scanning.infos.DatasetType.POSITION_MAX
         for axis in self.q_value_mapping.values():
             rank = len(generator.dimensions) + 2
             for k, v in dtypes.items():   
