@@ -164,7 +164,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         produced_datasets = []
         print(self.q_value_mapping)
         print(self.axis_numbers)
-        dtypes = ["mean"]
+        dtypes = {"mean": scanning.infos.DatasetType.POSITION_VALUE}
         for scannable, axis_num in self.axis_numbers.items():
             dataset_i = None
             for ind, name in enumerate(self.pos_table.datasetName):      
@@ -181,15 +181,17 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
             assert dataset_i, "No value dataset for %s" % scannable
 	
         if self.use_min_max:
-            dtypes += ["min", "max"]
+            dtypes["min"] = scanning.infos.DatasetType.POSITION_MIN
+            dtype["max"] = scanning.infos.DatasetType.POSITION_MAX
         for axis in self.q_value_mapping.values():
-            for dtype in dtypes:   
-                PATH='/entry/' + axis + "." + dtype
+            rank = len(generator.dimensions) + 2
+            for k, v in dtypes.items():   
+                PATH='/entry/' + axis + "." + k
                 produced_datasets += [
                     scanning.infos.DatasetProducedInfo(
-                                                        name + "." + dtype,
-                                                        savu_rel_path, info.type,
-                                                        info.rank, PATH, None
+                                                        name + "." + k,
+                                                        savu_rel_path, v,
+                                                        rank, PATH, None
                                                       )]
         print(produced_datasets)
         return produced_datasets        
