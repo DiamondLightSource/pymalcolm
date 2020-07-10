@@ -78,8 +78,7 @@ class MyPart(Part):
         registrar.add_method_model(self.my_method, "myMethod")
 
     @add_call_types
-    def my_method(self, param1, param2):
-        # type: (AParam, AParam) -> AParam
+    def my_method(self, param1: AParam, param2: AParam) -> AParam:
         return param1 + param2
 
 

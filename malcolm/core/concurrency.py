@@ -1,15 +1,13 @@
 import logging
 import time
 
-from annotypes import TYPE_CHECKING
 import cothread
 
 from malcolm.compat import get_thread_ident, get_stack_size
 from .errors import TimeoutError
 
-if TYPE_CHECKING:
-    from typing import TypeVar, Callable, Any, Tuple, Dict, Union
-    T = TypeVar("T")
+from typing import TypeVar, Callable, Any, Tuple, Dict, Union
+T = TypeVar("T")
 
 
 # Make a module level logger
@@ -24,10 +22,9 @@ class Spawned(object):
     """Internal object keeping track of a spawned function"""
     NO_RESULT = object()
 
-    def __init__(self, func, args, kwargs):
-        # type: (Callable[..., Any], Tuple, Dict) -> None
+    def __init__(self, func: Callable[..., Any], args: Tuple, kwargs: Dict) -> None:
         self._result_queue = Queue()
-        self._result = self.NO_RESULT  # type: Union[T, Exception]
+        self._result: Union[T, Exception] = self.NO_RESULT
         self._function = func
         self._args = args
         self._kwargs = kwargs
@@ -48,19 +45,16 @@ class Spawned(object):
         self._kwargs = None
         self._result_queue.put(None)
 
-    def wait(self, timeout=None):
-        # type: (float) -> None
+    def wait(self, timeout: float = None) -> None:
         # Only one person can wait on this at a time
         if self._result == self.NO_RESULT:
             self._result_queue.get(timeout)
 
-    def ready(self):
-        # type: () -> bool
+    def ready(self) -> bool:
         """Return True if the spawned result has returned or errored"""
         return self._result != self.NO_RESULT
 
-    def get(self, timeout=None):
-        # type: (float) -> T
+    def get(self, timeout: float = None) -> T:
         """Return the result or raise the error the function has produced"""
         self.wait(timeout)
         if isinstance(self._result, Exception):

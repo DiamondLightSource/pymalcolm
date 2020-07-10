@@ -53,8 +53,7 @@ class NDArrayDatasetInfo(Info):
         rank: The rank of the dataset, e.g. 2 for a 2D detector
     """
 
-    def __init__(self, rank):
-        # type: (int) -> None
+    def __init__(self, rank: int) -> None:
         self.rank = rank
 
 
@@ -67,8 +66,7 @@ class CalculatedNDAttributeDatasetInfo(Info):
         attr: NDAttribute name to get data from
     """
 
-    def __init__(self, name, attr):
-        # type: (str, str) -> None
+    def __init__(self, name: str, attr: str) -> None:
         self.name = name
         self.attr = attr
 
@@ -83,15 +81,13 @@ class NDAttributeDatasetInfo(Info):
         attr: NDAttribute name to get data from, e.g. "COUNTER1.Diff"
     """
 
-    def __init__(self, name, type, attr):
-        # type: (str, scanning.infos.DatasetType, str) -> None
+    def __init__(self, name: str, type: scanning.infos.DatasetType, attr: str) -> None:
         self.name = name
         self.type = type
         self.attr = attr
 
     @classmethod
-    def from_attribute_type(cls, name, type, attr):
-        # type: (str, AttributeDatasetType, str) -> NDAttributeDatasetInfo
+    def from_attribute_type(cls, name: str, type: AttributeDatasetType, attr: str) -> 'NDAttributeDatasetInfo':
         """Make an Info from the AttributeDatasetType
 
         Args:

@@ -34,11 +34,10 @@ class Alarm(Serializable):
     __slots__ = ["severity", "status", "message"]
 
     def __init__(self,
-                 severity=AlarmSeverity.NO_ALARM,  # type: AAlarmSeverity
-                 status=AlarmStatus.NO_STATUS,  # type: AAlarmStatus
-                 message="",  # type: AMessage
-                 ):
-        # type: (...) -> None
+                 severity: AAlarmSeverity = AlarmSeverity.NO_ALARM,
+                 status: AAlarmStatus = AlarmStatus.NO_STATUS,
+                 message: AMessage = "",
+                 ) -> None:
         if not isinstance(severity, AlarmSeverity):
             severity = AlarmSeverity(severity)
         self.severity = severity
@@ -48,25 +47,21 @@ class Alarm(Serializable):
         self.message = deserialize_object(message, str_)
 
     @classmethod
-    def major(cls, message):
-        # type: (str) -> Alarm
+    def major(cls, message: str) -> 'Alarm':
         return cls(
             AlarmSeverity.MAJOR_ALARM, AlarmStatus.DEVICE_STATUS, message)
 
     @classmethod
-    def invalid(cls, message):
-        # type: (str) -> Alarm
+    def invalid(cls, message: str) -> 'Alarm':
         return cls(
             AlarmSeverity.INVALID_ALARM, AlarmStatus.DEVICE_STATUS, message)
 
     @classmethod
-    def disconnected(cls, message):
-        # type: (str) -> Alarm
+    def disconnected(cls, message: str) -> 'Alarm':
         return cls(
             AlarmSeverity.UNDEFINED_ALARM, AlarmStatus.CLIENT_STATUS, message)
 
-    def is_ok(self):
-        # type: () -> bool
+    def is_ok(self) -> bool:
         return self.severity == AlarmSeverity.NO_ALARM
 
     def __ne__(self, other):

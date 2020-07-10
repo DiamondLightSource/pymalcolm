@@ -9,8 +9,8 @@ from malcolm.core import Table
 
 
 class IOLoopHelper(object):
-    _loop = None  # type: IOLoop
-    _thread = None  # type: Thread
+    _loop: IOLoop = None
+    _thread: Thread = None
 
     @classmethod
     def loop(cls):
@@ -57,7 +57,6 @@ with Anno("A human readable label for the Block"):
 
 
 class BlockTable(Table):
-    def __init__(self, mri, label):
-        # type: (AMris, ALabels) -> None
+    def __init__(self, mri: AMris, label: ALabels) -> None:
         self.mri = mri
         self.label = label

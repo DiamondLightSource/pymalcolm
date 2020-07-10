@@ -6,19 +6,18 @@ class CAChoicePart(Part):
     """Defines a choice `Attribute` that talks to a DBR_ENUM mbbo PV"""
 
     def __init__(self,
-                 name,  # type: util.APartName
-                 description,  # type: util.AMetaDescription
-                 pv="",  # type: util.APv
-                 rbv="",  # type: util.ARbv
-                 rbv_suffix="",  # type: util.ARbvSuffix
-                 min_delta=0.05,  # type: util.AMinDelta
-                 timeout=DEFAULT_TIMEOUT,  # type: util.ATimeout
-                 sink_port=None,  # type: util.ASinkPort
-                 widget=None,  # type: util.AWidget
-                 group=None,  # type: util.AGroup
-                 config=True,  # type: util.AConfig
-                 ):
-        # type: (...) -> None
+                 name: util.APartName,
+                 description: util.AMetaDescription,
+                 pv: util.APv = "",
+                 rbv: util.ARbv = "",
+                 rbv_suffix: util.ARbvSuffix = "",
+                 min_delta: util.AMinDelta = 0.05,
+                 timeout: util.ATimeout = DEFAULT_TIMEOUT,
+                 sink_port: util.ASinkPort = None,
+                 widget: util.AWidget = None,
+                 group: util.AGroup = None,
+                 config: util.AConfig = True,
+                 ) -> None:
         super(CAChoicePart, self).__init__(name)
         self.meta = ChoiceMeta(description)
         self.caa = util.CAAttribute(
@@ -34,6 +33,5 @@ class CAChoicePart(Part):
         value = self.meta.choices.index(value)
         self.caa.caput(value)
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         self.caa.setup(registrar, self.name, self.register_hooked, self.caput)

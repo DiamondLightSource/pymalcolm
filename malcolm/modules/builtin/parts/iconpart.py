@@ -10,8 +10,7 @@ with Anno("If given, path to svg for initial value"):
 
 class IconPart(Part):
     """Part representing a the icon a GUI should display"""
-    def __init__(self, svg=""):
-        # type: (ASvg) -> None
+    def __init__(self, svg: ASvg = "") -> None:
         super(IconPart, self).__init__("icon")
         meta = StringMeta("SVG icon for the Block")
         set_tags(meta, widget=Widget.ICON)
@@ -22,6 +21,5 @@ class IconPart(Part):
             self.svg_text = "<svg/>"
         self.attr = meta.create_attribute_model(self.svg_text)
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         registrar.add_attribute_model(self.name, self.attr)

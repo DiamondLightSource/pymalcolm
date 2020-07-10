@@ -24,18 +24,17 @@ class CAActionPart(Part):
     """
 
     def __init__(self,
-                 name,  # type: util.APartName
-                 description,  # type: util.AMetaDescription
-                 pv="",  # type: util.APv
-                 status_pv="",  # type: AStatusPv
-                 good_status="",  # type: AGoodStatus
-                 status_timeout=1,  # type: AStatusTimeout
-                 message_pv="",  # type: AMessagePv
-                 value=1,  # type: AValue
-                 wait=True,  # type: AWait
-                 throw=True,  # type: util.AThrow
-                 ):
-        # type: (...) -> None
+                 name: util.APartName,
+                 description: util.AMetaDescription,
+                 pv: util.APv = "",
+                 status_pv: AStatusPv = "",
+                 good_status: AGoodStatus = "",
+                 status_timeout: AStatusTimeout = 1,
+                 message_pv: AMessagePv = "",
+                 value: AValue = 1,
+                 wait: AWait = True,
+                 throw: util.AThrow = True,
+                 ) -> None:
         super(CAActionPart, self).__init__(name)
         self.description = description
         self.pv = pv
@@ -48,8 +47,7 @@ class CAActionPart(Part):
         self.throw = throw
         self.method = None
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(CAActionPart, self).setup(registrar)
         # Hooks
         registrar.hook((builtin.hooks.InitHook,

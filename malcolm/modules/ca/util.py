@@ -1,17 +1,16 @@
 import time
 
-from annotypes import Anno, Array, TYPE_CHECKING
+from annotypes import Anno, Array
 
 from malcolm.core import sleep, VMeta, Alarm, AlarmStatus, TimeStamp, \
     Loggable, APartName, AMetaDescription, Hook, PartRegistrar, DEFAULT_TIMEOUT
 from malcolm.modules import builtin
 
-if TYPE_CHECKING:
-    from typing import Callable, Any, Union, Type, Sequence, Optional, List
+from typing import Callable, Any, Union, Type, Sequence, Optional, List
 
-    Hooks = Union[Type[Hook], Sequence[Type[Hook]]]
-    ArgsGen = Callable[(), List[str]]
-    Register = Callable[(Hooks, Callable, Optional[ArgsGen]), None]
+Hooks = Union[Type[Hook], Sequence[Type[Hook]]]
+ArgsGen = Callable[[], List[str]]
+Register = Callable[[Hooks, Callable, Optional[ArgsGen]], None]
 
 # Store them here for re-export
 APartName = APartName
@@ -55,21 +54,20 @@ with Anno("throw error if PV not found"):
 
 class CABase(Loggable):
     def __init__(self,
-                 meta,  # type: VMeta
-                 datatype,  # type: Any
-                 writeable,  # type: bool
-                 min_delta=0.05,  # type: AMinDelta
-                 timeout=DEFAULT_TIMEOUT,  # type: ATimeout
-                 sink_port=None,  # type: ASinkPort
-                 widget=None,  # type: AWidget
-                 group=None,  # type: AGroup
-                 config=1,  # type: AConfig
-                 on_connect=None,  # type: Callable[[Any], None]
-                 throw=True,  # type: AThrow
-                 callback=None,  # type: ACallback
-                 port_badge=None,  # type: APortBadge
-                 ):
-        # type: (...) -> None
+                 meta: VMeta,
+                 datatype: Any,
+                 writeable: bool,
+                 min_delta: AMinDelta = 0.05,
+                 timeout: ATimeout = DEFAULT_TIMEOUT,
+                 sink_port: ASinkPort = None,
+                 widget: AWidget = None,
+                 group: AGroup = None,
+                 config: AConfig = 1,
+                 on_connect: Callable[[Any], None] = None,
+                 throw: AThrow = True,
+                 callback: Callable[[Any], None] = None,
+                 port_badge: APortBadge = None,
+                 ) -> None:
         self.writeable = writeable
         builtin.util.set_tags(
             meta, writeable, config, group, widget, sink_port, port_badge)
@@ -121,8 +119,7 @@ class CABase(Loggable):
     def caput(self, value):
         pass
 
-    def setup(self, registrar, name, register_hooked, writeable_func=None):
-        # type: (PartRegistrar, str, Register, Callable[[Any], None]) -> None
+    def setup(self, registrar: PartRegistrar, name: str, register_hooked: Register, writeable_func: Callable[[Any], None] = None) -> None:
         if self.writeable:
             if writeable_func is None:
                 writeable_func = self.caput
@@ -162,23 +159,22 @@ class CABase(Loggable):
 
 class CAAttribute(CABase):
     def __init__(self,
-                 meta,  # type: VMeta
-                 datatype,  # type: Any
-                 pv="",  # type: APv
-                 rbv="",  # type: ARbv
-                 rbv_suffix="",  # type: ARbvSuffix
-                 min_delta=0.05,  # type: AMinDelta
-                 timeout=DEFAULT_TIMEOUT,  # type: ATimeout
-                 sink_port=None,  # type: ASinkPort
-                 widget=None,  # type: AWidget
-                 group=None,  # type: AGroup
-                 config=1,  # type: AConfig
-                 on_connect=None,  # type: Callable[[Any], None]
-                 throw=True,  # type: AThrow
-                 callback=None,  # type: Callable[[Any], None]
-                 port_badge=None,  # type: APortBadge
-                 ):
-        # type: (...) -> None
+                 meta: VMeta,
+                 datatype: Any,
+                 pv: APv = "",
+                 rbv: ARbv = "",
+                 rbv_suffix: ARbvSuffix = "",
+                 min_delta: AMinDelta = 0.05,
+                 timeout: ATimeout = DEFAULT_TIMEOUT,
+                 sink_port: ASinkPort = None,
+                 widget: AWidget = None,
+                 group: AGroup = None,
+                 config: AConfig = 1,
+                 on_connect: Callable[[Any], None] = None,
+                 throw: AThrow = True,
+                 callback: Callable[[Any], None] = None,
+                 port_badge: APortBadge = None,
+                 ) -> None:
         self.set_logger(pv=pv, rbv=rbv)
         writeable = bool(pv)
         super(CAAttribute, self).__init__(meta, datatype, writeable,
@@ -241,22 +237,21 @@ class CATable(dict):
 
 class WaveformTableAttribute(CABase):
     def __init__(self,
-                 meta,  # type: VMeta
-                 datatype,  # type: Any
-                 pv_list=(),  # type: APvList
-                 name_list=(),  # type: ANameList
-                 min_delta=0.05,  # type: AMinDelta
-                 timeout=DEFAULT_TIMEOUT,  # type: ATimeout
-                 widget=None,  # type: AWidget
-                 group=None,  # type: AGroup
-                 config=1,  # type: AConfig
-                 limits_from_pv=False,  # type: AGetLimits
-                 on_connect=None,  # type: Callable[[Any], None]
-                 throw=True,  # type: AThrow
-                 callback=None,  # type: ACallback
-                 port_badge=None,  # type: APortBadge
-                 ):
-        # type: (...) -> None
+                 meta: VMeta,
+                 datatype: Any,
+                 pv_list: APvList = (),
+                 name_list: ANameList = (),
+                 min_delta: AMinDelta = 0.05,
+                 timeout: ATimeout = DEFAULT_TIMEOUT,
+                 widget: AWidget = None,
+                 group: AGroup = None,
+                 config: AConfig = 1,
+                 limits_from_pv: AGetLimits = False,
+                 on_connect: Callable[[Any], None] = None,
+                 throw: AThrow = True,
+                 callback: Callable[[Any], None] = None,
+                 port_badge: APortBadge = None,
+                 ) -> None:
         logs = {}
         for ind, pv in enumerate(pv_list):
             logs[name_list[ind]] = pv

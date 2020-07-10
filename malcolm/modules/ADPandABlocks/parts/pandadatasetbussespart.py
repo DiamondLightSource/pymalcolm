@@ -1,27 +1,22 @@
-from annotypes import TYPE_CHECKING
-
 from malcolm.core import PartRegistrar
 from malcolm.modules import scanning, ADCore, pandablocks
 from ..util import DatasetBitsTable, DatasetPositionsTable
 
-if TYPE_CHECKING:
-    from typing import List
+from typing import List
 
 
 class PandADatasetBussesPart(pandablocks.parts.PandABussesPart):
     bits_table_cls = DatasetBitsTable
     positions_table_cls = DatasetPositionsTable
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(PandADatasetBussesPart, self).setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ReportStatusHook,
                        self.on_report_status)
 
     @staticmethod
-    def _make_initial_bits_table(bit_names):
-        # type: (List[str]) -> DatasetBitsTable
+    def _make_initial_bits_table(bit_names: List[str]) -> DatasetBitsTable:
         ds_types = [ADCore.util.AttributeDatasetType.MONITOR] * len(bit_names)
         bits_table = DatasetBitsTable(
             name=bit_names,
@@ -33,8 +28,7 @@ class PandADatasetBussesPart(pandablocks.parts.PandABussesPart):
         return bits_table
 
     @staticmethod
-    def _make_initial_pos_table(pos_names):
-        # type: (List[str]) -> DatasetPositionsTable
+    def _make_initial_pos_table(pos_names: List[str]) -> DatasetPositionsTable:
         ds_types = []
         for pos in pos_names:
             if pos.startswith("INENC"):
@@ -53,10 +47,9 @@ class PandADatasetBussesPart(pandablocks.parts.PandABussesPart):
         )
         return pos_table
 
-    def on_report_status(self):
-        # type: () -> scanning.hooks.UInfos
+    def on_report_status(self) -> scanning.hooks.UInfos:
         ret = []
-        bits_table = self.bits.value  # type: DatasetBitsTable
+        bits_table: DatasetBitsTable = self.bits.value
         for i, capture in enumerate(bits_table.capture):
             ds_name = bits_table.datasetName[i]
             if ds_name and capture:
@@ -65,11 +58,11 @@ class PandADatasetBussesPart(pandablocks.parts.PandABussesPart):
                         name=ds_name,
                         type=bits_table.datasetType[i],
                         attr=bits_table.name[i]))
-        pos_table = self.positions.value  # type: DatasetPositionsTable
+        pos_table: DatasetPositionsTable = self.positions.value
         for i, capture in enumerate(pos_table.capture):
             ds_name = pos_table.datasetName[i]
             if ds_name and capture != pandablocks.util.PositionCapture.NO:
-                suffixes = capture.value.split(" ")  # type: List[str]
+                suffixes: List[str] = capture.value.split(" ")
                 # If we have multiple values, export Min and Max as such
                 if len(suffixes) > 1:
                     for suffix in [x for x in ("Min", "Max") if x in suffixes]:

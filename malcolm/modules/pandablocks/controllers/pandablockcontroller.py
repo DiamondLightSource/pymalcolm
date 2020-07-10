@@ -1,6 +1,6 @@
 import os
 
-from annotypes import Anno, TYPE_CHECKING
+from annotypes import Anno
 
 from malcolm.core import AMri, Widget, group_tag, NumberMeta, ChoiceMeta, \
     config_tag, BooleanMeta, StringMeta, Port, TableMeta, TimeStamp, \
@@ -18,9 +18,8 @@ from ..parts.pandatablepart import PandATablePart
 from ..util import SVG_DIR, AClient, ADocUrlBase, ABlockName
 from ..pandablocksclient import BlockData, FieldData
 
-if TYPE_CHECKING:
-    from typing import Dict, Any, Optional, Union
-    ChangeHandler = Union[PandAFieldPart, PandALabelPart]
+from typing import Dict, Any, Optional, Union
+ChangeHandler = Union[PandAFieldPart, PandALabelPart]
 
 
 with Anno("Prefix to put on the beginning of the Block Name to make MRI"):
@@ -57,13 +56,12 @@ def make_meta(subtyp, description, tags, writeable=True, labels=None):
 
 class PandABlockController(builtin.controllers.BasicController):
     def __init__(self,
-                 client,  # type: AClient
-                 mri_prefix,  # type: AMri
-                 block_name,  # type: ABlockName
-                 block_data,  # type: ABlockData
-                 doc_url_base,  # type: ADocUrlBase
-                 ):
-        # type: (...) -> None
+                 client: AClient,
+                 mri_prefix: AMri,
+                 block_name: ABlockName,
+                 block_data: ABlockData,
+                 doc_url_base: ADocUrlBase,
+                 ) -> None:
         super(PandABlockController, self).__init__(
             mri="%s:%s" % (mri_prefix, block_name))
         # Store
@@ -73,17 +71,16 @@ class PandABlockController(builtin.controllers.BasicController):
         self.block_data = block_data
         self.doc_url_base = doc_url_base
         # {field_name: part}
-        self.field_parts = {}  # type: Dict[str, Optional[ChangeHandler]]
+        self.field_parts: Dict[str, Optional[ChangeHandler]] = {}
         # {field_name: attr.meta}
-        self.mux_metas = {}  # type: Dict[str, VMeta]
+        self.mux_metas: Dict[str, VMeta] = {}
         # Make an icon, label and help for the Block
-        self.icon_part = self._make_common_parts()  # type: PandAIconPart
+        self.icon_part: PandAIconPart = self._make_common_parts()
         # Create parts for each field
         for field_name, field_data in block_data.fields.items():
             self._make_parts_for(field_name, field_data)
 
-    def handle_changes(self, changes, ts):
-        # type: (Dict[str, Any], TimeStamp) -> None
+    def handle_changes(self, changes: Dict[str, Any], ts: TimeStamp) -> None:
         with self.changes_squashed:
             icon_needs_update = False
             for k, v in changes.items():
@@ -134,8 +131,7 @@ class PandABlockController(builtin.controllers.BasicController):
             tags.append(linked_value_tag(block_mri, attr_name))
         mux_meta.set_tags(tags)
 
-    def _make_common_parts(self):
-        # type: () -> PandAIconPart
+    def _make_common_parts(self) -> PandAIconPart:
         block_type = self.block_name.rstrip("0123456789")
         block_number = self.block_name[len(block_type):]
         svg_path = os.path.join(SVG_DIR, block_type + ".svg")
@@ -214,8 +210,7 @@ class PandABlockController(builtin.controllers.BasicController):
         else:
             raise ValueError("Unknown type %r subtype %r" % (typ, subtyp))
 
-    def _make_group(self, attr_name):
-        # type: (str) -> str
+    def _make_group(self, attr_name: str) -> str:
         if attr_name not in self.parts:
             self.add_part(builtin.parts.GroupPart(
                 attr_name, "All %s attributes" % attr_name))
@@ -232,8 +227,7 @@ class PandABlockController(builtin.controllers.BasicController):
         self.add_part(part)
         self.field_parts[field_name] = part
 
-    def _make_time(self, field_name, field_data, writeable):
-        # type: (str, FieldData, bool) -> None
+    def _make_time(self, field_name: str, field_data: FieldData, writeable: bool) -> None:
         description = field_data.description
         if writeable:
             widget = Widget.TEXTINPUT
@@ -249,15 +243,13 @@ class PandABlockController(builtin.controllers.BasicController):
                           tags=[group, Widget.COMBO.tag()])
         self._make_field_part(field_name + ".UNITS", meta, writeable=True)
 
-    def _make_action(self, field_name, field_data):
-        # type: (str, FieldData) -> None
+    def _make_action(self, field_name: str, field_data: FieldData) -> None:
         group = self._make_group("parameters")
         self.add_part(PandAActionPart(
             self.client, self.block_name, field_name,
             field_data.description, [group]))
 
-    def _make_param(self, field_name, field_data, writeable):
-        # type: (str, FieldData, bool) -> None
+    def _make_param(self, field_name: str, field_data: FieldData, writeable: bool) -> None:
         if writeable:
             group = self._make_group("parameters")
         else:
@@ -266,8 +258,7 @@ class PandABlockController(builtin.controllers.BasicController):
                          [group], writeable, field_data.labels)
         self._make_field_part(field_name, meta, writeable)
 
-    def _make_out(self, field_name, field_data, typ):
-        # type: (str, FieldData, str) -> None
+    def _make_out(self, field_name: str, field_data: FieldData, typ: str) -> None:
         group = self._make_group("outputs")
         if typ == "bit":
             port_type = Port.BOOL
@@ -279,15 +270,13 @@ class PandABlockController(builtin.controllers.BasicController):
                          tags=[group, flow_tag], writeable=False)
         self._make_field_part(field_name, meta, writeable=False)
 
-    def _make_ext_capture(self, field_name, field_data):
-        # type: (str, FieldData) -> None
+    def _make_ext_capture(self, field_name: str, field_data: FieldData) -> None:
         group = self._make_group("outputs")
         meta = ChoiceMeta("Capture %s in PCAP?" % field_name,
                           field_data.labels, tags=[group, Widget.COMBO.tag()])
         self._make_field_part(field_name + ".CAPTURE", meta, writeable=True)
 
-    def _make_mux(self, field_name, field_data, port_type):
-        # type: (str, FieldData, Port) -> None
+    def _make_mux(self, field_name: str, field_data: FieldData, port_type: Port) -> None:
         group = self._make_group("inputs")
         labels = [x for x in field_data.labels if x in ("ZERO", "ONE")] + \
             sorted(x for x in field_data.labels if x not in ("ZERO", "ONE"))
@@ -300,16 +289,14 @@ class PandABlockController(builtin.controllers.BasicController):
         self._make_field_part(field_name, meta, writeable=True)
         self.mux_metas[field_name] = meta
 
-    def _make_mux_delay(self, field_name):
-        # type: (str) -> None
+    def _make_mux_delay(self, field_name: str) -> None:
         group = self._make_group("inputs")
         meta = NumberMeta(
             "uint8", "How many FPGA ticks to delay input",
             tags=[group, Widget.TEXTINPUT.tag()])
         self._make_field_part(field_name + ".DELAY", meta, writeable=True)
 
-    def _make_table(self, field_name, field_data):
-        # type: (str, FieldData) -> None
+    def _make_table(self, field_name: str, field_data: FieldData) -> None:
         group = self._make_group("parameters")
         tags = [Widget.TABLE.tag(), group, config_tag()]
         meta = TableMeta(field_data.description, tags, writeable=True)

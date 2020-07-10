@@ -8,8 +8,7 @@ ADescription = ADescription
 
 class BasicController(Controller):
     """Basic Controller with Health and Title updating"""
-    def __init__(self, mri, description=""):
-        # type: (AMri, ADescription) -> None
+    def __init__(self, mri: AMri, description: ADescription = "") -> None:
         super(BasicController, self).__init__(mri, description)
         self._faults = {}  # Dict[Part, Alarm]
         self.info_registry.add_reportable(LabelInfo, self.update_label)
@@ -19,14 +18,12 @@ class BasicController(Controller):
         ).create_attribute_model("OK")
         self.field_registry.add_attribute_model("health", self.health)
 
-    def update_label(self, _, info):
-        # type: (object, LabelInfo) -> None
+    def update_label(self, _: object, info: LabelInfo) -> None:
         """Set the label of the Block Meta object"""
         with self._lock:
             self._block.meta.set_label(info.label)
 
-    def update_health(self, reporter, info):
-        # type: (object, HealthInfo) -> None
+    def update_health(self, reporter: object, info: HealthInfo) -> None:
         """Set the health attribute. Called from part"""
         with self.changes_squashed:
             alarm = info.alarm

@@ -14,8 +14,7 @@ class CompoundMotorSinkPortsPart(Part):
     """Defines a string `Attribute` representing the CS this compound motor
     is permanently assigned to by reading its motor record OUT link"""
 
-    def __init__(self, name, rbv, group=None):
-        # type: (APartName, ARbv, AGroup) -> None
+    def __init__(self, name: APartName, rbv: ARbv, group: AGroup = None) -> None:
         super(CompoundMotorSinkPortsPart, self).__init__(name)
         meta = StringMeta("CS Axis")
         builtin.util.set_tags(meta, group=group, sink_port=Port.MOTOR)
@@ -24,8 +23,7 @@ class CompoundMotorSinkPortsPart(Part):
         # Subscriptions
         self.monitor = None
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         registrar.add_attribute_model(self.name, self.attr)
         # Hooks
         registrar.hook(builtin.hooks.DisableHook, self.disconnect)
@@ -50,8 +48,7 @@ class CompoundMotorSinkPortsPart(Part):
             self.monitor.close()
             self.monitor = None
 
-    def _update_value(self, value):
-        # type: (Any) -> None
+    def _update_value(self, value: Any) -> None:
         if not value.ok:
             self.attr.set_value(
                 None, alarm=Alarm.disconnected("PV Disconnected"))

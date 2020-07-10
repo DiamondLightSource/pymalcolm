@@ -23,8 +23,7 @@ class TimeStamp(Serializable):
     # noinspection PyPep8Naming
     # secondsPastEpoch and userTag are camelCase to maintain compatibility with
     # EPICS normative types
-    def __init__(self, secondsPastEpoch=None, nanoseconds=None, userTag=zero32):
-        # type: (ASecondsPastEpoch, ANanoseconds, AUserTag) -> None
+    def __init__(self, secondsPastEpoch: ASecondsPastEpoch = None, nanoseconds: ANanoseconds = None, userTag: AUserTag = zero32) -> None:
         # Set initial values
         if secondsPastEpoch is None or nanoseconds is None:
             now = time.time()
@@ -35,8 +34,7 @@ class TimeStamp(Serializable):
             self.nanoseconds = np.int32(nanoseconds)
         self.userTag = userTag
 
-    def to_time(self):
-        # type: () -> float
+    def to_time(self) -> float:
         return self.secondsPastEpoch + 1e-9 * self.nanoseconds
 
     zero = None  # filled in below

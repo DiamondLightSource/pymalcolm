@@ -20,8 +20,7 @@ class PandAActionPart(Part):
     """This will normally be instantiated by the PandABox assembly, not created
     in yaml"""
 
-    def __init__(self, client, block_name, field_name, description, tags):
-        # type: (AClient, ABlockName, AFieldName, ADescription, UTags) -> None
+    def __init__(self, client: AClient, block_name: ABlockName, field_name: AFieldName, description: ADescription, tags: UTags) -> None:
         super(PandAActionPart, self).__init__(field_name)
         self.client = client
         self.block_name = block_name
@@ -30,8 +29,7 @@ class PandAActionPart(Part):
         self.tags = tags
         self.method = None
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(PandAActionPart, self).setup(registrar)
         method_name = snake_to_camel(self.field_name)
         self.method = registrar.add_method_model(

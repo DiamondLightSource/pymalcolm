@@ -17,13 +17,12 @@ with Anno("TCP port number to run up under"):
 class HTTPServerComms(builtin.controllers.ServerComms):
     """A class for communication between browser and server"""
 
-    def __init__(self, mri, port=8008):
-        # type: (builtin.controllers.AMri, APort) -> None
+    def __init__(self, mri: builtin.controllers.AMri, port: APort = 8008) -> None:
         super(HTTPServerComms, self).__init__(mri)
         self.port = port
-        self._server = None  # type: HTTPServer
+        self._server: HTTPServer = None
         self._server_started = False
-        self._application = None  # type: Application
+        self._application: Application = None
         self.blocks = TableMeta.from_table(
             BlockTable, "List of local Blocks to serve up"
         ).create_attribute_model()
@@ -65,8 +64,7 @@ class HTTPServerComms(builtin.controllers.ServerComms):
         self._start_server()
 
     @add_call_types
-    def publish(self, published):
-        # type: (APublished) -> None
+    def publish(self, published: APublished) -> None:
         rows = []
         for mri in published:
             label = self.process.block_view(mri).meta.label
@@ -75,8 +73,7 @@ class HTTPServerComms(builtin.controllers.ServerComms):
             rows.append((mri, label))
         self.blocks.set_value(BlockTable.from_rows(rows))
 
-    def update_request_received(self, part, info):
-        # type: (Part, builtin.infos.RequestInfo) -> None
+    def update_request_received(self, part: Part, info: builtin.infos.RequestInfo) -> None:
         if info.mri == ".":
             # This is for us
             controller = self

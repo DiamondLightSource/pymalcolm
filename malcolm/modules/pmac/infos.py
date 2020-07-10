@@ -7,18 +7,17 @@ from .velocityprofile import VelocityProfile
 
 class MotorInfo(Info):
     def __init__(self,
-                 cs_axis,  # type: str
-                 cs_port,  # type: str
-                 acceleration,  # type: float
-                 resolution,  # type: float
-                 offset,  # type: float
-                 max_velocity,  # type: float
-                 current_position,  # type: float
-                 scannable,  # type: str
-                 velocity_settle,  # type: float
-                 units  # type: str
-                 ):
-        # type: (...) -> None
+                 cs_axis: str,
+                 cs_port: str,
+                 acceleration: float,
+                 resolution: float,
+                 offset: float,
+                 max_velocity: float,
+                 current_position: float,
+                 scannable: str,
+                 velocity_settle: float,
+                 units: str
+                 ) -> None:
         self.cs_axis = cs_axis
         self.cs_port = cs_port
         self.acceleration = acceleration
@@ -66,8 +65,7 @@ class MotorInfo(Info):
         p.get_profile()
         return p
 
-    def in_cts(self, position):
-        # type: (float) -> int
+    def in_cts(self, position: float) -> int:
         """Return the position (in EGUs) translated to counts"""
         cts = int(round((position - self.offset) / self.resolution))
         return cts

@@ -17,21 +17,18 @@ AMri = builtin.parts.AMri
 
 
 class CSPart(builtin.parts.ChildPart):
-    def __init__(self, mri, cs):
-        # type: (AMri, ACS) -> None
+    def __init__(self, mri: AMri, cs: ACS) -> None:
         super(CSPart, self).__init__("CS%d" % cs, mri, initial_visibility=True)
         self.cs = cs
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(CSPart, self).setup(registrar)
         # Add methods
         registrar.add_method_model(
             self.move, "moveCS%d" % self.cs, needs_context=True)
 
     @add_call_types
-    def on_init(self, context):
-        # type: (builtin.hooks.AContext) -> None
+    def on_init(self, context: builtin.hooks.AContext) -> None:
         super(CSPart, self).on_init(context)
         # Check the port name matches our CS number
         child = context.block_view(self.mri)
@@ -43,19 +40,18 @@ class CSPart(builtin.parts.ChildPart):
     # noinspection PyPep8Naming
     @add_call_types
     def move(self,
-             context,  # type: builtin.hooks.AContext
-             a=None,  # type: ADemandPosition
-             b=None,  # type: ADemandPosition
-             c=None,  # type: ADemandPosition
-             u=None,  # type: ADemandPosition
-             v=None,  # type: ADemandPosition
-             w=None,  # type: ADemandPosition
-             x=None,  # type: ADemandPosition
-             y=None,  # type: ADemandPosition
-             z=None,  # type: ADemandPosition
-             moveTime=0  # type: AMoveTime
-             ):
-        # type: (...) -> None
+             context: builtin.hooks.AContext,
+             a: ADemandPosition = None,
+             b: ADemandPosition = None,
+             c: ADemandPosition = None,
+             u: ADemandPosition = None,
+             v: ADemandPosition = None,
+             w: ADemandPosition = None,
+             x: ADemandPosition = None,
+             y: ADemandPosition = None,
+             z: ADemandPosition = None,
+             moveTime: AMoveTime = 0
+             ) -> None:
         """Move the given CS axes using a deferred co-ordinated move"""
         child = context.block_view(self.mri)
         child.deferMoves.put_value(True)

@@ -41,8 +41,7 @@ class PandATablePart(PandAFieldPart):
     """This will normally be instantiated by the PandABox assembly, not created
     in yaml"""
 
-    def __init__(self, client, meta, block_name, field_name):
-        # type: (AClient, AMeta, ABlockName, AFieldName) -> None
+    def __init__(self, client: AClient, meta: AMeta, block_name: ABlockName, field_name: AFieldName) -> None:
         # Fill in the meta object with the correct headers
         columns = OrderedDict()
         self.field_data = OrderedDict()
@@ -80,8 +79,7 @@ class PandATablePart(PandAFieldPart):
         super(PandATablePart, self).__init__(
             client, meta, block_name, field_name)
 
-    def handle_change(self, value, ts):
-        # type: (str, TimeStamp) -> None
+    def handle_change(self, value: str, ts: TimeStamp) -> None:
         value = self.table_from_list(value)
         self.attr.set_value_alarm_ts(value, Alarm.ok, ts)
 

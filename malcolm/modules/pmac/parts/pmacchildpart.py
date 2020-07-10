@@ -5,7 +5,7 @@ import re
 from enum import Enum
 
 import numpy as np
-from annotypes import add_call_types, TYPE_CHECKING
+from annotypes import add_call_types
 from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import Future, Block, PartRegistrar, Put, Request
@@ -18,8 +18,7 @@ from ..util import (
     get_motion_axes, all_points_same_velocities, all_points_joined
 )
 
-if TYPE_CHECKING:
-    from typing import Dict, List
+from typing import Dict, List
 
 # Number of seconds that a trajectory tick is
 TICK_S = 0.000001
@@ -68,16 +67,15 @@ AMri = builtin.parts.AMri
 
 class PmacChildPart(builtin.parts.ChildPart):
     def __init__(self,
-                 name,  # type: APartName
-                 mri,  # type: AMri
-                 initial_visibility=None  # type: AIV
-                 ):
-        # type: (...) -> None
+                 name: APartName,
+                 mri: AMri,
+                 initial_visibility: AIV = None
+                 ) -> None:
         super(PmacChildPart, self).__init__(name, mri, initial_visibility)
         # Axis information stored from validate
-        self.axis_mapping = None  # type: Dict[str, MotorInfo]
+        self.axis_mapping: Dict[str, MotorInfo] = None
         # Lookup of the completed_step value for each point
-        self.completed_steps_lookup = []  # type: List[int]
+        self.completed_steps_lookup: List[int] = []
         # The minimum turnaround time for non-joined points
         self.min_turnaround = 0
         # The minimum turnaround time for non-joined points
@@ -97,10 +95,9 @@ class PmacChildPart(builtin.parts.ChildPart):
         # trajectory logic
         self.time_since_last_pvt = 0
         # Stored generator for positions
-        self.generator = None  # type: CompoundGenerator
+        self.generator: CompoundGenerator = None
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(PmacChildPart, self).setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ValidateHook, self.on_validate)
@@ -112,8 +109,7 @@ class PmacChildPart(builtin.parts.ChildPart):
         registrar.hook((scanning.hooks.AbortHook,
                         scanning.hooks.PauseHook), self.on_abort)
 
-    def notify_dispatch_request(self, request):
-        # type: (Request) -> None
+    def notify_dispatch_request(self, request: Request) -> None:
         if isinstance(request, Put) and request.path[1] == "design":
             # We have hooked self.reload to PreConfigure, and reload() will
             # set design attribute, so explicitly allow this without checking
@@ -123,8 +119,7 @@ class PmacChildPart(builtin.parts.ChildPart):
             super(PmacChildPart, self).notify_dispatch_request(request)
 
     @add_call_types
-    def on_reset(self, context):
-        # type: (builtin.hooks.AContext) -> None
+    def on_reset(self, context: builtin.hooks.AContext) -> None:
         super(PmacChildPart, self).on_reset(context)
         self.on_abort(context)
 
@@ -132,12 +127,11 @@ class PmacChildPart(builtin.parts.ChildPart):
     # noinspection PyPep8Naming
     @add_call_types
     def on_validate(self,
-                    context,  # type: scanning.hooks.AContext
-                    generator,  # type: scanning.hooks.AGenerator
-                    axesToMove,  # type: scanning.hooks.AAxesToMove
-                    part_info,  # type: scanning.hooks.APartInfo
-                    ):
-        # type: (...) -> scanning.hooks.UParameterTweakInfos
+                    context: scanning.hooks.AContext,
+                    generator: scanning.hooks.AGenerator,
+                    axesToMove: scanning.hooks.AAxesToMove,
+                    part_info: scanning.hooks.APartInfo,
+                    ) -> scanning.hooks.UParameterTweakInfos:
         child = context.block_view(self.mri)
         # Check that we can move all the requested axes
         available = set(child.layout.value.name)
@@ -171,8 +165,7 @@ class PmacChildPart(builtin.parts.ChildPart):
             new_generator.duration = duration
             return scanning.infos.ParameterTweakInfo("generator", new_generator)
 
-    def move_to_start(self, child, cs_port, completed_steps):
-        # type: (Block, str, int) -> Future
+    def move_to_start(self, child: Block, cs_port: str, completed_steps: int) -> Future:
         # Work out what method to call
         match = re.search(r"\d+$", cs_port)
         assert match, "Cannot extract CS number from CS port '%s'" % cs_port
@@ -183,7 +176,7 @@ class PmacChildPart(builtin.parts.ChildPart):
         move_to_start_time = 0.0
         for axis_name, velocity in point_velocities(
                 self.axis_mapping, first_point).items():
-            motor_info = self.axis_mapping[axis_name]  # type: MotorInfo
+            motor_info: MotorInfo = self.axis_mapping[axis_name]
             acceleration_distance = motor_info.ramp_distance(
                 0, velocity, min_ramp_time=MIN_TIME
             )
@@ -204,14 +197,13 @@ class PmacChildPart(builtin.parts.ChildPart):
     # noinspection PyPep8Naming
     @add_call_types
     def on_configure(self,
-                     context,  # type: scanning.hooks.AContext
-                     completed_steps,  # type: scanning.hooks.ACompletedSteps
-                     steps_to_do,  # type: scanning.hooks.AStepsToDo
-                     part_info,  # type: scanning.hooks.APartInfo
-                     generator,  # type: scanning.hooks.AGenerator
-                     axesToMove,  # type: scanning.hooks.AAxesToMove
-                     ):
-        # type: (...) -> None
+                     context: scanning.hooks.AContext,
+                     completed_steps: scanning.hooks.ACompletedSteps,
+                     steps_to_do: scanning.hooks.AStepsToDo,
+                     part_info: scanning.hooks.APartInfo,
+                     generator: scanning.hooks.AGenerator,
+                     axesToMove: scanning.hooks.AAxesToMove,
+                     ) -> None:
         context.unsubscribe_all()
         child = context.block_view(self.mri)
 
@@ -290,8 +282,7 @@ class PmacChildPart(builtin.parts.ChildPart):
         context.wait_all_futures(fs)
 
     @add_call_types
-    def on_run(self, context):
-        # type: (scanning.hooks.AContext) -> None
+    def on_run(self, context: scanning.hooks.AContext) -> None:
         if self.generator:
             self.loading = False
             child = context.block_view(self.mri)
@@ -301,8 +292,7 @@ class PmacChildPart(builtin.parts.ChildPart):
             child.executeProfile()
 
     @add_call_types
-    def on_abort(self, context):
-        # type: (scanning.hooks.AContext) -> None
+    def on_abort(self, context: scanning.hooks.AContext) -> None:
         if self.generator:
             child = context.block_view(self.mri)
             # TODO: if we abort during move to start, what happens?
@@ -397,8 +387,7 @@ class PmacChildPart(builtin.parts.ChildPart):
         }
     }
 
-    def get_user_program(self, point_type):
-        # type: (PointType) -> int
+    def get_user_program(self, point_type: PointType) -> int:
         return self.user_program[self.output_triggers][point_type]
 
     def calculate_profile_from_velocities(self, time_arrays, velocity_arrays,

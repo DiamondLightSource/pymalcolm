@@ -9,18 +9,17 @@ class CAWaveformTablePart(Part):
     """
 
     def __init__(self,
-                 name,  # type: util.APartName
-                 description,  # type: util.AMetaDescription
-                 pv_list=(),  # type: util.APvList
-                 name_list=(),  # type: util.ANameList
-                 min_delta=0.05,  # type: util.AMinDelta
-                 timeout=DEFAULT_TIMEOUT,  # type: util.ATimeout
-                 widget=Widget.PLOT,  # type: util.AWidget
-                 group=None,  # type: util.AGroup
-                 config=True,  # type: util.AConfig
-                 display_from_pv=True  # type: util.AGetLimits
-                 ):
-        # type: (...) -> None
+                 name: util.APartName,
+                 description: util.AMetaDescription,
+                 pv_list: util.APvList = (),
+                 name_list: util.ANameList = (),
+                 min_delta: util.AMinDelta = 0.05,
+                 timeout: util.ATimeout = DEFAULT_TIMEOUT,
+                 widget: util.AWidget = Widget.PLOT,
+                 group: util.AGroup = None,
+                 config: util.AConfig = True,
+                 display_from_pv: util.AGetLimits = True
+                 ) -> None:
         if len(pv_list) != len(name_list):
             raise BadValueError(
                 "List of PVs must be same length as list of names!")
@@ -54,6 +53,5 @@ class CAWaveformTablePart(Part):
                 self.caa.attr.meta.elements[self.name_list[el[0]]].set_display(
                     display)
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         self.caa.setup(registrar, self.name, self.register_hooked)

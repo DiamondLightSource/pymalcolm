@@ -52,12 +52,11 @@ with Anno("space-separated list of IOCs to monitor"):
 
 class ProcessController(builtin.controllers.ManagerController):
     def __init__(self,
-                 mri,  # type: builtin.controllers.AMri
-                 prefix,  # type: APvPrefix
-                 config_dir,  # type: builtin.controllers.AConfigDir
-                 ioc_list=""  # type: AIocList
-                 ):
-        # type: (...) -> None
+                 mri: builtin.controllers.AMri,
+                 prefix: APvPrefix,
+                 config_dir: builtin.controllers.AConfigDir,
+                 ioc_list: AIocList = ""
+                 ) -> None:
         super(ProcessController, self).__init__(mri, config_dir)
         self.ioc = None
         self.ioc_blocks = OrderedDict()

@@ -12,8 +12,7 @@ with Anno("Minimum interval between turnaround points"):
 
 
 class MinTurnaroundPart(Part):
-    def __init__(self, name="minTurnaround", gap=None, interval=None):
-        # type: (APartName, AMinTurnaround, ATurnaroundInterval) -> None
+    def __init__(self, name: APartName = "minTurnaround", gap: AMinTurnaround = None, interval: ATurnaroundInterval = None) -> None:
         super(MinTurnaroundPart, self).__init__(name)
         self.gap = NumberMeta(
             "float64", "Minimum time for any gaps between non-joined points",
@@ -27,12 +26,10 @@ class MinTurnaroundPart(Part):
         ).create_attribute_model(interval)
 
     @add_call_types
-    def on_report_status(self):
-        # type: () -> UInfos
+    def on_report_status(self) -> UInfos:
         return MinTurnaroundInfo(self.gap.value, self.interval.value)
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         registrar.add_attribute_model(
             "minTurnaround", self.gap, self.gap.set_value)
         registrar.add_attribute_model(

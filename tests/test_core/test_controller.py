@@ -17,12 +17,10 @@ class MyPart(Part):
     context = None
 
     @add_call_types
-    def method(self):
-        # type: () -> AWorld
+    def method(self) -> AWorld:
         return 'world'
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         self.my_attribute = StringMeta(
             description="MyString"
         ).create_attribute_model('hello_block')

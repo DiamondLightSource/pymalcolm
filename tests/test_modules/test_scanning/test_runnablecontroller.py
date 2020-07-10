@@ -31,8 +31,7 @@ class MisbehavingPart(MotionChildPart):
         self.register_hooked(ValidateHook, self.validate)
 
     @add_call_types
-    def validate(self, generator):
-        # type: (AGenerator) -> UInfos
+    def validate(self, generator: AGenerator) -> UInfos:
         if generator.duration < 0.1:
             serialized = generator.to_dict()
             new_generator = CompoundGenerator.from_dict(serialized)
@@ -43,15 +42,14 @@ class MisbehavingPart(MotionChildPart):
     # noinspection PyPep8Naming
     @add_call_types
     def on_configure(self,
-                     context,  # type: AContext
-                     completed_steps,  # type: ACompletedSteps
-                     steps_to_do,  # type: AStepsToDo
+                     context: AContext,
+                     completed_steps: ACompletedSteps,
+                     steps_to_do: AStepsToDo,
                      # The following were passed from the user calling configure()
-                     generator,  # type: AGenerator
-                     axesToMove,  # type: AAxesToMove
-                     exceptionStep=0,  # type: AExceptionStep
-                     ):
-        # type: (...) -> None
+                     generator: AGenerator,
+                     axesToMove: AAxesToMove,
+                     exceptionStep: AExceptionStep = 0,
+                     ) -> None:
         super(MisbehavingPart, self).on_configure(
             context, completed_steps, steps_to_do, generator, axesToMove,
             exceptionStep)
@@ -62,23 +60,20 @@ class MisbehavingPart(MotionChildPart):
 class RunForeverPart(builtin.parts.ChildPart):
     """Part which runs forever and takes 1s to abort"""
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(RunForeverPart, self).setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.RunHook, self.on_run)
         registrar.hook(scanning.hooks.AbortHook, self.on_abort)
 
     @add_call_types
-    def on_run(self, context):
-        # type: (scanning.hooks.AContext) -> None
+    def on_run(self, context: scanning.hooks.AContext) -> None:
         # Wait forever here
         while True:
             context.sleep(1.0)
 
     @add_call_types
-    def on_abort(self, context):
-        # type: (scanning.hooks.AContext) -> None
+    def on_abort(self, context: scanning.hooks.AContext) -> None:
         # Sleep for 1s before returning
         context.sleep(1.0)
 

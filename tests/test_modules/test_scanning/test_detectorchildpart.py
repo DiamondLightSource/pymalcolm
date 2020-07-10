@@ -23,8 +23,7 @@ with Anno("How long to wait"):
 
 
 class WaitingPart(Part):
-    def __init__(self, name, wait=0.0):
-        # type: (APartName, AWait) -> None
+    def __init__(self, name: APartName, wait: AWait = 0.0) -> None:
         super(WaitingPart, self).__init__(name)
         meta = NumberMeta("float64", "How long to wait")
         set_tags(meta, writeable=True)
@@ -32,8 +31,7 @@ class WaitingPart(Part):
         self.register_hooked(RunHook, self.run)
         self.register_hooked(ConfigureHook, self.configure)
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         registrar.add_attribute_model(self.name, self.attr, self.attr.set_value)
         # Tell the controller to expose some extra configure parameters
         registrar.report(ConfigureHook.create_info(self.configure))
@@ -42,29 +40,25 @@ class WaitingPart(Part):
     # noinspection PyPep8Naming
     @add_call_types
     def configure(self,
-                  fileDir,  # type: AFileDir
-                  formatName="det",  # type: AFormatName
-                  fileTemplate="%s.h5",  # type: AFileTemplate
-                  ):
-        # type: (...) -> None
+                  fileDir: AFileDir,
+                  formatName: AFormatName = "det",
+                  fileTemplate: AFileTemplate = "%s.h5",
+                  ) -> None:
         # Don't do anything, just take the args so we look like a detector
         pass
 
     @add_call_types
-    def run(self, context):
-        # type: (AContext) -> None
+    def run(self, context: AContext) -> None:
         context.sleep(self.attr.value)
 
 
 class MaybeMultiPart(Part):
-    def __init__(self, mri):
-        # type: (AMri) -> None
+    def __init__(self, mri: AMri) -> None:
         super(MaybeMultiPart, self).__init__("MULTI" + mri)
         self.mri = mri
         self.active = False
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         registrar.hook(ReportStatusHook, self.on_report_status)
 
     @add_call_types
@@ -77,8 +71,7 @@ DESIGN_PATH = os.path.join(os.path.dirname(__file__), "designs")
 
 
 class FaultyPart(Part):
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         registrar.hook((InitHook, ResetHook), self.fail)
 
     def fail(self):

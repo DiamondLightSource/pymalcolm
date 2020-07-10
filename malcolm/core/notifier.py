@@ -7,9 +7,9 @@ from .request import Subscribe, Unsubscribe
 from .response import Response
 from .concurrency import RLock
 
+from typing import List, Tuple, Callable, Any, Dict
 if TYPE_CHECKING:
     from .models import BlockModel
-    from typing import List, Tuple, Callable, Any, Dict
     Callback = Callable[[Response], None]
     CallbackResponses = List[Tuple[Callback, Response]]
     SubscriptionKeys = Dict[Tuple[Callback, int], Subscribe]
@@ -21,12 +21,10 @@ class DummyNotifier(object):
     def changes_squashed(self):
         yield
 
-    def add_squashed_change(self, path, data):
-        # type: (List[str], Any) -> None
+    def add_squashed_change(self, path: List[str], data: Any) -> None:
         pass
 
-    def add_squashed_delete(self, path):
-        # type: (List[str]) -> None
+    def add_squashed_delete(self, path: List[str]) -> None:
         pass
 
 
@@ -50,33 +48,29 @@ def freeze(o):
 class Notifier(Loggable):
     """Object that can service callbacks on given endpoints"""
 
-    def __init__(self, mri, lock, block):
-        # type: (str, RLock, BlockModel) -> None
+    def __init__(self, mri: str, lock: RLock, block: 'BlockModel') -> None:
         self.set_logger(mri=mri)
         self._tree = NotifierNode(block)
         self._lock = lock
         # Incremented every time we do with changes_squashed
         self._squashed_count = 0
-        self._squashed_changes = []  # type: List[List]
-        self._subscription_keys = {}  # type: SubscriptionKeys
+        self._squashed_changes: List[List] = []
+        self._subscription_keys: SubscriptionKeys = {}
 
-    def handle_subscribe(self, request):
-        # type: (Subscribe) -> CallbackResponses
+    def handle_subscribe(self, request: Subscribe) -> 'CallbackResponses':
         """Handle a Subscribe request from outside. Called with lock taken"""
         ret = self._tree.handle_subscribe(request, request.path[1:])
         self._subscription_keys[request.generate_key()] = request
         return ret
 
-    def handle_unsubscribe(self, request):
-        # type: (Unsubscribe) -> CallbackResponses
+    def handle_unsubscribe(self, request: Unsubscribe) -> 'CallbackResponses':
         """Handle a Unsubscribe request from outside. Called with lock taken"""
         subscribe = self._subscription_keys.pop(request.generate_key())
         ret = self._tree.handle_unsubscribe(subscribe, subscribe.path[1:])
         return ret
 
     @property
-    def changes_squashed(self):
-        # type: () -> Notifier
+    def changes_squashed(self) -> 'Notifier':
         """Context manager to allow multiple calls to notify_change() to be
         made and all changes squashed into one consistent set. E.g:
 
@@ -86,8 +80,7 @@ class Notifier(Loggable):
         """
         return self
 
-    def add_squashed_change(self, path, data):
-        # type: (List[str], Any) -> None
+    def add_squashed_change(self, path: List[str], data: Any) -> None:
         """Register a squashed change to a particular path
 
         Args:
@@ -97,8 +90,7 @@ class Notifier(Loggable):
         assert self._squashed_count, "Called while not squashing changes"
         self._squashed_changes.append([path[1:], data])
 
-    def add_squashed_delete(self, path):
-        # type: (List[str]) -> None
+    def add_squashed_delete(self, path: List[str]) -> None:
         """Register a squashed deletion of a particular path
 
         Args:
@@ -126,8 +118,7 @@ class Notifier(Loggable):
             self._lock.release()
             self._callback_responses(responses)
 
-    def _callback_responses(self, responses):
-        # type: (CallbackResponses) -> None
+    def _callback_responses(self, responses: 'CallbackResponses') -> None:
         for cb, response in responses:
             try:
                 cb(response)
@@ -142,16 +133,14 @@ class NotifierNode(object):
     __slots__ = [
         "delta_requests", "update_requests", "children", "parent", "data"]
 
-    def __init__(self, data, parent=None):
-        # type: (Any, NotifierNode) -> None
-        self.delta_requests = []  # type: List[Subscribe]
-        self.update_requests = []  # type: List[Subscribe]
-        self.children = {}  # type: Dict[str, NotifierNode]
+    def __init__(self, data: Any, parent: 'NotifierNode' = None) -> None:
+        self.delta_requests: List[Subscribe] = []
+        self.update_requests: List[Subscribe] = []
+        self.children: Dict[str, NotifierNode] = {}
         self.parent = parent
         self.data = data
 
-    def notify_changes(self, changes):
-        # type: (List[List]) -> CallbackResponses
+    def notify_changes(self, changes: List[List]) -> 'CallbackResponses':
         """Set our data and notify anyone listening
 
         Args:
@@ -186,8 +175,7 @@ class NotifierNode(object):
             ret += self.children[name].notify_changes(child_changes)
         return ret
 
-    def _add_child_change(self, change, child_changes):
-        # type: (List, Dict[str, List]) -> None
+    def _add_child_change(self, change: List, child_changes: Dict[str, List]) -> None:
         path = change[0]
         if path:
             # This is for one of our children
@@ -207,8 +195,7 @@ class NotifierNode(object):
             for name, child_change in child_change_dict.items():
                 child_changes.setdefault(name, []).append(child_change)
 
-    def _update_data(self, data):
-        # type: (Any) -> Dict[str, List]
+    def _update_data(self, data: Any) -> Dict[str, List]:
         """Set our data and notify any subscribers of children what has changed
 
         Args:
@@ -231,8 +218,7 @@ class NotifierNode(object):
                 child_change_dict[name] = [[], child_data]
         return child_change_dict
 
-    def handle_subscribe(self, request, path):
-        # type: (Subscribe, List[str]) -> CallbackResponses
+    def handle_subscribe(self, request: Subscribe, path: List[str]) -> 'CallbackResponses':
         """Add to the list of request to notify, and notify the initial value of
         the data held
 
@@ -262,8 +248,7 @@ class NotifierNode(object):
                 ret.append(request.update_response(frozen))
         return ret
 
-    def handle_unsubscribe(self, request, path):
-        # type: (Subscribe, List[str]) -> CallbackResponses
+    def handle_unsubscribe(self, request: Subscribe, path: List[str]) -> 'CallbackResponses':
         """Remove from the notifier list and send a return
 
         Args:

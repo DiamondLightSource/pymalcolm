@@ -1,9 +1,6 @@
-from annotypes import TYPE_CHECKING
-
 from malcolm.core import Info, Alarm, Port, Request, TimeStamp
 
-if TYPE_CHECKING:
-    from typing import List, Any, Dict
+from typing import List, Any, Dict
 
 
 class LabelInfo(Info):
@@ -12,8 +9,7 @@ class LabelInfo(Info):
     Args:
         label: The new title of the Block
     """
-    def __init__(self, label):
-        # type: (str) -> None
+    def __init__(self, label: str) -> None:
         self.label = label
 
 
@@ -23,8 +19,7 @@ class HealthInfo(Info):
     Args:
         alarm: The alarm that should be used for the health of the block
     """
-    def __init__(self, alarm, ts=None):
-        # type: (Alarm, TimeStamp) -> None
+    def __init__(self, alarm: Alarm, ts: TimeStamp = None) -> None:
         self.alarm = alarm
         self.ts = ts
 
@@ -36,8 +31,7 @@ class PortInfo(Info):
         name: The name of the attribute
         port: The type of the port
     """
-    def __init__(self, name, port):
-        # type: (str, Port) -> None
+    def __init__(self, name: str, port: Port) -> None:
         self.name = name
         self.port = port
 
@@ -52,8 +46,7 @@ class SinkPortInfo(PortInfo):
             port is disconnected, E.g. '' or 'ZERO'
         value: Initial value of the attribute
     """
-    def __init__(self, name, port, disconnected_value, value):
-        # type: (str, Port, str, Any) -> None
+    def __init__(self, name: str, port: Port, disconnected_value: str, value: Any) -> None:
         super(SinkPortInfo, self).__init__(name, port)
         self.disconnected_value = disconnected_value
         self.value = value
@@ -68,8 +61,7 @@ class SourcePortInfo(PortInfo):
         connected_value: The value that a Sink Port will be set to when
             connected to this Source Port, E.g. 'PCOMP1.OUT' or 'DET.STATS'
     """
-    def __init__(self, name, port, connected_value):
-        # type: (str, Port, str) -> None
+    def __init__(self, name: str, port: Port, connected_value: str) -> None:
         super(SourcePortInfo, self).__init__(name, port)
         self.connected_value = connected_value
 
@@ -83,8 +75,7 @@ class LayoutInfo(Info):
         y: Y Coordinate of child block
         visible: Whether child block is visible
     """
-    def __init__(self, mri, x, y, visible):
-        # type: (str, float, float, bool) -> None
+    def __init__(self, mri: str, x: float, y: float, visible: bool) -> None:
         self.mri = mri
         self.x = x
         self.y = y
@@ -98,8 +89,7 @@ class PartExportableInfo(Info):
         names: The list of fields that the Part thinks are exportable
         port_infos: The list of PortInfo objects that the Part exposes
     """
-    def __init__(self, names, port_infos):
-        # type: (List[str], List[PortInfo]) -> None
+    def __init__(self, names: List[str], port_infos: List[PortInfo]) -> None:
         self.names = names
         self.port_infos = port_infos
 
@@ -111,8 +101,7 @@ class PartModifiedInfo(Info):
         modified: {attr_name: message} for all attributes that have been
             modified from the saved value
     """
-    def __init__(self, modified):
-        # type: (Dict[str, str]) -> None
+    def __init__(self, modified: Dict[str, str]) -> None:
         self.modified = modified
 
 
@@ -125,7 +114,6 @@ class RequestInfo(Info):
         request: The request that needs servicing, with callback filled in
         mri: The mri of the controller that should handle it
     """
-    def __init__(self, request, mri):
-        # type: (Request, str) -> None
+    def __init__(self, request: Request, mri: str) -> None:
         self.request = request
         self.mri = mri

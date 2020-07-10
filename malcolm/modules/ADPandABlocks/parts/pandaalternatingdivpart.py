@@ -21,8 +21,7 @@ class PandAAlternatingDivPart(builtin.parts.ChildPart):
     DIAD beam line).
     """
 
-    def __init__(self, name, mri, initial_visibility=None):
-        # type: (APartName, AMri, AInitialVisibility) -> None
+    def __init__(self, name: APartName, mri: AMri, initial_visibility: AInitialVisibility = None) -> None:
         super(PandAAlternatingDivPart, self).__init__(
             name,
             mri,
@@ -31,8 +30,7 @@ class PandAAlternatingDivPart(builtin.parts.ChildPart):
         assert CAMEL_RE.match(name), \
             "PandAAlternatingDivPart name %r should be camelCase" % name
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(PandAAlternatingDivPart, self).setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ReportStatusHook,
@@ -41,8 +39,7 @@ class PandAAlternatingDivPart(builtin.parts.ChildPart):
                        self.on_validate)
 
     @add_call_types
-    def on_report_status(self, context):
-        # type: (scanning.hooks.AContext) -> scanning.hooks.UInfos
+    def on_report_status(self, context: scanning.hooks.AContext) -> scanning.hooks.UInfos:
         child = context.block_view(self.mri)
         panda_mri = child.panda.value
         # Say that we can do multi frame for this detector
@@ -53,10 +50,9 @@ class PandAAlternatingDivPart(builtin.parts.ChildPart):
     # noinspection PyPep8Naming
     @add_call_types
     def on_validate(self,
-                    context, # type: scanning.hooks.AContext
-                    detectors=None, # type: scanning.util.ADetectorTable
-                    ):
-        # type: (...) -> None
+                    context: scanning.hooks.AContext,
+                    detectors: scanning.util.ADetectorTable = None,
+                    ) -> None:
         child = context.block_view(self.mri)
         panda_mri = child.panda.value
         # Check that PandA has frames_per_step of 2

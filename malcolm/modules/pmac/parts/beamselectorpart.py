@@ -9,9 +9,8 @@ from malcolm.modules.scanning.infos import MinTurnaroundInfo
 from ..util import MIN_INTERVAL, MIN_TIME, point_velocities
 from .pmacchildpart import PointType
 
-from annotypes import add_call_types, TYPE_CHECKING
-if TYPE_CHECKING:
-    from typing import Dict, List
+from annotypes import add_call_types
+from typing import Dict, List
 
 # 80 char line lengths...
 AIV = builtin.parts.AInitialVisibility
@@ -26,18 +25,18 @@ ATime = builtin.parts.AValue
 # velocity modes
 from .pmacchildpart import VelocityModes
 
+
 class BeamSelectorPart(PmacChildPart):
 
     def __init__(self,
-                 name,  # type: APartName
-                 mri,  # type: AMri
-                 selectorAxis, # type: AAxisName
-                 tomoAngle, # type: AAngle
-                 diffAngle, # type: AAngle
-                 moveTime, # type: ATime
-                 initial_visibility=None  # type: AIV
-                 ):
-        # type: (...) -> None
+                 name: APartName,
+                 mri: AMri,
+                 selectorAxis: AAxisName,
+                 tomoAngle: AAngle,
+                 diffAngle: AAngle,
+                 moveTime: ATime,
+                 initial_visibility: AIV = None
+                 ) -> None:
         super(BeamSelectorPart, self).__init__(name, mri, initial_visibility)
         self.selectorAxis = selectorAxis
 
@@ -52,13 +51,13 @@ class BeamSelectorPart(PmacChildPart):
 
     @add_call_types
     def on_configure(self,
-                  context,  # type: scanning.hooks.AContext
-                  completed_steps,  # type: scanning.hooks.ACompletedSteps
-                  steps_to_do,  # type: scanning.hooks.AStepsToDo
-                  part_info,  # type: scanning.hooks.APartInfo
-                  generator,  # type: scanning.hooks.AGenerator
-                  axesToMove,  # type: scanning.hooks.AAxesToMove
-                  ):  # type: (...) -> None
+                  context: scanning.hooks.AContext,
+                  completed_steps: scanning.hooks.ACompletedSteps,
+                  steps_to_do: scanning.hooks.AStepsToDo,
+                  part_info: scanning.hooks.APartInfo,
+                  generator: scanning.hooks.AGenerator,
+                  axesToMove: scanning.hooks.AAxesToMove,
+                  ) -> None:
 
         # Double the number of cycles to get rotations
         static_axis = generator.generators[0]

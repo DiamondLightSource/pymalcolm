@@ -10,23 +10,38 @@ with Anno("If >0, raise an exception at the end of this step"):
     AExceptionStep = int
 
 
+class MaybeMover(object):
+    """Helper object that does async moves on an axis of a child Block only if
+    the last move didn't move it to that position"""
+    def __init__(self, child: Block, axis: str) -> None:
+        self._last_move = None
+        self._move_async = child[axis + "Move_async"]
+
+    def maybe_move_async(self, fs: List[Future], position: float, duration: float = None) -> None:
+        """If the last move was not to position, start an async move there,
+        adding the Future to fs"""
+        if self._last_move != position:
+            self._last_move = position
+            fs.append(self._move_async(position, duration))
+
+
+
 class MotionChildPart(builtin.parts.ChildPart):
     """Provides control of a `counter_block` within a `RunnableController`"""
     # Generator instance
-    _generator = None  # type: scanning.hooks.AGenerator
+    _generator: scanning.hooks.AGenerator = None
     # Where to start
-    _completed_steps = None  # type: int
+    _completed_steps: int = None
     # How many steps to do
-    _steps_to_do = None  # type: int
+    _steps_to_do: int = None
     # When to blow up
-    _exception_step = None  # type: int
+    _exception_step: int = None
     # Which axes we should be moving
-    _axes_to_move = None  # type: scanning.hooks.AAxesToMove
+    _axes_to_move: scanning.hooks.AAxesToMove = None
     # MaybeMover objects to help with async moves
-    _movers = None  # type: Dict[str, MaybeMover]
+    _movers: Dict[str, MaybeMover] = None
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(MotionChildPart, self).setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.PreConfigureHook, self.reload)
@@ -43,15 +58,14 @@ class MotionChildPart(builtin.parts.ChildPart):
     # noinspection PyPep8Naming
     @add_call_types
     def on_configure(self,
-                     context,  # type: scanning.hooks.AContext
-                     completed_steps,  # type: scanning.hooks.ACompletedSteps
-                     steps_to_do,  # type: scanning.hooks.AStepsToDo
+                     context: scanning.hooks.AContext,
+                     completed_steps: scanning.hooks.ACompletedSteps,
+                     steps_to_do: scanning.hooks.AStepsToDo,
                      # The following were passed from user calling configure()
-                     generator,  # type: scanning.hooks.AGenerator
-                     axesToMove,  # type: scanning.hooks.AAxesToMove
-                     exceptionStep=0,  # type: AExceptionStep
-                     ):
-        # type: (...) -> None
+                     generator: scanning.hooks.AGenerator,
+                     axesToMove: scanning.hooks.AAxesToMove,
+                     exceptionStep: AExceptionStep = 0,
+                     ) -> None:
         child = context.block_view(self.mri)
         # Store the generator and place we need to start
         self._generator = generator
@@ -68,8 +82,7 @@ class MotionChildPart(builtin.parts.ChildPart):
         context.wait_all_futures(fs)
 
     @add_call_types
-    def on_run(self, context):
-        # type: (scanning.hooks.AContext) -> None
+    def on_run(self, context: scanning.hooks.AContext) -> None:
         # Start time so everything is relative
         point_time = time.time()
         for i in range(self._completed_steps,
@@ -93,20 +106,3 @@ class MotionChildPart(builtin.parts.ChildPart):
             # If this is the exception step then blow up
             assert i + 1 != self._exception_step, \
                 "Raising exception at step %s" % self._exception_step
-
-
-class MaybeMover(object):
-    """Helper object that does async moves on an axis of a child Block only if
-    the last move didn't move it to that position"""
-    def __init__(self, child, axis):
-        # type: (Block, str) -> None
-        self._last_move = None
-        self._move_async = child[axis + "Move_async"]
-
-    def maybe_move_async(self, fs, position, duration=None):
-        # type: (List[Future], float, float) -> None
-        """If the last move was not to position, start an async move there,
-        adding the Future to fs"""
-        if self._last_move != position:
-            self._last_move = position
-            fs.append(self._move_async(position, duration))

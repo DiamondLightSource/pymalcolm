@@ -1,4 +1,4 @@
-from annotypes import Anno, TYPE_CHECKING, add_call_types, Any, json_encode, \
+from annotypes import Anno, add_call_types, Any, json_encode, \
     deserialize_object
 from scanpointgenerator import CompoundGenerator
 
@@ -14,11 +14,10 @@ from ..hooks import ConfigureHook, ValidateHook, PostConfigureHook, \
     ReportStatusHook, AbortHook, PauseHook, SeekHook, ControllerHook, \
     PreConfigureHook, AAxesToMove
 
-if TYPE_CHECKING:
-    from typing import Dict, Tuple, List, Iterable, Type, Callable
+from typing import Dict, Tuple, List, Iterable, Type, Callable
 
-    PartContextParams = Iterable[Tuple[Part, Context, Dict[str, Any]]]
-    PartConfigureParams = Dict[Part, ConfigureParamsInfo]
+PartContextParams = Iterable[Tuple[Part, Context, Dict[str, Any]]]
+PartConfigureParams = Dict[Part, ConfigureParamsInfo]
 
 ss = RunnableStates
 
@@ -35,8 +34,7 @@ AUseGit = builtin.controllers.AUseGit
 ATemplateDesigns = builtin.controllers.ATemplateDesigns
 
 
-def get_steps_per_run(generator, axes_to_move):
-    # type: (CompoundGenerator, List[str]) -> int
+def get_steps_per_run(generator: CompoundGenerator, axes_to_move: List[str]) -> int:
     steps = 1
     axes_set = set(axes_to_move)
     for dim in reversed(generator.dimensions):
@@ -54,8 +52,7 @@ def get_steps_per_run(generator, axes_to_move):
     return steps
 
 
-def update_configure_model(configure_model, part_configure_infos):
-    # type: (MethodMeta, List[ConfigureParamsInfo]) -> None
+def update_configure_model(configure_model: MethodMeta, part_configure_infos: List[ConfigureParamsInfo]) -> None:
     # These will not be inserted as they already exist
 
     ignored = list(ConfigureHook.call_types)
@@ -114,8 +111,7 @@ def update_configure_model(configure_model, part_configure_infos):
     configure_model.set_defaults(defaults)
 
 
-def merge_non_writeable_table(default, supplied, non_writeable):
-    # type: (Table, Table, List[int]) -> Table
+def merge_non_writeable_table(default: Table, supplied: Table, non_writeable: List[int]) -> Table:
     default_rows = list(default.rows())
     for supplied_row in supplied.rows():
         key = [supplied_row[i] for i in non_writeable]
@@ -143,14 +139,13 @@ class RunnableController(builtin.controllers.ManagerController):
     state_set = ss()
 
     def __init__(self,
-                 mri,  # type: AMri
-                 config_dir,  # type: AConfigDir
-                 template_designs="",  # type: ATemplateDesigns
-                 initial_design="",  # type: AInitialDesign
-                 use_git=True,  # type: AUseGit
-                 description="",  # type: ADescription
-                 ):
-        # type: (...) -> None
+                 mri: AMri,
+                 config_dir: AConfigDir,
+                 template_designs: ATemplateDesigns = "",
+                 initial_design: AInitialDesign = "",
+                 use_git: AUseGit = True,
+                 description: ADescription = "",
+                 ) -> None:
         super(RunnableController, self).__init__(
             mri=mri,
             config_dir=config_dir,
@@ -160,20 +155,20 @@ class RunnableController(builtin.controllers.ManagerController):
             description=description,
         )
         # Shared contexts between Configure, Run, Pause, Seek, Resume
-        self.part_contexts = {}  # type: Dict[Part, Context]
+        self.part_contexts: Dict[Part, Context] = {}
         # Any custom ConfigureParams subclasses requested by Parts
-        self.part_configure_params = {}  # type: PartConfigureParams
+        self.part_configure_params: PartConfigureParams = {}
         # Params passed to configure()
-        self.configure_params = None  # type: ConfigureParams
+        self.configure_params: ConfigureParams = None
         # Progress reporting dict of completed_steps for each part
-        self.progress_updates = None  # type: Dict[Part, int]
+        self.progress_updates: Dict[Part, int] = None
         # Queue so that do_run can wait to see why it was aborted and resume if
         # needed
-        self.resume_queue = None  # type: Queue
+        self.resume_queue: Queue = None
         # Queue so we can wait for aborts to complete
-        self.abort_queue = None  # type: Queue
+        self.abort_queue: Queue = None
         # Stored for pause
-        self.steps_per_run = 0  # type: int
+        self.steps_per_run: int = 0
         # Create sometimes writeable attribute for the current completed scan
         # step
         self.completed_steps = NumberMeta(
@@ -229,8 +224,7 @@ class RunnableController(builtin.controllers.ManagerController):
         self.completed_steps.set_value(0)
         self.total_steps.set_value(0)
 
-    def update_configure_params(self, part=None, info=None):
-        # type: (Part, ConfigureParamsInfo) -> None
+    def update_configure_params(self, part: Part = None, info: ConfigureParamsInfo = None) -> None:
         """Tell controller part needs different things passed to Configure"""
         with self.changes_squashed:
             # Update the dict
@@ -268,8 +262,7 @@ class RunnableController(builtin.controllers.ManagerController):
         super(RunnableController, self).update_block_endpoints()
         self.update_configure_params()
 
-    def _part_params(self, part_contexts=None, params=None):
-        # type: (Dict[Part, Context], ConfigureParams) -> PartContextParams
+    def _part_params(self, part_contexts: Dict[Part, Context] = None, params: ConfigureParams = None) -> PartContextParams:
         if part_contexts is None:
             part_contexts = self.part_contexts
         if params is None:
@@ -283,8 +276,7 @@ class RunnableController(builtin.controllers.ManagerController):
     # This will be serialized, so maintain camelCase for axesToMove
     # noinspection PyPep8Naming
     @add_call_types
-    def validate(self, generator, axesToMove=None, **kwargs):
-        # type: (AGenerator, AAxesToMove, **Any) -> AConfigureParams
+    def validate(self, generator: AGenerator, axesToMove: AAxesToMove = None, **kwargs: Any) -> AConfigureParams:
         """Validate configuration parameters and return validated parameters.
 
         Doesn't take device state into account so can be run in any state
@@ -332,8 +324,7 @@ class RunnableController(builtin.controllers.ManagerController):
     # This will be serialized, so maintain camelCase for axesToMove
     # noinspection PyPep8Naming
     @add_call_types
-    def configure(self, generator, axesToMove=None, **kwargs):
-        # type: (AGenerator, AAxesToMove, **Any) -> AConfigureParams
+    def configure(self, generator: AGenerator, axesToMove: AAxesToMove = None, **kwargs: Any) -> AConfigureParams:
         """Validate the params then configure the device ready for run().
 
         Try to prepare the device as much as possible so that run() is quick to
@@ -359,8 +350,7 @@ class RunnableController(builtin.controllers.ManagerController):
         else:
             return params
 
-    def do_configure(self, state, params):
-        # type: (str, ConfigureParams) -> None
+    def do_configure(self, state: str, params: ConfigureParams) -> None:
         if state == ss.FINISHED:
             # If we were finished then do a reset before configuring
             self.run_hooks(
@@ -410,8 +400,7 @@ class RunnableController(builtin.controllers.ManagerController):
         self.resume_queue = Queue()
 
     @add_call_types
-    def run(self):
-        # type: () -> None
+    def run(self) -> None:
         """Run a device where configure() has already be called
 
         Normally it will return in Ready state. If setup for multiple-runs with
@@ -456,12 +445,10 @@ class RunnableController(builtin.controllers.ManagerController):
             self.go_to_error_state(e)
             raise
 
-    def do_pre_run(self, hook):
-        # type: (Type[ControllerHook]) -> None
+    def do_pre_run(self, hook: Type[ControllerHook]) -> None:
         self.run_hooks(hook(p, c) for p, c in self.part_contexts.items())
 
-    def do_run(self, hook):
-        # type: (Type[ControllerHook]) -> None
+    def do_run(self, hook: Type[ControllerHook]) -> None:
         self.run_hooks(hook(p, c) for p, c in self.part_contexts.items())
         self.abortable_transition(ss.POSTRUN)
         completed_steps = self.configured_steps.value
@@ -479,8 +466,7 @@ class RunnableController(builtin.controllers.ManagerController):
             self.run_hooks(
                 PostRunReadyHook(p, c) for p, c in self.part_contexts.items())
 
-    def update_completed_steps(self, part, completed_steps):
-        # type: (object, RunProgressInfo) -> None
+    def update_completed_steps(self, part: object, completed_steps: RunProgressInfo) -> None:
         with self._lock:
             # Update
             self.progress_updates[part] = completed_steps.steps
@@ -489,8 +475,7 @@ class RunnableController(builtin.controllers.ManagerController):
                 self.completed_steps.set_value(min_completed_steps)
 
     @add_call_types
-    def abort(self):
-        # type: () -> None
+    def abort(self) -> None:
         """Abort the current operation and block until aborted
 
         Normally it will return in Aborted state. If something goes wrong it
@@ -502,13 +487,11 @@ class RunnableController(builtin.controllers.ManagerController):
         if self.resume_queue:
             self.resume_queue.put(False)
 
-    def do_abort(self):
-        # type: () -> None
+    def do_abort(self) -> None:
         self.run_hooks(
             AbortHook(p, c) for p, c in self.create_part_contexts().items())
 
-    def try_aborting_function(self, start_state, end_state, func, *args):
-        # type: (str, str, Callable[..., None], *Any) -> None
+    def try_aborting_function(self, start_state: str, end_state: str, func: Callable[..., None], *args: Any) -> None:
         try:
             # To make the running function fail we need to stop any running
             # contexts (if running a hook) or make transition() fail with
@@ -545,8 +528,7 @@ class RunnableController(builtin.controllers.ManagerController):
     # Allow camelCase as this will be serialized
     # noinspection PyPep8Naming
     @add_call_types
-    def pause(self, lastGoodStep=-1):
-        # type: (ALastGoodStep) -> None
+    def pause(self, lastGoodStep: ALastGoodStep = -1) -> None:
         """Pause a run() so that resume() can be called later, or seek within
         an Armed or Paused state.
 
@@ -577,8 +559,7 @@ class RunnableController(builtin.controllers.ManagerController):
         self.try_aborting_function(
             ss.SEEKING, next_state, self.do_pause, lastGoodStep)
 
-    def do_pause(self, completed_steps):
-        # type: (int) -> None
+    def do_pause(self, completed_steps: int) -> None:
         self.run_hooks(
             PauseHook(p, c) for p, c in self.create_part_contexts().items())
         in_run_steps = completed_steps % self.steps_per_run
@@ -592,8 +573,7 @@ class RunnableController(builtin.controllers.ManagerController):
         self.configured_steps.set_value(completed_steps + steps_to_do)
 
     @add_call_types
-    def resume(self):
-        # type: () -> None
+    def resume(self) -> None:
         """Resume a paused scan.
 
         Normally it will return in Running state. If something goes wrong it
@@ -603,8 +583,7 @@ class RunnableController(builtin.controllers.ManagerController):
         self.resume_queue.put(True)
         # self.run will now take over
 
-    def do_disable(self):
-        # type: () -> None
+    def do_disable(self) -> None:
         # Abort anything that is currently running, but don't wait
         for context in self.part_contexts.values():
             context.stop()

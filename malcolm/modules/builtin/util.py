@@ -7,8 +7,8 @@ from malcolm.compat import str_, et_to_string
 from malcolm.core import VMeta, Widget, group_tag, config_tag, Port, Table, \
     StateSet, DEFAULT_TIMEOUT
 
+from typing import Type, Iterable
 if TYPE_CHECKING:
-    from typing import Type, Iterable
     from .parts import ChildPart
 
 with Anno("Is the attribute writeable?"):
@@ -27,15 +27,14 @@ with Anno("If given, mark this Sink Port as having a badge" +
     APortBadge = str
 
 
-def set_tags(meta,  # type: VMeta
-             writeable=False,  # type: AWriteable
-             config=1,  # type: AConfig
-             group=None,  # type: AGroup
-             widget=None,  # type: AWidget
-             sink_port=None,  # type: ASinkPort
-             port_badge=None,  # type: APortBadge
-             ):
-    # type: (...) -> None
+def set_tags(meta: VMeta,
+             writeable: AWriteable = False,
+             config: AConfig = 1,
+             group: AGroup = None,
+             widget: AWidget = None,
+             sink_port: ASinkPort = None,
+             port_badge: APortBadge = None,
+             ) -> None:
     tags = []
     meta.set_writeable(writeable)
     if widget is None:
@@ -73,8 +72,7 @@ UVisibleArray = Union[AVisibleArray, Sequence[bool]]
 
 
 class LayoutTable(Table):
-    def __init__(self, name, mri, x, y, visible):
-        # type: (UNameArray, UMriArray, UXArray, UYArray, UVisibleArray) -> None
+    def __init__(self, name: UNameArray, mri: UMriArray, x: UXArray, y: UYArray, visible: UVisibleArray) -> None:
         self.name = ANameArray(name)
         self.mri = AMriArray(mri)
         self.x = AXArray(x)
@@ -91,8 +89,7 @@ UExportNameArray = Union[AExportNameArray, Sequence[str]]
 
 
 class ExportTable(Table):
-    def __init__(self, source, export):
-        # type: (USourceNameArray, UExportNameArray) -> None
+    def __init__(self, source: USourceNameArray, export: UExportNameArray) -> None:
         self.source = ASourceNameArray(source)
         self.export = AExportNameArray(export)
 
@@ -163,8 +160,7 @@ def no_save(*attribute_names):
         attribute_names (str): The Attributes of the child Block that shouldn't
             be saved
     """
-    def decorator(cls):
-        # type: (Type[ChildPart]) -> Type[ChildPart]
+    def decorator(cls: Type['ChildPart']) -> Type['ChildPart']:
         additions = set()
         for attribute_name in attribute_names:
             if isinstance(attribute_name, collections.abc.Iterable) \
@@ -183,8 +179,7 @@ def no_save(*attribute_names):
 
 class SVGIcon(object):
     """Helper object for working with SVG icons"""
-    def __init__(self, svg_text):
-        # type: (str) -> None
+    def __init__(self, svg_text: str) -> None:
         # https://stackoverflow.com/a/8998773
         ET.register_namespace('', "http://www.w3.org/2000/svg")
         self.root = ET.fromstring(svg_text)
@@ -198,8 +193,7 @@ class SVGIcon(object):
             child = parent.find('./*[@id=%r]' % id)
         return parent, child
 
-    def remove_elements(self, ids):
-        # type: (Iterable[str]) -> None
+    def remove_elements(self, ids: Iterable[str]) -> None:
         for i in ids:
             parent, child = self.find_parent_child(i)
             parent.remove(child)

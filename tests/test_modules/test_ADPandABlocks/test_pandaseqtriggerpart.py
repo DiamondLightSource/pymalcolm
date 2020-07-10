@@ -26,8 +26,7 @@ from datetime import datetime
 
 
 class PositionsPart(Part):
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         pos_table = DatasetPositionsTable(
             name=["COUNTER1.VALUE", "INENC1.VAL", "INENC2.VAL"],
             value=[0.0] * 3,
@@ -52,8 +51,7 @@ class PositionsPart(Part):
 class SequencerPart(Part):
     table_set = None
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         attr = TableMeta.from_table(
             SequencerTable, "Sequencer Table",
             writeable=list(SequencerTable.call_types)
@@ -75,8 +73,7 @@ class GatePart(Part):
     def enable(self):
         self.enable_set()
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         self.enable_set = MagicMock()
         registrar.add_method_model(self.enable, "forceSet")
 

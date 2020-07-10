@@ -1,13 +1,12 @@
 import logging
 
-from annotypes import Anno, Array, Any, TYPE_CHECKING, Mapping, Union, \
+from annotypes import Anno, Array, Any, Mapping, Union, \
     Sequence, Serializable
 
 from .response import Return, Error, Update, Delta, Response
 
-if TYPE_CHECKING:
-    from typing import Callable, Tuple, List
-    Callback = Callable[[Response], None]
+from typing import Callable, Tuple, List
+Callback = Callable[[Response], None]
 
 # Create a module level logger
 log = logging.getLogger(__name__)
@@ -34,38 +33,32 @@ class Request(Serializable):
 
     # Allow id to shadow builtin id so id is a key in the serialized dict
     # noinspection PyShadowingBuiltins
-    def __init__(self, id=0):
-        # type: (AId) -> None
+    def __init__(self, id: AId = 0) -> None:
         self.id = id
 
-        def callback(_):
-            # type: (Response) -> None
+        def callback(_: Response) -> None:
             pass
 
         self.callback = callback
 
-    def set_callback(self, callback):
-        # type: (Callback) -> None
+    def set_callback(self, callback: Callback) -> None:
         """Set the callback to be called on response"""
         self.callback = callback
 
-    def return_response(self, value=None):
-        # type: (Any) -> Tuple[Callback, Return]
+    def return_response(self, value: Any = None) -> Tuple[Callback, Return]:
         """Create a Return Response object to signal a return value"""
         response = Return(id=self.id, value=value)
         return self.callback, response
 
-    def error_response(self, exception):
-        # type: (Exception) -> Tuple[Callback, Error]
+    def error_response(self, exception: Exception) -> Tuple[Callback, Error]:
         """Create an Error Response object to signal an error"""
         response = Error(id=self.id, message=exception)
         log.exception("Exception raised for request %s", self)
         return self.callback, response
 
-    def generate_key(self):
+    def generate_key(self) -> Tuple[Callback, int]:
         """A key that will uniquely identify this request, for matching
         Subscribes up to Unsubscribes"""
-        # type: () -> Tuple[Callback, int]
         key = (self.callback, self.id)
         return key
 
@@ -75,8 +68,7 @@ class PathRequest(Request):
 
     # Allow id to shadow builtin id so id is a key in the serialized dict
     # noinspection PyShadowingBuiltins
-    def __init__(self, id=0, path=None):
-        # type: (AId, UPath) -> None
+    def __init__(self, id: AId = 0, path: UPath = None) -> None:
         super(PathRequest, self).__init__(id)
         self.path = APath(path)
         if not self.path:
@@ -98,8 +90,8 @@ class Put(PathRequest):
 
     # Allow id to shadow builtin id so id is a key in the serialized dict
     # noinspection PyShadowingBuiltins
-    def __init__(self, id=0, path=None, value=None, get=False):
-        # type: (AId, UPath, AValue, AGet) -> None
+    def __init__(self, id: AId = 0, path: UPath = None, value: AValue = None,
+                 get: AGet = False) -> None:
         super(Put, self).__init__(id, path)
         self.value = value
         self.get = get
@@ -112,8 +104,8 @@ class Post(PathRequest):
 
     # Allow id to shadow builtin id so id is a key in the serialized dict
     # noinspection PyShadowingBuiltins
-    def __init__(self, id=0, path=None, parameters=None):
-        # type: (AId, UPath, AParameters) -> None
+    def __init__(self, id: AId = 0, path: UPath = None,
+                 parameters: AParameters = None) -> None:
         super(Post, self).__init__(id, path)
         self.parameters = parameters
 
@@ -125,19 +117,17 @@ class Subscribe(PathRequest):
 
     # Allow id to shadow builtin id so id is a key in the serialized dict
     # noinspection PyShadowingBuiltins
-    def __init__(self, id=0, path=None, delta=False):
-        # type: (AId, UPath, ADifferences) -> None
+    def __init__(self, id: AId = 0, path: UPath = None,
+                 delta: ADifferences = False) -> None:
         super(Subscribe, self).__init__(id, path)
         self.delta = delta
 
-    def update_response(self, value):
-        # type: (Any) -> Tuple[Callback, Update]
+    def update_response(self, value: Any) -> Tuple[Callback, Update]:
         """Create an Update Response object to handle the request"""
         response = Update(id=self.id, value=value)
         return self.callback, response
 
-    def delta_response(self, changes):
-        # type: (List[List[List[str], Any]]) -> Tuple[Callback, Delta]
+    def delta_response(self, changes: List[List[Union[List[str], Any]]]) -> Tuple[Callback, Delta]:
         """"Create a Delta Response object to handle the request"""
         response = Delta(id=self.id, changes=changes)
         return self.callback, response

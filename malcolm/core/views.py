@@ -5,20 +5,19 @@ from .context import Context
 from .models import BlockModel, MethodModel, AttributeModel
 from malcolm.core.models import Model
 
+from typing import Any
 if TYPE_CHECKING:
-    from typing import Any
     from .controller import Controller
 
 
 class View(object):
     """View of a Model to allow Put, Get, Subscribe etc."""
-    _controller = None  # type: Controller
-    _context = None  # type: Context
-    _data = None  # type: Model
-    typeid = None  # type: str
+    _controller: 'Controller' = None
+    _context: Context = None
+    _data: Model = None
+    typeid: str = None
 
-    def __init__(self, controller, context, data):
-        # type: (Controller, Context, Model) -> None
+    def __init__(self, controller: 'Controller', context: Context, data: Model) -> None:
         object.__setattr__(self, "typeid", data.typeid)
         object.__setattr__(self, "_controller", controller)
         object.__setattr__(self, "_context", context)
@@ -148,8 +147,7 @@ class Block(View):
                 # Add _async versions of method
                 self._make_async_method(endpoint)
 
-    def __getattr__(self, item):
-        # type: (str) -> View
+    def __getattr__(self, item: str) -> View:
         # Get the child of self._data. Needs to be done by the controller to
         # make sure lock is taken and we get consistent data
         child = self._context.make_view(self._controller, self._data, item)
@@ -161,7 +159,7 @@ class Block(View):
 
     def _make_async_method(self, endpoint):
         def post_async(*args, **kwargs):
-            child = getattr(self, endpoint)  # type: Method
+            child: Method = getattr(self, endpoint)
             return child.post_async(*args, **kwargs)
 
         object.__setattr__(self, "%s_async" % endpoint, post_async)
@@ -199,8 +197,7 @@ class Block(View):
         return future
 
 
-def make_view(controller, context, data):
-    # type: (Controller, Context, Any) -> Any
+def make_view(controller: 'Controller', context: Context, data: Any) -> Any:
     """Make a View subclass containing properties specific for given data
 
     Args:

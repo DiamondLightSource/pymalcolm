@@ -13,8 +13,7 @@ sm = ManagerController.state_set
 
 class PortsPart(Part):
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(PortsPart, self).setup(registrar)
         attr = StringMeta(
             tags=[Port.INT32.sink_port_tag(""), config_tag(1)]

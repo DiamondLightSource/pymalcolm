@@ -13,8 +13,7 @@ with Anno("Row B"):
 
 
 class MyTable(Table):
-    def __init__(self, a, b):
-        # type: (AA, AB) -> None
+    def __init__(self, a: AA, b: AB) -> None:
         self.a = a
         self.b = b
 

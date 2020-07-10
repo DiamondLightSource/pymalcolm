@@ -2,7 +2,7 @@ import os
 import time
 from xml.etree import cElementTree as ET
 
-from annotypes import Anno, add_call_types, TYPE_CHECKING
+from annotypes import Anno, add_call_types
 from scanpointgenerator import CompoundGenerator, Dimension
 
 from malcolm.compat import et_to_string
@@ -13,10 +13,9 @@ from ..infos import CalculatedNDAttributeDatasetInfo, NDArrayDatasetInfo, \
     NDAttributeDatasetInfo, FilePathTranslatorInfo
 from ..util import APartRunsOnWindows, FRAME_TIMEOUT, make_xml_filename
 
-if TYPE_CHECKING:
-    from typing import Iterator, List, Dict
+from typing import Iterator, List, Dict
 
-    PartInfo = Dict[str, List[Info]]
+PartInfo = Dict[str, List[Info]]
 
 SUFFIXES = "NXY3456789"
 
@@ -29,13 +28,11 @@ AMri = builtin.parts.AMri
 APartRunsOnWindows = APartRunsOnWindows
 
 
-def greater_than_zero(v):
-    # type: (int) -> bool
+def greater_than_zero(v: int) -> bool:
     return v > 0
 
 
-def create_dataset_infos(name, part_info, generator, filename):
-    # type: (str, PartInfo, CompoundGenerator, str) -> Iterator[Info]
+def create_dataset_infos(name: str, part_info: PartInfo, generator: CompoundGenerator, filename: str) -> Iterator[Info]:
     # Update the dataset table
     uniqueid = "/entry/NDAttributes/NDArrayUniqueId"
     generator_rank = len(generator.dimensions)
@@ -93,8 +90,7 @@ def create_dataset_infos(name, part_info, generator, filename):
             path="/entry/detector/%s_set" % dim, uniqueid="")
 
 
-def set_dimensions(child, generator):
-    # type: (Block, CompoundGenerator) -> List[Future]
+def set_dimensions(child: Block, generator: CompoundGenerator) -> List[Future]:
     num_dims = len(generator.dimensions)
     assert num_dims <= 10, \
         "Can only do 10 dims, you gave me %s" % num_dims
@@ -117,8 +113,7 @@ def set_dimensions(child, generator):
     return futures
 
 
-def make_set_points(dimension, axis, data_el, units):
-    # type: (Dimension, str, ET.Element, str) -> None
+def make_set_points(dimension: Dimension, axis: str, data_el: ET.Element, units: str) -> None:
     axis_vals = ["%.12g" % p for p in dimension.get_positions(axis)]
     axis_el = ET.SubElement(
         data_el, "dataset", name="%s_set" % axis, source="constant",
@@ -128,8 +123,7 @@ def make_set_points(dimension, axis, data_el, units):
                   value=units, type="string")
 
 
-def make_nxdata(name, rank, entry_el, generator, link=False):
-    # type: (str, int, ET.Element, CompoundGenerator, bool) -> ET.Element
+def make_nxdata(name: str, rank: int, entry_el: ET.Element, generator: CompoundGenerator, link: bool = False) -> ET.Element:
     # Make a dataset for the data
     data_el = ET.SubElement(entry_el, "group", name=name)
     ET.SubElement(data_el, "attribute", name="signal", source="constant",
@@ -162,8 +156,7 @@ def make_nxdata(name, rank, entry_el, generator, link=False):
     return data_el
 
 
-def make_layout_xml(generator, part_info, write_all_nd_attributes=False):
-    # type: (CompoundGenerator, PartInfo, bool) -> str
+def make_layout_xml(generator: CompoundGenerator, part_info: PartInfo, write_all_nd_attributes: bool = False) -> str:
     # Make a root element with an NXEntry
     root_el = ET.Element("hdf5_layout", auto_ndattr_default="false")
     entry_el = ET.SubElement(root_el, "group", name="entry")
@@ -231,23 +224,22 @@ class HDFWriterPart(builtin.parts.ChildPart):
     """Part for controlling an `hdf_writer_block` in a Device"""
 
     def __init__(self,
-                 name,  # type: APartName
-                 mri,  # type: AMri
-                 runs_on_windows=False,  # type: APartRunsOnWindows
-                 write_all_nd_attributes=True,  # type: AWriteAllNDAttributes
-                 ):
-        # type: (...) -> None
+                 name: APartName,
+                 mri: AMri,
+                 runs_on_windows: APartRunsOnWindows = False,
+                 write_all_nd_attributes: AWriteAllNDAttributes = True,
+                 ) -> None:
         super(HDFWriterPart, self).__init__(name, mri)
         # Future for the start action
-        self.start_future = None  # type: Future
-        self.array_future = None  # type: Future
+        self.start_future: Future = None
+        self.array_future: Future = None
         self.done_when_reaches = 0
         # This is when uniqueId last updated
         self.last_id_update = None
         # CompletedSteps = arrayCounter + self.uniqueid_offset
         self.uniqueid_offset = 0
         # The HDF5 layout file we write to say where the datasets go
-        self.layout_filename = None  # type: str
+        self.layout_filename: str = None
         self.runs_on_windows = runs_on_windows
         # How long to wait between frame updates before error
         self.frame_timeout = 0.0
@@ -259,8 +251,7 @@ class HDFWriterPart(builtin.parts.ChildPart):
             write_all_nd_attributes)
 
     @add_call_types
-    def on_reset(self, context):
-        # type: (scanning.hooks.AContext) -> None
+    def on_reset(self, context: scanning.hooks.AContext) -> None:
         super(HDFWriterPart, self).on_reset(context)
         self.on_abort(context)
         # HDFWriter might have still be writing so stop doesn't guarantee
@@ -273,8 +264,7 @@ class HDFWriterPart(builtin.parts.ChildPart):
             os.remove(self.layout_filename)
             child.xmlLayout.put_value("")
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(HDFWriterPart, self).setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ConfigureHook, self.on_configure)
@@ -295,16 +285,15 @@ class HDFWriterPart(builtin.parts.ChildPart):
     # noinspection PyPep8Naming
     @add_call_types
     def on_configure(self,
-                     context,  # type: scanning.hooks.AContext
-                     completed_steps,  # type: scanning.hooks.ACompletedSteps
-                     steps_to_do,  # type: scanning.hooks.AStepsToDo
-                     part_info,  # type: scanning.hooks.APartInfo
-                     generator,  # type: scanning.hooks.AGenerator
-                     fileDir,  # type: scanning.hooks.AFileDir
-                     formatName="det",  # type: scanning.hooks.AFormatName
-                     fileTemplate="%s.h5",  # type: scanning.hooks.AFileTemplate
-                     ):
-        # type: (...) -> scanning.hooks.UInfos
+                     context: scanning.hooks.AContext,
+                     completed_steps: scanning.hooks.ACompletedSteps,
+                     steps_to_do: scanning.hooks.AStepsToDo,
+                     part_info: scanning.hooks.APartInfo,
+                     generator: scanning.hooks.AGenerator,
+                     fileDir: scanning.hooks.AFileDir,
+                     formatName: scanning.hooks.AFormatName = "det",
+                     fileTemplate: scanning.hooks.AFileTemplate = "%s.h5",
+                     ) -> scanning.hooks.UInfos:
         # On initial configure, expect to get the demanded number of frames
         self.done_when_reaches = completed_steps + steps_to_do
         self.uniqueid_offset = 0
@@ -377,11 +366,10 @@ class HDFWriterPart(builtin.parts.ChildPart):
 
     @add_call_types
     def on_seek(self,
-                context,  # type: scanning.hooks.AContext
-                completed_steps,  # type: scanning.hooks.ACompletedSteps
-                steps_to_do,  # type: scanning.hooks.AStepsToDo
-                ):
-        # type: (...) -> None
+                context: scanning.hooks.AContext,
+                completed_steps: scanning.hooks.ACompletedSteps,
+                steps_to_do: scanning.hooks.AStepsToDo,
+                ) -> None:
         # This is rewinding or setting up for another batch, so the detector
         # will skip to a uniqueID that has not been produced yet
         self.uniqueid_offset = completed_steps - self.done_when_reaches
@@ -394,8 +382,7 @@ class HDFWriterPart(builtin.parts.ChildPart):
             "arrayCounterReadback", greater_than_zero)
 
     @add_call_types
-    def on_run(self, context):
-        # type: (scanning.hooks.AContext) -> None
+    def on_run(self, context: scanning.hooks.AContext) -> None:
         context.wait_all_futures(self.array_future)
         context.unsubscribe_all()
         self.last_id_update = None
@@ -429,20 +416,17 @@ class HDFWriterPart(builtin.parts.ChildPart):
             child.flushNow()
 
     @add_call_types
-    def on_post_run_ready(self, context):
-        # type: (scanning.hooks.AContext) -> None
+    def on_post_run_ready(self, context: scanning.hooks.AContext) -> None:
         # Do one last flush and then we're done
         child = context.block_view(self.mri)
         self._flush_if_still_writing(child)
 
     @add_call_types
-    def on_abort(self, context):
-        # type: (scanning.hooks.AContext) -> None
+    def on_abort(self, context: scanning.hooks.AContext) -> None:
         child = context.block_view(self.mri)
         child.stop()
 
-    def update_completed_steps(self, value):
-        # type: (int) -> None
+    def update_completed_steps(self, value: int) -> None:
         completed_steps = value + self.uniqueid_offset
         self.last_id_update = time.time()
         self.registrar.report(scanning.infos.RunProgressInfo(completed_steps))

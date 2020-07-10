@@ -11,14 +11,13 @@ from malcolm.modules import ADCore, scanning, builtin
 class XmapDriverPart(ADCore.parts.DetectorDriverPart):
     """Part for using xmap_driver_block in a scan"""
     def setup_detector(self,
-                       context,  # type: Context
-                       completed_steps,  # type: scanning.hooks.ACompletedSteps
-                       steps_to_do,  # type: scanning.hooks.AStepsToDo
-                       duration,  # type: int
-                       part_info,  # type: scanning.hooks.APartInfo
-                       **kwargs  # type: Any
-                       ):
-        # type: (...) -> None
+                       context: Context,
+                       completed_steps: scanning.hooks.ACompletedSteps,
+                       steps_to_do: scanning.hooks.AStepsToDo,
+                       duration: int,
+                       part_info: scanning.hooks.APartInfo,
+                       **kwargs: Any
+                       ) -> None:
         super(XmapDriverPart, self).setup_detector(
             context, completed_steps, steps_to_do, duration, part_info,
             collectMode="MCA mapping",

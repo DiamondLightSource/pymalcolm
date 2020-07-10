@@ -572,7 +572,7 @@ class TestPVAServer(unittest.TestCase):
         q = Queue()
         m = self.ctxt.monitor("TESTCOUNTER.counter", q.put)
         self.addCleanup(m.close)
-        counter = q.get(timeout=1)  # type: Value
+        counter: Value = q.get(timeout=1)
         self.assertEqual(counter.getID(), "epics:nt/NTScalar:1.0")
         self.assertTrue(counter.changedSet().issuperset({
             "value", "alarm.severity", "timeStamp.userTag"}))

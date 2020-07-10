@@ -16,8 +16,7 @@ class RawMotorSinkPortsPart(Part):
     """Defines a string `Attribute` representing a asyn port that should be
     depicted as a Source Port on a Block"""
 
-    def __init__(self, pv_prefix, group=None):
-        # type: (APvPrefix, ca.util.AGroup) -> None
+    def __init__(self, pv_prefix: APvPrefix, group: ca.util.AGroup = None) -> None:
         super(RawMotorSinkPortsPart, self).__init__("sinkPorts")
         self.pvs = [pv_prefix + ":CsPort", pv_prefix + ":CsAxis"]
         self.rbvs = [pv_prefix + ":CsPort_RBV", pv_prefix + ":CsAxis_RBV",
@@ -38,8 +37,7 @@ class RawMotorSinkPortsPart(Part):
         self.axis = None
         self.port_choices = []
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         registrar.add_attribute_model("pmac", self.pmac_attr)
         registrar.add_attribute_model("axisNumber", self.axis_num_attr)
         registrar.add_attribute_model("cs", self.cs_attr, self.caput)

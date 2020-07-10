@@ -1,17 +1,16 @@
 import os
 
 import h5py
-from annotypes import Anno, add_call_types, TYPE_CHECKING
+from annotypes import Anno, add_call_types
 from vdsgen import InterleaveVDSGenerator, ReshapeVDSGenerator
 from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import APartName, Future, Info, PartRegistrar, BadValueError
 from malcolm.modules import builtin, scanning
 
-if TYPE_CHECKING:
-    from typing import List, Dict, Iterator
+from typing import List, Dict, Iterator
 
-    PartInfo = Dict[str, List[Info]]
+PartInfo = Dict[str, List[Info]]
 
 # If the HDF writer doesn't get new frames in this time (seconds), consider it
 # stalled and raise
@@ -30,13 +29,11 @@ with Anno("name of secondary dataset (e.g. sum)"):
     ASecondaryDataset = str
 
 
-def greater_than_zero(v):
-    # type: (int) -> bool
+def greater_than_zero(v: int) -> bool:
     return v > 0
 
 
-def create_dataset_infos(name, generator, filename, secondary_set):
-    # type: (str, CompoundGenerator, str, str) -> Iterator[Info]
+def create_dataset_infos(name: str, generator: CompoundGenerator, filename: str, secondary_set: str) -> Iterator[Info]:
     # Update the dataset table
     generator_rank = len(generator.dimensions)
 
@@ -235,36 +232,33 @@ class OdinWriterPart(builtin.parts.ChildPart):
     """Part for controlling an `hdf_writer_block` in a Device"""
 
     # Future for the start action
-    start_future = None  # type: Future
-    array_future = None  # type: Future
-    done_when_reaches = None  # type: int
-    unique_id_offset = None  # type: int
+    start_future: Future = None
+    array_future: Future = None
+    done_when_reaches: int = None
+    unique_id_offset: int = None
     # The HDF5 layout file we write to say where the datasets go
-    layout_filename = None  # type: str
-    exposure_time = None  # type: float
+    layout_filename: str = None
+    exposure_time: float = None
 
     def __init__(self,
-                 name,  # type: APartName
-                 mri,  # type: AMri
-                 initial_visibility=True,  # type: AInitialVisibility
-                 uid_name="uid",  # type: AUidName
-                 sum_name="sum",  # type: ASumName
-                 secondary_set="sum"  # type: ASecondaryDataset
-                 ):
-        # type: (...) -> None
+                 name: APartName,
+                 mri: AMri,
+                 initial_visibility: AInitialVisibility = True,
+                 uid_name: AUidName = "uid",
+                 sum_name: ASumName = "sum",
+                 secondary_set: ASecondaryDataset = "sum"
+                 ) -> None:
         self.uid_name = uid_name
         self.sum_name = sum_name
         self.secondary_set = secondary_set
         super(OdinWriterPart, self).__init__(name, mri, initial_visibility)
 
     @add_call_types
-    def on_reset(self, context):
-        # type: (scanning.hooks.AContext) -> None
+    def on_reset(self, context: scanning.hooks.AContext) -> None:
         super(OdinWriterPart, self).on_reset(context)
         self.on_abort(context)
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(OdinWriterPart, self).setup(registrar)
         # Tell the controller to expose some extra configure parameters
         registrar.report(scanning.hooks.ConfigureHook.create_info(
@@ -279,23 +273,21 @@ class OdinWriterPart(builtin.parts.ChildPart):
         registrar.hook(scanning.hooks.PauseHook, self.on_pause)
 
     @add_call_types
-    def on_pause(self, context):
-        # type: (scanning.hooks.AContext) -> None
+    def on_pause(self, context: scanning.hooks.AContext) -> None:
         raise NotImplementedError("Pause not implemented")
 
     # Allow CamelCase as these parameters will be serialized
     # noinspection PyPep8Naming
     @add_call_types
     def on_configure(self,
-                     context,  # type: scanning.hooks.AContext
-                     completed_steps,  # type: scanning.hooks.ACompletedSteps
-                     steps_to_do,  # type: scanning.hooks.AStepsToDo
-                     generator,  # type: scanning.hooks.AGenerator
-                     fileDir,  # type: scanning.hooks.AFileDir
-                     formatName="odin",  # type: scanning.hooks.AFormatName
-                     fileTemplate="%s.h5",  # type: scanning.hooks.AFileTemplate
-                     ):
-        # type: (...) -> scanning.hooks.UInfos
+                     context: scanning.hooks.AContext,
+                     completed_steps: scanning.hooks.ACompletedSteps,
+                     steps_to_do: scanning.hooks.AStepsToDo,
+                     generator: scanning.hooks.AGenerator,
+                     fileDir: scanning.hooks.AFileDir,
+                     formatName: scanning.hooks.AFormatName = "odin",
+                     fileTemplate: scanning.hooks.AFileTemplate = "%s.h5",
+                     ) -> scanning.hooks.UInfos:
 
         self.exposure_time = generator.duration
 
@@ -341,11 +333,10 @@ class OdinWriterPart(builtin.parts.ChildPart):
 
     @add_call_types
     def on_seek(self,
-                context,  # type: scanning.hooks.AContext
-                completed_steps,  # type: scanning.hooks.ACompletedSteps
-                steps_to_do,  # type: scanning.hooks.AStepsToDo
-                ):
-        # type: (...) -> None
+                context: scanning.hooks.AContext,
+                completed_steps: scanning.hooks.ACompletedSteps,
+                steps_to_do: scanning.hooks.AStepsToDo,
+                ) -> None:
         # This is rewinding or setting up for another batch, so the detector
         # will skip to a uniqueID that has not been produced yet
         self.unique_id_offset = completed_steps - self.done_when_reaches
@@ -358,8 +349,7 @@ class OdinWriterPart(builtin.parts.ChildPart):
             "numCaptured", greater_than_zero)
 
     @add_call_types
-    def on_run(self, context):
-        # type: (scanning.hooks.AContext) -> None
+    def on_run(self, context: scanning.hooks.AContext) -> None:
         context.wait_all_futures(self.array_future)
         context.unsubscribe_all()
         child = context.block_view(self.mri)
@@ -369,18 +359,15 @@ class OdinWriterPart(builtin.parts.ChildPart):
             event_timeout=self.exposure_time + FRAME_TIMEOUT)
 
     @add_call_types
-    def on_post_run_ready(self, context):
-        # type: (scanning.hooks.AContext) -> None
+    def on_post_run_ready(self, context: scanning.hooks.AContext) -> None:
         # If this is the last one, wait until the file is closed
         context.wait_all_futures(self.start_future)
 
     @add_call_types
-    def on_abort(self, context):
-        # type: (scanning.hooks.AContext) -> None
+    def on_abort(self, context: scanning.hooks.AContext) -> None:
         child = context.block_view(self.mri)
         child.stop()
 
-    def update_completed_steps(self, value):
-        # type: (int) -> None
+    def update_completed_steps(self, value: int) -> None:
         completed_steps = value + self.unique_id_offset
         self.registrar.report(scanning.infos.RunProgressInfo(completed_steps))

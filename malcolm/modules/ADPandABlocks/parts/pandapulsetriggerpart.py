@@ -29,8 +29,7 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
       is expected by the detector
     """
 
-    def __init__(self, name, mri, initial_visibility=None):
-        # type: (APartName, AMri, AInitialVisibility) -> None
+    def __init__(self, name: APartName, mri: AMri, initial_visibility: AInitialVisibility = None) -> None:
         super(PandAPulseTriggerPart, self).__init__(
             name, mri, initial_visibility=initial_visibility, stateful=False)
         assert CAMEL_RE.match(name), \
@@ -40,12 +39,11 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
         self.generator_duration = None
         self.frames_per_step = None
         # The panda Block we will be prodding
-        self.panda = None  # type: Block
+        self.panda: Block = None
         # The detector Block we will be reading from
-        self.detector = None  # type: Block
+        self.detector: Block = None
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(PandAPulseTriggerPart, self).setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
@@ -53,8 +51,7 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
         registrar.hook(scanning.hooks.PostConfigureHook, self.on_post_configure)
 
     @add_call_types
-    def on_report_status(self, context):
-        # type: (scanning.hooks.AContext) -> scanning.hooks.UInfos
+    def on_report_status(self, context: scanning.hooks.AContext) -> scanning.hooks.UInfos:
         child = context.block_view(self.mri)
         detector_mri = child.detector.value
         # Say that we can do multi frame for this detector
@@ -65,11 +62,10 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
     # noinspection PyPep8Naming
     @add_call_types
     def on_configure(self,
-                     context,  # type: scanning.hooks.AContext
-                     generator,  # type: scanning.hooks.AGenerator
-                     detectors=None,  # type: scanning.util.ADetectorTable
-                     ):
-        # type: (...) -> None
+                     context: scanning.hooks.AContext,
+                     generator: scanning.hooks.AGenerator,
+                     detectors: scanning.util.ADetectorTable = None,
+                     ) -> None:
         assert generator.duration > 0, \
             "Can only create pulse triggers for a generator with the same " \
             "duration for every point, not %s" % generator

@@ -1,4 +1,4 @@
-from annotypes import Anno, add_call_types, TYPE_CHECKING
+from annotypes import Anno, add_call_types
 
 from malcolm.compat import OrderedDict, clean_repr
 from malcolm.core import Part, Attribute, Subscribe, \
@@ -11,10 +11,9 @@ from ..hooks import InitHook, HaltHook, ResetHook, LayoutHook, DisableHook, \
     ULayoutInfos, AInit
 from ..util import StatefulStates, wait_for_stateful_block_init
 
-if TYPE_CHECKING:
-    from typing import Dict, Any, List, Type, TypeVar, Tuple, Set
+from typing import Dict, Any, List, Type, TypeVar, Tuple, Set
 
-    TP = TypeVar("TP", bound=PortInfo)
+TP = TypeVar("TP", bound=PortInfo)
 
 
 with Anno("Malcolm resource id of child object"):
@@ -34,14 +33,13 @@ ss = StatefulStates
 class ChildPart(Part):
     #: A set containing all the Attribute names of our child Block that we will
     #: put to, so shouldn't be saved. Set this in subclasses using `no_save`
-    no_save_attribute_names = None  # type: Set[str]
+    no_save_attribute_names: Set[str] = None
 
     def _unmanaged_attr(self, attr_name):
         return not self.no_save_attribute_names or (
                 attr_name not in self.no_save_attribute_names)
 
-    def notify_dispatch_request(self, request):
-        # type: (Request) -> None
+    def notify_dispatch_request(self, request: Request) -> None:
         """Will be called when a context passed to a hooked function is about
         to dispatch a request"""
         if isinstance(request, Put) and request.path[0] == self.mri:
@@ -56,30 +54,28 @@ class ChildPart(Part):
                     self, attribute_name)
 
     # For docs: before ChildPart init
-    def __init__(self, name, mri, initial_visibility=None, stateful=True):
-        # type: (APartName, AMri, AInitialVisibility, AStateful) -> None
+    def __init__(self, name: APartName, mri: AMri, initial_visibility: AInitialVisibility = None, stateful: AStateful = True) -> None:
         # For docs: after ChildPart init
         super(ChildPart, self).__init__(name)
         self.stateful = stateful
         self.mri = mri
-        self.x = 0.0  # type: float
-        self.y = 0.0  # type: float
-        self.visible = initial_visibility  # type: bool
+        self.x: float = 0.0
+        self.y: float = 0.0
+        self.visible: bool = initial_visibility
         # {part_name: visible} saying whether part_name is visible
-        self.part_visibility = {}  # type: Dict[str, bool]
+        self.part_visibility: Dict[str, bool] = {}
         # {attr_name: attr_value} of last saved/loaded structure
-        self.saved_structure = {}  # type: Dict[str, Any]
+        self.saved_structure: Dict[str, Any] = {}
         # {attr_name: modified_message} of current values
-        self.modified_messages = {}  # type: Dict[str, str]
+        self.modified_messages: Dict[str, str] = {}
         # The controller hosting our child
-        self.child_controller = None  # type: Controller
+        self.child_controller: Controller = None
         # {id: Subscribe} for subscriptions to config tagged fields
-        self.config_subscriptions = {}  # type: Dict[int, Subscribe]
+        self.config_subscriptions: Dict[int, Subscribe] = {}
         # {attr_name: PortInfo}
-        self.port_infos = {}  # type: Dict[str, PortInfo]
+        self.port_infos: Dict[str, PortInfo] = {}
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(ChildPart, self).setup(registrar)
         # Hooks
         registrar.hook(InitHook, self.on_init)
@@ -91,8 +87,7 @@ class ChildPart(Part):
         registrar.hook(ResetHook, self.on_reset)
 
     @add_call_types
-    def on_init(self, context):
-        # type: (AContext) -> None
+    def on_init(self, context: AContext) -> None:
         self.child_controller = context.get_controller(self.mri)
         if self.stateful:
             # Wait for a while until the child is ready as it changes the
@@ -106,30 +101,26 @@ class ChildPart(Part):
         self.child_controller.handle_request(subscribe).wait()
 
     @add_call_types
-    def on_disable(self, context):
-        # type: (AContext) -> None
+    def on_disable(self, context: AContext) -> None:
         # TODO: do we actually want to disable children on disable?
         child = context.block_view(self.mri)
         if self.stateful and child.disable.meta.writeable:
             child.disable()
 
     @add_call_types
-    def on_reset(self, context):
-        # type: (AContext) -> None
+    def on_reset(self, context: AContext) -> None:
         child = context.block_view(self.mri)
         if self.stateful and child.reset.meta.writeable:
             child.reset()
 
     @add_call_types
-    def on_halt(self):
-        # type: () -> None
+    def on_halt(self) -> None:
         unsubscribe = Unsubscribe()
         unsubscribe.set_callback(self.update_part_exportable)
         self.child_controller.handle_request(unsubscribe)
 
     @add_call_types
-    def on_layout(self, context, ports, layout):
-        # type: (AContext, APortMap, ALayoutTable) -> ULayoutInfos
+    def on_layout(self, context: AContext, ports: APortMap, layout: ALayoutTable) -> ULayoutInfos:
         first_call = not self.part_visibility
         for i, name in enumerate(layout.name):
             visible = layout.visible[i]
@@ -156,10 +147,9 @@ class ChildPart(Part):
         return [ret]
 
     @add_call_types
-    def on_load(self, context, structure, init=False):
-        # type: (AContext, AStructure, AInit) -> None
+    def on_load(self, context: AContext, structure: AStructure, init: AInit = False) -> None:
         child = context.block_view(self.mri)
-        iterations = {}  # type: Dict[int, Dict[str, Tuple[Attribute, Any]]]
+        iterations: Dict[int, Dict[str, Tuple[Attribute, Any]]] = {}
         for k, v in structure.items():
             if init and k == "design":
                 # At init pop out the design so it doesn't get restored here
@@ -194,8 +184,7 @@ class ChildPart(Part):
             self.send_modified_info_if_not_equal("design", child.design.value)
 
     @add_call_types
-    def on_save(self, context):
-        # type: (AContext) -> AStructure
+    def on_save(self, context: AContext) -> AStructure:
         child = context.block_view(self.mri)
         part_structure = OrderedDict()
         for k in child:
@@ -208,8 +197,7 @@ class ChildPart(Part):
         return part_structure
 
     @add_call_types
-    def reload(self, context):
-        # type: (AContext) -> None
+    def reload(self, context: AContext) -> None:
         """If we have done a save or load with the child having a particular
         design then make sure the child now has that design."""
         design = self.saved_structure.get("design", "")
@@ -217,8 +205,7 @@ class ChildPart(Part):
             child = context.block_view(self.mri)
             child.design.put_value(design)
 
-    def update_part_exportable(self, response):
-        # type: (Response) -> None
+    def update_part_exportable(self, response: Response) -> None:
         # Get a child context to check if we have a config field
         child = self.child_controller.block_view()
         spawned = []
@@ -284,8 +271,7 @@ class ChildPart(Part):
             self.port_infos[f] for f in new_fields if f in self.port_infos]
         self.registrar.report(PartExportableInfo(new_fields, port_infos))
 
-    def update_part_modified(self, response):
-        # type: (Response) -> None
+    def update_part_modified(self, response: Response) -> None:
         if isinstance(response, Update):
             subscribe = self.config_subscriptions[response.id]
             name = subscribe.path[-2]
@@ -313,24 +299,21 @@ class ChildPart(Part):
             info = PartModifiedInfo(self.modified_messages.copy())
             self.registrar.report(info)
 
-    def _get_flowgraph_ports(self, ports, typ):
-        # type: (APortMap, Type[TP]) -> Dict[str, TP]
+    def _get_flowgraph_ports(self, ports: APortMap, typ: Type[TP]) -> Dict[str, TP]:
         ret = {}
         for port_info in ports.get(self.name, []):
             if isinstance(port_info, typ):
                 ret[port_info.name] = port_info
         return ret
 
-    def _source_port_lookup(self, info_list):
-        # type: (List[PortInfo]) -> Dict[str, Port]
+    def _source_port_lookup(self, info_list: List[PortInfo]) -> Dict[str, Port]:
         source_port_lookup = {}
         for info in info_list:
             if isinstance(info, SourcePortInfo):
                 source_port_lookup[info.connected_value] = info.port
         return source_port_lookup
 
-    def sever_sink_ports(self, context, ports, connected_to=None):
-        # type: (AContext, APortMap, str) -> None
+    def sever_sink_ports(self, context: AContext, ports: APortMap, connected_to: str = None) -> None:
         """Conditionally sever Sink Ports of the child. If connected_to
         is then None then sever all, otherwise restrict to connected_to's
         Source Ports
@@ -362,8 +345,7 @@ class ChildPart(Part):
                         attribute_values[name] = port_info.disconnected_value
             child.put_attribute_values(attribute_values)
 
-    def calculate_part_visibility(self, ports):
-        # type: (APortMap) -> None
+    def calculate_part_visibility(self, ports: APortMap) -> None:
         """Calculate what is connected to what
 
         Args:

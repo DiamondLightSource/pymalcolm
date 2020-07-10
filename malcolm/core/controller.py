@@ -19,11 +19,11 @@ from .timestamp import TimeStamp
 from .tags import method_return_unpacked, version_tag
 from .views import make_view, Block
 
+from typing import List, Dict, Tuple, Union, Callable, Any, Iterable
+Field = Union[AttributeModel, MethodModel]
+CallbackResponses = List[Tuple[Callable[[Response], None], Response]]
 if TYPE_CHECKING:
-    from typing import List, Dict, Tuple, Union, Callable, Any, Iterable
     from .process import Process
-    Field = Union[AttributeModel, MethodModel]
-    CallbackResponses = List[Tuple[Callable[[Response], None], Response]]
 
 # This is a good default value for a timeout. It is used to wait for abort
 # below, and is imported in a number of other Controller subclasses
@@ -39,12 +39,11 @@ with Anno("Description of the Block produced by the controller"):
 class Controller(Hookable):
     process = None
 
-    def __init__(self, mri, description=""):
-        # type: (AMri, ADescription) -> None
+    def __init__(self, mri: AMri, description: ADescription = "") -> None:
         self.set_logger(mri=mri)
         self.name = mri
         self.mri = mri
-        self.parts = OrderedDict()  # type: Dict[str, Part]
+        self.parts: Dict[str, Part] = OrderedDict()
         self._lock = RLock()
         self._block = BlockModel()
         self._block.meta.set_description(description)
@@ -56,20 +55,17 @@ class Controller(Hookable):
         self.field_registry = FieldRegistry()
         self.info_registry = InfoRegistry()
 
-    def setup(self, process):
-        # type: (Process) -> None
+    def setup(self, process: 'Process') -> None:
         self.process = process
         self.add_initial_part_fields()
 
-    def add_part(self, part):
-        # type: (Part) -> None
+    def add_part(self, part: Part) -> None:
         assert part.name not in self.parts, \
             "Part %r already exists in Controller %r" % (part.name, self.mri)
         part.setup(PartRegistrar(self.field_registry, self.info_registry, part))
         self.parts[part.name] = part
 
-    def add_block_field(self, name, child, writeable_func, needs_context):
-        # type: (str, Field, Callable[..., Any], bool) -> None
+    def add_block_field(self, name: str, child: Field, writeable_func: Callable[..., Any], needs_context: bool) -> None:
         if writeable_func:
             if needs_context:
                 # Wrap func
@@ -84,8 +80,7 @@ class Controller(Hookable):
             child.meta.set_label(camel_to_title(name))
         self._block.set_endpoint_data(name, child)
 
-    def add_initial_part_fields(self):
-        # type: () -> None
+    def add_initial_part_fields(self) -> None:
         for part_fields in self.field_registry.fields.values():
             for name, child, writeable_func, needs_context in part_fields:
                 self.add_block_field(name, child, writeable_func, needs_context)
@@ -103,29 +98,25 @@ class Controller(Hookable):
     def changes_squashed(self):
         return self._notifier.changes_squashed
 
-    def block_view(self, context=None):
-        # type: (Context) -> Block
+    def block_view(self, context: Context = None) -> Block:
         if context is None:
             context = Context(self.process)
         with self._lock:
             child_view = make_view(self, context, self._block)
         return child_view
 
-    def make_view(self, context, data, child_name):
-        # type: (Context, Model, str) -> Any
+    def make_view(self, context: Context, data: Model, child_name: str) -> Any:
         """Make a child View of data[child_name]"""
         with self._lock:
             child = data[child_name]
             child_view = make_view(self, context, child)
         return child_view
 
-    def handle_request(self, request):
-        # type: (Request) -> Spawned
+    def handle_request(self, request: Request) -> Spawned:
         """Spawn a new thread that handles Request"""
         return self.process.spawn(self._handle_request, request)
 
-    def _handle_request(self, request):
-        # type: (Request) -> None
+    def _handle_request(self, request: Request) -> None:
         responses = []
         with self._lock:
             # self.log.debug(request)
@@ -152,8 +143,7 @@ class Controller(Hookable):
                 self.log.exception("Exception notifying %s", response)
                 raise
 
-    def _handle_get(self, request):
-        # type: (Get) -> CallbackResponses
+    def _handle_get(self, request: Get) -> CallbackResponses:
         """Called with the lock taken"""
         data = self._block
 
@@ -181,8 +171,7 @@ class Controller(Hookable):
     def get_put_function(self, attribute_name):
         return self._write_functions[attribute_name]
 
-    def _handle_put(self, request):
-        # type: (Put) -> CallbackResponses
+    def _handle_put(self, request: Put) -> CallbackResponses:
         """Called with the lock taken"""
         attribute_name = request.path[1]
 
@@ -234,8 +223,7 @@ class Controller(Hookable):
                              if x in returned_value],
                     alarm=returned_alarm))
 
-    def _handle_post(self, request):
-        # type: (Post) -> CallbackResponses
+    def _handle_post(self, request: Post) -> CallbackResponses:
         """Called with the lock taken"""
         method_name = request.path[1]
 
@@ -277,12 +265,10 @@ class Controller(Hookable):
         ret = [request.return_response(result)]
         return ret
 
-    def run_hooks(self, hooks):
-        # type: (Iterable[Hook]) -> Dict[str, List[Info]]
+    def run_hooks(self, hooks: Iterable[Hook]) -> Dict[str, List[Info]]:
         return self.wait_hooks(*self.start_hooks(hooks))
 
-    def start_hooks(self, hooks):
-        # type: (Iterable[Hook]) -> Tuple[Queue, List[Hook]]
+    def start_hooks(self, hooks: Iterable[Hook]) -> Tuple[Queue, List[Hook]]:
         # Hooks might be a generator, so convert to a list
         hooks = list(hooks)
         if not hooks:
@@ -296,8 +282,7 @@ class Controller(Hookable):
             hook_queue, hook_spawned = start_hooks(hooks)
         return hook_queue, hook_spawned
 
-    def wait_hooks(self, hook_queue, hook_spawned):
-        # type: (Queue, List[Hook]) -> Dict[str, List[Info]]
+    def wait_hooks(self, hook_queue: Queue, hook_spawned: List[Hook]) -> Dict[str, List[Info]]:
         if hook_spawned:
             return_dict = wait_hooks(
                 self.log, hook_queue, hook_spawned, DEFAULT_TIMEOUT)

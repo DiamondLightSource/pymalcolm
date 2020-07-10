@@ -12,14 +12,12 @@ with Anno("Directory to write data to"):
 
 
 class AndorDriverPart(ADCore.parts.DetectorDriverPart):
-    def __init__(self, name, mri):
-        # type: (APartName, AMri) -> None
+    def __init__(self, name: APartName, mri: AMri) -> None:
         super(AndorDriverPart, self).__init__(name, mri, soft_trigger_modes=[
                 "Internal", "Software"])
         self.exposure = scanning.util.exposure_attribute(min_exposure=0.0)
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(AndorDriverPart, self).setup(registrar)
         # Attributes
         registrar.add_attribute_model("exposure", self.exposure)
@@ -32,12 +30,12 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
         registrar.report(info)
 
     def setup_detector(self,
-                       context,  # type: Context
-                       completed_steps,  # type: scanning.hooks.ACompletedSteps
-                       steps_to_do,  # type: scanning.hooks.AStepsToDo
-                       duration,  # type: float
-                       part_info,  # type: scanning.hooks.APartInfo
-                       **kwargs  # type: Any
+                       context: Context,
+                       completed_steps: scanning.hooks.ACompletedSteps,
+                       steps_to_do: scanning.hooks.AStepsToDo,
+                       duration: float,
+                       part_info: scanning.hooks.APartInfo,
+                       **kwargs: Any
                        ):
         # Calculate the readout time
         child = context.block_view(self.mri)
@@ -85,11 +83,10 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
 
     def get_adjusted_exposure_time_and_acquire_period(
             self,
-            duration,  # type: float
-            readout_time,  # type: float
-            exposure_time  # type: float
-            ):
-        # type: (...) -> (float, float)
+            duration: float,
+            readout_time: float,
+            exposure_time: float
+            ) -> (float, float):
         # It seems that the difference between acquirePeriod and exposure
         # doesn't tell the whole story, we seem to need an additional bit
         # of readout (or something) time on top
@@ -103,6 +100,5 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
         return exposure_time, acquire_period
 
     @staticmethod
-    def get_additional_readout_factor(duration):
-        # type: (float) -> float
+    def get_additional_readout_factor(duration: float) -> float:
         return duration * 0.004 + 0.001

@@ -28,8 +28,7 @@ FLUSH_PERIOD = 1
 
 class FileWritePart(Part):
     """Minimal interface demonstrating a file writing detector part"""
-    def __init__(self, name, width, height):
-        # type: (APartName, AWidth, AHeight) -> None
+    def __init__(self, name: APartName, width: AWidth, height: AHeight) -> None:
         super(FileWritePart, self).__init__(name)
         # Store input arguments
         self._width = width
@@ -37,17 +36,16 @@ class FileWritePart(Part):
         # The detector image we will modify for each image (0..255 range)
         self._blob = make_gaussian_blob(width, height) * 255
         # The hdf file we will write
-        self._hdf = None  # type: h5py.File
+        self._hdf: h5py.File = None
         # Configure args and progress info
         self._exposure = None
-        self._generator = None  # type: scanning.hooks.AGenerator
+        self._generator: scanning.hooks.AGenerator = None
         self._completed_steps = 0
         self._steps_to_do = 0
         # How much to offset uid value from generator point
         self._uid_offset = 0
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(FileWritePart, self).setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ConfigureHook, self.on_configure)
@@ -64,15 +62,14 @@ class FileWritePart(Part):
     # noinspection PyPep8Naming
     @add_call_types
     def on_configure(self,
-                     completed_steps,  # type: scanning.hooks.ACompletedSteps
-                     steps_to_do,  # type: scanning.hooks.AStepsToDo
-                     generator,  # type: scanning.hooks.AGenerator
-                     fileDir,  # type: scanning.hooks.AFileDir
-                     exposure=0.0,  # type: scanning.hooks.AExposure
-                     formatName="det",  # type: scanning.hooks.AFormatName
-                     fileTemplate="%s.h5",  # type: scanning.hooks.AFileTemplate
-                     ):
-        # type: (...) -> scanning.hooks.UInfos
+                     completed_steps: scanning.hooks.ACompletedSteps,
+                     steps_to_do: scanning.hooks.AStepsToDo,
+                     generator: scanning.hooks.AGenerator,
+                     fileDir: scanning.hooks.AFileDir,
+                     exposure: scanning.hooks.AExposure = 0.0,
+                     formatName: scanning.hooks.AFormatName = "det",
+                     fileTemplate: scanning.hooks.AFileTemplate = "%s.h5",
+                     ) -> scanning.hooks.UInfos:
         """On `ConfigureHook` create HDF file with datasets"""
         # Store args
         self._completed_steps = completed_steps
@@ -91,8 +88,7 @@ class FileWritePart(Part):
 
     # For docs: Before run
     @add_call_types
-    def on_run(self, context):
-        # type: (scanning.hooks.AContext) -> None
+    def on_run(self, context: scanning.hooks.AContext) -> None:
         """On `RunHook` record where to next take data"""
         # Start time so everything is relative
         end_of_exposure = time.time() + self._exposure
@@ -119,10 +115,9 @@ class FileWritePart(Part):
 
     @add_call_types
     def on_seek(self,
-                completed_steps,  # type: scanning.hooks.ACompletedSteps
-                steps_to_do,  # type: scanning.hooks.AStepsToDo
-                ):
-        # type: (...) -> None
+                completed_steps: scanning.hooks.ACompletedSteps,
+                steps_to_do: scanning.hooks.AStepsToDo,
+                ) -> None:
         """On `SeekHook`, `PostRunArmedHook` record where to next take data"""
         # Skip the uid so it is guaranteed to be unique
         self._uid_offset += self._completed_steps + self._steps_to_do - \
@@ -131,8 +126,7 @@ class FileWritePart(Part):
         self._steps_to_do = steps_to_do
 
     @add_call_types
-    def on_reset(self):
-        # type: () -> None
+    def on_reset(self) -> None:
         """On `AbortHook`, `ResetHook` close HDF file if it exists"""
         if self._hdf:
             self._hdf.close()
@@ -165,8 +159,7 @@ class FileWritePart(Part):
                 path=SET_PATH % dim,
                 uniqueid="")
 
-    def _create_hdf(self, filepath):
-        # type: (str) -> h5py.File
+    def _create_hdf(self, filepath: str) -> h5py.File:
         # The generator tells us what dimensions our scan should be. The dataset
         # will grow, so start off with the smallest we need
         initial_shape = tuple(1 for _ in self._generator.shape)
@@ -197,8 +190,7 @@ class FileWritePart(Part):
         hdf.swmr_mode = True
         return hdf
 
-    def _write_data(self, point, step):
-        # type: (Point, int) -> None
+    def _write_data(self, point: Point, step: int) -> None:
         point_needs_shape = tuple(x + 1 for x in point.indexes) + (1, 1)
         # Resize the datasets so they fit
         for path in (DATA_PATH, SUM_PATH, UID_PATH):

@@ -8,7 +8,6 @@ with Anno("The value of the defined parameter"):
 
 
 class Define(WithCallTypes):
-    def __init__(self, name, value):
-        # type: (AName, AValue) -> None
+    def __init__(self, name: AName, value: AValue) -> None:
         self.name = name
         self.value = value

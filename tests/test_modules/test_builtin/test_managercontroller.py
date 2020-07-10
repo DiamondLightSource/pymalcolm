@@ -32,8 +32,7 @@ class TestManagerStates(unittest.TestCase):
 class MyPart(Part):
     attr = None
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         self.attr = StringMeta(tags=[config_tag(), Widget.TEXTINPUT.tag()]
                                ).create_attribute_model("defaultv")
         registrar.add_attribute_model("attr", self.attr, self.attr.set_value)

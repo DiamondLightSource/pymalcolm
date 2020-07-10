@@ -1,5 +1,3 @@
-from annotypes import TYPE_CHECKING
-
 from malcolm.compat import OrderedDict
 from malcolm.core import Alarm, MethodModel, AttributeModel, ProcessStartHook, \
     ProcessStopHook, ChoiceMeta, Widget, Context, Part, NotWriteableError
@@ -8,10 +6,9 @@ from .basiccontroller import BasicController, AMri, ADescription
 from ..hooks import InitHook, ResetHook, DisableHook, HaltHook
 from ..infos import HealthInfo
 
-if TYPE_CHECKING:
-    from typing import Union, Dict
-    Field = Union[AttributeModel, MethodModel]
-    ChildrenWriteable = Dict[str, Dict[Field, bool]]
+from typing import Union, Dict
+Field = Union[AttributeModel, MethodModel]
+ChildrenWriteable = Dict[str, Dict[Field, bool]]
 
 
 ss = StatefulStates
@@ -26,10 +23,9 @@ class StatefulController(BasicController):
     # The state_set that this controller implements
     state_set = ss()
 
-    def __init__(self, mri, description=""):
-        # type: (AMri, ADescription) -> None
+    def __init__(self, mri: AMri, description: ADescription = "") -> None:
         super(StatefulController, self).__init__(mri, description)
-        self._children_writeable = {}  # type: ChildrenWriteable
+        self._children_writeable: ChildrenWriteable = {}
         self.state = ChoiceMeta(
             "StateMachine State of Block", self.state_set.possible_states,
             tags=[Widget.MULTILINETEXTUPDATE.tag()]
@@ -54,8 +50,7 @@ class StatefulController(BasicController):
             state_writeable = self._children_writeable.setdefault(state, {})
             state_writeable[field] = state in states
 
-    def create_part_contexts(self):
-        # type: () -> Dict[Part, Context]
+    def create_part_contexts(self) -> Dict[Part, Context]:
         part_contexts = OrderedDict()
         for part in self.parts.values():
             part_contexts[part] = Context(self.process)

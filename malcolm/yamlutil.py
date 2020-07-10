@@ -3,15 +3,14 @@ import os
 import importlib
 import inspect
 
-from annotypes import Any, TYPE_CHECKING, Anno, NO_DEFAULT
+from annotypes import Any, Anno, NO_DEFAULT
 from ruamel import yaml
 from collections.abc import MutableSequence
 
 from malcolm.compat import str_, raise_with_traceback, OrderedDict
 from malcolm.core import YamlError, Controller, Part, Define, MethodMeta
 
-if TYPE_CHECKING:
-    from typing import List, Dict, Tuple, Callable
+from typing import List, Dict, Tuple, Callable
 
 # Create a module level logger
 log = logging.getLogger(__name__)
@@ -20,8 +19,7 @@ SECTION_NAMES = [
     "parameters", "controllers", "parts", "blocks", "includes", "defines"]
 
 
-def _create_takes_arguments(sections):
-    # type: (List[Section]) -> List[Anno]
+def _create_takes_arguments(sections: List['Section']) -> List[Anno]:
     takes_arguments = []
     for section in sections:
         if section.section == "parameters":
@@ -31,10 +29,9 @@ def _create_takes_arguments(sections):
     return annos
 
 
-def _create_blocks_and_parts(sections,  # type: List[Section]
-                             params  # type: Dict[str, str]
-                             ):
-    # type: (...) -> Tuple[List[Controller], List[Part]]
+def _create_blocks_and_parts(sections: List['Section'],
+                             params: Dict[str, str]
+                            ) -> Tuple[List[Controller], List[Part]]:
     controllers = []
     parts = []
 
@@ -54,34 +51,32 @@ def _create_blocks_and_parts(sections,  # type: List[Section]
     return controllers, parts
 
 
-def _create_defines(sections,  # type: List[Section]
-                    yamlname,  # type: str
-                    yamldir,  # type: str
-                    params  # type: Dict[str, str]
-                    ):
-    # type: (...) -> Dict[str, str]
+def _create_defines(sections: List['Section'],
+                    yamlname: str,
+                    yamldir: str,
+                    params: Dict[str, str]
+                    ) -> Dict[str, str]:
     # Start with some
     defines = dict(yamlname=yamlname, yamldir=yamldir, docstring="")
     # Add in the parameter defaults
     for section in sections:
         if section.section == "parameters":
-            parameter = section.instantiate(defines)  # type: Anno
+            parameter: Anno = section.instantiate(defines)
             if parameter.default is not NO_DEFAULT:
                 defines[parameter.name] = parameter.default
     if params:
         defines.update(params)
     for section in sections:
         if section.section == "defines":
-            define = section.instantiate(defines)  # type: Define
+            define: Define = section.instantiate(defines)
             defines[define.name] = define.value
     return defines
 
 
-def check_yaml_names(globals_d):
+def check_yaml_names(globals_d: (Dict[str, Any])) -> List[str]:
     """Check that all include_creators and block_creators have the same
     name as the base of their file path, and return them in a list suitable
     for publishing as __all__"""
-    # type: (Dict[str, Any]) -> List[str]
     all_list = []
     for k, v in sorted(globals_d.items()):
         if hasattr(v, "yamlname"):
@@ -92,8 +87,9 @@ def check_yaml_names(globals_d):
     return all_list
 
 
-def make_include_creator(yaml_path, filename=None):
-    # type: (str, str) -> Callable[..., Tuple[List[Controller], List[Part]]]
+def make_include_creator(
+        yaml_path: str, filename: str = None
+        ) -> Callable[..., Tuple[List[Controller], List[Part]]]:
     sections, yamlname, docstring = Section.from_yaml(yaml_path, filename)
     yamldir = os.path.dirname(os.path.abspath(yaml_path))
 
@@ -138,8 +134,9 @@ def creator_from_yaml(%s):
     return ret
 
 
-def make_block_creator(yaml_path, filename=None):
-    # type: (str, str) -> Callable[..., List[Controller]]
+def make_block_creator(
+        yaml_path: str, filename: str = None
+        ) -> Callable[..., List[Controller]]:
     """Make a collection function that will create a list of blocks
 
     Args:

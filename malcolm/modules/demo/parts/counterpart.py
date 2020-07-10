@@ -6,12 +6,11 @@ class CounterPart(Part):
     """Defines a counter `Attribute` with zero and increment `Method` objects"""
 
     #: Writeable Attribute holding the current counter value
-    counter = None  # type: AttributeModel
+    counter: AttributeModel = None
     #: Writeable Attribute holding the amount to increment() by
-    delta = None  # type: AttributeModel
+    delta: AttributeModel = None
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(CounterPart, self).setup(registrar)
         # Add some Attribute and Methods to the Block
         self.counter = NumberMeta(

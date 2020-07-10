@@ -53,8 +53,7 @@ class MyPart(Part):
             hook(self.func)
 
     @add_call_types
-    def func(self, context):
-        # type: (AContext) -> AStructure
+    def func(self, context: AContext) -> AStructure:
         if self.exception:
             raise self.exception
         self.context = context

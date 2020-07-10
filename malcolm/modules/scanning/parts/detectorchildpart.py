@@ -1,4 +1,4 @@
-from annotypes import add_call_types, Anno, Any, TYPE_CHECKING, stringify_error
+from annotypes import add_call_types, Anno, Any, stringify_error
 from scanpointgenerator import StaticPointGenerator, SquashingExcluder, \
     CompoundGenerator
 
@@ -12,8 +12,7 @@ from ..hooks import ConfigureHook, PostRunArmedHook, \
 from ..infos import ParameterTweakInfo, RunProgressInfo
 from ..util import RunnableStates, DetectorTable, ADetectorTable
 
-if TYPE_CHECKING:
-    from typing import Dict, Tuple
+from typing import Dict, Tuple
 
 
 with Anno("The initial value of FramesPerStep for this detector at configure"):
@@ -32,18 +31,17 @@ class DetectorChildPart(builtin.parts.ChildPart):
     interface with fileDir and fileTemplate"""
 
     def __init__(self,
-                 name,  # type: APartName
-                 mri,  # type: AMri
-                 initial_visibility=False,  # type: AInitialVisibility
-                 initial_frames_per_step=1,  # type: AInitialFramesPerStep
-                 ):
-        # type: (...) -> None
+                 name: APartName,
+                 mri: AMri,
+                 initial_visibility: AInitialVisibility = False,
+                 initial_frames_per_step: AInitialFramesPerStep = 1,
+                 ) -> None:
         super(DetectorChildPart, self).__init__(name, mri, initial_visibility)
         # frames per scan step given by the detector table at configure()
         self.initial_frames_per_step = initial_frames_per_step
         self.frames_per_step = initial_frames_per_step
         # Stored between runs
-        self.run_future = None  # type: Future
+        self.run_future: Future = None
         # If it was faulty at init, allow it to exist, and ignore reset commands
         # but don't let it be configured or run
         self.faulty = False
@@ -61,11 +59,10 @@ class DetectorChildPart(builtin.parts.ChildPart):
 
     @add_call_types
     def on_layout(self,
-                  context,  # type: AContext
-                  ports,  # type: builtin.hooks.APortMap
-                  layout  # type: builtin.hooks.ALayoutTable
-                  ):
-        # type: (...) -> builtin.hooks.ULayoutInfos
+                  context: AContext,
+                  ports: builtin.hooks.APortMap,
+                  layout: builtin.hooks.ALayoutTable
+                  ) -> builtin.hooks.ULayoutInfos:
         ret = super(DetectorChildPart, self).on_layout(context, ports, layout)
         # Tell the controller to expose some extra configure parameters
         configure_info = ConfigureHook.create_info(self.on_configure)
@@ -87,8 +84,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
         self.registrar.report(configure_info)
         return ret
 
-    def notify_dispatch_request(self, request):
-        # type: (Request) -> None
+    def notify_dispatch_request(self, request: Request) -> None:
         if isinstance(request, Put) and request.path[1] == "design":
             # We have hooked self.reload to PreConfigure, and reload() will
             # set design attribute, so explicitly allow this without checking
@@ -98,8 +94,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
             super(DetectorChildPart, self).notify_dispatch_request(request)
 
     @add_call_types
-    def on_init(self, context):
-        # type: (AContext) -> None
+    def on_init(self, context: AContext) -> None:
         try:
             super(DetectorChildPart, self).on_init(context)
         except BadValueError:
@@ -108,8 +103,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
             self.faulty = True
 
     @add_call_types
-    def on_reset(self, context):
-        # type: (AContext) -> None
+    def on_reset(self, context: AContext) -> None:
         if not self.faulty:
             child = context.block_view(self.mri)
             if child.abort.meta.writeable:
@@ -120,15 +114,14 @@ class DetectorChildPart(builtin.parts.ChildPart):
     # noinspection PyPep8Naming
     @add_call_types
     def on_validate(self,
-                    context,  # type: AContext
-                    part_info,  # type: APartInfo
-                    generator,  # type: AGenerator
-                    fileDir,  # type: AFileDir
-                    detectors=None,  # type: ADetectorTable
-                    axesToMove=None,  # type: AAxesToMove
-                    fileTemplate="%s.h5",  # type: AFileTemplate
-                    ):
-        # type: (...) -> UParameterTweakInfos
+                    context: AContext,
+                    part_info: APartInfo,
+                    generator: AGenerator,
+                    fileDir: AFileDir,
+                    detectors: ADetectorTable = None,
+                    axesToMove: AAxesToMove = None,
+                    fileTemplate: AFileTemplate = "%s.h5",
+                    ) -> UParameterTweakInfos:
         # Work out if we are taking part
         enable, frames_per_step, kwargs = self._configure_args(
             generator, fileDir, detectors, axesToMove, fileTemplate)
@@ -218,13 +211,12 @@ class DetectorChildPart(builtin.parts.ChildPart):
         return ret
 
     def _configure_args(self,
-                        generator,  # type: AGenerator
-                        file_dir,  # type: AFileDir
-                        detectors=None,  # type: ADetectorTable
-                        axes_to_move=None,  # type: AAxesToMove
-                        file_template="%s.h5",  # type: AFileTemplate
-                        ):
-        # type: (...) -> Tuple[bool, int, Dict[str, Any]]
+                        generator: AGenerator,
+                        file_dir: AFileDir,
+                        detectors: ADetectorTable = None,
+                        axes_to_move: AAxesToMove = None,
+                        file_template: AFileTemplate = "%s.h5",
+                        ) -> Tuple[bool, int, Dict[str, Any]]:
         # Check the detector table to see what we need to do
         for enable, name, mri, exposure, frames in detectors.rows():
             if name == self.name and enable:
@@ -269,14 +261,13 @@ class DetectorChildPart(builtin.parts.ChildPart):
     # noinspection PyPep8Naming
     @add_call_types
     def on_configure(self,
-                     context,  # type: AContext
-                     generator,  # type: AGenerator
-                     fileDir,  # type: AFileDir
-                     detectors=None,  # type: ADetectorTable
-                     axesToMove=None,  # type: AAxesToMove
-                     fileTemplate="%s.h5",  # type: AFileTemplate
-                     ):
-        # type: (...) -> UInfos
+                     context: AContext,
+                     generator: AGenerator,
+                     fileDir: AFileDir,
+                     detectors: ADetectorTable = None,
+                     axesToMove: AAxesToMove = None,
+                     fileTemplate: AFileTemplate = "%s.h5",
+                     ) -> UInfos:
         # Work out if we are taking part
         enable, self.frames_per_step, kwargs = self._configure_args(
             generator, fileDir, detectors, axesToMove, fileTemplate)
@@ -302,8 +293,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
         return info_list
 
     @add_call_types
-    def on_run(self, context):
-        # type: (AContext) -> None
+    def on_run(self, context: AContext) -> None:
         if self.frames_per_step < 1:
             # We aren't taking part in the scan
             return
@@ -328,16 +318,14 @@ class DetectorChildPart(builtin.parts.ChildPart):
                 raise
 
     @add_call_types
-    def on_post_run(self, context):
-        # type: (AContext) -> None
+    def on_post_run(self, context: AContext) -> None:
         if self.frames_per_step < 1:
             # We aren't taking part in the scan
             return
         context.wait_all_futures(self.run_future)
 
     @add_call_types
-    def on_seek(self, context, completed_steps):
-        # type: (AContext, ACompletedSteps) -> None
+    def on_seek(self, context: AContext, completed_steps: ACompletedSteps) -> None:
         if self.frames_per_step < 1:
             # We aren't taking part in the scan
             return
@@ -347,11 +335,9 @@ class DetectorChildPart(builtin.parts.ChildPart):
         child.pause(lastGoodStep=completed_steps)
 
     @add_call_types
-    def on_abort(self, context):
-        # type: (AContext) -> None
+    def on_abort(self, context: AContext) -> None:
         child = context.block_view(self.mri)
         child.abort()
 
-    def update_completed_steps(self, value):
-        # type: (int) -> None
+    def update_completed_steps(self, value: int) -> None:
         self.registrar.report(RunProgressInfo(value // self.frames_per_step))

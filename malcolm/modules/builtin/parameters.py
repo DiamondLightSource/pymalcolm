@@ -30,24 +30,21 @@ def common_args(name, default):
 
 
 @add_call_types
-def string(name, description, default=None):
-    # type: (AName, ADescription, AStringDefault) -> AAnno
+def string(name: AName, description: ADescription, default: AStringDefault = None) -> AAnno:
     """Add a string parameter to be passed when instantiating this YAML file"""
     args = common_args(name, default)
     return Anno(description, **args).set_typ(str)
 
 
 @add_call_types
-def float64(name, description, default=None):
-    # type: (AName, ADescription, AFloat64Default) -> AAnno
+def float64(name: AName, description: ADescription, default: AFloat64Default = None) -> AAnno:
     """Add a float64 parameter to be passed when instantiating this YAML file"""
     args = common_args(name, default)
     return Anno(description, **args).set_typ(float)
 
 
 @add_call_types
-def int32(name, description, default=None):
-    # type: (AName, ADescription, AInt32Default) -> AAnno
+def int32(name: AName, description: ADescription, default: AInt32Default = None) -> AAnno:
     """Add an int32 parameter to be passed when instantiating this YAML file"""
     args = common_args(name, default)
     return Anno(description, **args).set_typ(int)

@@ -1,14 +1,13 @@
 import inspect
 
-from annotypes import TYPE_CHECKING, TypeVar
+from annotypes import TypeVar
 
 from malcolm.compat import OrderedDict
 from .errors import BadValueError
 
-if TYPE_CHECKING:
-    from typing import Type, Mapping, List, Optional, Sequence, Dict
+from typing import Type, Mapping, List, Optional, Sequence, Dict
 
-    PartInfo = Mapping[str, Optional[Sequence]]
+PartInfo = Mapping[str, Optional[Sequence]]
 
 T = TypeVar("T")
 
@@ -23,8 +22,7 @@ class Info(object):
         return "%s(%s)" % (self.__class__.__name__, args)
 
     @classmethod
-    def filter_parts(cls, part_info):
-        # type: (Type[T], PartInfo) -> Dict[str, List[T]]
+    def filter_parts(cls: Type[T], part_info: PartInfo) -> Dict[str, List[T]]:
         """Filter the part_info dict looking for instances of our class
 
         Args:
@@ -44,8 +42,7 @@ class Info(object):
         return filtered
 
     @classmethod
-    def filter_values(cls, part_info):
-        # type: (Type[T], PartInfo) -> List[T]
+    def filter_values(cls: Type[T], part_info: PartInfo) -> List[T]:
         """Filter the part_info dict list looking for instances of our class
 
         Args:
@@ -61,8 +58,7 @@ class Info(object):
         return filtered
 
     @classmethod
-    def filter_single_value(cls, part_info, error_msg=None):
-        # type: (Type[T], PartInfo, str) -> T
+    def filter_single_value(cls: Type[T], part_info: PartInfo, error_msg: str = None) -> T:
         """Filter the part_info dict list looking for a single instance of our
         class
 

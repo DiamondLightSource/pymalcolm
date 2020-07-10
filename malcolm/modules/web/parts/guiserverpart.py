@@ -26,20 +26,17 @@ class GuiServerPart(Part):
     """Static file server to be used as a fallback. Must be last part"""
     GuiHandler = IndexHandler
 
-    def __init__(self, name="gui", path=www_dir):
-        # type: (APartName, APath) -> None
+    def __init__(self, name: APartName = "gui", path: APath = www_dir) -> None:
         super(GuiServerPart, self).__init__(name)
         self.path = path
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(GuiServerPart, self).setup(registrar)
         # Hooks
         registrar.hook(ReportHandlersHook, self.on_report_handlers)
 
     @add_call_types
-    def on_report_handlers(self):
-        # type: () -> UHandlerInfos
+    def on_report_handlers(self) -> UHandlerInfos:
         infos = [
             # Redirect / to /gui/
             HandlerInfo(r"/", RedirectHandler, url="/gui/"),

@@ -1,19 +1,15 @@
 import operator
 
-from annotypes import TYPE_CHECKING
-
 from malcolm.modules import builtin
 from .pandaiconpart import PandAIconPart
 
-if TYPE_CHECKING:
-    from typing import Callable, Tuple, Set, Dict
+from typing import Callable, Tuple, Set, Dict
 
 LUT_CONSTANTS = dict(
     A=0xffff0000, B=0xff00ff00, C=0xf0f0f0f0, D=0xcccccccc, E=0xaaaaaaaa)
 
 
-def _calc_visibility(func, op, nargs, permutation):
-    # type: (str, Callable, int, int) -> Tuple[int, Set[str]]
+def _calc_visibility(func: str, op: Callable, nargs: int, permutation: int) -> Tuple[int, Set[str]]:
     # Visibility dictionary defaults
     invis = {"AND", "OR", "LUT", "NOT"}
     invis.remove(func)
@@ -42,8 +38,7 @@ def _calc_visibility(func, op, nargs, permutation):
     return fnum, invis
 
 
-def _generate_lut_elements():
-    # type: () -> Dict[int, Set[str]]
+def _generate_lut_elements() -> Dict[int, Set[str]]:
     # {fnum: invis}
     lut_elements = {}
     # Generate the lut element table
@@ -77,16 +72,14 @@ LUT_ELEMENTS = _generate_lut_elements()
 LUT_INVIS = LUT_ELEMENTS[0]
 
 
-def get_lut_icon_elements(fnum):
-    # type: (int) -> Set[str]
+def get_lut_icon_elements(fnum: int) -> Set[str]:
     return LUT_ELEMENTS.get(fnum, LUT_INVIS)
 
 
 class PandALutIconPart(PandAIconPart):
     update_fields = {"FUNC", "TYPEA", "TYPEB", "TYPEC", "TYPED", "TYPEE"}
 
-    def update_icon(self, icon, field_values):
-        # type: (builtin.util.SVGIcon, dict) -> None
+    def update_icon(self, icon: builtin.util.SVGIcon, field_values: dict) -> None:
         """Update the icon using the given field values"""
         fnum = int(self.client.get_field(self.block_name, "FUNC.RAW"), 0)
         invis = get_lut_icon_elements(fnum)

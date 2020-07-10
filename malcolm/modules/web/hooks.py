@@ -15,10 +15,8 @@ APart = builtin.hooks.APart
 class ReportHandlersHook(Hook):
     """Called at init() to get all the handlers that should make the application
     """
-    def __init__(self, part):
-        # type: (APart) -> None
+    def __init__(self, part: APart) -> None:
         super(ReportHandlersHook, self).__init__(part)
 
-    def validate_return(self, ret):
-        # type: (UHandlerInfos) -> AHandlerInfos
+    def validate_return(self, ret: UHandlerInfos) -> AHandlerInfos:
         return AHandlerInfos(ret)

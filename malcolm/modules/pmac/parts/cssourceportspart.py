@@ -14,8 +14,7 @@ class CSSourcePortsPart(Part):
     """Defines a string `Attribute` for the CS Port name, and 10 Source Ports
     for the axes A-Z and I for the axis assignments"""
 
-    def __init__(self, name, rbv, group=None):
-        # type: (APartName, ARbv, AGroup) -> None
+    def __init__(self, name: APartName, rbv: ARbv, group: AGroup = None) -> None:
         super(CSSourcePortsPart, self).__init__(name)
         self.meta = StringMeta("CS Port name")
         # This gives the port name
@@ -25,8 +24,7 @@ class CSSourcePortsPart(Part):
         # These will be the "axis" Source Ports
         self.axis_attrs = {}
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         self.caa.setup(registrar, self.name, self.register_hooked)
         # Add 9 compound motor attributes
         for k in CS_AXIS_NAMES + ["I"]:
@@ -38,8 +36,7 @@ class CSSourcePortsPart(Part):
             self.axis_attrs[k] = v
             registrar.add_attribute_model(k.lower(), v)
 
-    def update_tags(self, value):
-        # type: (Any) -> None
+    def update_tags(self, value: Any) -> None:
         self.caa.attr.set_value(value)
         # Add the motor Source Port tags
         for k, v in self.axis_attrs.items():

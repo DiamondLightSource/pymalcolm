@@ -47,10 +47,9 @@ def _zeros_or_right_length(array, num_points):
 @builtin.util.no_save("positions%s" % x for x in CS_AXIS_NAMES)
 class PmacTrajectoryPart(builtin.parts.ChildPart):
     def __init__(self,
-                 name,  # type: APartName
-                 mri,  # type: AMri
-                 ):
-        # type: (...) -> None
+                 name: APartName,
+                 mri: AMri,
+                 ) -> None:
         super(PmacTrajectoryPart, self).__init__(
             name, mri, initial_visibility=True)
         # The total number of points we have written
@@ -60,8 +59,7 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
             tags=[Widget.METER.tag()]
         ).create_attribute_model(0)
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(PmacTrajectoryPart, self).setup(registrar)
         # Add methods
         registrar.add_method_model(
@@ -77,22 +75,21 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
     # noinspection PyPep8Naming
     @add_call_types
     def write_profile(self,
-                      context,  # type: builtin.hooks.AContext
-                      timeArray,  # type: ATimeArray
-                      csPort=None,  # type: ACSPort
-                      velocityMode=None,  # type: AVelocityMode
-                      userPrograms=None,  # type: AUserPrograms
-                      a=None,  # type: ADemandTrajectory
-                      b=None,  # type: ADemandTrajectory
-                      c=None,  # type: ADemandTrajectory
-                      u=None,  # type: ADemandTrajectory
-                      v=None,  # type: ADemandTrajectory
-                      w=None,  # type: ADemandTrajectory
-                      x=None,  # type: ADemandTrajectory
-                      y=None,  # type: ADemandTrajectory
-                      z=None,  # type: ADemandTrajectory
-                      ):
-        # type: (...) -> None
+                      context: builtin.hooks.AContext,
+                      timeArray: ATimeArray,
+                      csPort: ACSPort = None,
+                      velocityMode: AVelocityMode = None,
+                      userPrograms: AUserPrograms = None,
+                      a: ADemandTrajectory = None,
+                      b: ADemandTrajectory = None,
+                      c: ADemandTrajectory = None,
+                      u: ADemandTrajectory = None,
+                      v: ADemandTrajectory = None,
+                      w: ADemandTrajectory = None,
+                      x: ADemandTrajectory = None,
+                      y: ADemandTrajectory = None,
+                      z: ADemandTrajectory = None,
+                      ) -> None:
         child = context.block_view(self.mri)
 
         # make sure a matching trajectory program is installed on the pmac
@@ -160,8 +157,7 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
         self.points_scanned.meta.set_display(Display(limitHigh=value))
 
     @add_call_types
-    def execute_profile(self, context):
-        # type: (builtin.hooks.AContext) -> None
+    def execute_profile(self, context: builtin.hooks.AContext) -> None:
         child = context.block_view(self.mri)
         fs1 = context.subscribe([self.mri, "pointsScanned", "value"],
                                self.points_scanned.set_value)
@@ -178,7 +174,6 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
             context.unsubscribe(fs2)
 
     @add_call_types
-    def abort_profile(self, context):
-        # type: (builtin.hooks.AContext) -> None
+    def abort_profile(self, context: builtin.hooks.AContext) -> None:
         child = context.block_view(self.mri)
         child.abortProfile()

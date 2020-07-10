@@ -29,13 +29,12 @@ AMri = builtin.parts.AMri
                       'arrayCallbacks', 'exposure', 'acquirePeriod')
 class DetectorDriverPart(builtin.parts.ChildPart):
     def __init__(self,
-                 name,  # type: APartName
-                 mri,  # type: AMri
-                 soft_trigger_modes=None,  # type: USoftTriggerModes
-                 main_dataset_useful=True,  # type: AMainDatasetUseful
-                 runs_on_windows=False,  # type: APartRunsOnWindows
-                 ):
-        # type: (...) -> None
+                 name: APartName,
+                 mri: AMri,
+                 soft_trigger_modes: USoftTriggerModes = None,
+                 main_dataset_useful: AMainDatasetUseful = True,
+                 runs_on_windows: APartRunsOnWindows = False,
+                 ) -> None:
         super(DetectorDriverPart, self).__init__(name, mri)
         self.soft_trigger_modes = soft_trigger_modes
         self.is_hardware_triggered = True
@@ -57,17 +56,16 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         # CompletedSteps = arrayCounter + self.uniqueid_offset
         self.uniqueid_offset = 0
         # A future that completes when detector start calls back
-        self.start_future = None  # type: Future
+        self.start_future: Future = None
 
     def setup_detector(self,
-                       context,  # type: Context
-                       completed_steps,  # type: scanning.hooks.ACompletedSteps
-                       steps_to_do,  # type: scanning.hooks.AStepsToDo
-                       duration,  # type: float
-                       part_info,  # type: scanning.hooks.APartInfo
-                       **kwargs  # type: Any
-                       ):
-        # type: (...) -> None
+                       context: Context,
+                       completed_steps: scanning.hooks.ACompletedSteps,
+                       steps_to_do: scanning.hooks.AStepsToDo,
+                       duration: float,
+                       part_info: scanning.hooks.APartInfo,
+                       **kwargs: Any
+                       ) -> None:
         child = context.block_view(self.mri)
         if completed_steps == 0:
             # This is an initial configure, so reset arrayCounter to 0
@@ -99,14 +97,12 @@ class DetectorDriverPart(builtin.parts.ChildPart):
             exposure = kwargs.get("exposure", info.calculate_exposure(duration))
             child.acquirePeriod.put_value(exposure + info.readout_time)
 
-    def arm_detector(self, context):
-        # type: (Context) -> None
+    def arm_detector(self, context: Context) -> None:
         child = context.block_view(self.mri)
         self.start_future = child.start_async()
         child.when_value_matches("acquiring", True, timeout=DEFAULT_TIMEOUT)
 
-    def wait_for_detector(self, context, registrar, event_timeout=None):
-        # type: (Context, PartRegistrar, Optional[float]) -> None
+    def wait_for_detector(self, context: Context, registrar: PartRegistrar, event_timeout: Optional[float] = None) -> None:
         child = context.block_view(self.mri)
         child.arrayCounterReadback.subscribe_value(
             self.update_completed_steps, registrar)
@@ -119,8 +115,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
             "arrayCounterReadback", self.done_when_reaches,
             timeout=DEFAULT_TIMEOUT)
 
-    def abort_detector(self, context):
-        # type: (Context) -> None
+    def abort_detector(self, context: Context) -> None:
         child = context.block_view(self.mri)
         child.stop()
         # Stop is a put to a busy record which returns immediately
@@ -129,8 +124,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         # that stop() pokes) to check that it has finished
         child.when_value_matches("acquiring", False, timeout=DEFAULT_TIMEOUT)
 
-    def update_completed_steps(self, value, registrar):
-        # type: (int, PartRegistrar) -> None
+    def update_completed_steps(self, value: int, registrar: PartRegistrar) -> None:
         completed_steps = value + self.uniqueid_offset
         registrar.report(scanning.infos.RunProgressInfo(completed_steps))
 
@@ -172,8 +166,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
                         "data type DBR_NATIVE invalid for asyn param attribute")
         self.extra_attributes.set_value(value)
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(DetectorDriverPart, self).setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
@@ -190,8 +183,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
                                       self.set_extra_attributes)
 
     @add_call_types
-    def on_reset(self, context):
-        # type: (scanning.hooks.AContext) -> None
+    def on_reset(self, context: scanning.hooks.AContext) -> None:
         super(DetectorDriverPart, self).on_reset(context)
         self.abort_detector(context)
         # Delete the layout XML file
@@ -202,8 +194,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
             child.attributesFile.put_value("")
 
     @add_call_types
-    def on_report_status(self):
-        # type: () -> scanning.hooks.UInfos
+    def on_report_status(self) -> scanning.hooks.UInfos:
         ret = []
         if self.main_dataset_useful:
             ret.append(NDArrayDatasetInfo(rank=2))
@@ -223,15 +214,14 @@ class DetectorDriverPart(builtin.parts.ChildPart):
     # noinspection PyPep8Naming
     @add_call_types
     def on_configure(self,
-                     context,  # type: scanning.hooks.AContext
-                     completed_steps,  # type: scanning.hooks.ACompletedSteps
-                     steps_to_do,  # type: scanning.hooks.AStepsToDo
-                     part_info,  # type: scanning.hooks.APartInfo
-                     generator,  # type: scanning.hooks.AGenerator
-                     fileDir,  # type: scanning.hooks.AFileDir
-                     **kwargs  # type: Any
-                     ):
-        # type: (...) -> None
+                     context: scanning.hooks.AContext,
+                     completed_steps: scanning.hooks.ACompletedSteps,
+                     steps_to_do: scanning.hooks.AStepsToDo,
+                     part_info: scanning.hooks.APartInfo,
+                     generator: scanning.hooks.AGenerator,
+                     fileDir: scanning.hooks.AFileDir,
+                     **kwargs: Any
+                     ) -> None:
         context.unsubscribe_all()
         child = context.block_view(self.mri)
         self.setup_detector(context, completed_steps, steps_to_do,
@@ -268,8 +258,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
             child.attributesFile.put_value(attributes_filename)
 
     @add_call_types
-    def on_run(self, context):
-        # type: (scanning.hooks.AContext) -> None
+    def on_run(self, context: scanning.hooks.AContext) -> None:
         if not self.is_hardware_triggered:
             # Start now if we are software triggered
             self.arm_detector(context)
@@ -277,6 +266,5 @@ class DetectorDriverPart(builtin.parts.ChildPart):
             context, self.registrar, event_timeout=self.frame_timeout)
 
     @add_call_types
-    def on_abort(self, context):
-        # type: (scanning.hooks.AContext) -> None
+    def on_abort(self, context: scanning.hooks.AContext) -> None:
         self.abort_detector(context)

@@ -103,8 +103,7 @@ class TestYamlUtil(unittest.TestCase):
     @patch("importlib.import_module")
     def test_instantiate(self, mock_import):
         @add_call_types
-        def f(desc, foo="thing"):
-            # type: (ADesc, AThing) -> Any
+        def f(desc: ADesc, foo: AThing = "thing") -> Any:
             return 2, desc, foo
 
         mock_import.return_value = Mock(MyPart=f)

@@ -1,4 +1,4 @@
-from annotypes import TYPE_CHECKING, Array
+from annotypes import Array
 from enum import Enum
 from p4p import Type, Value
 import numpy as np
@@ -7,8 +7,7 @@ from malcolm.compat import str_, long_, OrderedDict
 from malcolm.core import AlarmSeverity, AlarmStatus
 from malcolm.core.models import NTTable
 
-if TYPE_CHECKING:
-    from typing import Dict, Tuple, List, Any
+from typing import Dict, Tuple, List, Any
 
 EMPTY = Value(Type([]))
 
@@ -48,8 +47,7 @@ except NameError:
     pass
 
 
-def convert_to_type_tuple_value(value):
-    # type: (Any) -> Tuple[Any, Any]
+def convert_to_type_tuple_value(value: Any) -> Tuple[Any, Any]:
     # cheaper than a subclass check
     if value.__class__ is Array:
         if issubclass(value.typ, Enum):
@@ -112,8 +110,7 @@ def convert_to_type_tuple_value(value):
     return spec, value_for_set
 
 
-def convert_from_type_spec(spec, val):
-    # type: (str, Any) -> Any
+def convert_from_type_spec(spec: str, val: Any) -> Any:
     if isinstance(spec, Type):
         # Structure
         return convert_value_to_dict(val)
@@ -130,8 +127,7 @@ def convert_from_type_spec(spec, val):
         return val
 
 
-def convert_dict_to_value(d):
-    # type: (Dict) -> Value
+def convert_dict_to_value(d: Dict) -> Value:
     if d is None:
         val = EMPTY
     else:
@@ -145,8 +141,7 @@ def convert_dict_to_value(d):
     return val
 
 
-def convert_value_to_dict(v):
-    # type: (Value) -> Dict
+def convert_value_to_dict(v: Value) -> Dict:
     d = OrderedDict()
     # Fill in typeid if set
     typeid = v.getID()
@@ -161,8 +156,7 @@ def convert_value_to_dict(v):
     return d
 
 
-def update_path(value, path, update):
-    # type: (Value, List[str], Any) -> None
+def update_path(value: Value, path: List[str], update: Any) -> None:
     for p in path[:-1]:
         value = value[p]
     _, update = convert_to_type_tuple_value(update)

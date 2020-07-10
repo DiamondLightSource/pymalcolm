@@ -4,7 +4,7 @@ import socket
 from distutils.version import StrictVersion
 
 
-from annotypes import Anno, add_call_types, TYPE_CHECKING, deserialize_object, \
+from annotypes import Anno, add_call_types, deserialize_object, \
     json_encode, json_decode
 
 from malcolm.compat import OrderedDict
@@ -19,8 +19,7 @@ from ..infos import LayoutInfo, PartExportableInfo, PartModifiedInfo, PortInfo
 from ..util import LayoutTable, ExportTable, ManagerStates
 from .statefulcontroller import StatefulController, AMri, ADescription
 
-if TYPE_CHECKING:
-    from typing import Dict, List, Set
+from typing import Dict, List, Set
 
 ss = ManagerStates
 
@@ -53,14 +52,13 @@ class ManagerController(StatefulController):
     state_set = ss()
 
     def __init__(self,
-                 mri,  # type: AMri
-                 config_dir,  # type: AConfigDir
-                 template_designs="",  # type: ATemplateDesigns
-                 initial_design="",  # type: AInitialDesign
-                 use_git=True,  # type: AUseGit
-                 description="",  # type: ADescription
-                 ):
-        # type: (...) -> None
+                 mri: AMri,
+                 config_dir: AConfigDir,
+                 template_designs: ATemplateDesigns = "",
+                 initial_design: AInitialDesign = "",
+                 use_git: AUseGit = True,
+                 description: ADescription = "",
+                 ) -> None:
         super(ManagerController, self).__init__(
             mri=mri,
             description=description
@@ -86,14 +84,14 @@ class ManagerController(StatefulController):
         # [Subscribe]
         self._subscriptions = []
         # {part_name: [PortInfo]}
-        self.port_info = {}  # type: Dict[str, List[PortInfo]]
+        self.port_info: Dict[str, List[PortInfo]] = {}
         # {part: [attr_name]}
         self.part_exportable = {}
         # TODO: turn this into "exported attribute modified"
-        self.context_modified = {}  # type: Dict[Part, Set[str]]
-        self.part_modified = {}  # type: Dict[Part, PartModifiedInfo]
+        self.context_modified: Dict[Part, Set[str]] = {}
+        self.part_modified: Dict[Part, PartModifiedInfo] = {}
         # The attributes our part has published
-        self.our_config_attributes = {}  # type: Dict[str, AttributeModel]
+        self.our_config_attributes: Dict[str, AttributeModel] = {}
         # The reportable infos we are listening for
         self.info_registry.add_reportable(
             PartModifiedInfo, self.update_modified)
@@ -221,8 +219,7 @@ class ManagerController(StatefulController):
             self.update_modified()
             self.update_block_endpoints()
 
-    def update_modified(self, part=None, info=None):
-        # type: (Part, PartModifiedInfo) -> None
+    def update_modified(self, part: Part = None, info: PartModifiedInfo = None) -> None:
         with self.changes_squashed:
             if part:
                 # Update the alarm for the given part
@@ -261,8 +258,7 @@ class ManagerController(StatefulController):
             else:
                 self.modified.set_value(False)
 
-    def update_exportable(self, part=None, info=None):
-        # type: (Part, PartExportableInfo) -> None
+    def update_exportable(self, part: Part = None, info: PartExportableInfo = None) -> None:
         with self.changes_squashed:
             if part:
                 self.part_exportable[part] = info.names
@@ -298,8 +294,7 @@ class ManagerController(StatefulController):
                 self._current_part_fields:
             self.add_block_field(name, child, writeable_func, needs_context)
 
-    def add_part(self, part):
-        # type: (Part) -> None
+    def add_part(self, part: Part) -> None:
         super(ManagerController, self).add_part(part)
         # Strip out the config tags of what we just added, as we will be
         # saving them ourself
@@ -419,8 +414,7 @@ class ManagerController(StatefulController):
     # Allow CamelCase for arguments as they will be exposed in the Block Method
     # noinspection PyPep8Naming
     @add_call_types
-    def save(self, designName=""):
-        # type: (ASaveDesign) -> None
+    def save(self, designName: ASaveDesign = "") -> None:
         """Save the current design to file"""
         self.try_stateful_function(
             ss.SAVING, ss.READY, self.do_save, designName)
@@ -518,8 +512,7 @@ class ManagerController(StatefulController):
         self.try_stateful_function(
             ss.LOADING, ss.READY, self.do_load, value)
 
-    def do_load(self, design, init=False):
-        # type: (str, bool) -> None
+    def do_load(self, design: str, init: bool = False) -> None:
         """Load a design name, running the child LoadHooks.
 
         Args:

@@ -1,4 +1,4 @@
-from annotypes import Anno, Any, Array, Mapping, TYPE_CHECKING, NO_DEFAULT, \
+from annotypes import Anno, Any, Array, Mapping, NO_DEFAULT, \
     Sequence, Union
 
 from scanpointgenerator import CompoundGenerator
@@ -9,9 +9,8 @@ from malcolm.core import VMeta
 from malcolm.modules import builtin
 from .infos import ConfigureParamsInfo
 
-if TYPE_CHECKING:
-    from typing import Dict, Callable, TypeVar
-    T = TypeVar("T")
+from typing import Dict, Callable, TypeVar
+T = TypeVar("T")
 
 with Anno("The Infos returned from other Parts"):
     APartInfo = Mapping[str, Array[Info]]
@@ -47,8 +46,7 @@ AContext = builtin.hooks.AContext
 ControllerHook = builtin.hooks.ControllerHook
 
 
-def check_array_info(anno, value):
-    # type: (T, Any) -> T
+def check_array_info(anno: T, value: Any) -> T:
     assert anno.is_array and issubclass(anno.typ, Info), \
         "Expected Anno wrapping Array[something], got %s" % anno
     ret = anno(value)
@@ -66,20 +64,18 @@ class ValidateHook(ControllerHook[UParameterTweakInfos]):
     # normative types conventions
     # noinspection PyPep8Naming
     def __init__(self,
-                 part,  # type: APart
-                 context,  # type: AContext
-                 part_info,  # type: UPartInfo
-                 generator,  # type: AGenerator
-                 axesToMove,  # type: AAxesToMove
-                 **kwargs  # type: Any
-                 ):
-        # type: (...) -> None
+                 part: APart,
+                 context: AContext,
+                 part_info: UPartInfo,
+                 generator: AGenerator,
+                 axesToMove: AAxesToMove,
+                 **kwargs: Any
+                 ) -> None:
         super(ValidateHook, self).__init__(
             part, context, part_info=part_info, generator=generator,
             axesToMove=axesToMove, **kwargs)
 
-    def validate_return(self, ret):
-        # type: (UParameterTweakInfos) -> AParameterTweakInfos
+    def validate_return(self, ret: UParameterTweakInfos) -> AParameterTweakInfos:
         """Check that all returned infos are ParameterTweakInfo that list
         the parameters that need to be changed to make them compatible with
         this part. ValidateHook will be re-run with the modified parameters."""
@@ -90,8 +86,7 @@ class ReportStatusHook(ControllerHook[UInfos]):
     """Called before Validate, Configure, PostRunArmed and Seek hooks to report
     the current configuration of all parts"""
 
-    def validate_return(self, ret):
-        # type: (UInfos) -> AInfos
+    def validate_return(self, ret: UInfos) -> AInfos:
         """Check that all parts return Info objects relevant to other parts"""
         return check_array_info(AInfos, ret)
 
@@ -115,28 +110,26 @@ class ConfigureHook(ControllerHook[UInfos]):
     # normative types conventions
     # noinspection PyPep8Naming
     def __init__(self,
-                 part,  # type: APart
-                 context,  # type: AContext
-                 completed_steps,  # type: ACompletedSteps
-                 steps_to_do,  # type: AStepsToDo
-                 part_info,  # type: APartInfo
-                 generator,  # type: AGenerator
-                 axesToMove,  # type: AAxesToMove
-                 **kwargs  # type: **Any
-                 ):
-        # type: (...) -> None
+                 part: APart,
+                 context: AContext,
+                 completed_steps: ACompletedSteps,
+                 steps_to_do: AStepsToDo,
+                 part_info: APartInfo,
+                 generator: AGenerator,
+                 axesToMove: AAxesToMove,
+                 **kwargs: Any
+                 ) -> None:
         super(ConfigureHook, self).__init__(
             part, context, completed_steps=completed_steps,
             steps_to_do=steps_to_do, part_info=part_info, generator=generator,
             axesToMove=axesToMove, **kwargs)
 
     @classmethod
-    def create_info(cls, configure_func):
-        # type: (Callable) -> ConfigureParamsInfo
+    def create_info(cls, configure_func: Callable) -> ConfigureParamsInfo:
         """Create a `ConfigureParamsInfo` describing the extra parameters
         that should be passed at configure"""
-        call_types = getattr(configure_func, "call_types",
-                             {})  # type: Dict[str, Anno]
+        call_types: Dict[str, Anno] = getattr(configure_func, "call_types",
+                             {})
         metas = OrderedDict()
         required = []
         defaults = OrderedDict()
@@ -150,8 +143,7 @@ class ConfigureHook(ControllerHook[UInfos]):
                     defaults[k] = anno.default
         return ConfigureParamsInfo(metas, required, defaults)
 
-    def validate_return(self, ret):
-        # type: (UInfos) -> AInfos
+    def validate_return(self, ret: UInfos) -> AInfos:
         """Check that all parts return Info objects for storing as attributes
         """
         return check_array_info(AInfos, ret)
@@ -161,8 +153,7 @@ class PostConfigureHook(ControllerHook[None]):
     """Called at the end of configure() to store configuration info calculated
     in the Configure hook"""
 
-    def __init__(self, part, context, part_info):
-        # type: (APart, AContext, APartInfo) -> None
+    def __init__(self, part: APart, context: AContext, part_info: APartInfo) -> None:
         super(PostConfigureHook, self).__init__(
             part, context, part_info=part_info)
 
@@ -183,16 +174,15 @@ class PostRunArmedHook(ControllerHook[None]):
     # normative types conventions
     # noinspection PyPep8Naming
     def __init__(self,
-                 part,  # type: APart
-                 context,  # type: AContext
-                 completed_steps,  # type: ACompletedSteps
-                 steps_to_do,  # type: AStepsToDo
-                 part_info,  # type: UPartInfo
-                 generator,  # type: AGenerator
-                 axesToMove,  # type: AAxesToMove
-                 **kwargs  # type: Any
-                 ):
-        # type: (...) -> None
+                 part: APart,
+                 context: AContext,
+                 completed_steps: ACompletedSteps,
+                 steps_to_do: AStepsToDo,
+                 part_info: UPartInfo,
+                 generator: AGenerator,
+                 axesToMove: AAxesToMove,
+                 **kwargs: Any
+                 ) -> None:
         super(PostRunArmedHook, self).__init__(
             part, context, completed_steps=completed_steps,
             steps_to_do=steps_to_do, part_info=part_info, generator=generator,
@@ -216,16 +206,15 @@ class SeekHook(ControllerHook[None]):
     # normative types conventions
     # noinspection PyPep8Naming
     def __init__(self,
-                 part,  # type: APart
-                 context,  # type: AContext
-                 completed_steps,  # type: ACompletedSteps
-                 steps_to_do,  # type: AStepsToDo
-                 part_info,  # type: APartInfo
-                 generator,  # type: AGenerator
-                 axesToMove,  # type: AAxesToMove
-                 **kwargs  # type: **Any
-                 ):
-        # type: (...) -> None
+                 part: APart,
+                 context: AContext,
+                 completed_steps: ACompletedSteps,
+                 steps_to_do: AStepsToDo,
+                 part_info: APartInfo,
+                 generator: AGenerator,
+                 axesToMove: AAxesToMove,
+                 **kwargs: Any
+                 ) -> None:
         super(SeekHook, self).__init__(
             part, context, completed_steps=completed_steps,
             steps_to_do=steps_to_do, part_info=part_info, generator=generator,

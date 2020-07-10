@@ -11,8 +11,7 @@ USimultaneousAxes = Union[ASimultaneousAxes, Sequence[str], str]
 
 
 class SimultaneousAxesPart(Part):
-    def __init__(self, name="simultaneousAxes", value=None):
-        # type: (APartName, USimultaneousAxes) -> None
+    def __init__(self, name: APartName = "simultaneousAxes", value: USimultaneousAxes = None) -> None:
         super(SimultaneousAxesPart, self).__init__(name)
         self.attr = StringArrayMeta(
             "Set of axes that can be specified in axesToMove at configure",
@@ -22,14 +21,12 @@ class SimultaneousAxesPart(Part):
     # This will be serialized, so maintain camelCase for axesToMove
     # noinspection PyPep8Naming
     @add_call_types
-    def on_validate(self, axesToMove):
-        # type: (AAxesToMove) -> None
+    def on_validate(self, axesToMove: AAxesToMove) -> None:
         assert not set(axesToMove) - set(self.attr.value), \
             "Can only move %s simultaneously, requested %s" % (
                 list(self.attr.value), axesToMove)
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         registrar.add_attribute_model(
             "simultaneousAxes", self.attr, self.attr.set_value)
         # Hooks

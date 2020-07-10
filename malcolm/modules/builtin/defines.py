@@ -36,29 +36,25 @@ with Anno("The Define that has been created"):
 
 
 @add_call_types
-def string(name, value):
-    # type: (AName, AStringValue) -> ADefine
+def string(name: AName, value: AStringValue) -> ADefine:
     """Define a string parameter to be used within this YAML file"""
     return Define(name, value)
 
 
 @add_call_types
-def float64(name, value):
-    # type: (AName, AFloat64Value) -> ADefine
+def float64(name: AName, value: AFloat64Value) -> ADefine:
     """Define a float64 parameter to be used within this YAML file"""
     return Define(name, value)
 
 
 @add_call_types
-def int32(name, value):
-    # type: (AName, AInt32Value) -> ADefine
+def int32(name: AName, value: AInt32Value) -> ADefine:
     """Define an int32 parameter to be used within this YAML file"""
     return Define(name, value)
 
 
 @add_call_types
-def docstring(value):
-    # type: (AStringValue) -> ADefine
+def docstring(value: AStringValue) -> ADefine:
     """Define the docstring for the YAML file"""
     return Define("docstring", value)
 
@@ -68,16 +64,14 @@ with Anno("The environment variable name to get the value from"):
 
 
 @add_call_types
-def env_string(name, env):
-    # type: (AName, AEnvSource) -> ADefine
+def env_string(name: AName, env: AEnvSource) -> ADefine:
     """Define a string parameter coming from the environment to be used within
     this YAML file"""
     return Define(name, os.environ[env])
 
 
 @add_call_types
-def tmp_dir(name):
-    # type: (AName) -> ADefine
+def tmp_dir(name: AName) -> ADefine:
     """Make a temporary directory, and define a string parameter containing
     its path on disk"""
     return Define(name, tempfile.mkdtemp())
@@ -88,8 +82,7 @@ with Anno("The shell command to run to get the value from"):
 
 
 @add_call_types
-def cmd_string(name, cmd):
-    # type: (AName, ACmd) -> ADefine
+def cmd_string(name: AName, cmd: ACmd) -> ADefine:
     """Define a string parameter coming from a shell command to be used within
     this YAML file. Trailing newlines will be stripped."""
     value = subprocess.check_output(cmd, shell=True).rstrip("\n")
@@ -103,8 +96,7 @@ with Anno("The value of the exported environment variable"):
 
 
 @add_call_types
-def export_env_string(name, value):
-    # type: (AEnvName, AEnvValue) -> ADefine
+def export_env_string(name: AEnvName, value: AEnvValue) -> ADefine:
     """Exports an environment variable with the given value"""
     os.environ[name] = value
     return Define(name, value)
@@ -118,8 +110,7 @@ with Anno("The path of a python package dir to insert as "
 
 
 @add_call_types
-def module_path(name, path):
-    # type: (AModuleName, AModulePath) -> ADefine
+def module_path(name: AModuleName, path: AModulePath) -> ADefine:
     """Load an external malcolm module (e.g. ADCore/etc/malcolm)"""
     define = Define(name, path)
     assert os.path.isdir(path), "%r doesn't exist" % path

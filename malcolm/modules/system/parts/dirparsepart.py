@@ -18,8 +18,7 @@ class DirParsePart(Part):
     ioc_prod_root = ''
     dls_version = None
 
-    def __init__(self, name, ioc):
-        # type: (parts.APartName, AIoc) -> None
+    def __init__(self, name: parts.APartName, ioc: AIoc) -> None:
         super(DirParsePart, self).__init__(name)
 
         self.dls_ver_pv = ca.util.CAAttribute(
@@ -57,8 +56,7 @@ class DirParsePart(Part):
                                       elements=elements) \
             .create_attribute_model({"module": [], "path": []})
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(DirParsePart, self).setup(registrar)
         registrar.add_attribute_model("dlsVersion", self.dls_ver_pv.attr)
         registrar.add_attribute_model("dir1", self.dir1_pv.attr)

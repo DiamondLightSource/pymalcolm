@@ -60,8 +60,7 @@ def getargspec(f):
     return inspect.ArgSpec(args, varargs, keywords, defaults)
 
 
-def et_to_string(element):
-    # type: (ET.Element) -> str
+def et_to_string(element: ET.Element) -> str:
     xml = '<?xml version="1.0" ?>'
     try:
         xml += ET.tostring(element, encoding="unicode")

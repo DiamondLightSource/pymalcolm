@@ -26,12 +26,11 @@ APartName = APartName
 
 class FilepathTranslatorPart(Part):
     def __init__(self,
-                 name,  # type: APartName
-                 initial_windows_drive_letter,  # type: ADriveLetter
-                 initial_path_prefix="/dls",  # type: APathPrefix
-                 initial_network_prefix=""  # type: ANetworkPrefix
-                 ):
-        # type: (...) -> None
+                 name: APartName,
+                 initial_windows_drive_letter: ADriveLetter,
+                 initial_path_prefix: APathPrefix = "/dls",
+                 initial_network_prefix: ANetworkPrefix = ""
+                 ) -> None:
         super(FilepathTranslatorPart, self).__init__(name)
         self.windows_drive_letter = StringMeta(
             drive_letter_desc,
@@ -46,8 +45,7 @@ class FilepathTranslatorPart(Part):
             tags=[Widget.TEXTINPUT.tag(), config_tag()],
         ).create_attribute_model(initial_network_prefix)
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(FilepathTranslatorPart, self).setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
@@ -63,8 +61,7 @@ class FilepathTranslatorPart(Part):
             self.network_prefix.set_value)
 
     @add_call_types
-    def on_report_status(self):
-        # type: () -> scanning.hooks.UInfos
+    def on_report_status(self) -> scanning.hooks.UInfos:
         info = FilePathTranslatorInfo(
             self.windows_drive_letter.value, self.path_prefix.value,
             self.network_prefix.value)

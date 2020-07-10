@@ -9,8 +9,7 @@ ALabelValue = builtin.parts.ALabelValue
 
 
 class PandALabelPart(builtin.parts.LabelPart):
-    def __init__(self, client, metadata_field, value):
-        # type: (AClient, AMetadataField, ALabelValue) -> None
+    def __init__(self, client: AClient, metadata_field: AMetadataField, value: ALabelValue) -> None:
         super(PandALabelPart, self).__init__(value)
         self.client = client
         self.metadata_field = metadata_field

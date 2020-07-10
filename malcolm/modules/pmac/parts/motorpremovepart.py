@@ -15,12 +15,11 @@ with Anno("The demand value to move the axis to"):
 class MotorPreMovePart(builtin.parts.ChildPart):
 
     def __init__(self,
-                 name,  # type: APartName
-                 mri,  # type: AMri
-                 demand,  # type: ADemand
-                 initial_visibility=False  # type: AInitialVisibility
-                 ):
-        # type: (...) -> None
+                 name: APartName,
+                 mri: AMri,
+                 demand: ADemand,
+                 initial_visibility: AInitialVisibility = False
+                 ) -> None:
         super(MotorPreMovePart,
               self).__init__(name,
                              mri,
@@ -28,13 +27,11 @@ class MotorPreMovePart(builtin.parts.ChildPart):
                              initial_visibility=initial_visibility)
         self.demand = demand
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(MotorPreMovePart, self).setup(registrar)
         registrar.hook(scanning.hooks.ConfigureHook, self.on_configure)
 
     @add_call_types
-    def on_configure(self, context):
-        # type: (builtin.hooks.AContext) -> None
+    def on_configure(self, context: builtin.hooks.AContext) -> None:
         childBlock = context.block_view(self.mri)
         childBlock.demand.put_value(self.demand)

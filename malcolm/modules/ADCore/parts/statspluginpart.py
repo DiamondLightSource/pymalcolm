@@ -25,33 +25,29 @@ class StatsPluginPart(builtin.parts.ChildPart):
     """Part for controlling a `stats_plugin_block` in a Device"""
 
     def __init__(self,
-                 name,                          # type: APartName
-                 mri,                           # type: builtin.parts.AMri
-                 statistic=StatisticsName.SUM,  # type: AStatsName
-                 runs_on_windows=False,         # type: APartRunsOnWindows
-                 ):
-        # type: (...) -> None
+                 name: APartName,
+                 mri: builtin.parts.AMri,
+                 statistic: AStatsName = StatisticsName.SUM,
+                 runs_on_windows: APartRunsOnWindows = False,
+                 ) -> None:
         super(StatsPluginPart, self).__init__(name, mri)
         self.statistic = statistic
         # The NDAttributes file we write to say what to capture
-        self.attributes_filename = None  # type: str
+        self.attributes_filename: str = None
         self.runs_on_windows = runs_on_windows
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(StatsPluginPart, self).setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
         registrar.hook(scanning.hooks.ConfigureHook, self.on_configure)
 
     @add_call_types
-    def on_report_status(self):
-        # type: () -> scanning.hooks.UInfos
+    def on_report_status(self) -> scanning.hooks.UInfos:
         return [CalculatedNDAttributeDatasetInfo(
             name=self.statistic.name.lower(), attr=self.statistic_attr())]
 
-    def statistic_attr(self):
-        # type: () -> str
+    def statistic_attr(self) -> str:
         return "STATS_%s" % self.statistic.value
 
     def _make_attributes_xml(self):
@@ -68,11 +64,10 @@ class StatsPluginPart(builtin.parts.ChildPart):
     # noinspection PyPep8Naming
     @add_call_types
     def on_configure(self,
-                     context,  # type: scanning.hooks.AContext
-                     part_info,  # type: scanning.hooks.APartInfo
-                     fileDir  # type: scanning.hooks.AFileDir
-                     ):
-        # type: (...) -> None
+                     context: scanning.hooks.AContext,
+                     part_info: scanning.hooks.APartInfo,
+                     fileDir: scanning.hooks.AFileDir
+                     ) -> None:
         child = context.block_view(self.mri)
         fs = child.put_attribute_values_async(dict(
             enableCallbacks=True,
@@ -90,8 +85,7 @@ class StatsPluginPart(builtin.parts.ChildPart):
         context.wait_all_futures(fs)
 
     @add_call_types
-    def on_reset(self, context):
-        # type: (scanning.hooks.AContext) -> None
+    def on_reset(self, context: scanning.hooks.AContext) -> None:
         super(StatsPluginPart, self).on_reset(context)
         # Delete the attribute XML file
         if self.attributes_filename and os.path.isfile(

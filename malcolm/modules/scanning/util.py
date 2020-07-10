@@ -17,8 +17,7 @@ from .infos import DatasetType
 from .hooks import AGenerator, AAxesToMove, UAxesToMove
 
 
-def exposure_attribute(min_exposure):
-    # type: (float) -> AttributeModel
+def exposure_attribute(min_exposure: float) -> AttributeModel:
     meta = NumberMeta(
         "float64", "The calculated exposure for this run",
         tags=[Widget.TEXTUPDATE.tag()],
@@ -30,8 +29,7 @@ def exposure_attribute(min_exposure):
 class ConfigureParams(Serializable):
     # This will be serialized, so maintain camelCase for axesToMove
     # noinspection PyPep8Naming
-    def __init__(self, generator, axesToMove=None, **kwargs):
-        # type: (AGenerator, UAxesToMove, **Any) -> None
+    def __init__(self, generator: AGenerator, axesToMove: UAxesToMove = None, **kwargs: Any) -> None:
         if kwargs:
             # Got some additional args to report
             self.call_types = ConfigureParams.call_types.copy()
@@ -94,14 +92,13 @@ class DatasetTable(Table):
     # This will be serialized so we need type to be called type
     # noinspection PyShadowingBuiltins
     def __init__(self,
-                 name,  # type: UDatasetNames
-                 filename,  # type: UFilenames
-                 type,  # type: UDatasetTypes
-                 rank,  # type: URanks
-                 path,  # type: UPaths
-                 uniqueid,  # type: UUniqueIDs
-                 ):
-        # type: (...) -> None
+                 name: UDatasetNames,
+                 filename: UFilenames,
+                 type: UDatasetTypes,
+                 rank: URanks,
+                 path: UPaths,
+                 uniqueid: UUniqueIDs,
+                 ) -> None:
         self.name = ADatasetNames(name)
         self.filename = AFilenames(filename)
         self.type = ADatasetTypes(type)
@@ -131,13 +128,12 @@ class DetectorTable(Table):
     # Will be serialized so use camelCase
     # noinspection PyPep8Naming
     def __init__(self,
-                 enable,  # type: UEnable
-                 name,  # type: UDetectorNames
-                 mri,  # type: UDetectorMris
-                 exposure,  # type: UExposures
-                 framesPerStep,  # type: UFramesPerStep
-                 ):
-        # type: (...) -> None
+                 enable: UEnable,
+                 name: UDetectorNames,
+                 mri: UDetectorMris,
+                 exposure: UExposures,
+                 framesPerStep: UFramesPerStep,
+                 ) -> None:
         self.enable = AEnable(enable)
         self.name = ADetectorNames(name)
         self.mri = ADetectorMris(mri)

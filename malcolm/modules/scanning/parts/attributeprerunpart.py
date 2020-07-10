@@ -22,9 +22,8 @@ AMri = builtin.parts.AMri
 class AttributePreRunPart(builtin.parts.ChildPart):
     """Part for controlling an attribute value during the PreRunHook"""
 
-    def __init__(self, name, mri, pre_run_value, reset_value,
-                 attribute_name="shutter"):
-        # type: (APartName, AMri, APreRunVal, AResetVal, AAttrName) -> None
+    def __init__(self, name: APartName, mri: AMri, pre_run_value: APreRunVal, reset_value: AResetVal,
+                 attribute_name: AAttrName = "shutter") -> None:
         super(AttributePreRunPart, self).__init__(name,
                                                   mri,
                                                   initial_visibility=True)
@@ -38,8 +37,7 @@ class AttributePreRunPart(builtin.parts.ChildPart):
         existing = self.no_save_attribute_names or set()
         self.no_save_attribute_names = existing | no_save_attrs
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(AttributePreRunPart, self).setup(registrar)
         # Hooks
         registrar.hook(hooks.PreRunHook, self.on_pre_run)
@@ -47,13 +45,11 @@ class AttributePreRunPart(builtin.parts.ChildPart):
                         hooks.PostRunReadyHook), self.on_reset)
 
     @add_call_types
-    def on_pre_run(self, context):
-        # type: (AContext) -> None
+    def on_pre_run(self, context: AContext) -> None:
         child = context.block_view(self.mri)
         getattr(child, self.attribute_name).put_value(self.pre_run_value)
 
     @add_call_types
-    def on_reset(self, context):
-        # type: (AContext) -> None
+    def on_reset(self, context: AContext) -> None:
         child = context.block_view(self.mri)
         getattr(child, self.attribute_name).put_value(self.reset_value)

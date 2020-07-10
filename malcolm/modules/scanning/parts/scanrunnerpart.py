@@ -51,8 +51,7 @@ class ScanOutcome(Enum):
 
 class Scan:
 
-    def __init__(self, name, generator, repeats=1):
-        # type: (str, CompoundGenerator, int) -> None
+    def __init__(self, name: str, generator: CompoundGenerator, repeats: int = 1) -> None:
         self.name = name
         self.generator = generator
         self.repeats = repeats
@@ -62,26 +61,24 @@ class ScanRunnerPart(builtin.parts.ChildPart):
     """Used to run sets of scans defined in a YAML file with a scan block"""
 
     # Attributes
-    runner_state = None  # type: AttributeModel
-    runner_status_message = None  # type: AttributeModel
-    scans_configured = None  # type: AttributeModel
-    scans_completed = None  # type: AttributeModel
-    scan_file = None  # type: AttributeModel
-    scan_successes = None  # type: AttributeModel
-    scan_failures = None  # type: AttributeModel
-    current_scan_set = None  # type: AttributeModel
-    output_directory = None  # type: AttributeModel
+    runner_state: AttributeModel = None
+    runner_status_message: AttributeModel = None
+    scans_configured: AttributeModel = None
+    scans_completed: AttributeModel = None
+    scan_file: AttributeModel = None
+    scan_successes: AttributeModel = None
+    scan_failures: AttributeModel = None
+    current_scan_set: AttributeModel = None
+    output_directory: AttributeModel = None
 
-    def __init__(self, name, mri):
-        # type: (APartName, AMri, AMri) -> None
+    def __init__(self: APartName, name: AMri, mri: AMri) -> None:
         super(ScanRunnerPart, self).__init__(
             name, mri, stateful=False, initial_visibility=True)
         self.runner_config = None
         self.context = None
         self.scan_sets = {}
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(ScanRunnerPart, self).setup(registrar)
 
         self.runner_state = StringMeta(
@@ -170,8 +167,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         registrar.add_method_model(self.run, needs_context=True)
         registrar.add_method_model(self.abort, needs_context=True)
 
-    def get_file_contents(self):
-        # type: () -> str
+    def get_file_contents(self) -> str:
 
         try:
             with open(self.scan_file.value, "r") as input_file:
@@ -181,8 +177,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
             self.runner_status_message.set_value("Could not read scan file")
             raise
 
-    def parse_yaml(self, string):
-        # type: (str) -> ...
+    def parse_yaml(self, string: str) -> ...:
         try:
             parsed_yaml = yaml.safe_load(string)
             return parsed_yaml
@@ -202,8 +197,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         return kwargs
 
     @staticmethod
-    def parse_compound_generator(entry):
-        # type: (dict) -> CompoundGenerator
+    def parse_compound_generator(entry: dict) -> CompoundGenerator:
         generators = []
         generators_dict = entry['generators']
         for generator in generators_dict:
@@ -216,8 +210,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
                 "Negative generator duration - is it missing from the YAML?")
         return compound_generator
 
-    def parse_scan(self, entry):
-        # type: (dict) -> None
+    def parse_scan(self, entry: dict) -> None:
         name = entry['name']
         generator = self.parse_compound_generator(entry['generator'])
         kwargs = self.get_kwargs_from_dict(entry, 'repeats')
@@ -225,15 +218,13 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         self.scan_sets[name] = Scan(name, generator, **kwargs)
 
     @staticmethod
-    def get_current_datetime(time_separator=":"):
-        # type: (str) -> str
+    def get_current_datetime(time_separator: str = ":") -> str:
         return datetime.now().strftime("%Y-%m-%d-%H{sep}%M{sep}%S".format(
             sep=time_separator
         ))
 
     # noinspection PyPep8Naming
-    def loadFile(self):
-        # type: () -> None
+    def loadFile(self) -> None:
 
         # Update state
         self.set_runner_state(RunnerStates.LOADING)
@@ -265,15 +256,13 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         self.set_runner_state(RunnerStates.CONFIGURED)
         self.runner_status_message.set_value("Load complete")
 
-    def update_scans_configured(self):
-        # type: () -> None
+    def update_scans_configured(self) -> None:
         number_of_scans = 0
         for key in self.scan_sets:
             number_of_scans += self.scan_sets[key].repeats
         self.scans_configured.set_value(number_of_scans)
 
-    def create_directory(self, directory):
-        # type: (str) -> None
+    def create_directory(self, directory: str) -> None:
         try:
             os.mkdir(directory)
         except OSError:
@@ -285,8 +274,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
                     dir=directory
                 ))
 
-    def create_and_get_sub_directory(self, root_directory):
-        # type: (str) -> str
+    def create_and_get_sub_directory(self, root_directory: str) -> str:
         today_str = self.get_current_datetime(time_separator="-")
         sub_directory = "{root}/{scan_mri}-{date}".format(
             root=root_directory, scan_mri=self.mri, date=today_str)
@@ -300,8 +288,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         return root_directory
 
     @add_call_types
-    def abort(self, context):
-        # type: (AContext) -> None
+    def abort(self, context: AContext) -> None:
         if self.context:
             # Stop the context
             self.context.stop()
@@ -312,8 +299,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
             self.runner_status_message.set_value("Aborted scans")
 
     @add_call_types
-    def run(self, context):
-        # type: (AContext) -> None
+    def run(self, context: AContext) -> None:
 
         # Check that we have loaded some scan sets
         if len(self.scan_sets) == 0:
@@ -352,16 +338,14 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         self.current_scan_set.set_value("")
         self.runner_status_message.set_value("Scans complete")
 
-    def create_and_get_set_directory(self, sub_directory, set_name):
-        # type: (str, str) -> str
+    def create_and_get_set_directory(self, sub_directory: str, set_name: str) -> str:
         set_directory = "{sub_directory}/scanset-{set_name}".format(
             sub_directory=sub_directory, set_name=set_name)
         self.create_directory(set_directory)
         return set_directory
 
-    def run_scan_set(self, scan_set, scan_block, sub_directory,
-                     report_filepath):
-        # type: (Scan, Block, str, str) -> None
+    def run_scan_set(self, scan_set: Scan, scan_block: Block, sub_directory: str,
+                     report_filepath: str) -> None:
         # Update scan set
         self.current_scan_set.set_value(scan_set.name)
 
@@ -379,8 +363,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
                 report_filepath,
                 scan_set.generator)
 
-    def create_and_get_scan_directory(self, set_directory, scan_number):
-        # type: (str, int) -> str
+    def create_and_get_scan_directory(self, set_directory: str, scan_number: int) -> str:
         scan_directory = "{set_directory}/scan-{scan_number}".format(
             set_directory=set_directory, scan_number=scan_number)
         self.create_directory(scan_directory)
@@ -390,9 +373,8 @@ class ScanRunnerPart(builtin.parts.ChildPart):
     def scan_is_aborting(scan_block):
         return scan_block.state.value is RunnableStates.ABORTING
 
-    def run_scan(self, set_name, scan_block, set_directory,
-                 scan_number, report_filepath, generator):
-        # type: (str, Block, str, int, str, CompoundGenerator) -> None
+    def run_scan(self, set_name: str, scan_block: Block, set_directory: str,
+                 scan_number: int, report_filepath: str, generator: CompoundGenerator) -> None:
         self.runner_status_message.set_value(
             "Running {set_name}: {scan_no}".format(
                 set_name=set_name, scan_no=scan_number
@@ -477,8 +459,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         self.scans_completed.set_value(self.scans_completed.value+1)
 
     def get_report_string(
-            self, set_name, scan_number, scan_outcome, start_time, end_time):
-        # type: (str, int, ScanOutcome, str, str) -> str
+            self, set_name: str, scan_number: int, scan_outcome: ScanOutcome, start_time: str, end_time: str) -> str:
 
         report_str = "{set:<30}{no:<10}{outcome:<14}{start:<20}{end}".format(
             set=set_name,
@@ -489,8 +470,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         )
         return report_str
 
-    def add_report_line(self, report_filepath, report_string):
-        # type: (str, str) -> None
+    def add_report_line(self, report_filepath: str, report_string: str) -> None:
         try:
             with open(report_filepath, "a+") as report_file:
                 report_file.write(
@@ -504,10 +484,8 @@ class ScanRunnerPart(builtin.parts.ChildPart):
                 ))
 
     @staticmethod
-    def get_enum_label(enum_state):
-        # type: (Enum) -> str
+    def get_enum_label(enum_state: Enum) -> str:
         return enum_state.name.capitalize()
 
-    def set_runner_state(self, runner_state):
-        # type: (RunnerStates) -> None
+    def set_runner_state(self, runner_state: RunnerStates) -> None:
         self.runner_state.set_value(self.get_enum_label(runner_state))

@@ -32,8 +32,7 @@ UBitCaptures = Union[ABitCaptures, Sequence[bool]]
 
 
 class BitsTable(Table):
-    def __init__(self, name, value, capture):
-        # type: (UBitNames, UBitValues, UBitCaptures) -> None
+    def __init__(self, name: UBitNames, value: UBitValues, capture: UBitCaptures) -> None:
         self.name = ABitNames(name)
         self.value = ABitValues(value)
         self.capture = ABitCaptures(capture)
@@ -77,14 +76,13 @@ UPositionCaptures = Union[APositionCaptures, Sequence[PositionCapture]]
 
 class PositionsTable(Table):
     def __init__(self,
-                 name,  # type: UPositionNames
-                 value,  # type: UPositionValues
-                 units,  # type: UPositionUnits
-                 scale,  # type: UPositionScales
-                 offset,  # type: UPositionOffsets
-                 capture,  # type: UPositionCaptures
-                 ):
-        # type: (...) -> None
+                 name: UPositionNames,
+                 value: UPositionValues,
+                 units: UPositionUnits,
+                 scale: UPositionScales,
+                 offset: UPositionOffsets,
+                 capture: UPositionCaptures,
+                 ) -> None:
         self.name = APositionNames(name)
         self.value = APositionValues(value)
         self.units = APositionUnits(units)

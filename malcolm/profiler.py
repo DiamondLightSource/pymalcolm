@@ -18,8 +18,7 @@ class ProfilerMode(Enum):
 
 # A combination of plop.Collector and plot.Formatter
 class Profiler(object):
-    def __init__(self, dirname=None, mode=ProfilerMode.PROF):
-        # type: (str, ProfilerMode) -> None
+    def __init__(self, dirname: str = None, mode: ProfilerMode = ProfilerMode.PROF) -> None:
         if not dirname:
             dirname = get_profiler_dir()
         if not os.path.isdir(dirname):

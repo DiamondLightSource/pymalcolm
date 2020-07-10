@@ -25,8 +25,7 @@ class DSGather(Part):
         self.register_hooked(ConfigureHook, self.configure)
 
     @add_call_types
-    def configure(self, part_info):
-        # type: (APartInfo) -> None
+    def configure(self, part_info: APartInfo) -> None:
         self.part_info = part_info
 
 

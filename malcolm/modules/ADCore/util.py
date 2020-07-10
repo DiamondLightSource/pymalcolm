@@ -80,14 +80,13 @@ class ExtraAttributesTable(Table):
     # Allow CamelCase as arguments will be serialized
     # noinspection PyPep8Naming
     def __init__(self,
-                 name,  # type: UAttributeNames
-                 sourceId,  # type: USourceIds
-                 description,  # type: UDescriptions
-                 sourceType,  # type: USourceTypes
-                 dataType,  # type: UDataTypes
-                 datasetType,  # type: UAttributeTypes
-                 ):
-        # type: (...) -> None
+                 name: UAttributeNames,
+                 sourceId: USourceIds,
+                 description: UDescriptions,
+                 sourceType: USourceTypes,
+                 dataType: UDataTypes,
+                 datasetType: UAttributeTypes,
+                 ) -> None:
         self.name = AAttributeNames(name)
         self.sourceId = ASourceIds(sourceId)
         self.description = ADescriptions(description)

@@ -1,7 +1,7 @@
 from annotypes import Anno, Array, TYPE_CHECKING, Union, Sequence
 
 from malcolm.compat import OrderedDict, str_
-from malcolm.core import TimeoutError
+from .errors import TimeoutError
 from .controller import Controller, DEFAULT_TIMEOUT
 from .hook import Hook, start_hooks, AHookable, wait_hooks
 from .info import Info
@@ -9,10 +9,8 @@ from .loggable import Loggable
 from .concurrency import Spawned
 from .views import Block
 
-if TYPE_CHECKING:
-    from typing import List, Callable, Any, TypeVar
-
-    T = TypeVar("T")
+from typing import List, Callable, Any, TypeVar
+T = TypeVar("T")
 
 
 # Clear spawned handles after how many spawns?
@@ -30,15 +28,13 @@ with Anno("The list of currently published Controller mris"):
 
 
 class UnpublishedInfo(Info):
-    def __init__(self, mri):
-        # type: (str) -> None
+    def __init__(self, mri: str) -> None:
         self.mri = mri
 
 
 class ProcessPublishHook(Hook[None]):
     """Called when a new block is added"""
-    def __init__(self, child, published):
-        # type: (AHookable, APublished) -> None
+    def __init__(self, child: AHookable, published: APublished) -> None:
         super(ProcessPublishHook, self).__init__(child, published=published)
 
 
@@ -51,8 +47,7 @@ UUnpublishedInfos = Union[AUnpublishedInfos, Sequence[UnpublishedInfo],
 class ProcessStartHook(Hook[None]):
     """Called at start() to start all child controllers"""
 
-    def validate_return(self, ret):
-        # type: (UUnpublishedInfos) -> AUnpublishedInfos
+    def validate_return(self, ret: UUnpublishedInfos) -> AUnpublishedInfos:
         """Check that all returns are UnpublishedInfo objects indicating
         that the controller shouldn't be published via any server comms"""
         return AUnpublishedInfos(ret)
@@ -65,8 +60,7 @@ class ProcessStopHook(Hook[None]):
 class Process(Loggable):
     """Hosts a number of Controllers and provides spawn capabilities"""
 
-    def __init__(self, name="Process"):
-        # type: (str_) -> None
+    def __init__(self, name: str_ = "Process") -> None:
         self.set_logger(process_name=name)
         self.name = name
         self._controllers = OrderedDict()  # mri -> Controller
@@ -90,8 +84,7 @@ class Process(Loggable):
             self._publish_controllers(timeout)
         self.state = STARTED
 
-    def _start_controllers(self, controller_list, timeout=None):
-        # type: (List[Controller], float) -> bool
+    def _start_controllers(self, controller_list: List[Controller], timeout: float = None) -> bool:
         # Start just the given controller_list
         infos = self._run_hook(ProcessStartHook, controller_list,
                                timeout=timeout)
@@ -107,8 +100,7 @@ class Process(Loggable):
         tree = OrderedDict()
         is_child = set()
 
-        def add_controller(controller):
-            # type: (Controller) -> OrderedDict
+        def add_controller(controller: Controller) -> OrderedDict:
             children = OrderedDict()
             tree[controller.mri] = children
             for part in controller.parts.values():
@@ -189,8 +181,7 @@ class Process(Loggable):
         self.state = STOPPED
         self.log.debug("Done process.stop()")
 
-    def spawn(self, function, *args, **kwargs):
-        # type: (Callable[..., Any], *Any, **Any) -> Spawned
+    def spawn(self, function: Callable[..., Any], *args: Any, **kwargs: Any) -> Spawned:
         """Runs the function in a worker thread, returning a Result object
 
         Args:
@@ -211,13 +202,11 @@ class Process(Loggable):
             self._clear_spawn_list()
         return spawned
 
-    def _clear_spawn_list(self):
-        # type: () -> None
+    def _clear_spawn_list(self) -> None:
         self._spawn_count = 0
         self._spawned = [s for s in self._spawned if not s.ready()]
 
-    def add_controllers(self, controllers, timeout=None):
-        # type: (List[Controller], float) -> None
+    def add_controllers(self, controllers: List[Controller], timeout: float = None) -> None:
         """Add many controllers to be hosted by this process
 
         Args:
@@ -235,8 +224,7 @@ class Process(Loggable):
             if self.state == STARTED and should_publish:
                 self._publish_controllers(timeout)
 
-    def add_controller(self, controller, timeout=None):
-        # type: (Controller, float) -> None
+    def add_controller(self, controller: Controller, timeout: float = None) -> None:
         """Add a controller to be hosted by this process
 
         Args:
@@ -247,20 +235,17 @@ class Process(Loggable):
         self.add_controllers([controller], timeout=timeout)
 
     @property
-    def mri_list(self):
-        # type: () -> List[str]
+    def mri_list(self) -> List[str]:
         return list(self._controllers)
 
-    def get_controller(self, mri):
-        # type: (str) -> Controller
+    def get_controller(self, mri: str) -> Controller:
         """Get controller which can make Block views for this mri"""
         try:
             return self._controllers[mri]
         except KeyError:
             raise ValueError("No controller registered for mri '%s'" % mri)
 
-    def block_view(self, mri):
-        # type: (str) -> Block
+    def block_view(self, mri: str) -> Block:
         """Get a Block view from a Controller with given mri"""
         controller = self.get_controller(mri)
         block = controller.block_view()

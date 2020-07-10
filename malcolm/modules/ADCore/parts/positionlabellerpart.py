@@ -1,4 +1,4 @@
-from annotypes import TYPE_CHECKING, add_call_types, Any
+from annotypes import add_call_types, Any
 
 from malcolm.core import PartRegistrar
 from malcolm.modules import builtin, scanning
@@ -12,8 +12,7 @@ POSITIONS_PER_XML = 5000
 # How far to load ahead
 N_LOAD_AHEAD = 4
 
-if TYPE_CHECKING:
-    from typing import Tuple
+from typing import Tuple
 
 
 # We will set these attributes on the child block, so don't save them
@@ -35,8 +34,7 @@ class PositionLabellerPart(builtin.parts.ChildPart):
     # When arrayCounter gets to here we are done
     done_when_reaches = None
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(PositionLabellerPart, self).setup(registrar)
         # Hooks
         registrar.hook((scanning.hooks.ConfigureHook,
@@ -47,19 +45,17 @@ class PositionLabellerPart(builtin.parts.ChildPart):
                         scanning.hooks.PauseHook), self.on_abort)
 
     @add_call_types
-    def on_reset(self, context):
-        # type: (scanning.hooks.AContext) -> None
+    def on_reset(self, context: scanning.hooks.AContext) -> None:
         super(PositionLabellerPart, self).on_reset(context)
         self.on_abort(context)
 
     @add_call_types
     def on_configure(self,
-                     context,  # type: scanning.hooks.AContext
-                     completed_steps,  # type: scanning.hooks.ACompletedSteps
-                     steps_to_do,  # type: scanning.hooks.AStepsToDo
-                     generator,  # type: scanning.hooks.AGenerator
-                     ):
-        # type: (...) -> None
+                     context: scanning.hooks.AContext,
+                     completed_steps: scanning.hooks.ACompletedSteps,
+                     steps_to_do: scanning.hooks.AStepsToDo,
+                     generator: scanning.hooks.AGenerator,
+                     ) -> None:
         # clear out old subscriptions
         context.unsubscribe_all()
         self.generator = generator
@@ -90,21 +86,18 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         self.start_future = child.start_async()
 
     @add_call_types
-    def on_run(self, context):
-        # type: (scanning.hooks.AContext) -> None
+    def on_run(self, context: scanning.hooks.AContext) -> None:
         self.loading = False
         child = context.block_view(self.mri)
         child.qty.subscribe_value(self.load_more_positions, child)
         context.wait_all_futures(self.start_future)
 
     @add_call_types
-    def on_abort(self, context):
-        # type: (scanning.hooks.AContext) -> None
+    def on_abort(self, context: scanning.hooks.AContext) -> None:
         child = context.block_view(self.mri)
         child.stop()
 
-    def load_more_positions(self, number_left, child):
-        # type: (int, Any) -> None
+    def load_more_positions(self, number_left: int, child: Any) -> None:
         if not self.loading and self.end_index < self.steps_up_to and \
                 number_left < POSITIONS_PER_XML * N_LOAD_AHEAD:
             self.loading = True
@@ -112,8 +105,7 @@ class PositionLabellerPart(builtin.parts.ChildPart):
             child.xml.put_value(xml)
             self.loading = False
 
-    def _make_xml(self, start_index):
-        # type: (int) -> Tuple[str, int]
+    def _make_xml(self, start_index: int) -> Tuple[str, int]:
 
         # Make xml root
         xml = '<?xml version="1.0" ?><pos_layout><dimensions>'

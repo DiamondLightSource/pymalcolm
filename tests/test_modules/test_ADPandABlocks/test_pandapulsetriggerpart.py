@@ -26,8 +26,7 @@ class PulsePart(Part):
     mocks = None
     units = None
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         self.mocks = {}
         self.units = {}
         for suffix in ["step", "delay", "width", "pulses"]:

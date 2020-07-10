@@ -26,12 +26,11 @@ APartName = APartName
 
 class ExposureDeadtimePart(Part):
     def __init__(self,
-                 name,  # type: APartName
-                 initial_readout_time=0.0,  # type: AInitialReadoutTime
-                 initial_frequency_accuracy=50.0,  # type: AInitialAccuracy
-                 min_exposure=0.0  # type: AMinExposure
-                 ):
-        # type: (...) -> None
+                 name: APartName,
+                 initial_readout_time: AInitialReadoutTime = 0.0,
+                 initial_frequency_accuracy: AInitialAccuracy = 50.0,
+                 min_exposure: AMinExposure = 0.0
+                 ) -> None:
         super(ExposureDeadtimePart, self).__init__(name)
         self.readout_time = NumberMeta(
             "float64", readout_desc,
@@ -46,8 +45,7 @@ class ExposureDeadtimePart(Part):
         self.min_exposure = min_exposure
         self.exposure = exposure_attribute(min_exposure)
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(ExposureDeadtimePart, self).setup(registrar)
         # Hooks
         registrar.hook(ReportStatusHook, self.on_report_status)
@@ -65,8 +63,7 @@ class ExposureDeadtimePart(Part):
             self.on_configure))
 
     @add_call_types
-    def on_report_status(self):
-        # type: () -> UInfos
+    def on_report_status(self) -> UInfos:
         # Make an info so we can pass it to the detector
         info = ExposureDeadtimeInfo(
             self.readout_time.value, self.frequency_accuracy.value,
@@ -74,14 +71,12 @@ class ExposureDeadtimePart(Part):
         return info
 
     @add_call_types
-    def on_validate(self, generator, exposure=0.0):
-        # type: (AGenerator, AExposure) -> UInfos
+    def on_validate(self, generator: AGenerator, exposure: AExposure = 0.0) -> UInfos:
         info = self.on_report_status()
         new_exposure = info.calculate_exposure(generator.duration, exposure)
         if new_exposure != exposure:
             return ParameterTweakInfo("exposure", new_exposure)
 
     @add_call_types
-    def on_configure(self, exposure=0.0):
-        # type: (AExposure) -> None
+    def on_configure(self, exposure: AExposure = 0.0) -> None:
         self.exposure.set_value(exposure)

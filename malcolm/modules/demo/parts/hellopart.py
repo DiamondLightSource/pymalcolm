@@ -15,15 +15,13 @@ with Anno("The manufactured greeting"):
 class HelloPart(Part):
     """Defines greet and error `Method` objects on a `Block`"""
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(HelloPart, self).setup(registrar)
         registrar.add_method_model(self.greet)
         registrar.add_method_model(self.error)
 
     @add_call_types
-    def greet(self, name, sleep=0):
-        # type: (AName, ASleep) -> AGreeting
+    def greet(self, name: AName, sleep: ASleep = 0) -> AGreeting:
         """Optionally sleep <sleep> seconds, then return a greeting to <name>"""
         print("Manufacturing greeting...")
         sleep_for(sleep)

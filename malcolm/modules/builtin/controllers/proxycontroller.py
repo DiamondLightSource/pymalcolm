@@ -20,8 +20,7 @@ AMri = AMri
 class ProxyController(BasicController):
     """Sync a local block with a given remote block"""
 
-    def __init__(self, mri, comms, publish=False):
-        # type: (AMri, AComms, APublish) -> None
+    def __init__(self, mri: AMri, comms: AComms, publish: APublish = False) -> None:
         super(ProxyController, self).__init__(mri)
         self.comms = comms
         self.publish = publish
@@ -31,10 +30,9 @@ class ProxyController(BasicController):
         # Hooks
         self.register_hooked(ProcessStartHook, self.init)
 
-    def init(self):
-        # type: () -> UUnpublishedInfos
-        self.client_comms = self.process.get_controller(
-            self.comms)  # type: ClientComms
+    def init(self) -> UUnpublishedInfos:
+        self.client_comms: ClientComms = self.process.get_controller(
+            self.comms)
         # Wait until connected
         context = Context(self.process)
         wait_for_stateful_block_init(context, self.comms)

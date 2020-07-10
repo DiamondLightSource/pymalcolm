@@ -1,4 +1,4 @@
-from annotypes import add_call_types, TYPE_CHECKING, stringify_error
+from annotypes import add_call_types, stringify_error
 from cothread import cothread
 from p4p import Value
 from p4p.server import Server, DynamicProvider, ServerOperation
@@ -12,23 +12,20 @@ from malcolm.modules import builtin
 from .pvaconvert import convert_dict_to_value, update_path, \
     convert_value_to_dict
 
-if TYPE_CHECKING:
-    from typing import Optional, Dict, List, Set
+from typing import Optional, Dict, List, Set
 
 
 class BlockHandler(Handler):
-    def __init__(self, controller, field=None):
-        # type: (Controller, str) -> None
+    def __init__(self, controller: Controller, field: str = None) -> None:
         self.controller = controller
         # Lock to control access to self.pv
         self._lock = RLock()
         self.field = field
-        self.pv = None  # type: Optional[SharedPV]
-        self.value = None  # type: Value
-        self.put_paths = None  # type: Set[str]
+        self.pv: Optional[SharedPV] = None
+        self.value: Value = None
+        self.put_paths: Set[str] = None
 
-    def rpc(self, pv, op):
-        # type: (SharedPV, ServerOperation) -> None
+    def rpc(self, pv: SharedPV, op: ServerOperation) -> None:
         value = op.value()
         if value.getID() == "epics:nt/NTURI:1.0":
             # We got an NTURI, get path from path and parameters from query
@@ -61,8 +58,7 @@ class BlockHandler(Handler):
             method, parameters)
         post = Post(path=path, parameters=parameters)
 
-        def handle_post_response(response):
-            # type: (Response) -> None
+        def handle_post_response(response: Response) -> None:
             if isinstance(response, Return):
                 if add_wrapper:
                     # Method gave us return unpacked (bare string or other type)
@@ -96,8 +92,7 @@ class BlockHandler(Handler):
         post.set_callback(handle_post_response)
         self.controller.handle_request(post).get()
 
-    def put(self, pv, op):
-        # type: (SharedPV, ServerOperation) -> None
+    def put(self, pv: SharedPV, op: ServerOperation) -> None:
         path = [self.controller.mri]
         # We work out what to Put by taking every field that is marked as
         # changed and walking up the tree, adding every dotted field name
@@ -134,8 +129,7 @@ class BlockHandler(Handler):
         value = convert_value_to_dict(op_value)["value"]
         put = Put(path=path, value=value)
 
-        def handle_put_response(response):
-            # type: (Response) -> None
+        def handle_put_response(response: Response) -> None:
             if isinstance(response, Return):
                 op.done()
             else:
@@ -148,8 +142,7 @@ class BlockHandler(Handler):
         put.set_callback(handle_put_response)
         self.controller.handle_request(put).get()
 
-    def handle(self, response):
-        # type: (Response) -> None
+    def handle(self, response: Response) -> None:
         # Called from whatever thread the child block could be in, so
         # must already be a good thread to take the lock
         with self._lock:
@@ -173,8 +166,7 @@ class BlockHandler(Handler):
                     # We got a return or error, close the connection to clients
                     self.pv.close()
 
-    def _create_initial_value(self, response):
-        # type: (Delta) -> None
+    def _create_initial_value(self, response: Delta) -> None:
         # Called with the lock taken
         assert len(response.changes) == 1 and \
                len(response.changes[0]) == 2 and \
@@ -193,8 +185,7 @@ class BlockHandler(Handler):
         self.controller.log.debug("Opening with %s", list(self.value))
         self.pv.open(self.value)
 
-    def _update_value(self, delta):
-        # type: (Delta) -> None
+    def _update_value(self, delta: Delta) -> None:
         # Called with the lock taken
         self.value.unmark()
         for change in delta.changes:
@@ -210,8 +201,7 @@ class BlockHandler(Handler):
 
     # Need camelCase as called by p4p Server
     # noinspection PyPep8Naming
-    def onFirstConnect(self, pv):
-        # type: (SharedPV) -> None
+    def onFirstConnect(self, pv: SharedPV) -> None:
         # Store the PV, but don't open it now, let the first Delta do this
         with self._lock:
             self.pv = pv
@@ -225,8 +215,7 @@ class BlockHandler(Handler):
 
     # Need camelCase as called by p4p Server
     # noinspection PyPep8Naming
-    def onLastDisconnect(self, pv):
-        # type: (SharedPV) -> None
+    def onLastDisconnect(self, pv: SharedPV) -> None:
         assert self.pv, "onFirstConnect not called yet"
         # No-one listening, unsubscribe
         with self._lock:
@@ -241,20 +230,18 @@ class BlockHandler(Handler):
 class PvaServerComms(builtin.controllers.ServerComms):
     """A class for communication between pva client and server"""
 
-    def __init__(self, mri):
-        # type: (builtin.controllers.AMri) -> None
+    def __init__(self, mri: builtin.controllers.AMri) -> None:
         super(PvaServerComms, self).__init__(mri)
         self._pva_server = None
         self._provider = None
         self._published = set()
-        self._pvs = {}  # type: Dict[str, Dict[str, SharedPV]]
+        self._pvs: Dict[str, Dict[str, SharedPV]] = {}
         # Hooks
         self.register_hooked(ProcessPublishHook, self.publish)
 
     # Need camelCase as called by p4p Server
     # noinspection PyPep8Naming
-    def testChannel(self, channel_name):
-        # type: (str) -> bool
+    def testChannel(self, channel_name: str) -> bool:
         if channel_name in self._published:
             # Someone is asking for a Block
             return True
@@ -268,14 +255,12 @@ class PvaServerComms(builtin.controllers.ServerComms):
 
     # Need camelCase as called by p4p Server
     # noinspection PyPep8Naming
-    def makeChannel(self, channel_name, src):
-        # type: (str, str) -> SharedPV
+    def makeChannel(self, channel_name: str, src: str) -> SharedPV:
         # Need to spawn as we take a lock here and in process
         return cothread.CallbackResult(
             self._make_channel, channel_name, src, callback_timeout=1.0)
 
-    def _make_channel(self, channel_name, src):
-        # type: (str, str) -> SharedPV
+    def _make_channel(self, channel_name: str, src: str) -> SharedPV:
         self.log.debug("Making PV %s for %s", channel_name, src)
         if channel_name in self._published:
             # Someone is asking for a Block
@@ -323,8 +308,7 @@ class PvaServerComms(builtin.controllers.ServerComms):
             self.log.info("Stopped PVA server")
 
     @add_call_types
-    def publish(self, published):
-        # type: (APublished) -> None
+    def publish(self, published: APublished) -> None:
         self._published = set(published)
         if self._pva_server:
             with self._lock:
@@ -332,8 +316,7 @@ class PvaServerComms(builtin.controllers.ServerComms):
                 # Delete blocks we no longer have
                 self.disconnect_pv_clients(mris)
 
-    def disconnect_pv_clients(self, mris):
-        # type: (List[str]) -> None
+    def disconnect_pv_clients(self, mris: List[str]) -> None:
         """Disconnect anyone listening to any of the given mris"""
         for mri in mris:
             for pv in self._pvs.pop(mri, {}).values():

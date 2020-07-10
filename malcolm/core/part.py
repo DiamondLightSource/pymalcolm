@@ -13,15 +13,12 @@ from .models import MethodModel, AttributeModel, MethodMeta
 
 T = TypeVar("T")
 
-if TYPE_CHECKING:
-    from typing import Union, List, Tuple, Dict, Callable, Optional, Type, \
-        Sequence
-
-    Field = Union[AttributeModel, MethodModel]
-    FieldDict = Dict[object, List[Tuple[str, Field, Callable, bool]]]
-    Callback = Callable[[object, Info], None]
-    Hooked = Callable[..., T]
-    ArgsGen = Callable[[List[str]], List[str]]
+from typing import Union, List, Tuple, Dict, Callable, Optional, Type, Sequence
+Field = Union[AttributeModel, MethodModel]
+FieldDict = Dict[object, List[Tuple[str, Field, Callable, bool]]]
+Callback = Callable[[object, Info], None]
+Hooked = Callable[..., T]
+ArgsGen = Callable[[List[str]], List[str]]
 
 with Anno("The name of the Part within the Controller"):
     APartName = str
@@ -32,12 +29,10 @@ PART_NAME_RE = re.compile(r"[a-zA-Z_\-0-9]*$")
 
 
 class FieldRegistry(object):
-    def __init__(self):
-        # type: () -> None
-        self.fields = OrderedDict()  # type: FieldDict
+    def __init__(self) -> None:
+        self.fields: FieldDict = OrderedDict()
 
-    def get_field(self, name):
-        # type: (str) -> Field
+    def get_field(self, name: str) -> Field:
         for fields in self.fields.values():
             for (n, field, _, _) in fields:
                 if n == name:
@@ -45,19 +40,18 @@ class FieldRegistry(object):
         raise ValueError("No field named %s found" % (name,))
 
     def add_method_model(self,
-                         func,  # type: Callable
-                         name=None,  # type: Optional[str]
-                         description=None,  # type: Optional[str]
-                         owner=None,  # type: object
-                         needs_context=False  # type: bool
-                         ):
-        # type: (...) -> MethodModel
+                         func: Callable,
+                         name: Optional[str] = None,
+                         description: Optional[str] = None,
+                         owner: object = None,
+                         needs_context: bool = False
+                         ) -> MethodModel:
         """Register a function to be added to the block"""
         if name is None:
             name = func.__name__
         if needs_context:
             call_types = getattr(func, "call_types", {})
-            context_anno = call_types.get("context", None)  # type: Anno
+            context_anno: Anno = call_types.get("context", None)
             assert context_anno, \
                 "Func %s needs_context, but has no 'context' anno. Did " \
                 "you forget the @add_call_types decorator?" % func
@@ -76,18 +70,16 @@ class FieldRegistry(object):
         return method
 
     def add_attribute_model(self,
-                            name,  # type: str
-                            attr,  # type: AttributeModel
-                            writeable_func=None,  # type: Optional[Callable]
-                            owner=None,  # type: object
-                            needs_context=False  # type: bool
-                            ):
-        # type: (...) -> AttributeModel
+                            name: str,
+                            attr: AttributeModel,
+                            writeable_func: Optional[Callable] = None,
+                            owner: object = None,
+                            needs_context: bool = False
+                            ) -> AttributeModel:
         self._add_field(owner, name, attr, writeable_func, needs_context)
         return attr
 
-    def _add_field(self, owner, name, model, writeable_func, needs_context):
-        # type: (object, str, Field, Callable, bool) -> None
+    def _add_field(self, owner: object, name: str, model: Field, writeable_func: Callable, needs_context: bool) -> None:
         assert CAMEL_RE.match(name), \
             "Field %r published by %s is not camelCase" % (name, owner)
         for o, part_fields in self.fields.items():
@@ -101,14 +93,12 @@ class FieldRegistry(object):
 
 class InfoRegistry(object):
     def __init__(self):
-        self._reportable_infos = {}  # type: Dict[Type[Info], Callback]
+        self._reportable_infos: Dict[Type[Info], Callback] = {}
 
-    def add_reportable(self, info, callback):
-        # type: (Type[Info], Callback) -> None
+    def add_reportable(self, info: Type[Info], callback: Callback) -> None:
         self._reportable_infos[info] = callback
 
-    def report(self, reporter, info):
-        # type: (object, Info) -> None
+    def report(self, reporter: object, info: Info) -> None:
         typ = type(info)
         try:
             callback = self._reportable_infos[typ]
@@ -121,25 +111,22 @@ class InfoRegistry(object):
 
 
 class Part(Hookable):
-    registrar = None  # type: PartRegistrar
+    registrar: 'PartRegistrar' = None
 
-    def __init__(self, name):
-        # type: (APartName) -> None
+    def __init__(self, name: APartName) -> None:
         assert PART_NAME_RE.match(name), \
             "Expected Alphanumeric part name (dashes and underscores allowed)" \
             + " got %r" % name
         self.set_logger(part_name=name)
         self.name = name
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: 'PartRegistrar') -> None:
         """Use the given `PartRegistrar` to populate the hooks and fields.
         This function is called for all parts in a block when the block's
         `Controller` is added to a `Process`"""
         self.registrar = registrar
 
-    def notify_dispatch_request(self, request):
-        # type: (Request) -> None
+    def notify_dispatch_request(self, request: Request) -> None:
         """Will be called when a context passed to a hooked function is about
         to dispatch a request"""
         pass
@@ -150,16 +137,15 @@ class PartRegistrar(object):
     with their parent Controller that will appear in the Block
     """
 
-    def __init__(self, field_registry, info_registry, part):
-        # type: (FieldRegistry, InfoRegistry, Part) -> None
+    def __init__(self, field_registry: FieldRegistry, info_registry: InfoRegistry, part: 'Part') -> None:
         self._field_registry = field_registry
         self._info_registry = info_registry
         self._part = part
 
     def hook(self,
-             hooks,  # type: Union[Type[Hook], Sequence[Type[Hook]]]
-             func,  # type: Hooked
-             args_gen=None  # type: Optional[ArgsGen]
+             hooks: Union[Type[Hook], Sequence[Type[Hook]]],
+             func: Hooked,
+             args_gen: Optional[ArgsGen] = None
              ):
         """Register func to be run when any of the hooks are run by parent
 
@@ -173,12 +159,11 @@ class PartRegistrar(object):
         self._part.register_hooked(hooks, func, args_gen)
 
     def add_method_model(self,
-                         func,  # type: Callable
-                         name=None,  # type: Optional[str]
-                         description=None,  # type: Optional[str]
-                         needs_context=False,  # type: bool
-                         ):
-        # type: (...) -> MethodModel
+                         func: Callable,
+                         name: Optional[str] = None,
+                         description: Optional[str] = None,
+                         needs_context: bool = False,
+                         ) -> MethodModel:
         """Register a function to be added to the Block as a MethodModel
 
         Args:
@@ -192,17 +177,15 @@ class PartRegistrar(object):
             func, name, description, self._part, needs_context)
 
     def add_attribute_model(self,
-                            name,  # type: str
-                            attr,  # type: AttributeModel
-                            writeable_func=None,  # type: Optional[Callable]
-                            needs_context=False,  # type: bool
-                            ):
-        # type: (...) -> AttributeModel
+                            name: str,
+                            attr: AttributeModel,
+                            writeable_func: Optional[Callable] = None,
+                            needs_context: bool = False,
+                            ) -> AttributeModel:
         """Register a pre-existing AttributeModel to be added to the Block"""
         return self._field_registry.add_attribute_model(
             name, attr, writeable_func, self._part, needs_context)
 
-    def report(self, info):
-        # type: (Info) -> None
+    def report(self, info: Info) -> None:
         """Report an Info to the parent Controller"""
         self._info_registry.report(self._part, info)

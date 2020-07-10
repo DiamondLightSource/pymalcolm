@@ -1,4 +1,4 @@
-from annotypes import Anno, TYPE_CHECKING, deserialize_object, json_decode, \
+from annotypes import Anno, deserialize_object, json_decode, \
     json_encode
 from cothread import cothread
 from tornado import gen
@@ -10,9 +10,8 @@ from malcolm.core import Subscribe, Response, Error, Update, Return, Queue, \
 from malcolm.modules import builtin
 from ..util import IOLoopHelper, BlockTable
 
-if TYPE_CHECKING:
-    from typing import Dict, Tuple, Callable
-    Key = Tuple[Callable[[Response], None], int]
+from typing import Dict, Tuple, Callable
+Key = Tuple[Callable[[Response], None], int]
 
 with Anno("Hostname of malcolm websocket server"):
     AHostname = str
@@ -26,21 +25,20 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
     """A class for a client to communicate with the server"""
 
     def __init__(self,
-                 mri,  # type: builtin.controllers.AMri
-                 hostname="localhost",  # type: AHostname
-                 port=8008,  # type: APort
-                 connect_timeout=DEFAULT_TIMEOUT  # type: AConnectTimeout
-                 ):
-        # type: (...) -> None
+                 mri: builtin.controllers.AMri,
+                 hostname: AHostname = "localhost",
+                 port: APort = 8008,
+                 connect_timeout: AConnectTimeout = DEFAULT_TIMEOUT
+                 ) -> None:
         super(WebsocketClientComms, self).__init__(mri)
         self.hostname = hostname
         self.port = port
         self.connect_timeout = connect_timeout
         self._connected_queue = Queue()
         # {new_id: request}
-        self._request_lookup = {}  # type: Dict[int, Request]
+        self._request_lookup: Dict[int, Request] = {}
         self._next_id = 1
-        self._conn = None  # type: WebSocketClientConnection
+        self._conn: WebSocketClientConnection = None
         # Create read-only attribute for the remotely reachable blocks
         self.remote_blocks = TableMeta.from_table(
             BlockTable, "Remotely reachable blocks"
@@ -162,8 +160,7 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
         IOLoopHelper.call(self._send_request, subscribe)
         done_queue.get(timeout=DEFAULT_TIMEOUT)
 
-    def _handle_response(self, response, block, done_queue):
-        # type: (Response, BlockModel, Queue) -> None
+    def _handle_response(self, response: Response, block: BlockModel, done_queue: Queue) -> None:
         try:
             with self.changes_squashed:
                 for change in response.changes:
@@ -197,14 +194,14 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
         for field, value in d.items():
             if field == "health":
                 # Update health attribute
-                value = deserialize_object(value)  # type: NTScalar
+                value: NTScalar = deserialize_object(value)
                 block.health.set_value(
                     value=value.value,
                     alarm=value.alarm,
                     ts=value.timeStamp)
             elif field == "meta":
-                value = deserialize_object(value)  # type: BlockMeta
-                meta = block.meta  # type: BlockMeta
+                value: BlockMeta = deserialize_object(value)
+                meta: BlockMeta = block.meta
                 for k in meta.call_types:
                     meta.apply_change([k], value[k])
             elif field != "typeid":

@@ -36,8 +36,7 @@ class Table(Serializable):
         for row in zip(*data):
             yield list(row)
 
-    def __eq__(self, other):
-        # type: (object) -> bool
+    def __eq__(self, other: object) -> bool:
         return not self != other
 
     def __ne__(self, other):

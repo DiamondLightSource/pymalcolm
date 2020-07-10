@@ -10,10 +10,9 @@ from ..hooks import PostConfigureHook, APartInfo
 class DatasetTablePart(Part):
     """Exposes an Attribute that reports the datasets that will be written
     during a scan"""
-    datasets = None  # type: AttributeModel
+    datasets: AttributeModel = None
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         self.datasets = TableMeta.from_table(
             DatasetTable, "Datasets produced in HDF file"
         ).create_attribute_model()
@@ -23,8 +22,7 @@ class DatasetTablePart(Part):
         registrar.hook(builtin.hooks.ResetHook, self.on_reset)
 
     @add_call_types
-    def on_post_configure(self, part_info):
-        # type: (APartInfo) -> None
+    def on_post_configure(self, part_info: APartInfo) -> None:
         # Update the dataset table
         name, filename, typ, rank, path, uid = [], [], [], [], [], []
         for i in DatasetProducedInfo.filter_values(part_info):

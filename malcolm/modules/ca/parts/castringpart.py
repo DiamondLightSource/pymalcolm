@@ -15,23 +15,22 @@ class CAStringPart(Part):
     """Defines a string `Attribute` that talks to a DBR_STRING stringout PV"""
 
     def __init__(self,
-                 name,  # type: util.APartName
-                 description,  # type: util.AMetaDescription
-                 pv="",  # type: util.APv
-                 rbv="",  # type: util.ARbv
-                 rbv_suffix="",  # type: util.ARbvSuffix
-                 min_delta=0.05,  # type: util.AMinDelta
-                 timeout=DEFAULT_TIMEOUT,  # type: util.ATimeout
-                 sink_port=None,  # type: util.ASinkPort
-                 widget=None,  # type: util.AWidget
-                 group=None,  # type: util.AGroup
-                 config=True,  # type: util.AConfig
-                 throw=True,  # type: util.AThrow
-                 port_badge_mri=None,  # type: AMri
-                 port_badge_attr=None,  # type: ABadgeAttr
-                 port_badge_display=None,  # type: ABadgeDisplay
-                 ):
-        # type: (...) -> None
+                 name: util.APartName,
+                 description: util.AMetaDescription,
+                 pv: util.APv = "",
+                 rbv: util.ARbv = "",
+                 rbv_suffix: util.ARbvSuffix = "",
+                 min_delta: util.AMinDelta = 0.05,
+                 timeout: util.ATimeout = DEFAULT_TIMEOUT,
+                 sink_port: util.ASinkPort = None,
+                 widget: util.AWidget = None,
+                 group: util.AGroup = None,
+                 config: util.AConfig = True,
+                 throw: util.AThrow = True,
+                 port_badge_mri: AMri = None,
+                 port_badge_attr: ABadgeAttr = None,
+                 port_badge_display: ABadgeDisplay = None,
+                 ) -> None:
         super(CAStringPart, self).__init__(name)
         port_badge = None
         if port_badge_mri and port_badge_attr:
@@ -44,7 +43,6 @@ class CAStringPart(Part):
             sink_port, widget, group, config, throw=throw,
             port_badge=port_badge)
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         self.caa.setup(registrar, self.name, self.register_hooked)
 

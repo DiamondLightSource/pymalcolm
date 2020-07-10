@@ -5,7 +5,7 @@ import struct
 import os
 import cothread
 
-from annotypes import Anno, add_call_types, TYPE_CHECKING, deserialize_object, \
+from annotypes import Anno, add_call_types, deserialize_object, \
     json_encode, json_decode
 from tornado.websocket import WebSocketHandler, WebSocketError
 
@@ -16,9 +16,7 @@ from ..infos import HandlerInfo
 from ..hooks import ReportHandlersHook, UHandlerInfos
 from ..util import IOLoopHelper
 
-
-if TYPE_CHECKING:
-    from typing import Dict
+from typing import Dict
 
 # Create a module level logger
 log = logging.getLogger(__name__)
@@ -60,9 +58,9 @@ class MalcWebSocketHandler(WebSocketHandler):
     _counter = None
 
     def initialize(self, registrar=None, validators=()):
-        self._registrar = registrar  # type: PartRegistrar
+        self._registrar: PartRegistrar = registrar
         # {id: mri}
-        self._id_to_mri = {}  # type: Dict[int, str]
+        self._id_to_mri: Dict[int, str] = {}
         self._validators = validators
         self._queue = Queue()
         self._counter = 0
@@ -121,8 +119,7 @@ class MalcWebSocketHandler(WebSocketHandler):
             for _ in range(10):
                 self._queue.get()
 
-    def _on_response(self, response):
-        # type: (Response) -> None
+    def _on_response(self, response: Response) -> None:
         # called from tornado thread
         message = json_encode(response)
         try:
@@ -158,20 +155,17 @@ with Anno("If True, check any client is in the same subnet as the host"):
 
 
 class WebsocketServerPart(Part):
-    def __init__(self, name="ws", subnet_validation=True):
-        # type: (AName, ASubnetValidation) -> None
+    def __init__(self, name: AName = "ws", subnet_validation: ASubnetValidation = True) -> None:
         super(WebsocketServerPart, self).__init__(name)
         self.subnet_validation = subnet_validation
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(WebsocketServerPart, self).setup(registrar)
         # Hooks
         registrar.hook(ReportHandlersHook, self.on_report_handlers)
 
     @add_call_types
-    def on_report_handlers(self):
-        # type: () -> UHandlerInfos
+    def on_report_handlers(self) -> UHandlerInfos:
         validators = []
         if self.subnet_validation:
             # Create an ip validator for every interface that is up

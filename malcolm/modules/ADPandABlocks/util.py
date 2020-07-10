@@ -58,25 +58,24 @@ UPositionCaptures = pandablocks.util.UPositionCaptures
 class SequencerTable(Table):
     """Convenience Table object for building sequencer tables"""
     def __init__(self,
-                 repeats,  # type: ALineRepeatsArray
-                 trigger,  # type: ATriggerArray
-                 position,  # type: APositionArray
-                 time1,  # type: ATimeArray
-                 outa1,  # type: AOutArray
-                 outb1,  # type: AOutArray
-                 outc1,  # type: AOutArray
-                 outd1,  # type: AOutArray
-                 oute1,  # type: AOutArray
-                 outf1,  # type: AOutArray
-                 time2,  # type: ATimeArray
-                 outa2,  # type: AOutArray
-                 outb2,  # type: AOutArray
-                 outc2,  # type: AOutArray
-                 outd2,  # type: AOutArray
-                 oute2,  # type: AOutArray
-                 outf2,  # type: AOutArray
-                 ):
-        # type: (...) -> None
+                 repeats: ALineRepeatsArray,
+                 trigger: ATriggerArray,
+                 position: APositionArray,
+                 time1: ATimeArray,
+                 outa1: AOutArray,
+                 outb1: AOutArray,
+                 outc1: AOutArray,
+                 outd1: AOutArray,
+                 oute1: AOutArray,
+                 outf1: AOutArray,
+                 time2: ATimeArray,
+                 outa2: AOutArray,
+                 outb2: AOutArray,
+                 outc2: AOutArray,
+                 outd2: AOutArray,
+                 oute2: AOutArray,
+                 outf2: AOutArray,
+                 ) -> None:
         self.repeats = ALineRepeatsArray(repeats)
         self.trigger = ATriggerArray(trigger)
         self.position = APositionArray(position)
@@ -100,13 +99,12 @@ class DatasetBitsTable(pandablocks.util.BitsTable):
     # Allow CamelCase as arguments will be serialized
     # noinspection PyPep8Naming
     def __init__(self,
-                 name,  # type: UBitNames
-                 value,  # type: UBitValues
-                 capture,  # type: UBitCaptures
-                 datasetName,  # type: UAttributeNames
-                 datasetType  # type: UAttributeTypes
-                 ):
-        # type: (...) -> None
+                 name: UBitNames,
+                 value: UBitValues,
+                 capture: UBitCaptures,
+                 datasetName: UAttributeNames,
+                 datasetType: UAttributeTypes
+                 ) -> None:
         super(DatasetBitsTable, self).__init__(name, value, capture)
         self.datasetName = AAttributeNames(datasetName)
         self.datasetType = AAttributeTypes(datasetType)
@@ -116,16 +114,15 @@ class DatasetPositionsTable(pandablocks.util.PositionsTable):
     # Allow CamelCase as arguments will be serialized
     # noinspection PyPep8Naming
     def __init__(self,
-                 name,  # type: UPositionNames
-                 value,  # type: UPositionValues
-                 units,  # type: UPositionUnits
-                 scale,  # type: UPositionScales
-                 offset,  # type: UPositionOffsets
-                 capture,  # type: UPositionCaptures
-                 datasetName,  # type: UAttributeNames
-                 datasetType  # type: UAttributeTypes
-                 ):
-        # type: (...) -> None
+                 name: UPositionNames,
+                 value: UPositionValues,
+                 units: UPositionUnits,
+                 scale: UPositionScales,
+                 offset: UPositionOffsets,
+                 capture: UPositionCaptures,
+                 datasetName: UAttributeNames,
+                 datasetType: UAttributeTypes
+                 ) -> None:
         super(DatasetPositionsTable, self).__init__(
             name, value, units, scale, offset, capture)
         self.datasetName = AAttributeNames(datasetName)

@@ -19,13 +19,12 @@ class AsynSourcePortPart(Part):
     depicted as an Source Port on a Block"""
 
     def __init__(self,
-                 name,  # type: APartName
-                 description,  # type: AMetaDescription
-                 rbv,  # type: ARbv
-                 port_type,  # type: APortType
-                 group=None  # type: AGroup
-                 ):
-        # type: (...) -> None
+                 name: APartName,
+                 description: AMetaDescription,
+                 rbv: ARbv,
+                 port_type: APortType,
+                 group: AGroup = None
+                 ) -> None:
         super(AsynSourcePortPart, self).__init__(name)
         self.port_type = port_type
         self.meta = StringMeta(description)
@@ -33,12 +32,10 @@ class AsynSourcePortPart(Part):
             self.meta, ca.util.catools.DBR_STRING, rbv=rbv, group=group,
             on_connect=self.update_tags)
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         self.caa.setup(registrar, self.name, self.register_hooked)
 
-    def update_tags(self, value):
-        # type: (Any) -> None
+    def update_tags(self, value: Any) -> None:
         # Add the Source Port tags
         old_tags = self.meta.tags
         new_tags = self.port_type.with_source_port_tag(

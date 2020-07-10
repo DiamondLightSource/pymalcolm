@@ -11,8 +11,7 @@ def make_gaussian_blob(width, height):
     return blob
 
 
-def interesting_pattern(point):
-    # type: (Point) -> float
+def interesting_pattern(point: Point) -> float:
     """This function is interesting in x and y in range -10..10. Given a Point,
     use the x and y values contained in it to make a float value in range 0..1
     """
