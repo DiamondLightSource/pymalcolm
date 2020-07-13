@@ -378,7 +378,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
                     # Use axis name if have it, otherwise use raw Q number
                     if i + 1 in self.q_value_mapping:
                         f.create_virtual_dataset(
-                            '/entry/' + self.q_value_mapping[i + 1] + datatype,
+                            '/entry/' + self.q_value_mapping[i + 1] + "." + datatype,
                             layout, fillvalue=-1
                         )
 
