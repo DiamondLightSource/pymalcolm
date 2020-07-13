@@ -162,8 +162,6 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         )
 
         produced_datasets = []
-        print(self.q_value_mapping)
-        print(self.axis_numbers)
         dtypes = {"mean": scanning.infos.DatasetType.POSITION_VALUE}
         for scannable, axis_num in self.axis_numbers.items():
             dataset_i = None
@@ -190,10 +188,9 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
                 produced_datasets += [
                     scanning.infos.DatasetProducedInfo(
                                                         name + "." + k,
-                                                        savu_rel_path, v,
-                                                        rank, PATH, None
-                                                      )]
-        print(produced_datasets)
+                                                        vds_fileName, v,
+                                                        rank, PATH, ""
+                                     
         return produced_datasets        
             
 
