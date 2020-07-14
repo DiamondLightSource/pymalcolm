@@ -187,9 +187,12 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
                 PATH='/entry/' + axis + "." + k
                 produced_datasets += [
                     scanning.infos.DatasetProducedInfo(
-                                                        name + "." + k,
+                                                        axis + "." + k,
                                                         vds_fileName, v,
                                                         rank, PATH, ""
+                                                      )
+                                     ]
+
                                      
         return produced_datasets        
             
