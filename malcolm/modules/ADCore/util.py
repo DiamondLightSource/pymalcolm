@@ -1,3 +1,5 @@
+import os
+
 from annotypes import Anno, Array, Sequence, Union
 from enum import Enum
 
@@ -92,3 +94,9 @@ class ExtraAttributesTable(Table):
         self.sourceType = ASourceTypes(sourceType)
         self.dataType = ADataTypes(dataType)
         self.datasetType = AAttributeTypes(datasetType)
+
+
+def make_xml_filename(file_dir, mri, suffix="attributes"):
+    """Return a Block-specific filename for attribute or layout XML file"""
+    return os.path.join(
+        file_dir, "%s-%s.xml" % (mri.replace(":", "_"), suffix))

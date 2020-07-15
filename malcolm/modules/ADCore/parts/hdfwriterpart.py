@@ -11,7 +11,7 @@ from malcolm.core import APartName, Future, Info, Block, PartRegistrar, \
 from malcolm.modules import builtin, scanning
 from ..infos import CalculatedNDAttributeDatasetInfo, NDArrayDatasetInfo, \
     NDAttributeDatasetInfo, FilePathTranslatorInfo
-from ..util import APartRunsOnWindows, FRAME_TIMEOUT
+from ..util import APartRunsOnWindows, FRAME_TIMEOUT, make_xml_filename
 
 if TYPE_CHECKING:
     from typing import Iterator, List, Dict
@@ -344,16 +344,16 @@ class HDFWriterPart(builtin.parts.ChildPart):
         futures += set_dimensions(child, generator)
         xml = make_layout_xml(generator, part_info,
                               self.write_all_nd_attributes.value)
-        self.layout_filename = os.path.join(
-            file_dir, "%s-layout.xml" % self.mri)
+        self.layout_filename = make_xml_filename(
+            file_dir, self.mri, suffix="layout")
         with open(self.layout_filename, "w") as f:
             f.write(xml)
-        layout_filename = self.layout_filename
+        layout_filename_pv_value = self.layout_filename
         if self.runs_on_windows:
-            layout_filename = FilePathTranslatorInfo.translate_filepath(
+            layout_filename_pv_value = FilePathTranslatorInfo.translate_filepath(
                 part_info, self.layout_filename)
         futures += child.put_attribute_values_async(dict(
-            xmlLayout=layout_filename,
+            xmlLayout=layout_filename_pv_value,
             flushDataPerNFrames=steps_to_do,
             flushAttrPerNFrames=0))
         # Wait for the previous puts to finish
@@ -365,10 +365,15 @@ class HDFWriterPart(builtin.parts.ChildPart):
         # Start a future waiting for the first array
         self.array_future = child.when_value_matches_async(
             "arrayCounterReadback", greater_than_zero)
+        self._check_xml_is_valid(child)
         # Return the dataset information
         dataset_infos = list(create_dataset_infos(
             formatName, part_info, generator, filename))
         return dataset_infos
+
+    def _check_xml_is_valid(self, child):
+        assert child.xmlLayoutValid.value, \
+            "%s: invalid XML layout file (%s)" % (self.mri, child.xmlErrorMsg.value)
 
     @add_call_types
     def on_seek(self,

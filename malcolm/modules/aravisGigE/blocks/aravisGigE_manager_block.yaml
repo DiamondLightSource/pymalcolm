@@ -1,0 +1,56 @@
+- builtin.parameters.string:
+    name: mri_prefix
+    description: Malcolm resource id of the Block and prefix for children
+
+- builtin.parameters.string:
+    name: pv_prefix
+    description: PV prefix for driver and all plugins
+
+- builtin.parameters.string:
+    name: config_dir
+    description: Where to store saved configs
+
+- builtin.parameters.string:
+    name: label
+    description: Beamline specific label for the detector
+    default: aravisGigE
+
+- builtin.defines.docstring:
+    value: |
+      Device block corresponding to ADAndor + stat + pos + hdf writer.
+
+      - Detector driver should have pv prefix $(pv_prefix):DET
+      - Pos should have pv prefix $(pv_prefix):POS
+      - Stat should have pv prefix $(pv_prefix):STAT
+      - HDF should have pv prefix $(pv_prefix):HDF5
+
+- builtin.controllers.ManagerController:
+    mri: $(mri_prefix)
+    config_dir: $(config_dir)
+    description: |
+      aravisGigE is a linux areaDetector driver wrapping the aravis libraries
+
+- builtin.parts.LabelPart:
+    value: $(label)
+
+- aravisGigE.blocks.aravisGigE_driver_block:
+    mri: $(mri_prefix):DRV
+    prefix: $(pv_prefix):DET
+
+- ADCore.parts.DetectorDriverPart:
+    name: DRV
+    mri: $(mri_prefix):DRV
+    soft_trigger_modes:
+        - Off
+
+- ADCore.blocks.ffmpeg_plugin_block:
+    mri: $(mri_prefix):FFMPEG
+    pv_prefix: $(pv_prefix):MJPG
+
+- builtin.parts.ChildPart:
+    name: FFMPEG
+    mri: $(mri_prefix):FFMPEG
+
+- builtin.parts.IconPart:
+    svg: $(yamldir)/../icons/GigE_Vision_Logo.svg
+

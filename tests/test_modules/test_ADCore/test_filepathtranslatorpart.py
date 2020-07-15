@@ -3,7 +3,6 @@ from mock import MagicMock, call
 from malcolm.core import PartRegistrar
 from malcolm.modules.ADCore.parts import FilepathTranslatorPart
 from malcolm.modules.ADCore.infos import FilePathTranslatorInfo
-#from annotypes import Anno, add_call_types
 
 
 class TestFilePathTranslatorPartLocal(unittest.TestCase):

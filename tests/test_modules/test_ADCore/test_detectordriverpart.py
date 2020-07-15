@@ -126,6 +126,7 @@ class TestDetectorDriverPart(ChildTestCase):
             call.post('stop'),
             call.when_value_matches('acquiring', False, None)]
 
+
 class TestDetectorDriverPartWindows(ChildTestCase):
 
     def setUp(self):
@@ -134,7 +135,7 @@ class TestDetectorDriverPartWindows(ChildTestCase):
 
         def child_block():
             controllers, parts = adbase_parts(prefix="prefix")
-            controller = StatefulController("mri")
+            controller = StatefulController("WINDOWS:DETECTOR")
             for part in parts:
                 controller.add_part(part)
             return controllers + [controller]
@@ -142,7 +143,7 @@ class TestDetectorDriverPartWindows(ChildTestCase):
         self.child = self.create_child_block(child_block, self.process)
         self.mock_when_value_matches(self.child)
         self.o = DetectorDriverPart(
-            name="m", mri="mri", soft_trigger_modes=["Internal"],
+            name="m", mri="WINDOWS:DETECTOR", soft_trigger_modes=["Internal"],
             runs_on_windows=True)
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
@@ -158,7 +159,7 @@ class TestDetectorDriverPartWindows(ChildTestCase):
         generator.prepare()
         completed_steps = 0
         steps_to_do = 6
-        expected_xml_filename = '\\\\dc\\tmp\\mri-attributes.xml'
+        expected_xml_filename = '\\\\dc\\tmp\\WINDOWS_DETECTOR-attributes.xml'
         self.set_attributes(self.child, triggerMode="Internal")
         extra_attributes = ExtraAttributesTable(
             name=["test1", "test2", "test3"],

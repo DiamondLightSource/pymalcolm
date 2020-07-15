@@ -11,7 +11,7 @@ from malcolm.modules import builtin, scanning
 from ..infos import NDArrayDatasetInfo, NDAttributeDatasetInfo, \
     FilePathTranslatorInfo
 from ..util import ExtraAttributesTable, APartRunsOnWindows, DataType, \
-    SourceType, FRAME_TIMEOUT
+    SourceType, FRAME_TIMEOUT, make_xml_filename
 
 with Anno("Is main detector dataset useful to publish in DatasetTable?"):
     AMainDatasetUseful = bool
@@ -254,8 +254,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         # Tell detector to store NDAttributes if table given
         if len(self.extra_attributes.value.sourceId) > 0:
             attribute_xml = self.build_attribute_xml()
-            self.attributes_filename = os.path.join(
-                fileDir, "%s-attributes.xml" % self.mri)
+            self.attributes_filename = make_xml_filename(fileDir, self.mri)
             with open(self.attributes_filename, 'w') as xml:
                 xml.write(attribute_xml)
             assert hasattr(child, "attributesFile"), \
