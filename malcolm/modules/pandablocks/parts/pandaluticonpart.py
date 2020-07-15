@@ -1,22 +1,25 @@
 import operator
+from typing import Callable, Dict, Set, Tuple
 
 from malcolm.modules import builtin
+
 from .pandaiconpart import PandAIconPart
 
-from typing import Callable, Tuple, Set, Dict
-
 LUT_CONSTANTS = dict(
-    A=0xffff0000, B=0xff00ff00, C=0xf0f0f0f0, D=0xcccccccc, E=0xaaaaaaaa)
+    A=0xFFFF0000, B=0xFF00FF00, C=0xF0F0F0F0, D=0xCCCCCCCC, E=0xAAAAAAAA
+)
 
 
-def _calc_visibility(func: str, op: Callable, nargs: int, permutation: int) -> Tuple[int, Set[str]]:
+def _calc_visibility(
+    func: str, op: Callable, nargs: int, permutation: int
+) -> Tuple[int, Set[str]]:
     # Visibility dictionary defaults
     invis = {"AND", "OR", "LUT", "NOT"}
     invis.remove(func)
     args = []
     # xxxxx where x is 0 or 1
     # EDCBA
-    negations = format(permutation, '05b')
+    negations = format(permutation, "05b")
     for i, inp in enumerate("EDCBA"):
         if (5 - i) > nargs:
             # invisible
@@ -88,5 +91,10 @@ class PandALutIconPart(PandAIconPart):
             # Old versions don't have type, default to level
             edge = field_values.get("TYPE" + inp, "level")
             icon.update_edge_arrow("edge" + inp, edge)
-        icon.add_text(field_values["FUNC"], x=30, y=-8, anchor="middle",
-                      transform="rotate(90 20,40)")
+        icon.add_text(
+            field_values["FUNC"],
+            x=30,
+            y=-8,
+            anchor="middle",
+            transform="rotate(90 20,40)",
+        )

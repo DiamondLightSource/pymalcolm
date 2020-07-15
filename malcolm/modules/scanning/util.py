@@ -5,23 +5,31 @@ rules are applied:
 - All types required to initialize info classes are in the infos namespace
 - util depends on hooks and infos (not vice versa)"""
 
-from annotypes import Anno, Array, Union, Sequence, Any, Serializable
-from scanpointgenerator import CompoundGenerator
 import numpy as np
+from annotypes import Anno, Any, Array, Sequence, Serializable, Union
+from scanpointgenerator import CompoundGenerator
 
-from malcolm.core import VMeta, NTUnion, Table, NumberMeta, Widget, \
-    Display, AttributeModel
+from malcolm.core import (
+    AttributeModel,
+    Display,
+    NTUnion,
+    NumberMeta,
+    Table,
+    VMeta,
+    Widget,
+)
 from malcolm.modules import builtin
-from .infos import DatasetType
 
-from .hooks import AGenerator, AAxesToMove, UAxesToMove
+from .hooks import AAxesToMove, AGenerator, UAxesToMove
+from .infos import DatasetType
 
 
 def exposure_attribute(min_exposure: float) -> AttributeModel:
     meta = NumberMeta(
-        "float64", "The calculated exposure for this run",
+        "float64",
+        "The calculated exposure for this run",
         tags=[Widget.TEXTUPDATE.tag()],
-        display=Display(precision=6, units="s", limitLow=min_exposure)
+        display=Display(precision=6, units="s", limitLow=min_exposure),
     )
     return meta.create_attribute_model()
 
@@ -29,7 +37,9 @@ def exposure_attribute(min_exposure: float) -> AttributeModel:
 class ConfigureParams(Serializable):
     # This will be serialized, so maintain camelCase for axesToMove
     # noinspection PyPep8Naming
-    def __init__(self, generator: AGenerator, axesToMove: UAxesToMove = None, **kwargs: Any) -> None:
+    def __init__(
+        self, generator: AGenerator, axesToMove: UAxesToMove = None, **kwargs: Any
+    ) -> None:
         if kwargs:
             # Got some additional args to report
             self.call_types = ConfigureParams.call_types.copy()
@@ -64,8 +74,7 @@ class PointGeneratorMeta(VMeta):
         elif isinstance(value, dict):
             return CompoundGenerator.from_dict(value)
         else:
-            raise TypeError(
-                "Value %s must be a Generator object or dictionary" % value)
+            raise TypeError("Value %s must be a Generator object or dictionary" % value)
 
 
 with Anno("Dataset names"):
@@ -91,14 +100,15 @@ UUniqueIDs = Union[AUniqueIDs, Sequence[str]]
 class DatasetTable(Table):
     # This will be serialized so we need type to be called type
     # noinspection PyShadowingBuiltins
-    def __init__(self,
-                 name: UDatasetNames,
-                 filename: UFilenames,
-                 type: UDatasetTypes,
-                 rank: URanks,
-                 path: UPaths,
-                 uniqueid: UUniqueIDs,
-                 ) -> None:
+    def __init__(
+        self,
+        name: UDatasetNames,
+        filename: UFilenames,
+        type: UDatasetTypes,
+        rank: URanks,
+        path: UPaths,
+        uniqueid: UUniqueIDs,
+    ) -> None:
         self.name = ADatasetNames(name)
         self.filename = AFilenames(filename)
         self.type = ADatasetTypes(type)
@@ -127,13 +137,14 @@ UFramesPerStep = Union[AFramesPerStep, Sequence[np.int32]]
 class DetectorTable(Table):
     # Will be serialized so use camelCase
     # noinspection PyPep8Naming
-    def __init__(self,
-                 enable: UEnable,
-                 name: UDetectorNames,
-                 mri: UDetectorMris,
-                 exposure: UExposures,
-                 framesPerStep: UFramesPerStep,
-                 ) -> None:
+    def __init__(
+        self,
+        enable: UEnable,
+        name: UDetectorNames,
+        mri: UDetectorMris,
+        exposure: UExposures,
+        framesPerStep: UFramesPerStep,
+    ) -> None:
         self.enable = AEnable(enable)
         self.name = ADetectorNames(name)
         self.mri = ADetectorMris(mri)
@@ -164,19 +175,24 @@ class RunnableStates(builtin.util.ManagerStates):
         # Set transitions for normal states
         self.set_allowed(self.READY, self.CONFIGURING)
         self.set_allowed(self.CONFIGURING, self.ARMED)
-        self.set_allowed(self.ARMED,
-                         self.RUNNING, self.SEEKING, self.RESETTING)
+        self.set_allowed(self.ARMED, self.RUNNING, self.SEEKING, self.RESETTING)
         self.set_allowed(self.RUNNING, self.POSTRUN, self.SEEKING)
         self.set_allowed(self.POSTRUN, self.FINISHED, self.ARMED, self.SEEKING)
-        self.set_allowed(self.FINISHED, self.SEEKING, self.RESETTING,
-                         self.CONFIGURING)
+        self.set_allowed(self.FINISHED, self.SEEKING, self.RESETTING, self.CONFIGURING)
         self.set_allowed(self.SEEKING, self.ARMED, self.PAUSED, self.FINISHED)
         self.set_allowed(self.PAUSED, self.SEEKING, self.RUNNING)
 
         # Add Abort to all normal states
         normal_states = [
-            self.READY, self.CONFIGURING, self.ARMED, self.RUNNING,
-            self.POSTRUN, self.PAUSED, self.SEEKING, self.FINISHED]
+            self.READY,
+            self.CONFIGURING,
+            self.ARMED,
+            self.RUNNING,
+            self.POSTRUN,
+            self.PAUSED,
+            self.SEEKING,
+            self.FINISHED,
+        ]
         for state in normal_states:
             self.set_allowed(state, self.ABORTING)
 

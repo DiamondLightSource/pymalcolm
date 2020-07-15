@@ -1,12 +1,12 @@
 import os
 
 from annotypes import Anno, add_call_types
-from tornado.web import StaticFileHandler, RedirectHandler
+from tornado.web import RedirectHandler, StaticFileHandler
 
-from malcolm.core import Part, APartName, PartRegistrar
+from malcolm.core import APartName, Part, PartRegistrar
+
 from ..hooks import ReportHandlersHook, UHandlerInfos
 from ..infos import HandlerInfo
-
 
 www_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "www"))
 
@@ -24,6 +24,7 @@ class IndexHandler(StaticFileHandler):
 
 class GuiServerPart(Part):
     """Static file server to be used as a fallback. Must be last part"""
+
     GuiHandler = IndexHandler
 
     def __init__(self, name: APartName = "gui", path: APath = www_dir) -> None:
@@ -43,6 +44,6 @@ class GuiServerPart(Part):
             # Serve index.html for /gui or /details
             HandlerInfo(r"/(gui|details).*", self.GuiHandler, path=self.path),
             # Anything else should be a static file handle
-            HandlerInfo(r"/(.*)", StaticFileHandler, path=self.path)
+            HandlerInfo(r"/(.*)", StaticFileHandler, path=self.path),
         ]
         return infos

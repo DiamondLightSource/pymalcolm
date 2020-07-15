@@ -1,37 +1,36 @@
-import logging
-import os
 import importlib
 import inspect
-
-from annotypes import Any, Anno, NO_DEFAULT
-from ruamel import yaml
+import logging
+import os
 from collections.abc import MutableSequence
+from typing import Callable, Dict, List, Tuple
 
-from malcolm.compat import str_, raise_with_traceback, OrderedDict
-from malcolm.core import YamlError, Controller, Part, Define, MethodMeta
+from annotypes import NO_DEFAULT, Anno, Any
+from ruamel import yaml
 
-from typing import List, Dict, Tuple, Callable
+from malcolm.compat import OrderedDict, raise_with_traceback, str_
+from malcolm.core import Controller, Define, MethodMeta, Part, YamlError
 
 # Create a module level logger
 log = logging.getLogger(__name__)
 
-SECTION_NAMES = [
-    "parameters", "controllers", "parts", "blocks", "includes", "defines"]
+SECTION_NAMES = ["parameters", "controllers", "parts", "blocks", "includes", "defines"]
 
 
-def _create_takes_arguments(sections: List['Section']) -> List[Anno]:
+def _create_takes_arguments(sections: List["Section"]) -> List[Anno]:
     takes_arguments = []
     for section in sections:
         if section.section == "parameters":
             takes_arguments.append(section.instantiate({}))
-    annos = [x for x in takes_arguments if x.default is NO_DEFAULT] + \
-            [x for x in takes_arguments if x.default is not NO_DEFAULT]
+    annos = [x for x in takes_arguments if x.default is NO_DEFAULT] + [
+        x for x in takes_arguments if x.default is not NO_DEFAULT
+    ]
     return annos
 
 
-def _create_blocks_and_parts(sections: List['Section'],
-                             params: Dict[str, str]
-                            ) -> Tuple[List[Controller], List[Part]]:
+def _create_blocks_and_parts(
+    sections: List["Section"], params: Dict[str, str]
+) -> Tuple[List[Controller], List[Part]]:
     controllers = []
     parts = []
 
@@ -51,11 +50,9 @@ def _create_blocks_and_parts(sections: List['Section'],
     return controllers, parts
 
 
-def _create_defines(sections: List['Section'],
-                    yamlname: str,
-                    yamldir: str,
-                    params: Dict[str, str]
-                    ) -> Dict[str, str]:
+def _create_defines(
+    sections: List["Section"], yamlname: str, yamldir: str, params: Dict[str, str]
+) -> Dict[str, str]:
     # Start with some
     defines = dict(yamlname=yamlname, yamldir=yamldir, docstring="")
     # Add in the parameter defaults
@@ -80,23 +77,26 @@ def check_yaml_names(globals_d: (Dict[str, Any])) -> List[str]:
     all_list = []
     for k, v in sorted(globals_d.items()):
         if hasattr(v, "yamlname"):
-            assert v.yamlname == k, \
-                "%r should be called %r as it comes from %r" % (
-                    k, v.yamlname, v.yamlname + ".yaml")
+            assert v.yamlname == k, "%r should be called %r as it comes from %r" % (
+                k,
+                v.yamlname,
+                v.yamlname + ".yaml",
+            )
             all_list.append(k)
     return all_list
 
 
 def make_include_creator(
-        yaml_path: str, filename: str = None
-        ) -> Callable[..., Tuple[List[Controller], List[Part]]]:
+    yaml_path: str, filename: str = None
+) -> Callable[..., Tuple[List[Controller], List[Part]]]:
     sections, yamlname, docstring = Section.from_yaml(yaml_path, filename)
     yamldir = os.path.dirname(os.path.abspath(yaml_path))
 
     # Check we don't have any controllers
     controller_sections = [s for s in sections if s.section == "controllers"]
-    assert len(controller_sections) == 0, \
-        "Expected exactly 0 controllers, got %s" % (controller_sections,)
+    assert len(controller_sections) == 0, "Expected exactly 0 controllers, got %s" % (
+        controller_sections,
+    )
 
     # Add any parameters to the takes arguments
     def include_creator(kwargs):
@@ -105,13 +105,13 @@ def make_include_creator(
         return _create_blocks_and_parts(sections, defines)
 
     creator = creator_with_nice_signature(
-        include_creator, sections, yamlname, yaml_path, docstring)
+        include_creator, sections, yamlname, yaml_path, docstring
+    )
     return creator
 
 
 # Add any parameters to the takes arguments
-def creator_with_nice_signature(creator, sections, yamlname, yaml_path,
-                                docstring):
+def creator_with_nice_signature(creator, sections, yamlname, yaml_path, docstring):
     takes = _create_takes_arguments(sections)
     args = []
     for anno in takes:
@@ -121,9 +121,11 @@ def creator_with_nice_signature(creator, sections, yamlname, yaml_path,
             args.append("%s=%r" % (anno.name, anno.default))
     func = """
 def creator_from_yaml(%s):
-    return creator(locals())""" % (", ".join(args))
+    return creator(locals())""" % (
+        ", ".join(args)
+    )
     # Copied from decorator pypi module
-    code = compile(func, yaml_path, 'single')
+    code = compile(func, yaml_path, "single")
     exec(code, locals())
     ret = locals()["creator_from_yaml"]
     ret.return_type = Anno("Any return value", Any, "return")
@@ -135,8 +137,8 @@ def creator_from_yaml(%s):
 
 
 def make_block_creator(
-        yaml_path: str, filename: str = None
-        ) -> Callable[..., List[Controller]]:
+    yaml_path: str, filename: str = None
+) -> Callable[..., List[Controller]]:
     """Make a collection function that will create a list of blocks
 
     Args:
@@ -156,8 +158,9 @@ def make_block_creator(
 
     # Check we have only one controller
     controller_sections = [s for s in sections if s.section == "controllers"]
-    assert len(controller_sections) == 1, \
-        "Expected exactly 1 controller, got %s" % (controller_sections,)
+    assert len(controller_sections) == 1, "Expected exactly 1 controller, got %s" % (
+        controller_sections,
+    )
     controller_section = controller_sections[0]
 
     def block_creator(kwargs):
@@ -172,7 +175,8 @@ def make_block_creator(
         return controllers
 
     creator = creator_with_nice_signature(
-        block_creator, sections, yamlname, yaml_path, docstring)
+        block_creator, sections, yamlname, yaml_path, docstring
+    )
     return creator
 
 
@@ -186,11 +190,11 @@ class Section(object):
         if len(split) != 3:
             raise YamlError(
                 "%s:%d: Expected something like 'builtin.parts.ChildPart'. "
-                "Got %r" % (filename, lineno, name))
+                "Got %r" % (filename, lineno, name)
+            )
         section = split[1]
         if section not in SECTION_NAMES:
-            raise YamlError("%s:%d: Unknown section name %s" % (
-                filename, lineno, name))
+            raise YamlError("%s:%d: Unknown section name %s" % (filename, lineno, name))
         self.section = section
         if param_dict is None:
             self.param_dict = {}
@@ -218,14 +222,17 @@ class Section(object):
             ob = importlib.import_module(pkg)
         except ImportError as e:
             raise_with_traceback(
-                ImportError("\n%s:%d:\n%s" % (
-                    self.filename, self.lineno, e)))
+                ImportError("\n%s:%d:\n%s" % (self.filename, self.lineno, e))
+            )
         try:
             ob = getattr(ob, ident)
         except AttributeError:
             raise_with_traceback(
-                ImportError("\n%s:%d:\nPackage %r has no ident %r" % (
-                    self.filename, self.lineno, pkg, ident)))
+                ImportError(
+                    "\n%s:%d:\nPackage %r has no ident %r"
+                    % (self.filename, self.lineno, pkg, ident)
+                )
+            )
         try:
             meta = MethodMeta.from_callable(ob, returns=False)
             args = meta.takes.validate(param_dict)
@@ -234,8 +241,11 @@ class Section(object):
             sourcefile = inspect.getsourcefile(ob)
             lineno = inspect.getsourcelines(ob)[1]
             raise_with_traceback(
-                YamlError("\n%s:%d:\n%s:%d:\n%s" % (
-                    self.filename, self.lineno, sourcefile, lineno, e)))
+                YamlError(
+                    "\n%s:%d:\n%s:%d:\n%s"
+                    % (self.filename, self.lineno, sourcefile, lineno, e)
+                )
+            )
         else:
             return ret
 
@@ -255,8 +265,9 @@ class Section(object):
         if filename:
             # different filename to support passing __file__
             yaml_path = os.path.join(os.path.dirname(yaml_path), filename)
-        assert yaml_path.endswith(".yaml"), \
+        assert yaml_path.endswith(".yaml"), (
             "Expected a/path/to/<yamlname>.yaml, got %r" % yaml_path
+        )
         yamlname = os.path.basename(yaml_path)[:-5]
         log.debug("Parsing %s", yaml_path)
         with open(yaml_path) as f:
@@ -266,12 +277,10 @@ class Section(object):
         docstring = None
         sections = []
         for d in ds:
-            assert len(d) == 1, \
-                "Expected section length 1, got %d" % len(d)
+            assert len(d) == 1, "Expected section length 1, got %d" % len(d)
             lineno = d._yaml_line_col.line + 1
             name = list(d)[0]
-            sections.append(cls(
-                yaml_path, lineno, name, d[name]))
+            sections.append(cls(yaml_path, lineno, name, d[name]))
             if name == "builtin.defines.docstring":
                 docstring = d[name]["value"]
 

@@ -1,11 +1,19 @@
 import numpy as np
 
 from malcolm.compat import OrderedDict
-from malcolm.core import snake_to_camel, camel_to_title, Widget, \
-    BooleanArrayMeta, NumberArrayMeta, ChoiceArrayMeta, TimeStamp, Alarm
-from .pandafieldpart import PandAFieldPart, AClient, AMeta, \
-    ABlockName, AFieldName
+from malcolm.core import (
+    Alarm,
+    BooleanArrayMeta,
+    ChoiceArrayMeta,
+    NumberArrayMeta,
+    TimeStamp,
+    Widget,
+    camel_to_title,
+    snake_to_camel,
+)
+
 from ..pandablocksclient import TableFieldData
+from .pandafieldpart import ABlockName, AClient, AFieldName, AMeta, PandAFieldPart
 
 
 def get_dtype(nbits, signed):
@@ -26,8 +34,9 @@ def get_dtype(nbits, signed):
 
 def get_column_index(field_data):
     column_index = field_data.bits_lo // 32
-    assert field_data.bits_hi // 32 == column_index, \
-        "Column %s spans multiple uint32 values" % (field_data,)
+    assert (
+        field_data.bits_hi // 32 == column_index
+    ), "Column %s spans multiple uint32 values" % (field_data,)
     return column_index
 
 
@@ -41,7 +50,13 @@ class PandATablePart(PandAFieldPart):
     """This will normally be instantiated by the PandABox assembly, not created
     in yaml"""
 
-    def __init__(self, client: AClient, meta: AMeta, block_name: ABlockName, field_name: AFieldName) -> None:
+    def __init__(
+        self,
+        client: AClient,
+        meta: AMeta,
+        block_name: ABlockName,
+        field_name: AFieldName,
+    ) -> None:
         # Fill in the meta object with the correct headers
         columns = OrderedDict()
         self.field_data = OrderedDict()
@@ -76,8 +91,7 @@ class PandATablePart(PandAFieldPart):
         max_bits_hi = max(f.bits_hi for f in self.field_data.values())
         self.ints_per_row = int((max_bits_hi + 31) / 32)
         # Superclass will make the attribute for us
-        super(PandATablePart, self).__init__(
-            client, meta, block_name, field_name)
+        super(PandATablePart, self).__init__(client, meta, block_name, field_name)
 
     def handle_change(self, value: str, ts: TimeStamp) -> None:
         value = self.table_from_list(value)
@@ -108,7 +122,7 @@ class PandATablePart(PandAFieldPart):
             column_index = get_column_index(field_data)
             int_matrix[..., column_index] |= shifted_column.astype(np.uint32)
         # Flatten it to a list of uints
-        int_values = int_matrix.reshape((nrows*self.ints_per_row,))
+        int_values = int_matrix.reshape((nrows * self.ints_per_row,))
         return int_values
 
     def table_from_list(self, int_values):
@@ -139,4 +153,3 @@ class PandATablePart(PandAFieldPart):
         # Create a table from it
         table = self.meta.validate(self.meta.table_cls(**columns))
         return table
-

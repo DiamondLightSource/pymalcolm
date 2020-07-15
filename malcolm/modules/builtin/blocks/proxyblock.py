@@ -1,7 +1,6 @@
 from annotypes import Any
 
-from ..controllers import ProxyController, AMri, AComms, \
-    APublish
+from ..controllers import AComms, AMri, APublish, ProxyController
 
 
 # This is done in python rather than YAML so that we can re-use Annos

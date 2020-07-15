@@ -3,8 +3,15 @@ import unittest
 from annotypes import Anno, add_call_types
 from mock import Mock
 
-from malcolm.core import Attribute, StringMeta, BlockModel, Process, \
-    MethodModel, Part, Controller
+from malcolm.core import (
+    Attribute,
+    BlockModel,
+    Controller,
+    MethodModel,
+    Part,
+    Process,
+    StringMeta,
+)
 from malcolm.core.models import BlockMeta
 from malcolm.core.views import make_view
 
@@ -26,19 +33,20 @@ class TestAttribute(unittest.TestCase):
     def test_put(self):
         self.o.put_value(32)
         self.context.put.assert_called_once_with(
-            ["block", "attr", "value"], 32, timeout=None)
+            ["block", "attr", "value"], 32, timeout=None
+        )
 
     def test_put_async(self):
         f = self.o.put_value_async(32)
-        self.context.put_async.assert_called_once_with(
-            ["block", "attr", "value"], 32)
+        self.context.put_async.assert_called_once_with(["block", "attr", "value"], 32)
         assert f == self.context.put_async.return_value
 
     def test_repr(self):
         self.context.make_view.return_value = "foo"
         assert repr(self.o) == "<Attribute value='foo'>"
         self.context.make_view.assert_called_once_with(
-            self.controller, self.data, "value")
+            self.controller, self.data, "value"
+        )
 
 
 class TestBlock(unittest.TestCase):
@@ -58,11 +66,10 @@ class TestBlock(unittest.TestCase):
 
     def test_put_attribute_values(self):
         self.o.put_attribute_values(dict(attr=43))
-        self.context.put_async.assert_called_once_with(
-            ["block", "attr", "value"], 43)
+        self.context.put_async.assert_called_once_with(["block", "attr", "value"], 43)
         self.context.wait_all_futures.assert_called_once_with(
-            [self.context.put_async.return_value],
-            timeout=None, event_timeout=None)
+            [self.context.put_async.return_value], timeout=None, event_timeout=None
+        )
 
     def test_async_call(self):
         self.o.method_async(a=3)
@@ -83,7 +90,6 @@ class MyPart(Part):
 
 
 class TestMethod(unittest.TestCase):
-
     def setUp(self):
         self.process = Process("proc")
         self.part = MyPart("test_part")
@@ -98,13 +104,13 @@ class TestMethod(unittest.TestCase):
 
     def test_post(self):
         method_view = self.block.myMethod
-        result = method_view.post(param1='testPost', param2='y')
-        assert result == 'testPosty'
+        result = method_view.post(param1="testPost", param2="y")
+        assert result == "testPosty"
 
     def test_post_async(self):
         method_view = self.block.myMethod
-        f = method_view.post_async('testAsync', 'y')
-        assert f.result() == 'testAsyncy'
+        f = method_view.post_async("testAsync", "y")
+        assert f.result() == "testAsyncy"
 
 
 class TestView(unittest.TestCase):
@@ -124,7 +130,8 @@ class TestView(unittest.TestCase):
     def test_get_view(self):
         v = self.o.description
         self.context.make_view.assert_called_once_with(
-            self.controller, self.data, "description")
+            self.controller, self.data, "description"
+        )
         assert v == self.context.make_view.return_value
 
     def test_second_subclass(self):

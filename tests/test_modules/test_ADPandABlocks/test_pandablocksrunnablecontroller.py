@@ -1,18 +1,15 @@
-from collections import OrderedDict
 import unittest
+from collections import OrderedDict
 
 from annotypes import add_call_types
-from mock import call, Mock, patch, ANY
+from mock import patch
 from scanpointgenerator import CompoundGenerator, StaticPointGenerator
 
-from malcolm.core import Process, Part
-from malcolm.modules.ADCore.util import AttributeDatasetType
-from malcolm.modules.ADPandABlocks.controllers import \
-    PandARunnableController
+from malcolm.core import Part, Process
+from malcolm.modules.ADPandABlocks.controllers import PandARunnableController
 from malcolm.modules.ADPandABlocks.util import DatasetPositionsTable
 from malcolm.modules.builtin.util import LayoutTable
-from malcolm.modules.pandablocks.pandablocksclient import \
-    FieldData, BlockData
+from malcolm.modules.pandablocks.pandablocksclient import BlockData, FieldData
 from malcolm.modules.scanning.hooks import APartInfo, ConfigureHook
 from malcolm.modules.scanning.infos import DatasetType
 from malcolm.modules.scanning.parts import DatasetTablePart
@@ -31,13 +28,14 @@ class DSGather(Part):
 
 class PandABlocksRunnableControllerTest(unittest.TestCase):
     @patch("malcolm.modules.ADCore.includes.adbase_parts")
-    @patch("malcolm.modules.pandablocks.controllers."
-           "pandamanagercontroller.PandABlocksClient")
+    @patch(
+        "malcolm.modules.pandablocks.controllers."
+        "pandamanagercontroller.PandABlocksClient"
+    )
     def setUp(self, mock_client, mock_adbase_parts):
         mock_adbase_parts.return_value = ([], [])
         self.process = Process()
-        self.o = PandARunnableController(
-            mri="P", config_dir="/tmp", prefix="PV:")
+        self.o = PandARunnableController(mri="P", config_dir="/tmp", prefix="PV:")
         self.o.add_part(DatasetTablePart("DSET"))
         self.client = self.o._client
         self.client.started = False
@@ -56,8 +54,8 @@ class PandABlocksRunnableControllerTest(unittest.TestCase):
         self.process.stop()
 
     def test_initial_changes(self):
-        pcap = self.process.block_view('P:PCAP')
-        inenc = self.process.block_view('P:INENC1')
+        pcap = self.process.block_view("P:PCAP")
+        inenc = self.process.block_view("P:INENC1")
         with self.assertRaises(Exception):
             pcap.ts
         assert pcap.tsCapture.value == "No"
@@ -78,7 +76,10 @@ class PandABlocksRunnableControllerTest(unittest.TestCase):
         b = self.process.block_view("P")
         pos_table = DatasetPositionsTable(
             name=["INENC1.VAL", "INENC2.VAL", "INENC3.VAL", "INENC4.VAL"],
-            value=[0]*4, offset=[0]*4, scale=[0]*4, units=[""]*4,
+            value=[0] * 4,
+            offset=[0] * 4,
+            scale=[0] * 4,
+            units=[""] * 4,
             capture=["Diff", "No", "Min Max Mean", "Diff"],
             datasetName=["", "x1", "x2", "x3"],
             datasetType=["monitor", "monitor", "position", "monitor"],

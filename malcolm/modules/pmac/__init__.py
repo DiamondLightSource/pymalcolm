@@ -1,2 +1,2 @@
-from . import parts, infos, util
-from .velocityprofile import VelocityProfile
+from . import infos, parts, util  # noqa
+from .velocityprofile import VelocityProfile  # noqa

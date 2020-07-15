@@ -1,7 +1,8 @@
 import unittest
+
 from mock import patch
 
-from malcolm.core import Process, AlarmSeverity
+from malcolm.core import AlarmSeverity, Process
 from malcolm.modules.builtin.controllers import StatefulController
 from malcolm.modules.pmac.parts import RawMotorSinkPortsPart
 
@@ -27,23 +28,35 @@ class TestRawMotorSinkPortsPart(unittest.TestCase):
         self.process.add_controller(c)
         self.b = self.process.block_view("mri")
         self.addCleanup(self.process.stop)
-        
+
     def do_init(self, catools):
-        catools.caget.side_effect = [[
-            caenum(2), castr("I"),
-            caenum(1), castr("A"), castr("@asyn(PMAC,1)")
-        ]]
+        catools.caget.side_effect = [
+            [caenum(2), castr("I"), caenum(1), castr("A"), castr("@asyn(PMAC,1)")]
+        ]
         self.process.start()
 
     def test_init(self, catools):
         self.do_init(catools)
         catools.caget.assert_called_once_with(
-            ["PV:PRE:CsPort", "PV:PRE:CsAxis", "PV:PRE:CsPort_RBV",
-             "PV:PRE:CsAxis_RBV", "PV:PRE.OUT"],
-            format=catools.FORMAT_CTRL)
+            [
+                "PV:PRE:CsPort",
+                "PV:PRE:CsAxis",
+                "PV:PRE:CsPort_RBV",
+                "PV:PRE:CsAxis_RBV",
+                "PV:PRE.OUT",
+            ],
+            format=catools.FORMAT_CTRL,
+        )
         assert list(self.b) == [
-            'meta', 'health', 'state', 'disable',
-            'reset', "pmac", 'axisNumber', 'cs']
+            "meta",
+            "health",
+            "state",
+            "disable",
+            "reset",
+            "pmac",
+            "axisNumber",
+            "cs",
+        ]
         assert self.b.cs.value == "BRICK1CS1,A"
         assert self.b.pmac.value == "PMAC"
         assert self.b.axisNumber.value == 1
@@ -79,7 +92,7 @@ class TestRawMotorSinkPortsPart(unittest.TestCase):
         catools.caget.side_effect = [[caenum(2), castr("Y")]]
         self.o.caput("BRICK1CS2,X")
         catools.caput.assert_called_once_with(
-            ['PV:PRE:CsPort', 'PV:PRE:CsAxis'], (2, 'X'), wait=True
+            ["PV:PRE:CsPort", "PV:PRE:CsAxis"], (2, "X"), wait=True
         )
         assert self.b.cs.value == "BRICK1CS2,Y"
 
@@ -88,6 +101,6 @@ class TestRawMotorSinkPortsPart(unittest.TestCase):
         catools.caget.side_effect = [[caenum(0), castr("")]]
         self.o.caput("")
         catools.caput.assert_called_once_with(
-            ['PV:PRE:CsPort', 'PV:PRE:CsAxis'], (0, ''), wait=True
+            ["PV:PRE:CsPort", "PV:PRE:CsAxis"], (0, ""), wait=True
         )
         assert self.b.cs.value == ""

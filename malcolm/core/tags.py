@@ -1,10 +1,8 @@
 import re
-
 from enum import Enum
+from typing import List, Sequence, Tuple, Union
 
 from .. import __version__
-
-from typing import Sequence, Union, Tuple, List
 
 
 def version_tag():
@@ -14,6 +12,7 @@ def version_tag():
 
 class Widget(Enum):
     """Enum with all the known widget tags to appear on Attribute Metas"""
+
     NONE = ""  #: Force no widget
     TEXTINPUT = "textinput"  #: Editable text input box
     TEXTUPDATE = "textupdate"  #: Read only text update
@@ -47,6 +46,7 @@ port_tag_re = re.compile(r"(source|sink)Port:(.*):(.*)")
 class Port(Enum):
     """Enum with all the known flowgraph port tags to appear on Attribute
     Metas"""
+
     BOOL = "bool"  #: Boolean value. Typically used in PandA
     INT32 = "int32"  #: 32-bit signed integer. Typically used in PandA
     NDARRAY = "NDArray"  #: areaDetector NDArray port
@@ -79,7 +79,9 @@ class Port(Enum):
         return new_tags
 
     @classmethod
-    def port_tag_details(cls, tags: Sequence[str]) -> Union[Tuple[bool, 'Port', str], None]:
+    def port_tag_details(
+        cls, tags: Sequence[str]
+    ) -> Union[Tuple[bool, "Port", str], None]:
         """Search tags for port info, returning it
 
         Args:
@@ -169,6 +171,7 @@ def method_return_unpacked():
     """
     tag = "method:return:unpacked"
     return tag
+
 
 def method_hidden():
     """Hide this method on the GUI"""

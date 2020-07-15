@@ -1,20 +1,27 @@
 import collections.abc
+from typing import Iterable, Type
 from xml.etree import cElementTree as ET
 
-from annotypes import Anno, Array, Union, Sequence, TYPE_CHECKING
+from annotypes import Anno, Array, Sequence, Union
 
-from malcolm.compat import str_, et_to_string
-from malcolm.core import VMeta, Widget, group_tag, config_tag, Port, Table, \
-    StateSet, DEFAULT_TIMEOUT
-
-from typing import Type, Iterable
-if TYPE_CHECKING:
-    from .parts import ChildPart
+from malcolm.compat import et_to_string, str_
+from malcolm.core import (
+    DEFAULT_TIMEOUT,
+    Port,
+    StateSet,
+    Table,
+    VMeta,
+    Widget,
+    config_tag,
+    group_tag,
+)
 
 with Anno("Is the attribute writeable?"):
     AWriteable = bool
-with Anno("If writeable, which iteration should this field be loaded/saved in?"
-          " 0 means do not restore"):
+with Anno(
+    "If writeable, which iteration should this field be loaded/saved in?"
+    " 0 means do not restore"
+):
     AConfig = int
 with Anno("If given, which GUI group should we attach to"):
     AGroup = str
@@ -22,19 +29,22 @@ with Anno("If given, use this widget instead of the default"):
     AWidget = Widget
 with Anno("If given, mark this as a Sink Port of the given type"):
     ASinkPort = Port
-with Anno("If given, mark this Sink Port as having a badge" +
-          " value [tag constructed by badge_value_tag()]"):
+with Anno(
+    "If given, mark this Sink Port as having a badge"
+    + " value [tag constructed by badge_value_tag()]"
+):
     APortBadge = str
 
 
-def set_tags(meta: VMeta,
-             writeable: AWriteable = False,
-             config: AConfig = 1,
-             group: AGroup = None,
-             widget: AWidget = None,
-             sink_port: ASinkPort = None,
-             port_badge: APortBadge = None,
-             ) -> None:
+def set_tags(
+    meta: VMeta,
+    writeable: AWriteable = False,
+    config: AConfig = 1,
+    group: AGroup = None,
+    widget: AWidget = None,
+    sink_port: ASinkPort = None,
+    port_badge: APortBadge = None,
+) -> None:
     tags = []
     meta.set_writeable(writeable)
     if widget is None:
@@ -72,7 +82,14 @@ UVisibleArray = Union[AVisibleArray, Sequence[bool]]
 
 
 class LayoutTable(Table):
-    def __init__(self, name: UNameArray, mri: UMriArray, x: UXArray, y: UYArray, visible: UVisibleArray) -> None:
+    def __init__(
+        self,
+        name: UNameArray,
+        mri: UMriArray,
+        x: UXArray,
+        y: UYArray,
+        visible: UVisibleArray,
+    ) -> None:
         self.name = ANameArray(name)
         self.mri = AMriArray(mri)
         self.x = AXArray(x)
@@ -103,9 +120,11 @@ def wait_for_stateful_block_init(context, mri, timeout=DEFAULT_TIMEOUT):
         timeout (float): The maximum time to wait
     """
     context.when_matches(
-        [mri, "state", "value"], StatefulStates.READY,
+        [mri, "state", "value"],
+        StatefulStates.READY,
         bad_values=[StatefulStates.FAULT, StatefulStates.DISABLED],
-        timeout=timeout)
+        timeout=timeout,
+    )
 
 
 class StatefulStates(StateSet):
@@ -160,37 +179,40 @@ def no_save(*attribute_names):
         attribute_names (str): The Attributes of the child Block that shouldn't
             be saved
     """
-    def decorator(cls: Type['ChildPart']) -> Type['ChildPart']:
+
+    def decorator(cls: Type["ChildPart"]) -> Type["ChildPart"]:
         additions = set()
         for attribute_name in attribute_names:
-            if isinstance(attribute_name, collections.abc.Iterable) \
-                    and not isinstance(attribute_name, str_):
+            if isinstance(attribute_name, collections.abc.Iterable) and not isinstance(
+                attribute_name, str_
+            ):
                 additions |= set(attribute_name)
             else:
                 additions.add(attribute_name)
         bad = [x for x in additions if not isinstance(x, str_)]
-        assert not bad, \
-            "Cannot add non-string attribute names to no_save: %s" % bad
+        assert not bad, "Cannot add non-string attribute names to no_save: %s" % bad
         existing = cls.no_save_attribute_names or set()
         cls.no_save_attribute_names = existing | additions
         return cls
+
     return decorator
 
 
 class SVGIcon(object):
     """Helper object for working with SVG icons"""
+
     def __init__(self, svg_text: str) -> None:
         # https://stackoverflow.com/a/8998773
-        ET.register_namespace('', "http://www.w3.org/2000/svg")
+        ET.register_namespace("", "http://www.w3.org/2000/svg")
         self.root = ET.fromstring(svg_text)
 
     def find_parent_child(self, id):
         child = None
         # Find the first parent which has a child with id i
-        parent = self.root.find('.//*[@id=%r]/..' % id)
+        parent = self.root.find(".//*[@id=%r]/.." % id)
         # Find the child and remove it
         if parent:
-            child = parent.find('./*[@id=%r]' % id)
+            child = parent.find("./*[@id=%r]" % id)
         return parent, child
 
     def remove_elements(self, ids: Iterable[str]) -> None:
@@ -198,8 +220,9 @@ class SVGIcon(object):
             parent, child = self.find_parent_child(i)
             parent.remove(child)
 
-    def add_text(self, text, x=0, y=0, anchor="left", transform=None,
-                 style="font: 10px sans"):
+    def add_text(
+        self, text, x=0, y=0, anchor="left", transform=None, style="font: 10px sans"
+    ):
         attr = ET.SubElement(self.root, "text", x=str(x), y=str(y), style=style)
         if transform:
             attr.set("transform", transform)

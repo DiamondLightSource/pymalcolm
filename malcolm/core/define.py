@@ -1,5 +1,4 @@
-from annotypes import WithCallTypes, Anno, Any
-
+from annotypes import Anno, Any, WithCallTypes
 
 with Anno("The name of the defined parameter"):
     AName = str

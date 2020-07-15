@@ -1,11 +1,11 @@
 import inspect
+from typing import Dict, List, Mapping, Optional, Sequence, Type
 
 from annotypes import TypeVar
 
 from malcolm.compat import OrderedDict
-from .errors import BadValueError
 
-from typing import Type, Mapping, List, Optional, Sequence, Dict
+from .errors import BadValueError
 
 PartInfo = Mapping[str, Optional[Sequence]]
 
@@ -58,7 +58,9 @@ class Info(object):
         return filtered
 
     @classmethod
-    def filter_single_value(cls: Type[T], part_info: PartInfo, error_msg: str = None) -> T:
+    def filter_single_value(
+        cls: Type[T], part_info: PartInfo, error_msg: str = None
+    ) -> T:
         """Filter the part_info dict list looking for a single instance of our
         class
 
@@ -74,7 +76,9 @@ class Info(object):
         filtered = cls.filter_values(part_info)
         if len(filtered) != 1:
             if error_msg is None:
-                error_msg = "Expected a single %s, got %s of them" % \
-                            (cls.__name__, len(filtered))
+                error_msg = "Expected a single %s, got %s of them" % (
+                    cls.__name__,
+                    len(filtered),
+                )
             raise BadValueError(error_msg)
         return filtered[0]

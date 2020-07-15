@@ -3,6 +3,7 @@ import logging
 
 class Loggable(object):
     """Utility class that provides a named logger for a class instance"""
+
     log: logging.Logger = None
 
     def set_logger(self, **fields):

@@ -1,12 +1,12 @@
-import unittest
 import logging
+import unittest
 
 import malcolm.imalcolm
 from malcolm.imalcolm import make_async_logging
 
 
 class MyHandler(logging.Handler):
-    emitted = []
+    emitted: list = []
 
     def emit(self, record):
         self.emitted.append(record)
@@ -22,15 +22,9 @@ class TestIMalcolm(unittest.TestCase):
             "version": 1,
             "disable_existing_loggers": False,
             "handlers": {
-                "mine": {
-                    "class": "malcolm.imalcolm.MyHandler",
-                    "level": "WARNING",
-                },
+                "mine": {"class": "malcolm.imalcolm.MyHandler", "level": "WARNING"},
             },
-            "root": {
-                "level": "DEBUG",
-                "handlers": ["mine"],
-            }
+            "root": {"level": "DEBUG", "handlers": ["mine"]},
         }
         listener = make_async_logging(log_config)
         listener.start()
@@ -38,8 +32,7 @@ class TestIMalcolm(unittest.TestCase):
         logging.warning("Bad things happen")
         listener.stop()
         assert len(MyHandler.emitted) == 1
-        assert str(MyHandler.emitted[0]) == \
-            '<LogRecord: root, 30, %s, 38, "Bad things happen">' % __file__
-
-
-
+        assert (
+            str(MyHandler.emitted[0])
+            == '<LogRecord: root, 30, %s, 32, "Bad things happen">' % __file__
+        )

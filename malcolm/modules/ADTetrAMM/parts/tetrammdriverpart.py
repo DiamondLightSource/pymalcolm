@@ -1,17 +1,15 @@
 from annotypes import add_call_types
 
-from malcolm.core import PartRegistrar, Context
-from malcolm.modules import ADCore, scanning, builtin
+from malcolm.core import PartRegistrar
+from malcolm.modules import ADCore, builtin, scanning
 
 
-@builtin.util.no_save('numImagesPerSeries')
+@builtin.util.no_save("numImagesPerSeries")
 class TetrAMMDriverPart(ADCore.parts.DetectorDriverPart):
     def setup(self, registrar: PartRegistrar) -> None:
         super(TetrAMMDriverPart, self).setup(registrar)
-        registrar.hook(
-            scanning.hooks.PostRunReadyHook, self.on_post_run_ready)
-        registrar.hook(
-            scanning.hooks.PostRunArmedHook, self.on_post_run_armed)
+        registrar.hook(scanning.hooks.PostRunReadyHook, self.on_post_run_ready)
+        registrar.hook(scanning.hooks.PostRunArmedHook, self.on_post_run_armed)
 
     @add_call_types
     def on_run(self, context: scanning.hooks.AContext) -> None:

@@ -13,18 +13,16 @@ with Anno("The demand value to move the axis to"):
 
 @builtin.util.no_save("demand")
 class MotorPreMovePart(builtin.parts.ChildPart):
-
-    def __init__(self,
-                 name: APartName,
-                 mri: AMri,
-                 demand: ADemand,
-                 initial_visibility: AInitialVisibility = False
-                 ) -> None:
-        super(MotorPreMovePart,
-              self).__init__(name,
-                             mri,
-                             stateful=False,
-                             initial_visibility=initial_visibility)
+    def __init__(
+        self,
+        name: APartName,
+        mri: AMri,
+        demand: ADemand,
+        initial_visibility: AInitialVisibility = False,
+    ) -> None:
+        super(MotorPreMovePart, self).__init__(
+            name, mri, stateful=False, initial_visibility=initial_visibility
+        )
         self.demand = demand
 
     def setup(self, registrar: PartRegistrar) -> None:

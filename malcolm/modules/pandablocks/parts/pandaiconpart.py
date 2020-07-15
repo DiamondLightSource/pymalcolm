@@ -1,5 +1,6 @@
 from malcolm.modules import builtin
-from ..util import AClient, ABlockName
+
+from ..util import ABlockName, AClient
 
 ASvg = builtin.parts.ASvg
 

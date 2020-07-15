@@ -1,12 +1,12 @@
 from enum import Enum
+from typing import Any, Dict, List
 
 from malcolm.core import Info, VMeta
-
-from typing import Any, Dict, List
 
 
 class DatasetType(Enum):
     """NeXus type of a produced dataset"""
+
     #: Detector data, like the 2D data from an imaging detector
     PRIMARY = "primary"
     #: Calculated from detector data, like the sum of each frame
@@ -31,6 +31,7 @@ class ParameterTweakInfo(Info):
         parameter: Parameter name, e.g. "generator"
         value: The value it should be changed to
     """
+
     def __init__(self, parameter: str, value: Any) -> None:
         self.parameter = parameter
         self.value = value
@@ -46,7 +47,10 @@ class ConfigureParamsInfo(Info):
         required: List of required parameters
         defaults: Default values for parameters
     """
-    def __init__(self, metas: Dict[str, VMeta], required: List[str], defaults: Dict[str, Any]) -> None:
+
+    def __init__(
+        self, metas: Dict[str, VMeta], required: List[str], defaults: Dict[str, Any]
+    ) -> None:
         self.metas = metas
         self.required = required
         self.defaults = defaults
@@ -58,6 +62,7 @@ class RunProgressInfo(Info):
     Args:
         steps: The number of completed steps
     """
+
     def __init__(self, steps: int) -> None:
         self.steps = steps
 
@@ -70,6 +75,7 @@ class MinTurnaroundInfo(Info):
         gap: The minimum time gap in seconds
         interval: the minimum interval between two turnaround points
     """
+
     def __init__(self, gap: float, interval: float) -> None:
         self.gap = gap
         self.interval = interval
@@ -87,7 +93,15 @@ class DatasetProducedInfo(Info):
         uniqueid: The path of the UniqueID dataset within the file
     """
 
-    def __init__(self, name: str, filename: str, type: DatasetType, rank: int, path: str, uniqueid: str) -> None:
+    def __init__(
+        self,
+        name: str,
+        filename: str,
+        type: DatasetType,
+        rank: int,
+        path: str,
+        uniqueid: str,
+    ) -> None:
         self.name = name
         self.filename = filename
         self.type = type
@@ -99,6 +113,7 @@ class DatasetProducedInfo(Info):
 class MotionTrigger(Enum):
     """Request from a trigger source to the motion controller of what triggers
     it needs"""
+
     NONE = 0  #: No Triggers required
     ROW_GATE = 1  #: Trigger that spans each continuous joined section
     EVERY_POINT = 2  #: One trigger for each point
@@ -110,6 +125,7 @@ class MotionTriggerInfo(Info):
     Args:
         trigger: What type is required
     """
+
     def __init__(self, trigger: MotionTrigger) -> None:
         self.trigger = trigger
 
@@ -121,6 +137,7 @@ class DetectorMutiframeInfo(Info):
     Args:
         mri: The mri of the detector in the DetectorTable
     """
+
     def __init__(self, mri: str) -> None:
         self.mri = mri
 
@@ -133,7 +150,10 @@ class ExposureDeadtimeInfo(Info):
         frequency_accuracy: The crystal accuracy in ppm
         min_exposure: The minimum exposure time this detector supports
     """
-    def __init__(self, readout_time: float, frequency_accuracy: float, min_exposure: float) -> None:
+
+    def __init__(
+        self, readout_time: float, frequency_accuracy: float, min_exposure: float
+    ) -> None:
         self.readout_time = readout_time
         self.frequency_accuracy = frequency_accuracy
         self.min_exposure = min_exposure
@@ -141,11 +161,15 @@ class ExposureDeadtimeInfo(Info):
     def calculate_exposure(self, duration: float, exposure: float = 0.0) -> float:
         """Calculate the exposure to set the detector to given the duration of
         the frame and the readout_time and frequency_accuracy"""
-        assert duration > 0, \
-            "Duration %s for generator must be >0 to signify constant " \
+        assert duration > 0, (
+            "Duration %s for generator must be >0 to signify constant "
             "exposure" % duration
-        max_exposure = duration - self.readout_time - (
-                self.frequency_accuracy * duration / 1000000.0)
+        )
+        max_exposure = (
+            duration
+            - self.readout_time
+            - (self.frequency_accuracy * duration / 1000000.0)
+        )
         # If exposure time is 0, then use the max_exposure for this duration
         if exposure <= 0.0 or exposure > max_exposure:
             exposure = max_exposure

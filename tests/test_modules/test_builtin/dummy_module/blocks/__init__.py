@@ -1,4 +1,4 @@
-from malcolm.yamlutil import make_block_creator, check_yaml_names
+from malcolm.yamlutil import check_yaml_names, make_block_creator
 
 dummy_block = make_block_creator(__file__, "dummy_block.yaml")
 

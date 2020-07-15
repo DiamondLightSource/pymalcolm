@@ -1,8 +1,9 @@
-from malcolm.core import PartRegistrar
-from malcolm.modules import scanning, ADCore, pandablocks
-from ..util import DatasetBitsTable, DatasetPositionsTable
-
 from typing import List
+
+from malcolm.core import PartRegistrar
+from malcolm.modules import ADCore, pandablocks, scanning
+
+from ..util import DatasetBitsTable, DatasetPositionsTable
 
 
 class PandADatasetBussesPart(pandablocks.parts.PandABussesPart):
@@ -12,8 +13,7 @@ class PandADatasetBussesPart(pandablocks.parts.PandABussesPart):
     def setup(self, registrar: PartRegistrar) -> None:
         super(PandADatasetBussesPart, self).setup(registrar)
         # Hooks
-        registrar.hook(scanning.hooks.ReportStatusHook,
-                       self.on_report_status)
+        registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
 
     @staticmethod
     def _make_initial_bits_table(bit_names: List[str]) -> DatasetBitsTable:
@@ -23,7 +23,7 @@ class PandADatasetBussesPart(pandablocks.parts.PandABussesPart):
             value=[False] * len(bit_names),
             capture=[False] * len(bit_names),
             datasetName=[""] * len(bit_names),
-            datasetType=ds_types
+            datasetType=ds_types,
         )
         return bits_table
 
@@ -43,7 +43,7 @@ class PandADatasetBussesPart(pandablocks.parts.PandABussesPart):
             offset=[0.0] * len(pos_names),
             capture=[pandablocks.util.PositionCapture.NO] * len(pos_names),
             datasetName=[""] * len(pos_names),
-            datasetType=ds_types
+            datasetType=ds_types,
         )
         return pos_table
 
@@ -57,7 +57,9 @@ class PandADatasetBussesPart(pandablocks.parts.PandABussesPart):
                     ADCore.infos.NDAttributeDatasetInfo.from_attribute_type(
                         name=ds_name,
                         type=bits_table.datasetType[i],
-                        attr=bits_table.name[i]))
+                        attr=bits_table.name[i],
+                    )
+                )
         pos_table: DatasetPositionsTable = self.positions.value
         for i, capture in enumerate(pos_table.capture):
             ds_name = pos_table.datasetName[i]
@@ -68,18 +70,24 @@ class PandADatasetBussesPart(pandablocks.parts.PandABussesPart):
                     for suffix in [x for x in ("Min", "Max") if x in suffixes]:
                         suffixes.remove(suffix)
                         type_name = "POSITION_%s" % suffix.upper()
-                        ret.append(ADCore.infos.NDAttributeDatasetInfo(
-                            name="%s.%s" % (ds_name, suffix.lower()),
-                            type=scanning.util.DatasetType[type_name],
-                            attr="%s.%s" % (pos_table.name[i], suffix)))
+                        ret.append(
+                            ADCore.infos.NDAttributeDatasetInfo(
+                                name="%s.%s" % (ds_name, suffix.lower()),
+                                type=scanning.util.DatasetType[type_name],
+                                attr="%s.%s" % (pos_table.name[i], suffix),
+                            )
+                        )
                 # There should now be 1 or 0 suffixes left to report
                 if suffixes:
-                    assert len(suffixes) == 1, \
+                    assert len(suffixes) == 1, (
                         "Cannot deal with capture value %r" % capture.value
+                    )
                     suffix = suffixes[0]
                     ret.append(
                         ADCore.infos.NDAttributeDatasetInfo.from_attribute_type(
                             name=ds_name,
                             type=pos_table.datasetType[i],
-                            attr="%s.%s" % (pos_table.name[i], suffix)))
+                            attr="%s.%s" % (pos_table.name[i], suffix),
+                        )
+                    )
         return ret

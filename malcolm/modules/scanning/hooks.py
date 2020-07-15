@@ -1,15 +1,14 @@
-from annotypes import Anno, Any, Array, Mapping, NO_DEFAULT, \
-    Sequence, Union
+from typing import Callable, Dict, TypeVar
 
+from annotypes import NO_DEFAULT, Anno, Any, Array, Mapping, Sequence, Union
 from scanpointgenerator import CompoundGenerator
-from .infos import ParameterTweakInfo, Info
 
 from malcolm.compat import OrderedDict
 from malcolm.core import VMeta
 from malcolm.modules import builtin
-from .infos import ConfigureParamsInfo
 
-from typing import Dict, Callable, TypeVar
+from .infos import ConfigureParamsInfo, Info, ParameterTweakInfo
+
 T = TypeVar("T")
 
 with Anno("The Infos returned from other Parts"):
@@ -26,15 +25,18 @@ UAxesToMove = Union[AAxesToMove, Sequence[str]]
 with Anno("Parameters that need to be changed to make them compatible"):
     AParameterTweakInfos = Array[ParameterTweakInfo]
 UInfos = Union[AInfos, Sequence[Info], Info, None]
-UParameterTweakInfos = Union[AParameterTweakInfos, Sequence[ParameterTweakInfo],
-                             ParameterTweakInfo, None]
+UParameterTweakInfos = Union[
+    AParameterTweakInfos, Sequence[ParameterTweakInfo], ParameterTweakInfo, None
+]
 with Anno("Directory to write data to"):
     AFileDir = str
 with Anno("Argument for fileTemplate, normally filename without extension"):
     AFormatName = str
-with Anno("""Printf style template to generate filename relative to fileDir.
+with Anno(
+    """Printf style template to generate filename relative to fileDir.
 Arguments are:
-  1) %s: the value of formatName"""):
+  1) %s: the value of formatName"""
+):
     AFileTemplate = str
 with Anno("The demand exposure time of this scan, 0 for the maximum possible"):
     AExposure = float
@@ -47,12 +49,12 @@ ControllerHook = builtin.hooks.ControllerHook
 
 
 def check_array_info(anno: T, value: Any) -> T:
-    assert anno.is_array and issubclass(anno.typ, Info), \
+    assert anno.is_array and issubclass(anno.typ, Info), (
         "Expected Anno wrapping Array[something], got %s" % anno
+    )
     ret = anno(value)
     bad = [x for x in ret if not isinstance(x, anno.typ)]
-    assert not bad, \
-        "Passed objects %s that are not of type %s" % (bad, anno.typ)
+    assert not bad, "Passed objects %s that are not of type %s" % (bad, anno.typ)
     return ret
 
 
@@ -63,17 +65,23 @@ class ValidateHook(ControllerHook[UParameterTweakInfos]):
     # will become a configure argument, so must be camelCase to match EPICS
     # normative types conventions
     # noinspection PyPep8Naming
-    def __init__(self,
-                 part: APart,
-                 context: AContext,
-                 part_info: UPartInfo,
-                 generator: AGenerator,
-                 axesToMove: AAxesToMove,
-                 **kwargs: Any
-                 ) -> None:
+    def __init__(
+        self,
+        part: APart,
+        context: AContext,
+        part_info: UPartInfo,
+        generator: AGenerator,
+        axesToMove: AAxesToMove,
+        **kwargs: Any,
+    ) -> None:
         super(ValidateHook, self).__init__(
-            part, context, part_info=part_info, generator=generator,
-            axesToMove=axesToMove, **kwargs)
+            part,
+            context,
+            part_info=part_info,
+            generator=generator,
+            axesToMove=axesToMove,
+            **kwargs,
+        )
 
     def validate_return(self, ret: UParameterTweakInfos) -> AParameterTweakInfos:
         """Check that all returned infos are ParameterTweakInfo that list
@@ -109,27 +117,33 @@ class ConfigureHook(ControllerHook[UInfos]):
     # will become a configure argument, so must be camelCase to match EPICS
     # normative types conventions
     # noinspection PyPep8Naming
-    def __init__(self,
-                 part: APart,
-                 context: AContext,
-                 completed_steps: ACompletedSteps,
-                 steps_to_do: AStepsToDo,
-                 part_info: APartInfo,
-                 generator: AGenerator,
-                 axesToMove: AAxesToMove,
-                 **kwargs: Any
-                 ) -> None:
+    def __init__(
+        self,
+        part: APart,
+        context: AContext,
+        completed_steps: ACompletedSteps,
+        steps_to_do: AStepsToDo,
+        part_info: APartInfo,
+        generator: AGenerator,
+        axesToMove: AAxesToMove,
+        **kwargs: Any,
+    ) -> None:
         super(ConfigureHook, self).__init__(
-            part, context, completed_steps=completed_steps,
-            steps_to_do=steps_to_do, part_info=part_info, generator=generator,
-            axesToMove=axesToMove, **kwargs)
+            part,
+            context,
+            completed_steps=completed_steps,
+            steps_to_do=steps_to_do,
+            part_info=part_info,
+            generator=generator,
+            axesToMove=axesToMove,
+            **kwargs,
+        )
 
     @classmethod
     def create_info(cls, configure_func: Callable) -> ConfigureParamsInfo:
         """Create a `ConfigureParamsInfo` describing the extra parameters
         that should be passed at configure"""
-        call_types: Dict[str, Anno] = getattr(configure_func, "call_types",
-                             {})
+        call_types: Dict[str, Anno] = getattr(configure_func, "call_types", {})
         metas = OrderedDict()
         required = []
         defaults = OrderedDict()
@@ -154,8 +168,7 @@ class PostConfigureHook(ControllerHook[None]):
     in the Configure hook"""
 
     def __init__(self, part: APart, context: AContext, part_info: APartInfo) -> None:
-        super(PostConfigureHook, self).__init__(
-            part, context, part_info=part_info)
+        super(PostConfigureHook, self).__init__(part, context, part_info=part_info)
 
 
 class PreRunHook(ControllerHook[None]):
@@ -173,20 +186,27 @@ class PostRunArmedHook(ControllerHook[None]):
     # will become a configure argument, so must be camelCase to match EPICS
     # normative types conventions
     # noinspection PyPep8Naming
-    def __init__(self,
-                 part: APart,
-                 context: AContext,
-                 completed_steps: ACompletedSteps,
-                 steps_to_do: AStepsToDo,
-                 part_info: UPartInfo,
-                 generator: AGenerator,
-                 axesToMove: AAxesToMove,
-                 **kwargs: Any
-                 ) -> None:
+    def __init__(
+        self,
+        part: APart,
+        context: AContext,
+        completed_steps: ACompletedSteps,
+        steps_to_do: AStepsToDo,
+        part_info: UPartInfo,
+        generator: AGenerator,
+        axesToMove: AAxesToMove,
+        **kwargs: Any,
+    ) -> None:
         super(PostRunArmedHook, self).__init__(
-            part, context, completed_steps=completed_steps,
-            steps_to_do=steps_to_do, part_info=part_info, generator=generator,
-            axesToMove=axesToMove, **kwargs)
+            part,
+            context,
+            completed_steps=completed_steps,
+            steps_to_do=steps_to_do,
+            part_info=part_info,
+            generator=generator,
+            axesToMove=axesToMove,
+            **kwargs,
+        )
 
 
 class PostRunReadyHook(ControllerHook[None]):
@@ -205,20 +225,27 @@ class SeekHook(ControllerHook[None]):
     # will become a configure argument, so must be camelCase to match EPICS
     # normative types conventions
     # noinspection PyPep8Naming
-    def __init__(self,
-                 part: APart,
-                 context: AContext,
-                 completed_steps: ACompletedSteps,
-                 steps_to_do: AStepsToDo,
-                 part_info: APartInfo,
-                 generator: AGenerator,
-                 axesToMove: AAxesToMove,
-                 **kwargs: Any
-                 ) -> None:
+    def __init__(
+        self,
+        part: APart,
+        context: AContext,
+        completed_steps: ACompletedSteps,
+        steps_to_do: AStepsToDo,
+        part_info: APartInfo,
+        generator: AGenerator,
+        axesToMove: AAxesToMove,
+        **kwargs: Any,
+    ) -> None:
         super(SeekHook, self).__init__(
-            part, context, completed_steps=completed_steps,
-            steps_to_do=steps_to_do, part_info=part_info, generator=generator,
-            axesToMove=axesToMove, **kwargs)
+            part,
+            context,
+            completed_steps=completed_steps,
+            steps_to_do=steps_to_do,
+            part_info=part_info,
+            generator=generator,
+            axesToMove=axesToMove,
+            **kwargs,
+        )
 
 
 class AbortHook(ControllerHook[None]):

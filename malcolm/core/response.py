@@ -1,5 +1,4 @@
-from annotypes import Anno, Any, Serializable, FrozenOrderedDict, \
-    serialize_object
+from annotypes import Anno, Any, FrozenOrderedDict, Serializable, serialize_object
 
 with Anno("ID that the Request was sent with"):
     AId = int
@@ -37,7 +36,7 @@ class Error(Response):
 
     __slots__ = ["message"]
 
-    def __init__(self, id: AId = 0, message: AMessage = "") -> None:
+    def __init__(self, id: AId = 0, message: AMessage = Exception("")) -> None:
         super(Error, self).__init__(id)
         self.message = message
 

@@ -1,11 +1,11 @@
 import os
-
-from annotypes import Anno, Array, Union, Sequence
 from enum import Enum
 
-from malcolm.core import Table
-from .pandablocksclient import PandABlocksClient
+from annotypes import Anno, Array, Sequence, Union
 
+from malcolm.core import Table
+
+from .pandablocksclient import PandABlocksClient
 
 with Anno("The Client to use to get and set data"):
     AClient = PandABlocksClient
@@ -32,7 +32,9 @@ UBitCaptures = Union[ABitCaptures, Sequence[bool]]
 
 
 class BitsTable(Table):
-    def __init__(self, name: UBitNames, value: UBitValues, capture: UBitCaptures) -> None:
+    def __init__(
+        self, name: UBitNames, value: UBitValues, capture: UBitCaptures
+    ) -> None:
         self.name = ABitNames(name)
         self.value = ABitValues(value)
         self.capture = ABitCaptures(capture)
@@ -40,6 +42,7 @@ class BitsTable(Table):
 
 class PositionCapture(Enum):
     """What to capture, if anything, with PCAP"""
+
     # In Python2 we have to define the order of members in an enum
     _order_ = "NO VALUE DIFF SUM MEAN MIN MAX MIN_MAX MIN_MAX_MEAN"
 
@@ -75,14 +78,15 @@ UPositionCaptures = Union[APositionCaptures, Sequence[PositionCapture]]
 
 
 class PositionsTable(Table):
-    def __init__(self,
-                 name: UPositionNames,
-                 value: UPositionValues,
-                 units: UPositionUnits,
-                 scale: UPositionScales,
-                 offset: UPositionOffsets,
-                 capture: UPositionCaptures,
-                 ) -> None:
+    def __init__(
+        self,
+        name: UPositionNames,
+        value: UPositionValues,
+        units: UPositionUnits,
+        scale: UPositionScales,
+        offset: UPositionOffsets,
+        capture: UPositionCaptures,
+    ) -> None:
         self.name = APositionNames(name)
         self.value = APositionValues(value)
         self.units = APositionUnits(units)

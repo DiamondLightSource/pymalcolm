@@ -1,25 +1,26 @@
 from contextlib import contextmanager
+from typing import Any, Callable, Dict, Iterable, List, Tuple, Union
 
 from annotypes import TYPE_CHECKING, Anno, stringify_error
 
 from malcolm.compat import OrderedDict
-from .alarm import Alarm
-from .context import Context
-from .errors import UnexpectedError, NotWriteableError, FieldError
-from .hook import Hookable, start_hooks, wait_hooks, Hook
-from .info import Info
-from .models import BlockModel, AttributeModel, MethodModel, Model, MethodLog
-from .notifier import Notifier, freeze
-from .part import PartRegistrar, Part, FieldRegistry, InfoRegistry
-from .concurrency import Queue, Spawned, RLock
-from .request import Get, Subscribe, Unsubscribe, Put, Post, Request
-from .response import Response
-from .camel import camel_to_title
-from .timestamp import TimeStamp
-from .tags import method_return_unpacked, version_tag
-from .views import make_view, Block
 
-from typing import List, Dict, Tuple, Union, Callable, Any, Iterable
+from .alarm import Alarm
+from .camel import camel_to_title
+from .concurrency import Queue, RLock, Spawned
+from .context import Context
+from .errors import FieldError, NotWriteableError, UnexpectedError
+from .hook import Hook, Hookable, start_hooks, wait_hooks
+from .info import Info
+from .models import AttributeModel, BlockModel, MethodLog, MethodModel, Model
+from .notifier import Notifier, freeze
+from .part import FieldRegistry, InfoRegistry, Part, PartRegistrar
+from .request import Get, Post, Put, Request, Subscribe, Unsubscribe
+from .response import Response
+from .tags import method_return_unpacked, version_tag
+from .timestamp import TimeStamp
+from .views import Block, make_view
+
 Field = Union[AttributeModel, MethodModel]
 CallbackResponses = List[Tuple[Callable[[Response], None], Response]]
 if TYPE_CHECKING:
@@ -55,23 +56,30 @@ class Controller(Hookable):
         self.field_registry = FieldRegistry()
         self.info_registry = InfoRegistry()
 
-    def setup(self, process: 'Process') -> None:
+    def setup(self, process: "Process") -> None:
         self.process = process
         self.add_initial_part_fields()
 
     def add_part(self, part: Part) -> None:
-        assert part.name not in self.parts, \
-            "Part %r already exists in Controller %r" % (part.name, self.mri)
+        assert (
+            part.name not in self.parts
+        ), "Part %r already exists in Controller %r" % (part.name, self.mri)
         part.setup(PartRegistrar(self.field_registry, self.info_registry, part))
         self.parts[part.name] = part
 
-    def add_block_field(self, name: str, child: Field, writeable_func: Callable[..., Any], needs_context: bool) -> None:
+    def add_block_field(
+        self,
+        name: str,
+        child: Field,
+        writeable_func: Callable[..., Any],
+        needs_context: bool,
+    ) -> None:
         if writeable_func:
             if needs_context:
                 # Wrap func
                 def func_wrapper(*args, **kwargs):
-                    return writeable_func(
-                        Context(self.process), *args, **kwargs)
+                    return writeable_func(Context(self.process), *args, **kwargs)
+
                 self._write_functions[name] = func_wrapper
             else:
                 self._write_functions[name] = writeable_func
@@ -155,10 +163,11 @@ class Controller(Hookable):
                     typ = data.typeid
                 else:
                     typ = type(data)
-                path = ".".join(request.path[:i+1])
+                path = ".".join(request.path[: i + 1])
                 raise UnexpectedError(
-                    "Object '%s' of type %r has no attribute '%s'" % (
-                        path, typ, endpoint))
+                    "Object '%s' of type %r has no attribute '%s'"
+                    % (path, typ, endpoint)
+                )
         # Important to freeze now with the lock so we get a consistent set
         serialized = freeze(data)
         ret = [request.return_response(serialized)]
@@ -178,11 +187,13 @@ class Controller(Hookable):
         try:
             attribute = self._block[attribute_name]
         except KeyError:
-            raise FieldError("Block '%s' has no Attribute '%s'" % (
-                self.mri, attribute_name))
+            raise FieldError(
+                "Block '%s' has no Attribute '%s'" % (self.mri, attribute_name)
+            )
 
-        assert isinstance(attribute, AttributeModel), \
-            "Cannot Put to %s which is a %s" % (attribute.path, type(attribute))
+        assert isinstance(
+            attribute, AttributeModel
+        ), "Cannot Put to %s which is a %s" % (attribute.path, type(attribute))
         self.check_field_writeable(attribute)
 
         put_function = self.get_put_function(attribute_name)
@@ -205,23 +216,28 @@ class Controller(Hookable):
     def get_post_function(self, method_name):
         return self._write_functions[method_name]
 
-    def update_method_logs(self, method, took_value, took_ts, returned_value,
-                           returned_alarm):
+    def update_method_logs(
+        self, method, took_value, took_ts, returned_value, returned_alarm
+    ):
         with self.changes_squashed:
             method.set_took(
                 MethodLog(
-                    value=method.meta.takes.validate(
-                        took_value, add_missing=True),
-                    present=[x for x in method.meta.takes.elements
-                             if x in took_value],
-                    timeStamp=took_ts))
+                    value=method.meta.takes.validate(took_value, add_missing=True),
+                    present=[x for x in method.meta.takes.elements if x in took_value],
+                    timeStamp=took_ts,
+                )
+            )
             method.set_returned(
                 MethodLog(
                     value=method.meta.returns.validate(
-                        returned_value, add_missing=True),
-                    present=[x for x in method.meta.returns.elements
-                             if x in returned_value],
-                    alarm=returned_alarm))
+                        returned_value, add_missing=True
+                    ),
+                    present=[
+                        x for x in method.meta.returns.elements if x in returned_value
+                    ],
+                    alarm=returned_alarm,
+                )
+            )
 
     def _handle_post(self, request: Post) -> CallbackResponses:
         """Called with the lock taken"""
@@ -230,11 +246,12 @@ class Controller(Hookable):
         try:
             method = self._block[method_name]
         except KeyError:
-            raise FieldError("Block '%s' has no Method '%s'" % (
-                self.mri, method_name))
+            raise FieldError("Block '%s' has no Method '%s'" % (self.mri, method_name))
 
-        assert isinstance(method, MethodModel), \
-            "Cannot Post to %s which is a %s" % (method.path, type(method))
+        assert isinstance(method, MethodModel), "Cannot Post to %s which is a %s" % (
+            method.path,
+            type(method),
+        )
         self.check_field_writeable(method)
 
         post_function = self.get_post_function(method_name)
@@ -259,7 +276,8 @@ class Controller(Hookable):
             raise
         finally:
             self.update_method_logs(
-                method, took_value, took_ts, returned_value, returned_alarm)
+                method, took_value, took_ts, returned_value, returned_alarm
+            )
 
         # Don't need to freeze as the result should be immutable
         ret = [request.return_response(result)]
@@ -282,10 +300,13 @@ class Controller(Hookable):
             hook_queue, hook_spawned = start_hooks(hooks)
         return hook_queue, hook_spawned
 
-    def wait_hooks(self, hook_queue: Queue, hook_spawned: List[Hook]) -> Dict[str, List[Info]]:
+    def wait_hooks(
+        self, hook_queue: Queue, hook_spawned: List[Hook]
+    ) -> Dict[str, List[Info]]:
         if hook_spawned:
             return_dict = wait_hooks(
-                self.log, hook_queue, hook_spawned, DEFAULT_TIMEOUT)
+                self.log, hook_queue, hook_spawned, DEFAULT_TIMEOUT
+            )
         else:
             self.log.debug("%s: No Parts hooked", self.mri)
             return_dict = {}

@@ -1,8 +1,16 @@
 from annotypes import Anno
 
-from malcolm.core import Part, PartRegistrar, ChoiceMeta, Port, Alarm, \
-    StringMeta, NumberMeta
-from malcolm.modules import ca, builtin
+from malcolm.core import (
+    Alarm,
+    ChoiceMeta,
+    NumberMeta,
+    Part,
+    PartRegistrar,
+    Port,
+    StringMeta,
+)
+from malcolm.modules import builtin, ca
+
 from ..util import CS_AXIS_NAMES
 
 with Anno("PV prefix for CSPort and CSAxis records"):
@@ -19,11 +27,13 @@ class RawMotorSinkPortsPart(Part):
     def __init__(self, pv_prefix: APvPrefix, group: ca.util.AGroup = None) -> None:
         super(RawMotorSinkPortsPart, self).__init__("sinkPorts")
         self.pvs = [pv_prefix + ":CsPort", pv_prefix + ":CsAxis"]
-        self.rbvs = [pv_prefix + ":CsPort_RBV", pv_prefix + ":CsAxis_RBV",
-                     pv_prefix + ".OUT"]
+        self.rbvs = [
+            pv_prefix + ":CsPort_RBV",
+            pv_prefix + ":CsAxis_RBV",
+            pv_prefix + ".OUT",
+        ]
         meta = ChoiceMeta("CS Axis")
-        builtin.util.set_tags(
-            meta, writeable=True, group=group, sink_port=Port.MOTOR)
+        builtin.util.set_tags(meta, writeable=True, group=group, sink_port=Port.MOTOR)
         self.cs_attr = meta.create_attribute_model()
         meta = StringMeta("Parent PMAC Port name")
         builtin.util.set_tags(meta, group=group, sink_port=Port.MOTOR)
@@ -43,15 +53,19 @@ class RawMotorSinkPortsPart(Part):
         registrar.add_attribute_model("cs", self.cs_attr, self.caput)
         # Hooks
         registrar.hook(builtin.hooks.DisableHook, self.disconnect)
-        registrar.hook((builtin.hooks.InitHook,
-                        builtin.hooks.ResetHook), self.reconnect)
+        registrar.hook(
+            (builtin.hooks.InitHook, builtin.hooks.ResetHook), self.reconnect
+        )
 
     def reconnect(self):
         # release old monitors
         self.disconnect()
         # make sure we can connect to the pvs
-        ca_values = ca.util.assert_connected(ca.util.catools.caget(
-            self.pvs + self.rbvs, format=ca.util.catools.FORMAT_CTRL))
+        ca_values = ca.util.assert_connected(
+            ca.util.catools.caget(
+                self.pvs + self.rbvs, format=ca.util.catools.FORMAT_CTRL
+            )
+        )
         # Set initial value
         self.port_choices = ca_values[0].enums
         choices = [""]
@@ -64,8 +78,11 @@ class RawMotorSinkPortsPart(Part):
         self._update_value(ca_values[4], 2)
         # Setup monitor on rbvs
         self.monitors = ca.util.catools.camonitor(
-            self.rbvs, self._update_value, format=ca.util.catools.FORMAT_TIME,
-            notify_disconnect=True)
+            self.rbvs,
+            self._update_value,
+            format=ca.util.catools.FORMAT_TIME,
+            notify_disconnect=True,
+        )
 
     def disconnect(self):
         for monitor in self.monitors:
@@ -95,10 +112,8 @@ class RawMotorSinkPortsPart(Part):
                 self.pmac_attr.set_value(split[0].strip())
                 self.axis_num_attr.set_value(split[1].strip())
             else:
-                self.pmac_attr.set_value(
-                    None, alarm=Alarm.invalid("Bad PV value"))
-                self.axis_num_attr.set_value(
-                    None, alarm=Alarm.invalid("Bad PV value"))
+                self.pmac_attr.set_value(None, alarm=Alarm.invalid("Bad PV value"))
+                self.axis_num_attr.set_value(None, alarm=Alarm.invalid("Bad PV value"))
         if self.port is None or self.axis is None:
             # Bad value or PV disconnected
             self.cs_attr.set_value(None, alarm=Alarm.invalid("Bad PV value"))
@@ -118,7 +133,6 @@ class RawMotorSinkPortsPart(Part):
             axis = ""
         ca.util.catools.caput(self.pvs, (port_index, axis), wait=True)
         # now do a caget
-        values = ca.util.catools.caget(
-            self.rbvs, format=ca.util.catools.FORMAT_TIME)
+        values = ca.util.catools.caget(self.rbvs, format=ca.util.catools.FORMAT_TIME)
         self.port = self.port_choices[values[0]]
         self._update_value(values[1], 1)

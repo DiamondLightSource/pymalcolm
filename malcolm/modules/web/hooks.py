@@ -2,6 +2,7 @@ from annotypes import Anno, Array, Sequence, Union
 
 from malcolm.core import Hook
 from malcolm.modules import builtin
+
 from .infos import HandlerInfo
 
 with Anno("Any handlers and regexps that should form part of tornado App"):
@@ -15,6 +16,7 @@ APart = builtin.hooks.APart
 class ReportHandlersHook(Hook):
     """Called at init() to get all the handlers that should make the application
     """
+
     def __init__(self, part: APart) -> None:
         super(ReportHandlersHook, self).__init__(part)
 

@@ -1,7 +1,8 @@
 from annotypes import Any
 
-from malcolm.core import Part, PartRegistrar, StringMeta, Port
+from malcolm.core import Part, PartRegistrar, Port, StringMeta
 from malcolm.modules import ca
+
 from ..util import CS_AXIS_NAMES
 
 # Pull re-used annotypes into our namespace in case we are subclassed
@@ -19,8 +20,12 @@ class CSSourcePortsPart(Part):
         self.meta = StringMeta("CS Port name")
         # This gives the port name
         self.caa = ca.util.CAAttribute(
-            self.meta, ca.util.catools.DBR_STRING, rbv=rbv, group=group,
-            on_connect=self.update_tags)
+            self.meta,
+            ca.util.catools.DBR_STRING,
+            rbv=rbv,
+            group=group,
+            on_connect=self.update_tags,
+        )
         # These will be the "axis" Source Ports
         self.axis_attrs = {}
 
@@ -30,9 +35,7 @@ class CSSourcePortsPart(Part):
         for k in CS_AXIS_NAMES + ["I"]:
             # Note no widget tag as we don't want it on the properties pane,
             # just the layout view
-            v = StringMeta(
-                "Axis Source Port value %s" % k
-            ).create_attribute_model()
+            v = StringMeta("Axis Source Port value %s" % k).create_attribute_model()
             self.axis_attrs[k] = v
             registrar.add_attribute_model(k.lower(), v)
 
@@ -43,6 +46,7 @@ class CSSourcePortsPart(Part):
             # Add the Source Port tags
             old_tags = v.meta.tags
             new_tags = Port.MOTOR.with_source_port_tag(
-                old_tags, connected_value="%s,%s" % (value, k))
+                old_tags, connected_value="%s,%s" % (value, k)
+            )
             if old_tags != new_tags:
                 v.meta.set_tags(new_tags)

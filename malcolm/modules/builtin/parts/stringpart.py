@@ -1,8 +1,8 @@
 from annotypes import Anno
 
-from malcolm.core import Part, PartRegistrar, StringMeta, APartName, \
-    AMetaDescription
-from ..util import set_tags, AWriteable, AConfig, AGroup, AWidget
+from malcolm.core import AMetaDescription, APartName, Part, PartRegistrar, StringMeta
+
+from ..util import AConfig, AGroup, AWidget, AWriteable, set_tags
 
 with Anno("Initial value of the created attribute"):
     AValue = str
@@ -18,15 +18,17 @@ AWidget = AWidget
 
 class StringPart(Part):
     """Create a single string Attribute on the Block"""
-    def __init__(self,
-                 name: APartName,
-                 description: AMetaDescription,
-                 writeable: AWriteable = False,
-                 config: AConfig = 1,
-                 group: AGroup = None,
-                 widget: AWidget = None,
-                 value: AValue = "",
-                 ) -> None:
+
+    def __init__(
+        self,
+        name: APartName,
+        description: AMetaDescription,
+        writeable: AWriteable = False,
+        config: AConfig = 1,
+        group: AGroup = None,
+        widget: AWidget = None,
+        value: AValue = "",
+    ) -> None:
         super(StringPart, self).__init__(name)
         meta = StringMeta(description)
         set_tags(meta, writeable, config, group, widget)

@@ -1,21 +1,40 @@
-from collections import OrderedDict
 import unittest
+from collections import OrderedDict
 
 import numpy as np
+from annotypes import Serializable
 from mock import Mock
 
-from annotypes import Serializable
-from malcolm.core import BlockModel, StringMeta, Alarm, \
-    AlarmSeverity, AlarmStatus, TimeStamp, VMeta, TableMeta, StringArrayMeta, \
-    NumberMeta, NumberArrayMeta, MethodModel, ChoiceMeta, ChoiceArrayMeta, \
-    BooleanMeta, BooleanArrayMeta
-from malcolm.core.models import NTTable, MapMeta, BlockMeta, NTScalar, \
-    Meta, MethodMeta, MethodLog
+from malcolm.core import (
+    Alarm,
+    AlarmSeverity,
+    AlarmStatus,
+    BlockModel,
+    BooleanArrayMeta,
+    BooleanMeta,
+    ChoiceArrayMeta,
+    ChoiceMeta,
+    MethodModel,
+    NumberArrayMeta,
+    NumberMeta,
+    StringArrayMeta,
+    StringMeta,
+    TableMeta,
+    TimeStamp,
+    VMeta,
+)
+from malcolm.core.models import (
+    BlockMeta,
+    MapMeta,
+    Meta,
+    MethodLog,
+    MethodMeta,
+    NTScalar,
+)
 from malcolm.core.notifier import DummyNotifier
 
 
 class TestAttribute(unittest.TestCase):
-
     def setUp(self):
         self.meta = StringMeta()
         self.o = self.meta.create_attribute_model()
@@ -31,8 +50,7 @@ class TestAttribute(unittest.TestCase):
         assert self.o.value == value
 
     def test_set_alarm(self):
-        alarm = Alarm(
-            AlarmSeverity.MAJOR_ALARM, AlarmStatus.DEVICE_STATUS, "bad")
+        alarm = Alarm(AlarmSeverity.MAJOR_ALARM, AlarmStatus.DEVICE_STATUS, "bad")
         self.o.set_alarm(alarm)
         assert self.o.alarm == alarm
 
@@ -43,7 +61,6 @@ class TestAttribute(unittest.TestCase):
 
 
 class TestNTScalar(unittest.TestCase):
-
     def setUp(self):
         self.serialized = OrderedDict()
         self.serialized["typeid"] = "epics:nt/NTScalar:1.0"
@@ -65,7 +82,6 @@ class TestNTScalar(unittest.TestCase):
 
 
 class TestBlockMeta(unittest.TestCase):
-
     def setUp(self):
         self.serialized = OrderedDict()
         self.serialized["typeid"] = "malcolm:core/BlockMeta:1.0"
@@ -88,7 +104,6 @@ class TestBlockMeta(unittest.TestCase):
 
 
 class TestBlockModel(unittest.TestCase):
-
     def setUp(self):
         self.attr = StringMeta().create_attribute_model()
         self.method = MethodModel()
@@ -108,7 +123,7 @@ class TestBlockModel(unittest.TestCase):
         assert list(self.o) == ["meta", "method"]
         assert self.o.meta.fields == ["method"]
         with self.assertRaises(AttributeError):
-            a = self.o.attr
+            self.o.attr
         self.o.set_endpoint_data("attr", self.attr)
         assert list(self.o) == ["meta", "method", "attr"]
         assert self.o.meta.fields == ["method", "attr"]
@@ -116,7 +131,6 @@ class TestBlockModel(unittest.TestCase):
 
 
 class TestBooleanArrayMeta(unittest.TestCase):
-
     def setUp(self):
         self.meta = BooleanArrayMeta("test description")
 
@@ -130,9 +144,9 @@ class TestBooleanArrayMeta(unittest.TestCase):
 
     def test_validate_array(self):
         array = ["True", "", True, False, 1, 0]
-        assert (
-                   [True, False, True, False, True, False]) == (
-                   list(self.meta.validate(array)))
+        assert ([True, False, True, False, True, False]) == (
+            list(self.meta.validate(array))
+        )
 
     def test_not_iterable(self):
         value = True
@@ -140,12 +154,10 @@ class TestBooleanArrayMeta(unittest.TestCase):
 
     def test_null_element_raises(self):
         array = ["test", None]
-        assert (
-                   [True, False]) == list(self.meta.validate(array))
+        assert ([True, False]) == list(self.meta.validate(array))
 
 
 class TestBooleanMeta(unittest.TestCase):
-
     def setUp(self):
         self.boolean_meta = BooleanMeta("test description")
 
@@ -173,7 +185,7 @@ class TestBooleanMeta(unittest.TestCase):
     def test_given_value_None_then_return(self):
         response = self.boolean_meta.validate(None)
 
-        assert False == response
+        assert False is response
 
 
 class TestChoiceArrayMeta(unittest.TestCase):
@@ -210,8 +222,7 @@ class TestChoiceArrayMeta(unittest.TestCase):
 
 class TestChoiceMeta(unittest.TestCase):
     def setUp(self):
-        self.choice_meta = ChoiceMeta(
-            "test description", ["a", "b"])
+        self.choice_meta = ChoiceMeta("test description", ["a", "b"])
         self.serialized = OrderedDict()
         self.serialized["typeid"] = "malcolm:core/ChoiceMeta:1.0"
         self.serialized["description"] = "desc"
@@ -221,16 +232,11 @@ class TestChoiceMeta(unittest.TestCase):
         self.serialized["label"] = "name"
 
     def test_init(self):
-        self.choice_meta = ChoiceMeta(
-            "test description", ["a", "b"])
-        assert (
-                   "test description") == self.choice_meta.description
-        assert (
-                   self.choice_meta.typeid) == "malcolm:core/ChoiceMeta:1.0"
-        assert (
-                   self.choice_meta.label) == ""
-        assert (
-                   self.choice_meta.choices) == ["a", "b"]
+        self.choice_meta = ChoiceMeta("test description", ["a", "b"])
+        assert ("test description") == self.choice_meta.description
+        assert (self.choice_meta.typeid) == "malcolm:core/ChoiceMeta:1.0"
+        assert (self.choice_meta.label) == ""
+        assert (self.choice_meta.choices) == ["a", "b"]
 
     def test_given_valid_value_then_return(self):
         response = self.choice_meta.validate("a")
@@ -246,7 +252,7 @@ class TestChoiceMeta(unittest.TestCase):
 
     def test_given_invalid_value_then_raises(self):
         with self.assertRaises(ValueError):
-            self.choice_meta.validate('badname')
+            self.choice_meta.validate("badname")
 
     def test_set_choices(self):
         self.choice_meta.set_choices(["4"])
@@ -268,7 +274,6 @@ class TestChoiceMeta(unittest.TestCase):
 
 
 class TestMethodMeta(unittest.TestCase):
-
     def test_init(self):
         m = MethodMeta(description="test_description")
         assert "test_description" == m.description
@@ -310,7 +315,6 @@ class TestMethodMeta(unittest.TestCase):
 
 
 class TestMethodLog(unittest.TestCase):
-
     def setUp(self):
         self.serialized = OrderedDict()
         self.serialized["typeid"] = "malcolm:core/MethodLog:1.0"
@@ -332,7 +336,6 @@ class TestMethodLog(unittest.TestCase):
 
 
 class TestMapMeta(unittest.TestCase):
-
     def test_values_set(self):
         self.assertIsInstance(self.mm.elements, dict)
         assert len(self.mm.elements) == 0
@@ -372,7 +375,6 @@ class TestMapMeta(unittest.TestCase):
 
 
 class TestMeta(unittest.TestCase):
-
     def setUp(self):
         self.o = Meta("desc")
         notifier = DummyNotifier()
@@ -390,28 +392,32 @@ class TestMeta(unittest.TestCase):
         assert self.o.set_description(description) == description
         assert self.o.description == description
         self.o.notifier.add_squashed_change.assert_called_once_with(
-            ["path", "description"], description)
+            ["path", "description"], description
+        )
 
     def test_set_tags(self):
         tags = ("widget:textinput",)
         assert self.o.set_tags(tags) == tags
         assert self.o.tags == tags
         self.o.notifier.add_squashed_change.assert_called_once_with(
-            ["path", "tags"], tags)
+            ["path", "tags"], tags
+        )
 
     def test_set_writeable(self):
         writeable = True
         assert self.o.set_writeable(writeable) == writeable
         assert self.o.writeable == writeable
         self.o.notifier.add_squashed_change.assert_called_once_with(
-            ["path", "writeable"], writeable)
+            ["path", "writeable"], writeable
+        )
 
     def test_set_label(self):
         label = "my label"
         assert self.o.set_label(label) == label
         assert self.o.label == label
         self.o.notifier.add_squashed_change.assert_called_once_with(
-            ["path", "label"], label)
+            ["path", "label"], label
+        )
 
     def test_to_dict(self):
         m = Meta("desc")
@@ -420,7 +426,6 @@ class TestMeta(unittest.TestCase):
 
 
 class TestNumberArrayMeta(unittest.TestCase):
-
     def test_numpy_array(self):
         nm = NumberArrayMeta("float64")
         values = np.array([1.2, 3.4, 5.6])
@@ -568,7 +573,6 @@ class TestNumberMeta(unittest.TestCase):
 
 
 class TestStringArrayMeta(unittest.TestCase):
-
     def setUp(self):
         self.meta = StringArrayMeta("test description")
 
@@ -597,7 +601,6 @@ class TestStringArrayMeta(unittest.TestCase):
 
 
 class TestStringMeta(unittest.TestCase):
-
     def setUp(self):
         self.string_meta = StringMeta("test string description")
 
@@ -623,13 +626,12 @@ class TestStringMeta(unittest.TestCase):
 
 
 class TestTableMeta(unittest.TestCase):
-
     def test_init(self):
         tm = TableMeta("desc")
         assert "desc" == tm.description
         assert "malcolm:core/TableMeta:1.0" == tm.typeid
         assert [] == tm.tags
-        assert False == tm.writeable
+        assert False is tm.writeable
         assert "" == tm.label
 
     def setUp(self):
@@ -675,7 +677,7 @@ class TestTableMeta(unittest.TestCase):
         assert len(tm.elements) == 1
         assert tm.elements["c1"].to_dict() == self.sam.to_dict()
         assert tm.tags == []
-        assert tm.writeable == True
+        assert tm.writeable is True
         assert tm.label == "Name"
 
     def test_validate_from_good_table(self):
@@ -687,17 +689,13 @@ class TestTableMeta(unittest.TestCase):
 
     def test_validate_from_serialized(self):
         tm = self.tm
-        serialized = dict(
-            typeid="anything",
-            c1=("me", "me3")
-        )
+        serialized = dict(typeid="anything", c1=("me", "me3"))
         t = tm.validate(serialized)
         assert list(t) == ["c1"]
         assert t.c1 == serialized["c1"]
 
 
 class TestVMeta(unittest.TestCase):
-
     def test_values_after_init(self):
         assert "test description" == self.meta.description
         assert not self.meta.writeable

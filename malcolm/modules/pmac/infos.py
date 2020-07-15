@@ -2,22 +2,24 @@
 from __future__ import division
 
 from malcolm.core import Info
+
 from .velocityprofile import VelocityProfile
 
 
 class MotorInfo(Info):
-    def __init__(self,
-                 cs_axis: str,
-                 cs_port: str,
-                 acceleration: float,
-                 resolution: float,
-                 offset: float,
-                 max_velocity: float,
-                 current_position: float,
-                 scannable: str,
-                 velocity_settle: float,
-                 units: str
-                 ) -> None:
+    def __init__(
+        self,
+        cs_axis: str,
+        cs_port: str,
+        acceleration: float,
+        resolution: float,
+        offset: float,
+        max_velocity: float,
+        current_position: float,
+        scannable: str,
+        velocity_settle: float,
+        units: str,
+    ) -> None:
         self.cs_axis = cs_axis
         self.cs_port = cs_port
         self.acceleration = acceleration
@@ -43,8 +45,7 @@ class MotorInfo(Info):
         ramp_distance = (v1 + v2) * ramp_time / 2
         return ramp_distance
 
-    def make_velocity_profile(
-            self, v1, v2, distance, min_time, min_interval=0.002):
+    def make_velocity_profile(self, v1, v2, distance, min_time, min_interval=0.002):
         """Calculate PVT points that will perform the move within motor params
 
         Args:
@@ -60,8 +61,15 @@ class MotorInfo(Info):
 
         # Create the time and velocity arrays
         p = VelocityProfile(
-            v1, v2, distance, min_time, self.acceleration, self.max_velocity,
-            self.velocity_settle, min_interval)
+            v1,
+            v2,
+            distance,
+            min_time,
+            self.acceleration,
+            self.max_velocity,
+            self.velocity_settle,
+            min_interval,
+        )
         p.get_profile()
         return p
 

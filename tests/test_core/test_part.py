@@ -1,6 +1,6 @@
 import unittest
 
-from malcolm.core import Part, PartRegistrar, StringMeta, Controller, Process
+from malcolm.core import Controller, Part, PartRegistrar, Process, StringMeta
 
 
 class BadPart(Part):

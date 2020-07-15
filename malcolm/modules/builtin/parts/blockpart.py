@@ -1,8 +1,15 @@
 from annotypes import Anno
 
-from malcolm.core import Part, PartRegistrar, StringMeta, APartName, \
-    AMetaDescription, Port
-from ..util import set_tags, AWriteable, AConfig, AGroup, AWidget
+from malcolm.core import (
+    AMetaDescription,
+    APartName,
+    Part,
+    PartRegistrar,
+    Port,
+    StringMeta,
+)
+
+from ..util import AConfig, AGroup, AWidget, AWriteable, set_tags
 
 with Anno("Initial value of the created attribute"):
     AValue = str
@@ -18,15 +25,17 @@ AWidget = AWidget
 
 class BlockPart(Part):
     """Create a single string SinkPort for connecting to another Block"""
-    def __init__(self,
-                 name: APartName,
-                 description: AMetaDescription,
-                 writeable: AWriteable = True,
-                 config: AConfig = 1,
-                 group: AGroup = None,
-                 widget: AWidget = None,
-                 value: AValue = "",
-                 ) -> None:
+
+    def __init__(
+        self,
+        name: APartName,
+        description: AMetaDescription,
+        writeable: AWriteable = True,
+        config: AConfig = 1,
+        group: AGroup = None,
+        widget: AWidget = None,
+        value: AValue = "",
+    ) -> None:
         super(BlockPart, self).__init__(name)
         meta = StringMeta(description)
         set_tags(meta, writeable, config, group, widget, sink_port=Port.BLOCK)

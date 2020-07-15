@@ -1,15 +1,16 @@
 from contextlib import contextmanager
+from typing import Any, Callable, Dict, List, Tuple
 
-from annotypes import TYPE_CHECKING, FrozenOrderedDict, Array
+from annotypes import TYPE_CHECKING, Array, FrozenOrderedDict
 
+from .concurrency import RLock
 from .loggable import Loggable
 from .request import Subscribe, Unsubscribe
 from .response import Response
-from .concurrency import RLock
 
-from typing import List, Tuple, Callable, Any, Dict
 if TYPE_CHECKING:
     from .models import BlockModel
+
     Callback = Callable[[Response], None]
     CallbackResponses = List[Tuple[Callback, Response]]
     SubscriptionKeys = Dict[Tuple[Callback, int], Subscribe]
@@ -32,10 +33,10 @@ def freeze(o):
     # Cheaper than a subclass check, will find Models for us and freeze them
     # into dicts
     if hasattr(o, "notifier"):
-        o = FrozenOrderedDict((("typeid", o.typeid),) + tuple(
-            (k, freeze(getattr(o, k)))
-            for k in o.call_types
-        ))
+        o = FrozenOrderedDict(
+            (("typeid", o.typeid),)
+            + tuple((k, freeze(getattr(o, k))) for k in o.call_types)
+        )
     elif isinstance(o, dict):
         # Recurse down in case there are any models down there
         o = FrozenOrderedDict(tuple((k, freeze(v)) for k, v in o.items()))
@@ -48,7 +49,7 @@ def freeze(o):
 class Notifier(Loggable):
     """Object that can service callbacks on given endpoints"""
 
-    def __init__(self, mri: str, lock: RLock, block: 'BlockModel') -> None:
+    def __init__(self, mri: str, lock: RLock, block: "BlockModel") -> None:
         self.set_logger(mri=mri)
         self._tree = NotifierNode(block)
         self._lock = lock
@@ -57,20 +58,20 @@ class Notifier(Loggable):
         self._squashed_changes: List[List] = []
         self._subscription_keys: SubscriptionKeys = {}
 
-    def handle_subscribe(self, request: Subscribe) -> 'CallbackResponses':
+    def handle_subscribe(self, request: Subscribe) -> "CallbackResponses":
         """Handle a Subscribe request from outside. Called with lock taken"""
         ret = self._tree.handle_subscribe(request, request.path[1:])
         self._subscription_keys[request.generate_key()] = request
         return ret
 
-    def handle_unsubscribe(self, request: Unsubscribe) -> 'CallbackResponses':
+    def handle_unsubscribe(self, request: Unsubscribe) -> "CallbackResponses":
         """Handle a Unsubscribe request from outside. Called with lock taken"""
         subscribe = self._subscription_keys.pop(request.generate_key())
         ret = self._tree.handle_unsubscribe(subscribe, subscribe.path[1:])
         return ret
 
     @property
-    def changes_squashed(self) -> 'Notifier':
+    def changes_squashed(self) -> "Notifier":
         """Context manager to allow multiple calls to notify_change() to be
         made and all changes squashed into one consistent set. E.g:
 
@@ -118,7 +119,7 @@ class Notifier(Loggable):
             self._lock.release()
             self._callback_responses(responses)
 
-    def _callback_responses(self, responses: 'CallbackResponses') -> None:
+    def _callback_responses(self, responses: "CallbackResponses") -> None:
         for cb, response in responses:
             try:
                 cb(response)
@@ -130,17 +131,16 @@ class Notifier(Loggable):
 class NotifierNode(object):
 
     # Define slots so it uses less resources to make these
-    __slots__ = [
-        "delta_requests", "update_requests", "children", "parent", "data"]
+    __slots__ = ["delta_requests", "update_requests", "children", "parent", "data"]
 
-    def __init__(self, data: Any, parent: 'NotifierNode' = None) -> None:
+    def __init__(self, data: Any, parent: "NotifierNode" = None) -> None:
         self.delta_requests: List[Subscribe] = []
         self.update_requests: List[Subscribe] = []
         self.children: Dict[str, NotifierNode] = {}
         self.parent = parent
         self.data = data
 
-    def notify_changes(self, changes: List[List]) -> 'CallbackResponses':
+    def notify_changes(self, changes: List[List]) -> "CallbackResponses":
         """Set our data and notify anyone listening
 
         Args:
@@ -218,7 +218,9 @@ class NotifierNode(object):
                 child_change_dict[name] = [[], child_data]
         return child_change_dict
 
-    def handle_subscribe(self, request: Subscribe, path: List[str]) -> 'CallbackResponses':
+    def handle_subscribe(
+        self, request: Subscribe, path: List[str]
+    ) -> "CallbackResponses":
         """Add to the list of request to notify, and notify the initial value of
         the data held
 
@@ -234,8 +236,7 @@ class NotifierNode(object):
             # Recurse down
             name = path[0]
             if name not in self.children:
-                self.children[name] = NotifierNode(
-                    getattr(self.data, name, None), self)
+                self.children[name] = NotifierNode(getattr(self.data, name, None), self)
             ret += self.children[name].handle_subscribe(request, path[1:])
         else:
             # This is for us
@@ -248,7 +249,9 @@ class NotifierNode(object):
                 ret.append(request.update_response(frozen))
         return ret
 
-    def handle_unsubscribe(self, request: Subscribe, path: List[str]) -> 'CallbackResponses':
+    def handle_unsubscribe(
+        self, request: Subscribe, path: List[str]
+    ) -> "CallbackResponses":
         """Remove from the notifier list and send a return
 
         Args:
@@ -264,8 +267,11 @@ class NotifierNode(object):
             name = path[0]
             child = self.children[name]
             ret += child.handle_unsubscribe(request, path[1:])
-            if not child.children and not child.update_requests \
-                    and not child.delta_requests:
+            if (
+                not child.children
+                and not child.update_requests
+                and not child.delta_requests
+            ):
                 del self.children[name]
         else:
             # This is for us

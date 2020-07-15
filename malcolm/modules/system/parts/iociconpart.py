@@ -1,8 +1,8 @@
 import os
 
-from malcolm.modules import builtin
-from malcolm.core import StringMeta, PartRegistrar
-from malcolm.modules import ca
+from malcolm.core import PartRegistrar, StringMeta
+from malcolm.modules import builtin, ca
+
 from .dirparsepart import AIoc
 
 
@@ -11,10 +11,14 @@ class IocIconPart(builtin.parts.IconPart):
         self.initial_svg = initial_svg
         super(IocIconPart, self).__init__(initial_svg)
         meta = StringMeta("Host Architecture")
-        self.host_arch = ca.util.CAAttribute(meta, ca.util.catools.DBR_STRING,
-                                             "", ioc + ":KERNEL_VERS",
-                                             throw=False,
-                                             callback=self.update_icon)
+        self.host_arch = ca.util.CAAttribute(
+            meta,
+            ca.util.catools.DBR_STRING,
+            "",
+            ioc + ":KERNEL_VERS",
+            throw=False,
+            callback=self.update_icon,
+        )
 
     def setup(self, registrar: PartRegistrar) -> None:
         super(IocIconPart, self).setup(registrar)

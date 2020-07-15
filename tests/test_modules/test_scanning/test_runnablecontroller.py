@@ -1,24 +1,34 @@
 import unittest
-import time
 
 import cothread
-
-from scanpointgenerator import LineGenerator, CompoundGenerator
 from annotypes import add_call_types
+from scanpointgenerator import CompoundGenerator, LineGenerator
 
-from malcolm.modules.demo.parts.motionchildpart import AExceptionStep
-from malcolm.modules.scanning.hooks import ACompletedSteps, AContext, \
-    AStepsToDo, ValidateHook, UInfos, AAxesToMove, AGenerator
-from malcolm.core import Process, Context, AlarmStatus, \
-    AlarmSeverity, AbortedError, PartRegistrar
-from malcolm.modules.demo.parts import MotionChildPart
-from malcolm.modules.demo.blocks import motion_block
 from malcolm.compat import OrderedDict
-from malcolm.modules.scanning.controllers import \
-    RunnableController
+from malcolm.core import (
+    AbortedError,
+    AlarmSeverity,
+    AlarmStatus,
+    Context,
+    PartRegistrar,
+    Process,
+)
+from malcolm.modules import builtin, scanning
+from malcolm.modules.demo.blocks import motion_block
+from malcolm.modules.demo.parts import MotionChildPart
+from malcolm.modules.demo.parts.motionchildpart import AExceptionStep
+from malcolm.modules.scanning.controllers import RunnableController
+from malcolm.modules.scanning.hooks import (
+    AAxesToMove,
+    ACompletedSteps,
+    AContext,
+    AGenerator,
+    AStepsToDo,
+    UInfos,
+    ValidateHook,
+)
 from malcolm.modules.scanning.infos import ParameterTweakInfo
 from malcolm.modules.scanning.util import RunnableStates
-from malcolm.modules import builtin, scanning
 
 
 class MisbehavingPauseException(Exception):
@@ -41,20 +51,23 @@ class MisbehavingPart(MotionChildPart):
     # Allow CamelCase for arguments as they will be serialized by parent
     # noinspection PyPep8Naming
     @add_call_types
-    def on_configure(self,
-                     context: AContext,
-                     completed_steps: ACompletedSteps,
-                     steps_to_do: AStepsToDo,
-                     # The following were passed from the user calling configure()
-                     generator: AGenerator,
-                     axesToMove: AAxesToMove,
-                     exceptionStep: AExceptionStep = 0,
-                     ) -> None:
+    def on_configure(
+        self,
+        context: AContext,
+        completed_steps: ACompletedSteps,
+        steps_to_do: AStepsToDo,
+        # The following were passed from the user calling configure()
+        generator: AGenerator,
+        axesToMove: AAxesToMove,
+        exceptionStep: AExceptionStep = 0,
+    ) -> None:
         super(MisbehavingPart, self).on_configure(
-            context, completed_steps, steps_to_do, generator, axesToMove,
-            exceptionStep)
+            context, completed_steps, steps_to_do, generator, axesToMove, exceptionStep
+        )
         if completed_steps == 3:
-            raise MisbehavingPauseException("Called magic number to make pause throw an exception")
+            raise MisbehavingPauseException(
+                "Called magic number to make pause throw an exception"
+            )
 
 
 class RunForeverPart(builtin.parts.ChildPart):
@@ -79,46 +92,87 @@ class RunForeverPart(builtin.parts.ChildPart):
 
 
 class TestRunnableStates(unittest.TestCase):
-
     def setUp(self):
         self.o = RunnableStates()
 
     def test_init(self):
         expected = OrderedDict()
-        expected['Resetting'] = {"Ready", "Fault", "Disabling"}
-        expected['Ready'] = {"Configuring", "Aborting", 'Saving', "Fault",
-                             "Disabling", "Loading"}
-        expected['Saving'] = {'Fault', 'Ready', 'Disabling'}
-        expected['Loading'] = {'Disabling', 'Fault', 'Ready'}
-        expected['Configuring'] = {"Armed", "Aborting", "Fault", "Disabling"}
-        expected['Armed'] = {"Seeking", "Aborting", "Running",
-                             "Fault", "Disabling", "Resetting"}
-        expected['Running'] = {"PostRun", "Seeking", "Aborting", "Fault",
-                               "Disabling"}
-        expected['PostRun'] = {"Finished", "Armed", "Seeking", "Aborting", "Fault",
-                               "Disabling"}
-        expected['Finished'] = {"Seeking", "Resetting", "Configuring", "Aborting", "Fault",
-                               "Disabling"}
-        expected['Seeking'] = {"Armed", "Paused", "Finished", "Aborting", "Fault",
-                               "Disabling"}
-        expected['Paused'] = {"Seeking", "Running", "Aborting", "Fault",
-                              "Disabling"}
-        expected['Aborting'] = {"Aborted", "Fault", "Disabling"}
-        expected['Aborted'] = {"Resetting", "Fault", "Disabling"}
-        expected['Fault'] = {"Resetting", "Disabling"}
-        expected['Disabling'] = {"Disabled", "Fault"}
-        expected['Disabled'] = {"Resetting"}
+        expected["Resetting"] = {"Ready", "Fault", "Disabling"}
+        expected["Ready"] = {
+            "Configuring",
+            "Aborting",
+            "Saving",
+            "Fault",
+            "Disabling",
+            "Loading",
+        }
+        expected["Saving"] = {"Fault", "Ready", "Disabling"}
+        expected["Loading"] = {"Disabling", "Fault", "Ready"}
+        expected["Configuring"] = {"Armed", "Aborting", "Fault", "Disabling"}
+        expected["Armed"] = {
+            "Seeking",
+            "Aborting",
+            "Running",
+            "Fault",
+            "Disabling",
+            "Resetting",
+        }
+        expected["Running"] = {"PostRun", "Seeking", "Aborting", "Fault", "Disabling"}
+        expected["PostRun"] = {
+            "Finished",
+            "Armed",
+            "Seeking",
+            "Aborting",
+            "Fault",
+            "Disabling",
+        }
+        expected["Finished"] = {
+            "Seeking",
+            "Resetting",
+            "Configuring",
+            "Aborting",
+            "Fault",
+            "Disabling",
+        }
+        expected["Seeking"] = {
+            "Armed",
+            "Paused",
+            "Finished",
+            "Aborting",
+            "Fault",
+            "Disabling",
+        }
+        expected["Paused"] = {"Seeking", "Running", "Aborting", "Fault", "Disabling"}
+        expected["Aborting"] = {"Aborted", "Fault", "Disabling"}
+        expected["Aborted"] = {"Resetting", "Fault", "Disabling"}
+        expected["Fault"] = {"Resetting", "Disabling"}
+        expected["Disabling"] = {"Disabled", "Fault"}
+        expected["Disabled"] = {"Resetting"}
         assert self.o._allowed == expected
         possible_states = [
-            'Ready', 'Resetting', 'Saving', 'Loading', 'Configuring', 'Armed',
-            'Running', 'Seeking', 'PostRun', 'Finished', 'Paused', 'Aborting', 'Aborted',
-            'Fault', 'Disabling', 'Disabled']
+            "Ready",
+            "Resetting",
+            "Saving",
+            "Loading",
+            "Configuring",
+            "Armed",
+            "Running",
+            "Seeking",
+            "PostRun",
+            "Finished",
+            "Paused",
+            "Aborting",
+            "Aborted",
+            "Fault",
+            "Disabling",
+            "Disabled",
+        ]
         assert self.o.possible_states == possible_states
 
 
 class TestRunnableController(unittest.TestCase):
     def setUp(self):
-        self.p = Process('process')
+        self.p = Process("process")
         self.context = Context(self.p)
 
         # Make a motion block to act as our child
@@ -126,11 +180,10 @@ class TestRunnableController(unittest.TestCase):
             self.p.add_controller(c)
         self.b_child = self.context.block_view("childBlock")
 
-        part = MisbehavingPart(
-            mri='childBlock', name='part', initial_visibility=True)
+        part = MisbehavingPart(mri="childBlock", name="part", initial_visibility=True)
 
         # create a root block for the RunnableController block to reside in
-        self.c = RunnableController(mri='mainBlock', config_dir="/tmp")
+        self.c = RunnableController(mri="mainBlock", config_dir="/tmp")
         self.c.add_part(part)
         self.p.add_controller(self.c)
         self.b = self.context.block_view("mainBlock")
@@ -156,8 +209,11 @@ class TestRunnableController(unittest.TestCase):
         assert self.c.completed_steps.value == 0
         assert self.c.configured_steps.value == 0
         assert self.c.total_steps.value == 0
-        assert list(self.b.configure.meta.takes.elements) == \
-            ["generator", "axesToMove", "exceptionStep"]
+        assert list(self.b.configure.meta.takes.elements) == [
+            "generator",
+            "axesToMove",
+            "exceptionStep",
+        ]
 
     def test_reset(self):
         self.c.disable()
@@ -176,8 +232,7 @@ class TestRunnableController(unittest.TestCase):
         assert self.b_child.modified.value is True
         assert self.b_child.modified.alarm.severity == AlarmSeverity.MINOR_ALARM
         assert self.b_child.modified.alarm.status == AlarmStatus.CONF_STATUS
-        assert self.b_child.modified.alarm.message == \
-            "x.delta.value = 31.0 not 1.0"
+        assert self.b_child.modified.alarm.message == "x.delta.value = 31.0 not 1.0"
         self.prepare_half_run()
         self.b.run()
         # x counter now at 3 (lower bound of first run of x in reverse),
@@ -185,8 +240,7 @@ class TestRunnableController(unittest.TestCase):
         assert self.b_child.modified.value is True
         assert self.b_child.modified.alarm.severity == AlarmSeverity.MINOR_ALARM
         assert self.b_child.modified.alarm.status == AlarmStatus.CONF_STATUS
-        assert self.b_child.modified.alarm.message == \
-            "x.delta.value = 31.0 not 1.0"
+        assert self.b_child.modified.alarm.message == "x.delta.value = 31.0 not 1.0"
         assert x.counter.value == 3.0
         assert x.delta.value == 31
         x.delta.put_value(1.0)
@@ -207,8 +261,10 @@ class TestRunnableController(unittest.TestCase):
         assert self.b.modified.value is True
         assert self.b.modified.alarm.severity == AlarmSeverity.MINOR_ALARM
         assert self.b.modified.alarm.status == AlarmStatus.CONF_STATUS
-        assert self.b.modified.alarm.message == \
-            "part.design.value = 'new_child' not 'init_child'"
+        assert (
+            self.b.modified.alarm.message
+            == "part.design.value = 'new_child' not 'init_child'"
+        )
         # Load the child again
         self.b_child.design.put_value("new_child")
         assert self.b.modified.value is True
@@ -230,21 +286,20 @@ class TestRunnableController(unittest.TestCase):
         self.checkState(self.ss.ABORTED)
 
     def test_validate(self):
-        line1 = LineGenerator('y', 'mm', 0, 2, 3)
-        line2 = LineGenerator('x', 'mm', 0, 2, 2)
+        line1 = LineGenerator("y", "mm", 0, 2, 3)
+        line2 = LineGenerator("x", "mm", 0, 2, 2)
         compound = CompoundGenerator([line1, line2], [], [], duration=0.001)
-        actual = self.b.validate(generator=compound, axesToMove=['x'])
+        actual = self.b.validate(generator=compound, axesToMove=["x"])
         assert actual["generator"].duration == 0.1
         actual["generator"].duration = 0.001
         assert actual["generator"].to_dict() == compound.to_dict()
-        assert actual["axesToMove"] == ['x']
+        assert actual["axesToMove"] == ["x"]
 
     def prepare_half_run(self, duration=0.01, exception=0):
-        line1 = LineGenerator('y', 'mm', 0, 2, 3)
-        line2 = LineGenerator('x', 'mm', 0, 2, 2, alternate=True)
+        line1 = LineGenerator("y", "mm", 0, 2, 3)
+        line2 = LineGenerator("x", "mm", 0, 2, 2, alternate=True)
         compound = CompoundGenerator([line1, line2], [], [], duration)
-        self.b.configure(
-            generator=compound, axesToMove=['x'], exceptionStep=exception)
+        self.b.configure(generator=compound, axesToMove=["x"], exceptionStep=exception)
 
     def test_configure_run(self):
         assert self.b.configure.meta.writeable is True
@@ -313,10 +368,10 @@ class TestRunnableController(unittest.TestCase):
         self.checkSteps(2, 1, 6)
         self.b.resume()
         # Parent should be running, child won't have got request yet
-        then = time.time()
+        # then = time.time()
         self.checkState(self.ss.RUNNING)
         self.context.wait_all_futures(f, timeout=2)
-        now = time.time()
+        # now = time.time()
         self.checkState(self.ss.ARMED)
         self.checkSteps(4, 2, 6)
         # This test fails on Travis sometimes, looks like the docker container
@@ -470,15 +525,16 @@ class TestRunnableController(unittest.TestCase):
     def test_run_returns_in_ABORTED_state_when_aborted(self):
         # Add our forever running part
         forever_part = RunForeverPart(
-            mri='childBlock', name='forever_part', initial_visibility=True)
+            mri="childBlock", name="forever_part", initial_visibility=True
+        )
         self.c.add_part(forever_part)
 
         # Configure our block
         duration = 0.1
-        line1 = LineGenerator('y', 'mm', 0, 2, 3)
-        line2 = LineGenerator('x', 'mm', 0, 2, 2, alternate=True)
+        line1 = LineGenerator("y", "mm", 0, 2, 3)
+        line2 = LineGenerator("x", "mm", 0, 2, 2, alternate=True)
         compound = CompoundGenerator([line1, line2], [], [], duration)
-        self.b.configure(generator=compound, axesToMove=['x'])
+        self.b.configure(generator=compound, axesToMove=["x"])
 
         # Spawn the abort thread
         abort_thread = cothread.Spawn(self.abort_after_1s, raise_on_wait=True)

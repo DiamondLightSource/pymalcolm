@@ -3,7 +3,6 @@ import time
 import numpy as np
 from annotypes import Anno, Serializable
 
-
 with Anno("Seconds since Jan 1, 1970 00:00:00 UTC"):
     ASecondsPastEpoch = np.int64
 with Anno("Nanoseconds relative to the secondsPastEpoch field"):
@@ -23,7 +22,12 @@ class TimeStamp(Serializable):
     # noinspection PyPep8Naming
     # secondsPastEpoch and userTag are camelCase to maintain compatibility with
     # EPICS normative types
-    def __init__(self, secondsPastEpoch: ASecondsPastEpoch = None, nanoseconds: ANanoseconds = None, userTag: AUserTag = zero32) -> None:
+    def __init__(
+        self,
+        secondsPastEpoch: ASecondsPastEpoch = None,
+        nanoseconds: ANanoseconds = None,
+        userTag: AUserTag = zero32,
+    ) -> None:
         # Set initial values
         if secondsPastEpoch is None or nanoseconds is None:
             now = time.time()
@@ -41,4 +45,3 @@ class TimeStamp(Serializable):
 
 
 TimeStamp.zero = TimeStamp(0, zero32)
-

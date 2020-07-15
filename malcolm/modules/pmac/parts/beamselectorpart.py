@@ -1,16 +1,13 @@
 # Treat all division as float division even in python2
 from __future__ import division
 
-from malcolm.modules import builtin, scanning
-from malcolm.modules.pmac.parts import PmacChildPart
-from scanpointgenerator import LineGenerator, CompoundGenerator, \
-    StaticPointGenerator
-from malcolm.modules.scanning.infos import MinTurnaroundInfo
-from ..util import MIN_INTERVAL, MIN_TIME, point_velocities
-from .pmacchildpart import PointType
-
 from annotypes import add_call_types
-from typing import Dict, List
+from scanpointgenerator import CompoundGenerator, LineGenerator, StaticPointGenerator
+
+from malcolm.modules import builtin, scanning
+
+from ..util import MIN_INTERVAL, MIN_TIME
+from .pmacchildpart import PmacChildPart, VelocityModes
 
 # 80 char line lengths...
 AIV = builtin.parts.AInitialVisibility
@@ -22,21 +19,18 @@ AAxisName = builtin.parts.AValue
 AAngle = builtin.parts.AValue
 ATime = builtin.parts.AValue
 
-# velocity modes
-from .pmacchildpart import VelocityModes
-
 
 class BeamSelectorPart(PmacChildPart):
-
-    def __init__(self,
-                 name: APartName,
-                 mri: AMri,
-                 selectorAxis: AAxisName,
-                 tomoAngle: AAngle,
-                 diffAngle: AAngle,
-                 moveTime: ATime,
-                 initial_visibility: AIV = None
-                 ) -> None:
+    def __init__(
+        self,
+        name: APartName,
+        mri: AMri,
+        selectorAxis: AAxisName,
+        tomoAngle: AAngle,
+        diffAngle: AAngle,
+        moveTime: ATime,
+        initial_visibility: AIV = None,
+    ) -> None:
         super(BeamSelectorPart, self).__init__(name, mri, initial_visibility)
         self.selectorAxis = selectorAxis
 
@@ -47,42 +41,40 @@ class BeamSelectorPart(PmacChildPart):
         except ValueError:
             self.tomoAngle = 0.0
             self.diffAngle = 0.0
-            self.move_time = 0.500 # seconds
+            self.move_time = 0.500  # seconds
 
     @add_call_types
-    def on_configure(self,
-                  context: scanning.hooks.AContext,
-                  completed_steps: scanning.hooks.ACompletedSteps,
-                  steps_to_do: scanning.hooks.AStepsToDo,
-                  part_info: scanning.hooks.APartInfo,
-                  generator: scanning.hooks.AGenerator,
-                  axesToMove: scanning.hooks.AAxesToMove,
-                  ) -> None:
+    def on_configure(
+        self,
+        context: scanning.hooks.AContext,
+        completed_steps: scanning.hooks.ACompletedSteps,
+        steps_to_do: scanning.hooks.AStepsToDo,
+        part_info: scanning.hooks.APartInfo,
+        generator: scanning.hooks.AGenerator,
+        axesToMove: scanning.hooks.AAxesToMove,
+    ) -> None:
 
         # Double the number of cycles to get rotations
         static_axis = generator.generators[0]
-        assert isinstance(static_axis, StaticPointGenerator), \
-            "Static Point Generator not configured correctly"
-        static_axis = StaticPointGenerator(size=static_axis.size*2)
+        assert isinstance(
+            static_axis, StaticPointGenerator
+        ), "Static Point Generator not configured correctly"
+        static_axis = StaticPointGenerator(size=static_axis.size * 2)
         steps_to_do *= 2
 
         # Create a linear scan axis (proper rotation)
-        selector_axis = LineGenerator(self.selectorAxis,
-                                      "deg",
-                                      self.tomoAngle,
-                                      self.diffAngle,
-                                      1,
-                                      alternate=True)
+        selector_axis = LineGenerator(
+            self.selectorAxis, "deg", self.tomoAngle, self.diffAngle, 1, alternate=True
+        )
         axesToMove = [self.selectorAxis]
 
         def get_minturnaround():
             # See if there is a minimum turnaround
-            infos = scanning.infos.MinTurnaroundInfo.filter_values(
-                part_info)
+            infos = scanning.infos.MinTurnaroundInfo.filter_values(part_info)
             if infos:
-                assert len(infos) == 1, \
-                    "Expected 0 or 1 MinTurnaroundInfos, got %d" % len(
-                        infos)
+                assert (
+                    len(infos) == 1
+                ), "Expected 0 or 1 MinTurnaroundInfos, got %d" % len(infos)
                 min_turnaround = max(MIN_TIME, infos[0].gap)
                 min_interval = infos[0].interval
             else:
@@ -98,24 +90,22 @@ class BeamSelectorPart(PmacChildPart):
         if exposure_time < min_turnaround:
             exposure_time = min_turnaround
 
-        new_generator = \
-            CompoundGenerator([static_axis, selector_axis],
-                              [],
-                              [],
-                              duration=self.move_time,
-                              continuous=True,
-                              delay_after=exposure_time)
+        new_generator = CompoundGenerator(
+            [static_axis, selector_axis],
+            [],
+            [],
+            duration=self.move_time,
+            continuous=True,
+            delay_after=exposure_time,
+        )
         new_generator.prepare()
 
         # Reduce the exposure of the camera/detector
         generator.duration = exposure_time
 
-        super(BeamSelectorPart, self).on_configure(context,
-                                                   completed_steps,
-                                                   steps_to_do,
-                                                   part_info,
-                                                   new_generator,
-                                                   axesToMove)
+        super(BeamSelectorPart, self).on_configure(
+            context, completed_steps, steps_to_do, part_info, new_generator, axesToMove
+        )
 
     def add_tail_off(self):
         # The current point
@@ -126,15 +116,14 @@ class BeamSelectorPart(PmacChildPart):
         # insert the turnaround points
         self.insert_gap(current_point, next_point, self.steps_up_to + 1)
 
-
         # Do the last move
-#        user_program = self.get_user_program(PointType.TURNAROUND)
-#        self.add_profile_point(tail_off_time, ZERO_VELOCITY,
-#                               user_program,
-#                               self.steps_up_to, axis_points)
+        #        user_program = self.get_user_program(PointType.TURNAROUND)
+        #        self.add_profile_point(tail_off_time, ZERO_VELOCITY,
+        #                               user_program,
+        #                               self.steps_up_to, axis_points)
         # Mangle the last point to end the scan
         self.profile["velocityMode"][-1] = VelocityModes.ZERO_VELOCITY
-        #user_program = self.get_user_program(PointType.TURNAROUND)
-        #self.profile["userProgram"][-1] = user_program
+        # user_program = self.get_user_program(PointType.TURNAROUND)
+        # self.profile["userProgram"][-1] = user_program
 
         self.end_index = self.steps_up_to

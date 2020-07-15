@@ -1,6 +1,7 @@
 from malcolm.core import Part
-from .statefulcontroller import StatefulController, AMri, ADescription
+
 from ..infos import RequestInfo
+from .statefulcontroller import ADescription, AMri, StatefulController
 
 # Pull re-used annotypes into our namespace in case we are subclassed
 AMri = AMri
@@ -9,10 +10,10 @@ ADescription = ADescription
 
 class ServerComms(StatefulController):
     """Abstract class for dealing with requests from outside"""
+
     def __init__(self, mri: AMri, description: ADescription = "") -> None:
         super(ServerComms, self).__init__(mri, description)
-        self.info_registry.add_reportable(
-            RequestInfo, self.update_request_received)
+        self.info_registry.add_reportable(RequestInfo, self.update_request_received)
 
     def update_request_received(self, _: Part, info: RequestInfo) -> None:
         controller = self.process.get_controller(info.mri)

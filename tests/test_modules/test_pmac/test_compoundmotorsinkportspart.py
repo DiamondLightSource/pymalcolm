@@ -1,7 +1,8 @@
 import unittest
+
 from mock import patch
 
-from malcolm.core import Process, AlarmSeverity
+from malcolm.core import AlarmSeverity, Process
 from malcolm.modules.builtin.controllers import StatefulController
 from malcolm.modules.pmac.parts import CompoundMotorSinkPortsPart
 
@@ -27,9 +28,9 @@ class TestCompoundMotorSinkPortsPart(unittest.TestCase):
 
     def test_init(self):
         self.catools.caget.assert_called_once_with(
-            ["PV:PRE.OUT"], format=self.catools.FORMAT_CTRL)
-        assert list(self.b) == [
-            'meta', 'health', 'state', 'disable', 'reset', 'cs']
+            ["PV:PRE.OUT"], format=self.catools.FORMAT_CTRL
+        )
+        assert list(self.b) == ["meta", "health", "state", "disable", "reset", "cs"]
         assert self.b.cs.value == "BRICK1CS1,B"
 
     def test_update_good(self):
@@ -43,4 +44,3 @@ class TestCompoundMotorSinkPortsPart(unittest.TestCase):
         self.o._update_value(update)
         assert self.b.cs.value == ""
         assert self.b.cs.alarm.severity == AlarmSeverity.UNDEFINED_ALARM
-

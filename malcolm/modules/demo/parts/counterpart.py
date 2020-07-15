@@ -1,5 +1,11 @@
-from malcolm.core import Part, config_tag, NumberMeta, PartRegistrar, \
-    Widget, AttributeModel
+from malcolm.core import (
+    AttributeModel,
+    NumberMeta,
+    Part,
+    PartRegistrar,
+    Widget,
+    config_tag,
+)
 
 
 class CounterPart(Part):
@@ -14,18 +20,18 @@ class CounterPart(Part):
         super(CounterPart, self).setup(registrar)
         # Add some Attribute and Methods to the Block
         self.counter = NumberMeta(
-            "float64", "The current value of the counter",
-            tags=[config_tag(), Widget.TEXTINPUT.tag()]
+            "float64",
+            "The current value of the counter",
+            tags=[config_tag(), Widget.TEXTINPUT.tag()],
         ).create_attribute_model()
-        registrar.add_attribute_model(
-            "counter", self.counter, self.counter.set_value)
+        registrar.add_attribute_model("counter", self.counter, self.counter.set_value)
 
         self.delta = NumberMeta(
-            "float64", "The amount to increment() by",
-            tags=[config_tag(), Widget.TEXTINPUT.tag()]
+            "float64",
+            "The amount to increment() by",
+            tags=[config_tag(), Widget.TEXTINPUT.tag()],
         ).create_attribute_model(initial_value=1)
-        registrar.add_attribute_model(
-            "delta", self.delta, self.delta.set_value)
+        registrar.add_attribute_model("delta", self.delta, self.delta.set_value)
 
         registrar.add_method_model(self.zero)
         registrar.add_method_model(self.increment)

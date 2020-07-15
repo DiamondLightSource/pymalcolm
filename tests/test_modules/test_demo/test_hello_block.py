@@ -5,7 +5,6 @@ from malcolm.modules.demo.blocks import hello_block
 
 
 class TestHelloBlock(unittest.TestCase):
-
     def setUp(self):
         self.p = Process("proc")
         for c in hello_block("mri"):
@@ -25,8 +24,15 @@ class TestHelloBlock(unittest.TestCase):
         b = self.p.block_view("mri")
         method = b.greet.meta
         assert list(method.to_dict()) == [
-            'typeid', 'takes', 'defaults', 'description', 'tags', 'writeable',
-            'label', 'returns']
+            "typeid",
+            "takes",
+            "defaults",
+            "description",
+            "tags",
+            "writeable",
+            "label",
+            "returns",
+        ]
         assert method.defaults == dict(sleep=0.0)
         assert list(method.takes["elements"]) == ["name", "sleep"]
         assert list(method.returns["elements"]) == ["return"]

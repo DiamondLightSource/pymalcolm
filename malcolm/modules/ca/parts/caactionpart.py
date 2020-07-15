@@ -4,6 +4,7 @@ from annotypes import Anno
 
 from malcolm.core import Part, PartRegistrar, Queue, TimeoutError, tags
 from malcolm.modules import builtin
+
 from .. import util
 
 with Anno("Status pv to see if successful"):
@@ -19,22 +20,24 @@ with Anno("Wait for caput callback?"):
 with Anno("How long to wait for status_pv == good_status before returning"):
     AStatusTimeout = int
 
+
 class CAActionPart(Part):
     """Group a number of PVs together that represent a method like acquire()
     """
 
-    def __init__(self,
-                 name: util.APartName,
-                 description: util.AMetaDescription,
-                 pv: util.APv = "",
-                 status_pv: AStatusPv = "",
-                 good_status: AGoodStatus = "",
-                 status_timeout: AStatusTimeout = 1,
-                 message_pv: AMessagePv = "",
-                 value: AValue = 1,
-                 wait: AWait = True,
-                 throw: util.AThrow = True,
-                 ) -> None:
+    def __init__(
+        self,
+        name: util.APartName,
+        description: util.AMetaDescription,
+        pv: util.APv = "",
+        status_pv: AStatusPv = "",
+        good_status: AGoodStatus = "",
+        status_timeout: AStatusTimeout = 1,
+        message_pv: AMessagePv = "",
+        value: AValue = 1,
+        wait: AWait = True,
+        throw: util.AThrow = True,
+    ) -> None:
         super(CAActionPart, self).__init__(name)
         self.description = description
         self.pv = pv
@@ -50,12 +53,13 @@ class CAActionPart(Part):
     def setup(self, registrar: PartRegistrar) -> None:
         super(CAActionPart, self).setup(registrar)
         # Hooks
-        registrar.hook((builtin.hooks.InitHook,
-                        builtin.hooks.ResetHook), self.reconnect)
+        registrar.hook(
+            (builtin.hooks.InitHook, builtin.hooks.ResetHook), self.reconnect
+        )
         # Methods
-        self.method = registrar.add_method_model(self.caput,
-                                                 self.name,
-                                                 self.description)
+        self.method = registrar.add_method_model(
+            self.caput, self.name, self.description
+        )
 
     def reconnect(self):
         pvs = [self.pv]
@@ -68,21 +72,22 @@ class CAActionPart(Part):
         try:
             for v in ca_values:
                 if not isinstance(v, util.catools.ca_nothing):
-                    assert v.ok, "CA connect failed with %s" %\
-                                v.state_strings[v.state]
+                    assert v.ok, "CA connect failed with %s" % v.state_strings[v.state]
                 else:
                     raise AssertionError("CA connect failed")
         except AssertionError as e:
             if self.throw:
                 raise e
             else:
-                self.method.meta.set_tags(list(self.method.meta.tags) +
-                                          [tags.method_hidden()])
+                self.method.meta.set_tags(
+                    list(self.method.meta.tags) + [tags.method_hidden()]
+                )
 
     def wait_for_good_status(self, deadline):
         q = Queue()
         m = util.catools.camonitor(
-            self.status_pv, q.put, datatype=util.catools.DBR_STRING)
+            self.status_pv, q.put, datatype=util.catools.DBR_STRING
+        )
         status = None
         try:
             while True:
@@ -105,9 +110,11 @@ class CAActionPart(Part):
             status = self.wait_for_good_status(deadline)
             if self.message_pv:
                 message = " %s:" % util.catools.caget(
-                    self.message_pv, datatype=util.catools.DBR_CHAR_STR)
+                    self.message_pv, datatype=util.catools.DBR_CHAR_STR
+                )
             else:
                 message = ""
-            assert status == self.good_status, \
-                "Status %s:%s while performing 'caput %s %s'" % (
-                    status, message, self.pv, self.value)
+            assert status == self.good_status, (
+                "Status %s:%s while performing 'caput %s %s'"
+                % (status, message, self.pv, self.value)
+            )

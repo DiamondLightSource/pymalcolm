@@ -3,8 +3,9 @@ from tornado import gen
 from tornado.queues import Queue
 from tornado.web import RequestHandler
 
-from malcolm.core import Part, Get, Post, Return, Error, PartRegistrar
+from malcolm.core import Error, Get, Part, PartRegistrar, Post, Return
 from malcolm.modules import builtin
+
 from ..hooks import ReportHandlersHook, UHandlerInfos
 from ..infos import HandlerInfo
 from ..util import IOLoopHelper
@@ -82,4 +83,3 @@ class RestfulServerPart(Part):
         regexp = r"/%s/(.*)" % self.name
         info = HandlerInfo(regexp, RestfulHandler, registrar=self.registrar)
         return info
-

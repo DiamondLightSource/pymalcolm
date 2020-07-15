@@ -1,18 +1,51 @@
-from .blockpart import BlockPart, APartName, AMetaDescription, AWriteable, \
-    AConfig, AGroup, AWidget
-from .childpart import APartName, ChildPart, AMri, AInitialVisibility
-from .choicepart import ChoicePart, APartName, AMetaDescription, AWriteable, \
-    AConfig, AGroup, AWidget
-from .float64part import Float64Part, APartName, AMetaDescription, APrecision, \
-    AUnits, ALimitHigh, ALimitLow, AWriteable, AConfig, AGroup, AWidget
-from .grouppart import GroupPart, APartName, AMetaDescription
-from .helppart import HelpPart, AHelpUrl, APartName
-from .iconpart import IconPart, ASvg
-from .labelpart import LabelPart, ALabelValue
-from .stringpart import StringPart, AValue, APartName, AMetaDescription, \
-    AWriteable, AConfig, AGroup, AWidget
-
 # Expose a nice namespace
 from malcolm.core import submodule_all
+
+from .blockpart import (  # noqa
+    AConfig,
+    AGroup,
+    AMetaDescription,
+    APartName,
+    AWidget,
+    AWriteable,
+    BlockPart,
+)
+from .childpart import AInitialVisibility, AMri, APartName, ChildPart  # noqa
+from .choicepart import (  # noqa
+    AConfig,
+    AGroup,
+    AMetaDescription,
+    APartName,
+    AWidget,
+    AWriteable,
+    ChoicePart,
+)
+from .float64part import (  # noqa
+    AConfig,
+    AGroup,
+    ALimitHigh,
+    ALimitLow,
+    AMetaDescription,
+    APartName,
+    APrecision,
+    AUnits,
+    AWidget,
+    AWriteable,
+    Float64Part,
+)
+from .grouppart import AMetaDescription, APartName, GroupPart  # noqa
+from .helppart import AHelpUrl, APartName, HelpPart  # noqa
+from .iconpart import ASvg, IconPart  # noqa
+from .labelpart import ALabelValue, LabelPart  # noqa
+from .stringpart import (  # noqa
+    AConfig,
+    AGroup,
+    AMetaDescription,
+    APartName,
+    AValue,
+    AWidget,
+    AWriteable,
+    StringPart,
+)
 
 __all__ = submodule_all(globals())

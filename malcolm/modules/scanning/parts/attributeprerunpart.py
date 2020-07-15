@@ -1,9 +1,10 @@
 from annotypes import Anno, add_call_types
 
 from malcolm.core import PartRegistrar
-from .. import hooks
-from malcolm.modules.builtin.hooks import AContext
 from malcolm.modules import builtin
+from malcolm.modules.builtin.hooks import AContext
+
+from .. import hooks
 
 with Anno("Value to set during PreRunHook"):
     APreRunVal = str
@@ -22,11 +23,15 @@ AMri = builtin.parts.AMri
 class AttributePreRunPart(builtin.parts.ChildPart):
     """Part for controlling an attribute value during the PreRunHook"""
 
-    def __init__(self, name: APartName, mri: AMri, pre_run_value: APreRunVal, reset_value: AResetVal,
-                 attribute_name: AAttrName = "shutter") -> None:
-        super(AttributePreRunPart, self).__init__(name,
-                                                  mri,
-                                                  initial_visibility=True)
+    def __init__(
+        self,
+        name: APartName,
+        mri: AMri,
+        pre_run_value: APreRunVal,
+        reset_value: AResetVal,
+        attribute_name: AAttrName = "shutter",
+    ) -> None:
+        super(AttributePreRunPart, self).__init__(name, mri, initial_visibility=True)
         self.pre_run_value = pre_run_value
         self.reset_value = reset_value
         self.attribute_name = attribute_name
@@ -41,8 +46,9 @@ class AttributePreRunPart(builtin.parts.ChildPart):
         super(AttributePreRunPart, self).setup(registrar)
         # Hooks
         registrar.hook(hooks.PreRunHook, self.on_pre_run)
-        registrar.hook((hooks.PauseHook, hooks.AbortHook,
-                        hooks.PostRunReadyHook), self.on_reset)
+        registrar.hook(
+            (hooks.PauseHook, hooks.AbortHook, hooks.PostRunReadyHook), self.on_reset
+        )
 
     @add_call_types
     def on_pre_run(self, context: AContext) -> None:

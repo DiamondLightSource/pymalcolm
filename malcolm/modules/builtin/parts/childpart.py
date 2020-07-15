@@ -1,25 +1,59 @@
+from typing import Any, Dict, List, Set, Tuple, Type, TypeVar
+
 from annotypes import Anno, add_call_types
 
 from malcolm.compat import OrderedDict, clean_repr
-from malcolm.core import Part, Attribute, Subscribe, \
-    Unsubscribe, APartName, Port, Controller, Response, \
-    get_config_tag, Update, Return, Put, Request, PartRegistrar
-from ..infos import PortInfo, LayoutInfo, SourcePortInfo, SinkPortInfo, \
-    PartExportableInfo, PartModifiedInfo
-from ..hooks import InitHook, HaltHook, ResetHook, LayoutHook, DisableHook, \
-    AContext, APortMap, ALayoutTable, LoadHook, SaveHook, AStructure, \
-    ULayoutInfos, AInit
-from ..util import StatefulStates, wait_for_stateful_block_init
+from malcolm.core import (
+    APartName,
+    Attribute,
+    Controller,
+    Part,
+    PartRegistrar,
+    Port,
+    Put,
+    Request,
+    Response,
+    Return,
+    Subscribe,
+    Unsubscribe,
+    Update,
+    get_config_tag,
+)
 
-from typing import Dict, Any, List, Type, TypeVar, Tuple, Set
+from ..hooks import (
+    AContext,
+    AInit,
+    ALayoutTable,
+    APortMap,
+    AStructure,
+    DisableHook,
+    HaltHook,
+    InitHook,
+    LayoutHook,
+    LoadHook,
+    ResetHook,
+    SaveHook,
+    ULayoutInfos,
+)
+from ..infos import (
+    LayoutInfo,
+    PartExportableInfo,
+    PartModifiedInfo,
+    PortInfo,
+    SinkPortInfo,
+    SourcePortInfo,
+)
+from ..util import StatefulStates, wait_for_stateful_block_init
 
 TP = TypeVar("TP", bound=PortInfo)
 
 
 with Anno("Malcolm resource id of child object"):
     AMri = str
-with Anno("Whether the part is initially visible with no config loaded, None "
-          "means only if child Source/Sink Ports connect to another Block"):
+with Anno(
+    "Whether the part is initially visible with no config loaded, None "
+    "means only if child Source/Sink Ports connect to another Block"
+):
     AInitialVisibility = bool
 with Anno("If the child is a StatefulController then this should be True"):
     AStateful = bool
@@ -37,7 +71,8 @@ class ChildPart(Part):
 
     def _unmanaged_attr(self, attr_name):
         return not self.no_save_attribute_names or (
-                attr_name not in self.no_save_attribute_names)
+            attr_name not in self.no_save_attribute_names
+        )
 
     def notify_dispatch_request(self, request: Request) -> None:
         """Will be called when a context passed to a hooked function is about
@@ -51,10 +86,18 @@ class ChildPart(Part):
                 self.log.warning(
                     "Part %s tried to set '%s' that is not in self.no_save. "
                     "This will stop the 'modified' attribute from working.",
-                    self, attribute_name)
+                    self,
+                    attribute_name,
+                )
 
     # For docs: before ChildPart init
-    def __init__(self, name: APartName, mri: AMri, initial_visibility: AInitialVisibility = None, stateful: AStateful = True) -> None:
+    def __init__(
+        self,
+        name: APartName,
+        mri: AMri,
+        initial_visibility: AInitialVisibility = None,
+        stateful: AStateful = True,
+    ) -> None:
         # For docs: after ChildPart init
         super(ChildPart, self).__init__(name)
         self.stateful = stateful
@@ -120,7 +163,9 @@ class ChildPart(Part):
         self.child_controller.handle_request(unsubscribe)
 
     @add_call_types
-    def on_layout(self, context: AContext, ports: APortMap, layout: ALayoutTable) -> ULayoutInfos:
+    def on_layout(
+        self, context: AContext, ports: APortMap, layout: ALayoutTable
+    ) -> ULayoutInfos:
         first_call = not self.part_visibility
         for i, name in enumerate(layout.name):
             visible = layout.visible[i]
@@ -142,12 +187,13 @@ class ChildPart(Part):
         # If not specified then take our own visibility from this same dict
         if self.visible is None:
             self.visible = self.part_visibility.get(self.name, False)
-        ret = LayoutInfo(
-            mri=self.mri, x=self.x, y=self.y, visible=self.visible)
+        ret = LayoutInfo(mri=self.mri, x=self.x, y=self.y, visible=self.visible)
         return [ret]
 
     @add_call_types
-    def on_load(self, context: AContext, structure: AStructure, init: AInit = False) -> None:
+    def on_load(
+        self, context: AContext, structure: AStructure, init: AInit = False
+    ) -> None:
         child = context.block_view(self.mri)
         iterations: Dict[int, Dict[str, Tuple[Attribute, Any]]] = {}
         for k, v in structure.items():
@@ -166,8 +212,7 @@ class ChildPart(Part):
                     iteration = int(tag.split(":")[1])
                     iterations.setdefault(iteration, {})[k] = (attr, v)
                 else:
-                    self.log.warning(
-                        "Attr %s is not config tagged, not restoring" % k)
+                    self.log.warning("Attr %s is not config tagged, not restoring" % k)
         # Do this first so that any callbacks that happen in the put know
         # not to notify controller
         self.saved_structure = structure
@@ -190,8 +235,7 @@ class ChildPart(Part):
         for k in child:
             if self._unmanaged_attr(k):
                 attr = getattr(child, k)
-                if isinstance(attr, Attribute) and \
-                        get_config_tag(attr.meta.tags):
+                if isinstance(attr, Attribute) and get_config_tag(attr.meta.tags):
                     part_structure[k] = attr.value
         self.saved_structure = part_structure
         return part_structure
@@ -225,13 +269,11 @@ class ChildPart(Part):
             if attr_name not in new_fields:
                 unsubscribe = Unsubscribe(subscribe.id)
                 unsubscribe.set_callback(subscribe.callback)
-                spawned.append(
-                    self.child_controller.handle_request(unsubscribe))
+                spawned.append(self.child_controller.handle_request(unsubscribe))
                 self.port_infos.pop(attr_name, None)
 
         # Add a subscription to any new field
-        existing_fields = set(
-            s.path[-2] for s in self.config_subscriptions.values())
+        existing_fields = set(s.path[-2] for s in self.config_subscriptions.values())
         for field in set(new_fields) - existing_fields:
             attr = getattr(child, field)
             if isinstance(attr, Attribute):
@@ -244,11 +286,15 @@ class ChildPart(Part):
                     is_source, port, extra = port_info
                     if is_source:
                         info = SourcePortInfo(
-                            name=field, port=port, connected_value=extra)
+                            name=field, port=port, connected_value=extra
+                        )
                     else:
                         info = SinkPortInfo(
-                            name=field, port=port, disconnected_value=extra,
-                            value=attr.value)
+                            name=field,
+                            port=port,
+                            disconnected_value=extra,
+                            value=attr.value,
+                        )
                     self.port_infos[field] = info
                 # If we are config tagged then subscribe so we can calculate
                 # if we are modified
@@ -257,18 +303,15 @@ class ChildPart(Part):
                         new_id = max(self.config_subscriptions) + 1
                     else:
                         new_id = 1
-                    subscribe = Subscribe(id=new_id,
-                                          path=[self.mri, field, "value"])
+                    subscribe = Subscribe(id=new_id, path=[self.mri, field, "value"])
                     subscribe.set_callback(self.update_part_modified)
                     self.config_subscriptions[new_id] = subscribe
-                    spawned.append(
-                        self.child_controller.handle_request(subscribe))
+                    spawned.append(self.child_controller.handle_request(subscribe))
 
         # Wait for the first update to come in for every subscription
         for s in spawned:
             s.wait()
-        port_infos = [
-            self.port_infos[f] for f in new_fields if f in self.port_infos]
+        port_infos = [self.port_infos[f] for f in new_fields if f in self.port_infos]
         self.registrar.report(PartExportableInfo(new_fields, port_infos))
 
     def update_part_modified(self, response: Response) -> None:
@@ -287,8 +330,11 @@ class ChildPart(Part):
             message = None
         else:
             message = "%s.%s.value = %s not %s" % (
-                self.name, name, clean_repr(new_value),
-                clean_repr(original_value))
+                self.name,
+                name,
+                clean_repr(new_value),
+                clean_repr(original_value),
+            )
         last_message = self.modified_messages.get(name, None)
         if message != last_message:
             # Tell the controller if something has changed
@@ -313,7 +359,9 @@ class ChildPart(Part):
                 source_port_lookup[info.connected_value] = info.port
         return source_port_lookup
 
-    def sever_sink_ports(self, context: AContext, ports: APortMap, connected_to: str = None) -> None:
+    def sever_sink_ports(
+        self, context: AContext, ports: APortMap, connected_to: str = None
+    ) -> None:
         """Conditionally sever Sink Ports of the child. If connected_to
         is then None then sever all, otherwise restrict to connected_to's
         Source Ports
@@ -326,8 +374,7 @@ class ChildPart(Part):
         # Find the Source Ports to connect to
         if connected_to:
             # Calculate a lookup of the Source Port "name" to type
-            source_port_lookup = self._source_port_lookup(
-                ports.get(connected_to, []))
+            source_port_lookup = self._source_port_lookup(ports.get(connected_to, []))
         else:
             source_port_lookup = True
 
@@ -339,8 +386,10 @@ class ChildPart(Part):
             child = context.block_view(self.mri)
             attribute_values = {}
             for name, port_info in sink_ports.items():
-                if source_port_lookup is True or source_port_lookup.get(
-                        child[name].value, None) == port_info.port:
+                if (
+                    source_port_lookup is True
+                    or source_port_lookup.get(child[name].value, None) == port_info.port
+                ):
                     if child[name].meta.writeable:
                         attribute_values[name] = port_info.disconnected_value
             child.put_attribute_values(attribute_values)
@@ -356,15 +405,17 @@ class ChildPart(Part):
         for part_name, port_infos in SourcePortInfo.filter_parts(ports).items():
             for port_info in port_infos:
                 source_port_lookup[port_info.connected_value] = (
-                    part_name, port_info.port)
+                    part_name,
+                    port_info.port,
+                )
         # Look through all the Sink Ports, and set both ends of the
         # connection to visible if they aren't specified
-        for part_name, port_infos in SinkPortInfo.filter_parts(
-                ports).items():
+        for part_name, port_infos in SinkPortInfo.filter_parts(ports).items():
             for port_info in port_infos:
                 if port_info.value != port_info.disconnected_value:
                     conn_part, port = source_port_lookup.get(
-                        port_info.value, (None, None))
+                        port_info.value, (None, None)
+                    )
                     if conn_part and port == port_info.port:
                         if conn_part not in self.part_visibility:
                             self.part_visibility[conn_part] = True

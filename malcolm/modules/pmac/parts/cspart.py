@@ -1,9 +1,9 @@
-from annotypes import add_call_types, Anno
+from annotypes import Anno, add_call_types
 
 from malcolm.core import DEFAULT_TIMEOUT, PartRegistrar
 from malcolm.modules import builtin
-from ..util import CS_AXIS_NAMES
 
+from ..util import CS_AXIS_NAMES
 
 with Anno("Co-ordinate system number"):
     ACS = int
@@ -24,8 +24,7 @@ class CSPart(builtin.parts.ChildPart):
     def setup(self, registrar: PartRegistrar) -> None:
         super(CSPart, self).setup(registrar)
         # Add methods
-        registrar.add_method_model(
-            self.move, "moveCS%d" % self.cs, needs_context=True)
+        registrar.add_method_model(self.move, "moveCS%d" % self.cs, needs_context=True)
 
     @add_call_types
     def on_init(self, context: builtin.hooks.AContext) -> None:
@@ -33,30 +32,32 @@ class CSPart(builtin.parts.ChildPart):
         # Check the port name matches our CS number
         child = context.block_view(self.mri)
         cs_port = child.port.value
-        assert cs_port.endswith(str(self.cs)), \
-            "CS Port %s doesn't end with port number %d" % (cs_port, self.cs)
+        assert cs_port.endswith(
+            str(self.cs)
+        ), "CS Port %s doesn't end with port number %d" % (cs_port, self.cs)
 
     # Serialize, so use camelCase
     # noinspection PyPep8Naming
     @add_call_types
-    def move(self,
-             context: builtin.hooks.AContext,
-             a: ADemandPosition = None,
-             b: ADemandPosition = None,
-             c: ADemandPosition = None,
-             u: ADemandPosition = None,
-             v: ADemandPosition = None,
-             w: ADemandPosition = None,
-             x: ADemandPosition = None,
-             y: ADemandPosition = None,
-             z: ADemandPosition = None,
-             moveTime: AMoveTime = 0
-             ) -> None:
+    def move(
+        self,
+        context: builtin.hooks.AContext,
+        a: ADemandPosition = None,
+        b: ADemandPosition = None,
+        c: ADemandPosition = None,
+        u: ADemandPosition = None,
+        v: ADemandPosition = None,
+        w: ADemandPosition = None,
+        x: ADemandPosition = None,
+        y: ADemandPosition = None,
+        z: ADemandPosition = None,
+        moveTime: AMoveTime = 0,
+    ) -> None:
         """Move the given CS axes using a deferred co-ordinated move"""
         child = context.block_view(self.mri)
         child.deferMoves.put_value(True)
         # Convert move time into milliseconds
-        child.csMoveTime.put_value(moveTime*1000.0)
+        child.csMoveTime.put_value(moveTime * 1000.0)
         # Add in the motors we need to move
         attribute_values = {}
         for axis in CS_AXIS_NAMES:
@@ -70,8 +71,8 @@ class CSPart(builtin.parts.ChildPart):
         # Start the move
         child.deferMoves.put_value(False)
         # Wait for them to get there
-        context.wait_all_futures(
-            fs, timeout=moveTime + DEFAULT_TIMEOUT)
+        context.wait_all_futures(fs, timeout=moveTime + DEFAULT_TIMEOUT)
+
 
 #    def inverse_kinematics():
 #    def forward_kinematics():

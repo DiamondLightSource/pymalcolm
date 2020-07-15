@@ -1,11 +1,10 @@
 import logging
+from typing import Callable, List, Tuple
 
-from annotypes import Anno, Array, Any, Mapping, Union, \
-    Sequence, Serializable
+from annotypes import Anno, Any, Array, Mapping, Sequence, Serializable, Union
 
-from .response import Return, Error, Update, Delta, Response
+from .response import Delta, Error, Response, Return, Update
 
-from typing import Callable, Tuple, List
 Callback = Callable[[Response], None]
 
 # Create a module level logger
@@ -29,6 +28,7 @@ UPath = Union[APath, Sequence[str], str]
 
 class Request(Serializable):
     """Request object that registers a callback for when action is complete."""
+
     __slots__ = ["id", "callback"]
 
     # Allow id to shadow builtin id so id is a key in the serialized dict
@@ -73,25 +73,28 @@ class PathRequest(Request):
         self.path = APath(path)
         if not self.path:
             raise ValueError(
-                "Expected a path with at least 1 element, got %s"
-                % list(self.path))
+                "Expected a path with at least 1 element, got %s" % list(self.path)
+            )
 
 
 @Serializable.register_subclass("malcolm:core/Get:1.0")
 class Get(PathRequest):
     """Create a Get Request object"""
+
     __slots__ = []
 
 
 @Serializable.register_subclass("malcolm:core/Put:1.0")
 class Put(PathRequest):
     """Create a Put Request object"""
+
     __slots__ = ["value", "get"]
 
     # Allow id to shadow builtin id so id is a key in the serialized dict
     # noinspection PyShadowingBuiltins
-    def __init__(self, id: AId = 0, path: UPath = None, value: AValue = None,
-                 get: AGet = False) -> None:
+    def __init__(
+        self, id: AId = 0, path: UPath = None, value: AValue = None, get: AGet = False
+    ) -> None:
         super(Put, self).__init__(id, path)
         self.value = value
         self.get = get
@@ -100,12 +103,14 @@ class Put(PathRequest):
 @Serializable.register_subclass("malcolm:core/Post:1.0")
 class Post(PathRequest):
     """Create a Post Request object"""
+
     __slots__ = ["parameters"]
 
     # Allow id to shadow builtin id so id is a key in the serialized dict
     # noinspection PyShadowingBuiltins
-    def __init__(self, id: AId = 0, path: UPath = None,
-                 parameters: AParameters = None) -> None:
+    def __init__(
+        self, id: AId = 0, path: UPath = None, parameters: AParameters = None
+    ) -> None:
         super(Post, self).__init__(id, path)
         self.parameters = parameters
 
@@ -113,12 +118,14 @@ class Post(PathRequest):
 @Serializable.register_subclass("malcolm:core/Subscribe:1.0")
 class Subscribe(PathRequest):
     """Create a Subscribe Request object"""
+
     __slots__ = ["delta"]
 
     # Allow id to shadow builtin id so id is a key in the serialized dict
     # noinspection PyShadowingBuiltins
-    def __init__(self, id: AId = 0, path: UPath = None,
-                 delta: ADifferences = False) -> None:
+    def __init__(
+        self, id: AId = 0, path: UPath = None, delta: ADifferences = False
+    ) -> None:
         super(Subscribe, self).__init__(id, path)
         self.delta = delta
 
@@ -127,7 +134,9 @@ class Subscribe(PathRequest):
         response = Update(id=self.id, value=value)
         return self.callback, response
 
-    def delta_response(self, changes: List[List[Union[List[str], Any]]]) -> Tuple[Callback, Delta]:
+    def delta_response(
+        self, changes: List[List[Union[List[str], Any]]]
+    ) -> Tuple[Callback, Delta]:
         """"Create a Delta Response object to handle the request"""
         response = Delta(id=self.id, changes=changes)
         return self.callback, response
@@ -136,4 +145,5 @@ class Subscribe(PathRequest):
 @Serializable.register_subclass("malcolm:core/Unsubscribe:1.0")
 class Unsubscribe(Request):
     """Create an Unsubscribe Request object"""
+
     __slots__ = []

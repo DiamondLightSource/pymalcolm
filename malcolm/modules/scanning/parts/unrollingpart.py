@@ -2,7 +2,8 @@ from annotypes import add_call_types
 from scanpointgenerator import CompoundGenerator, SquashingExcluder
 
 from malcolm.core import Part, PartRegistrar
-from ..hooks import ValidateHook, AAxesToMove, AGenerator, UParameterTweakInfos
+
+from ..hooks import AAxesToMove, AGenerator, UParameterTweakInfos, ValidateHook
 from ..infos import ParameterTweakInfo
 
 
@@ -11,18 +12,22 @@ class UnrollingPart(Part):
     inserting a SquashingExcluder into the generator. This is used for instance
     in Odin to unroll a snake scan into a long line so the VDS is performant
     """
+
     # This will be serialized, so maintain camelCase for axesToMove
     # noinspection PyPep8Naming
     @add_call_types
-    def on_validate(self, generator: AGenerator, axesToMove: AAxesToMove) -> UParameterTweakInfos:
+    def on_validate(
+        self, generator: AGenerator, axesToMove: AAxesToMove
+    ) -> UParameterTweakInfos:
         if len(axesToMove) in (0, 1):
             # We can't have multiple dimensions here, so this must be ok
             return
         # Check that we have a Squashing excluder in the generator which
         # contains all the axesToMove
         for excluder in generator.excluders:
-            if isinstance(excluder, SquashingExcluder) \
-                    and set(excluder.axes) == set(axesToMove):
+            if isinstance(excluder, SquashingExcluder) and set(excluder.axes) == set(
+                axesToMove
+            ):
                 # We have already squashed the axes, so nothing to do
                 return
         # We need to squash any dimension containing axesToMove down

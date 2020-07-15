@@ -4,7 +4,7 @@
 # versiongit-0.1+31.a44853a (https://github.com/dls-controls/versiongit)
 import os
 import re
-from subprocess import check_output, STDOUT
+from subprocess import STDOUT, check_output
 
 # These will be filled in if git archive is run
 GIT_ARCHIVE_REF_NAMES = "$Format:%D$"

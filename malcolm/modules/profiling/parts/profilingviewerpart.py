@@ -1,12 +1,12 @@
-import os
 import inspect
+import os
 
-from tornado.options import options
 from plop.viewer import IndexHandler, ViewFlatHandler
+from tornado.options import options
 
-from malcolm.core import Part, APartName, PartRegistrar
-from malcolm.modules import web
 from malcolm.compat import get_profiler_dir
+from malcolm.core import APartName, Part, PartRegistrar
+from malcolm.modules import web
 
 
 def plop_dir():
@@ -40,5 +40,6 @@ class ProfilingViewerPart(Part):
     def on_report_handlers(self):
         infos = [
             web.infos.HandlerInfo("/%s" % self.name, MalcolmIndexHandler),
-            web.infos.HandlerInfo("/view", MalcolmViewHandler)]
+            web.infos.HandlerInfo("/view", MalcolmViewHandler),
+        ]
         return infos

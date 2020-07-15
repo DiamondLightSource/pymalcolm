@@ -1,17 +1,31 @@
 import os
+from typing import Optional
 from xml.etree import cElementTree as ET
 
-from annotypes import Anno, add_call_types, Any, Array, Union, Sequence
-from typing import Optional
+from annotypes import Anno, Any, Array, Sequence, Union, add_call_types
 
 from malcolm.compat import et_to_string
-from malcolm.core import APartName, BadValueError, TableMeta, PartRegistrar, \
-    config_tag, Future, Context, DEFAULT_TIMEOUT
+from malcolm.core import (
+    DEFAULT_TIMEOUT,
+    APartName,
+    BadValueError,
+    Context,
+    Future,
+    PartRegistrar,
+    TableMeta,
+    config_tag,
+)
 from malcolm.modules import builtin, scanning
-from ..infos import NDArrayDatasetInfo, NDAttributeDatasetInfo, \
-    FilePathTranslatorInfo
-from ..util import ExtraAttributesTable, APartRunsOnWindows, DataType, \
-    SourceType, FRAME_TIMEOUT, make_xml_filename
+
+from ..infos import FilePathTranslatorInfo, NDArrayDatasetInfo, NDAttributeDatasetInfo
+from ..util import (
+    FRAME_TIMEOUT,
+    APartRunsOnWindows,
+    DataType,
+    ExtraAttributesTable,
+    SourceType,
+    make_xml_filename,
+)
 
 with Anno("Is main detector dataset useful to publish in DatasetTable?"):
     AMainDatasetUseful = bool
@@ -25,28 +39,41 @@ AMri = builtin.parts.AMri
 
 
 # We will set these attributes on the child block, so don't save them
-@builtin.util.no_save('arrayCounter', 'imageMode', 'numImages',
-                      'arrayCallbacks', 'exposure', 'acquirePeriod')
+@builtin.util.no_save(
+    "arrayCounter",
+    "imageMode",
+    "numImages",
+    "arrayCallbacks",
+    "exposure",
+    "acquirePeriod",
+)
 class DetectorDriverPart(builtin.parts.ChildPart):
-    def __init__(self,
-                 name: APartName,
-                 mri: AMri,
-                 soft_trigger_modes: USoftTriggerModes = None,
-                 main_dataset_useful: AMainDatasetUseful = True,
-                 runs_on_windows: APartRunsOnWindows = False,
-                 ) -> None:
+    def __init__(
+        self,
+        name: APartName,
+        mri: AMri,
+        soft_trigger_modes: USoftTriggerModes = None,
+        main_dataset_useful: AMainDatasetUseful = True,
+        runs_on_windows: APartRunsOnWindows = False,
+    ) -> None:
         super(DetectorDriverPart, self).__init__(name, mri)
         self.soft_trigger_modes = soft_trigger_modes
         self.is_hardware_triggered = True
         self.main_dataset_useful = main_dataset_useful
         self.attributes_filename = ""
         self.extra_attributes = TableMeta.from_table(
-            ExtraAttributesTable, "Extra attributes to be added to the dataset",
+            ExtraAttributesTable,
+            "Extra attributes to be added to the dataset",
             writeable=(
-                "name", "pv", "description", "sourceId", "sourceType",
+                "name",
+                "pv",
+                "description",
+                "sourceId",
+                "sourceType",
                 "dataType",
-                "datasetType"),
-            extra_tags=[config_tag()]
+                "datasetType",
+            ),
+            extra_tags=[config_tag()],
         ).create_attribute_model()
         self.runs_on_windows = runs_on_windows
         # How long to wait between frame updates before error
@@ -58,14 +85,15 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         # A future that completes when detector start calls back
         self.start_future: Future = None
 
-    def setup_detector(self,
-                       context: Context,
-                       completed_steps: scanning.hooks.ACompletedSteps,
-                       steps_to_do: scanning.hooks.AStepsToDo,
-                       duration: float,
-                       part_info: scanning.hooks.APartInfo,
-                       **kwargs: Any
-                       ) -> None:
+    def setup_detector(
+        self,
+        context: Context,
+        completed_steps: scanning.hooks.ACompletedSteps,
+        steps_to_do: scanning.hooks.AStepsToDo,
+        duration: float,
+        part_info: scanning.hooks.APartInfo,
+        **kwargs: Any,
+    ) -> None:
         child = context.block_view(self.mri)
         if completed_steps == 0:
             # This is an initial configure, so reset arrayCounter to 0
@@ -78,18 +106,18 @@ class DetectorDriverPart(builtin.parts.ChildPart):
             self.done_when_reaches += steps_to_do
         self.uniqueid_offset = completed_steps - array_counter
         for k, v in dict(
-                arrayCounter=array_counter,
-                imageMode="Multiple",
-                numImages=steps_to_do,
-                arrayCallbacks=True).items():
+            arrayCounter=array_counter,
+            imageMode="Multiple",
+            numImages=steps_to_do,
+            arrayCallbacks=True,
+        ).items():
             if k not in kwargs and k in child:
                 kwargs[k] = v
         child.put_attribute_values(kwargs)
         # Might need to reset acquirePeriod as it's sometimes wrong
         # in some detectors
         try:
-            info = scanning.infos.ExposureDeadtimeInfo.filter_single_value(
-                part_info)
+            info = scanning.infos.ExposureDeadtimeInfo.filter_single_value(part_info)
         except BadValueError:
             # This is ok, no exposure info
             pass
@@ -102,18 +130,24 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         self.start_future = child.start_async()
         child.when_value_matches("acquiring", True, timeout=DEFAULT_TIMEOUT)
 
-    def wait_for_detector(self, context: Context, registrar: PartRegistrar, event_timeout: Optional[float] = None) -> None:
+    def wait_for_detector(
+        self,
+        context: Context,
+        registrar: PartRegistrar,
+        event_timeout: Optional[float] = None,
+    ) -> None:
         child = context.block_view(self.mri)
         child.arrayCounterReadback.subscribe_value(
-            self.update_completed_steps, registrar)
+            self.update_completed_steps, registrar
+        )
         # If no new frames produced in event_timeout seconds, consider scan dead
         context.wait_all_futures(self.start_future, event_timeout=event_timeout)
         # Now wait to make sure any update_completed_steps come in. Give
         # it 5 seconds to timeout just in case there are any stray frames that
         # haven't made it through yet
         child.when_value_matches(
-            "arrayCounterReadback", self.done_when_reaches,
-            timeout=DEFAULT_TIMEOUT)
+            "arrayCounterReadback", self.done_when_reaches, timeout=DEFAULT_TIMEOUT
+        )
 
     def abort_detector(self, context: Context) -> None:
         child = context.block_view(self.mri)
@@ -142,20 +176,24 @@ class DetectorDriverPart(builtin.parts.ChildPart):
                 else:
                     dbr_type = dbr_type.value
                 ET.SubElement(
-                    root_el, "Attribute",
+                    root_el,
+                    "Attribute",
                     name=self.extra_attributes.value.name[index],
                     type="EPICS_PV",
                     dbrtype=dbr_type,
                     description=self.extra_attributes.value.description[index],
-                    source=self.extra_attributes.value.sourceId[index])
+                    source=self.extra_attributes.value.sourceId[index],
+                )
             elif s_type == SourceType.PARAM:
                 ET.SubElement(
-                    root_el, "Attribute",
+                    root_el,
+                    "Attribute",
                     name=self.extra_attributes.value.name[index],
                     type="PARAM",
                     datatype=self.extra_attributes.value.dataType[index].value,
                     description=self.extra_attributes.value.description[index],
-                    source=self.extra_attributes.value.sourceId[index])
+                    source=self.extra_attributes.value.sourceId[index],
+                )
         return et_to_string(root_el)
 
     def set_extra_attributes(self, value):
@@ -163,32 +201,38 @@ class DetectorDriverPart(builtin.parts.ChildPart):
             if value.sourceType[row] == SourceType.PARAM:
                 if value.dataType[row] == DataType.DBRNATIVE:
                     raise ValueError(
-                        "data type DBR_NATIVE invalid for asyn param attribute")
+                        "data type DBR_NATIVE invalid for asyn param attribute"
+                    )
         self.extra_attributes.set_value(value)
 
     def setup(self, registrar: PartRegistrar) -> None:
         super(DetectorDriverPart, self).setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
-        registrar.hook((scanning.hooks.ConfigureHook,
-                        scanning.hooks.PostRunArmedHook,
-                        scanning.hooks.SeekHook),
-                       self.on_configure, self.configure_args_with_exposure)
+        registrar.hook(
+            (
+                scanning.hooks.ConfigureHook,
+                scanning.hooks.PostRunArmedHook,
+                scanning.hooks.SeekHook,
+            ),
+            self.on_configure,
+            self.configure_args_with_exposure,
+        )
         registrar.hook(scanning.hooks.RunHook, self.on_run)
         registrar.hook(
-            (scanning.hooks.PauseHook, scanning.hooks.AbortHook), self.on_abort)
+            (scanning.hooks.PauseHook, scanning.hooks.AbortHook), self.on_abort
+        )
         # Attributes
-        registrar.add_attribute_model("attributesToCapture",
-                                      self.extra_attributes,
-                                      self.set_extra_attributes)
+        registrar.add_attribute_model(
+            "attributesToCapture", self.extra_attributes, self.set_extra_attributes
+        )
 
     @add_call_types
     def on_reset(self, context: scanning.hooks.AContext) -> None:
         super(DetectorDriverPart, self).on_reset(context)
         self.abort_detector(context)
         # Delete the layout XML file
-        if self.attributes_filename and os.path.isfile(
-                self.attributes_filename):
+        if self.attributes_filename and os.path.isfile(self.attributes_filename):
             os.remove(self.attributes_filename)
             child = context.block_view(self.mri)
             child.attributesFile.put_value("")
@@ -198,10 +242,14 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         ret = []
         if self.main_dataset_useful:
             ret.append(NDArrayDatasetInfo(rank=2))
-        for name, dataset_type in zip(self.extra_attributes.value.name,
-                                      self.extra_attributes.value.datasetType):
-            ret.append(NDAttributeDatasetInfo.from_attribute_type(
-                name=name, attr=name, type=dataset_type))
+        for name, dataset_type in zip(
+            self.extra_attributes.value.name, self.extra_attributes.value.datasetType
+        ):
+            ret.append(
+                NDAttributeDatasetInfo.from_attribute_type(
+                    name=name, attr=name, type=dataset_type
+                )
+            )
         return ret
 
     def configure_args_with_exposure(self, keys):
@@ -213,19 +261,26 @@ class DetectorDriverPart(builtin.parts.ChildPart):
     # Allow CamelCase as fileDir parameter will be serialized
     # noinspection PyPep8Naming
     @add_call_types
-    def on_configure(self,
-                     context: scanning.hooks.AContext,
-                     completed_steps: scanning.hooks.ACompletedSteps,
-                     steps_to_do: scanning.hooks.AStepsToDo,
-                     part_info: scanning.hooks.APartInfo,
-                     generator: scanning.hooks.AGenerator,
-                     fileDir: scanning.hooks.AFileDir,
-                     **kwargs: Any
-                     ) -> None:
+    def on_configure(
+        self,
+        context: scanning.hooks.AContext,
+        completed_steps: scanning.hooks.ACompletedSteps,
+        steps_to_do: scanning.hooks.AStepsToDo,
+        part_info: scanning.hooks.APartInfo,
+        generator: scanning.hooks.AGenerator,
+        fileDir: scanning.hooks.AFileDir,
+        **kwargs: Any,
+    ) -> None:
         context.unsubscribe_all()
         child = context.block_view(self.mri)
-        self.setup_detector(context, completed_steps, steps_to_do,
-                            generator.duration, part_info, **kwargs)
+        self.setup_detector(
+            context,
+            completed_steps,
+            steps_to_do,
+            generator.duration,
+            part_info,
+            **kwargs,
+        )
         # Calculate how long to wait before marking this scan as stalled
         self.frame_timeout = FRAME_TIMEOUT
         if generator.duration > 0:
@@ -245,16 +300,17 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         if len(self.extra_attributes.value.sourceId) > 0:
             attribute_xml = self.build_attribute_xml()
             self.attributes_filename = make_xml_filename(fileDir, self.mri)
-            with open(self.attributes_filename, 'w') as xml:
+            with open(self.attributes_filename, "w") as xml:
                 xml.write(attribute_xml)
-            assert hasattr(child, "attributesFile"), \
-                "Block doesn't have 'attributesFile' attribute " \
+            assert hasattr(child, "attributesFile"), (
+                "Block doesn't have 'attributesFile' attribute "
                 "(was it instantiated properly with adbase_parts?)"
+            )
             attributes_filename = self.attributes_filename
             if self.runs_on_windows:
-                attributes_filename = \
-                    FilePathTranslatorInfo.translate_filepath(
-                        part_info, self.attributes_filename)
+                attributes_filename = FilePathTranslatorInfo.translate_filepath(
+                    part_info, self.attributes_filename
+                )
             child.attributesFile.put_value(attributes_filename)
 
     @add_call_types
@@ -263,7 +319,8 @@ class DetectorDriverPart(builtin.parts.ChildPart):
             # Start now if we are software triggered
             self.arm_detector(context)
         self.wait_for_detector(
-            context, self.registrar, event_timeout=self.frame_timeout)
+            context, self.registrar, event_timeout=self.frame_timeout
+        )
 
     @add_call_types
     def on_abort(self, context: scanning.hooks.AContext) -> None:

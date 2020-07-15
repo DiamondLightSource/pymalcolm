@@ -1,20 +1,42 @@
-from annotypes import Anno, add_call_types, Any, json_encode, \
-    deserialize_object
+from typing import Callable, Dict, Iterable, List, Tuple, Type
+
+from annotypes import Anno, Any, add_call_types, deserialize_object, json_encode
 from scanpointgenerator import CompoundGenerator
 
-from malcolm.core import AbortedError, Queue, Context, TimeoutError, AMri, \
-    NumberMeta, Widget, Part, DEFAULT_TIMEOUT, Table
 from malcolm.compat import OrderedDict
-from malcolm.core.models import MapMeta, MethodMeta, TableMeta, Display, VMeta
+from malcolm.core import (
+    DEFAULT_TIMEOUT,
+    AbortedError,
+    AMri,
+    Context,
+    NumberMeta,
+    Part,
+    Queue,
+    Table,
+    TimeoutError,
+    Widget,
+)
+from malcolm.core.models import MethodMeta, TableMeta, VMeta
 from malcolm.modules import builtin
-from ..infos import ParameterTweakInfo, RunProgressInfo, ConfigureParamsInfo
-from ..util import RunnableStates, AGenerator, ConfigureParams
-from ..hooks import ConfigureHook, ValidateHook, PostConfigureHook, \
-    PreRunHook, RunHook, PostRunArmedHook, PostRunReadyHook, \
-    ReportStatusHook, AbortHook, PauseHook, SeekHook, ControllerHook, \
-    PreConfigureHook, AAxesToMove
 
-from typing import Dict, Tuple, List, Iterable, Type, Callable
+from ..hooks import (
+    AAxesToMove,
+    AbortHook,
+    ConfigureHook,
+    ControllerHook,
+    PauseHook,
+    PostConfigureHook,
+    PostRunArmedHook,
+    PostRunReadyHook,
+    PreConfigureHook,
+    PreRunHook,
+    ReportStatusHook,
+    RunHook,
+    SeekHook,
+    ValidateHook,
+)
+from ..infos import ConfigureParamsInfo, ParameterTweakInfo, RunProgressInfo
+from ..util import AGenerator, ConfigureParams, RunnableStates
 
 PartContextParams = Iterable[Tuple[Part, Context, Dict[str, Any]]]
 PartConfigureParams = Dict[Part, ConfigureParamsInfo]
@@ -44,15 +66,16 @@ def get_steps_per_run(generator: CompoundGenerator, axes_to_move: List[str]) -> 
             break
         # Consume the axes that this generator scans
         for axis in dim.axes:
-            assert axis in axes_set, \
-                "Axis %s is not in %s" % (axis, axes_to_move)
+            assert axis in axes_set, "Axis %s is not in %s" % (axis, axes_to_move)
             axes_set.remove(axis)
         # Now multiply by the dimensions to get the number of steps
         steps *= dim.size
     return steps
 
 
-def update_configure_model(configure_model: MethodMeta, part_configure_infos: List[ConfigureParamsInfo]) -> None:
+def update_configure_model(
+    configure_model: MethodMeta, part_configure_infos: List[ConfigureParamsInfo]
+) -> None:
     # These will not be inserted as they already exist
 
     ignored = list(ConfigureHook.call_types)
@@ -84,7 +107,8 @@ def update_configure_model(configure_model: MethodMeta, part_configure_infos: Li
                 metas[k] = meta
                 if k in info.defaults:
                     if isinstance(meta, TableMeta) and not min(
-                            m.writeable for m in meta.elements.values()):
+                        m.writeable for m in meta.elements.values()
+                    ):
                         # This is a table with non-writeable rows, merge the
                         # defaults together row by row
                         rows = []
@@ -111,7 +135,9 @@ def update_configure_model(configure_model: MethodMeta, part_configure_infos: Li
     configure_model.set_defaults(defaults)
 
 
-def merge_non_writeable_table(default: Table, supplied: Table, non_writeable: List[int]) -> Table:
+def merge_non_writeable_table(
+    default: Table, supplied: Table, non_writeable: List[int]
+) -> Table:
     default_rows = list(default.rows())
     for supplied_row in supplied.rows():
         key = [supplied_row[i] for i in non_writeable]
@@ -125,7 +151,8 @@ def merge_non_writeable_table(default: Table, supplied: Table, non_writeable: Li
                     d[k] = supplied_row[i]
             raise ValueError(
                 "Table row with %s doesn't match a row in the default table"
-                % json_encode(d))
+                % json_encode(d)
+            )
         for i, v in enumerate(supplied_row):
             if i not in non_writeable:
                 default_row[i] = v
@@ -135,17 +162,19 @@ def merge_non_writeable_table(default: Table, supplied: Table, non_writeable: Li
 
 class RunnableController(builtin.controllers.ManagerController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
+
     # The state_set that this controller implements
     state_set = ss()
 
-    def __init__(self,
-                 mri: AMri,
-                 config_dir: AConfigDir,
-                 template_designs: ATemplateDesigns = "",
-                 initial_design: AInitialDesign = "",
-                 use_git: AUseGit = True,
-                 description: ADescription = "",
-                 ) -> None:
+    def __init__(
+        self,
+        mri: AMri,
+        config_dir: AConfigDir,
+        template_designs: ATemplateDesigns = "",
+        initial_design: AInitialDesign = "",
+        use_git: AUseGit = True,
+        description: ADescription = "",
+    ) -> None:
         super(RunnableController, self).__init__(
             mri=mri,
             config_dir=config_dir,
@@ -172,51 +201,71 @@ class RunnableController(builtin.controllers.ManagerController):
         # Create sometimes writeable attribute for the current completed scan
         # step
         self.completed_steps = NumberMeta(
-            "int32", "Readback of number of scan steps",
-            tags=[Widget.METER.tag()]  # Widget.TEXTINPUT.tag()]
+            "int32",
+            "Readback of number of scan steps",
+            tags=[Widget.METER.tag()],  # Widget.TEXTINPUT.tag()]
         ).create_attribute_model(0)
         self.field_registry.add_attribute_model(
-            "completedSteps", self.completed_steps, self.pause)
+            "completedSteps", self.completed_steps, self.pause
+        )
         self.set_writeable_in(self.completed_steps, ss.PAUSED, ss.ARMED)
         # Create read-only attribute for the number of configured scan steps
         self.configured_steps = NumberMeta(
-            "int32", "Number of steps currently configured",
-            tags=[Widget.TEXTUPDATE.tag()]
+            "int32",
+            "Number of steps currently configured",
+            tags=[Widget.TEXTUPDATE.tag()],
         ).create_attribute_model(0)
         self.field_registry.add_attribute_model(
-            "configuredSteps", self.configured_steps)
+            "configuredSteps", self.configured_steps
+        )
         # Create read-only attribute for the total number scan steps
         self.total_steps = NumberMeta(
-            "int32", "Readback of number of scan steps",
-            tags=[Widget.TEXTUPDATE.tag()]
+            "int32", "Readback of number of scan steps", tags=[Widget.TEXTUPDATE.tag()]
         ).create_attribute_model(0)
         self.field_registry.add_attribute_model("totalSteps", self.total_steps)
         # Create the method models
         self.field_registry.add_method_model(self.validate)
         self.set_writeable_in(
-            self.field_registry.add_method_model(self.configure),
-            ss.READY, ss.FINISHED)
-        self.set_writeable_in(
-            self.field_registry.add_method_model(self.run), ss.ARMED)
+            self.field_registry.add_method_model(self.configure), ss.READY, ss.FINISHED
+        )
+        self.set_writeable_in(self.field_registry.add_method_model(self.run), ss.ARMED)
         self.set_writeable_in(
             self.field_registry.add_method_model(self.abort),
-            ss.READY, ss.CONFIGURING, ss.ARMED, ss.RUNNING, ss.POSTRUN,
-            ss.PAUSED, ss.SEEKING, ss.FINISHED)
+            ss.READY,
+            ss.CONFIGURING,
+            ss.ARMED,
+            ss.RUNNING,
+            ss.POSTRUN,
+            ss.PAUSED,
+            ss.SEEKING,
+            ss.FINISHED,
+        )
         self.set_writeable_in(
             self.field_registry.add_method_model(self.pause),
-            ss.ARMED, ss.PAUSED, ss.RUNNING, ss.POSTRUN, ss.FINISHED)
+            ss.ARMED,
+            ss.PAUSED,
+            ss.RUNNING,
+            ss.POSTRUN,
+            ss.FINISHED,
+        )
         self.set_writeable_in(
-            self.field_registry.add_method_model(self.resume), ss.PAUSED)
+            self.field_registry.add_method_model(self.resume), ss.PAUSED
+        )
         # Override reset to work from aborted too
         self.set_writeable_in(
             self.field_registry.get_field("reset"),
-            ss.FAULT, ss.DISABLED, ss.ABORTED, ss.ARMED, ss.FINISHED)
+            ss.FAULT,
+            ss.DISABLED,
+            ss.ABORTED,
+            ss.ARMED,
+            ss.FINISHED,
+        )
         # Allow Parts to report their status
-        self.info_registry.add_reportable(
-            RunProgressInfo, self.update_completed_steps)
+        self.info_registry.add_reportable(RunProgressInfo, self.update_completed_steps)
         # Allow Parts to request extra items from configure
         self.info_registry.add_reportable(
-            ConfigureParamsInfo, self.update_configure_params)
+            ConfigureParamsInfo, self.update_configure_params
+        )
 
     def do_reset(self):
         super(RunnableController, self).do_reset()
@@ -224,7 +273,9 @@ class RunnableController(builtin.controllers.ManagerController):
         self.completed_steps.set_value(0)
         self.total_steps.set_value(0)
 
-    def update_configure_params(self, part: Part = None, info: ConfigureParamsInfo = None) -> None:
+    def update_configure_params(
+        self, part: Part = None, info: ConfigureParamsInfo = None
+    ) -> None:
         """Tell controller part needs different things passed to Configure"""
         with self.changes_squashed:
             # Update the dict
@@ -262,7 +313,9 @@ class RunnableController(builtin.controllers.ManagerController):
         super(RunnableController, self).update_block_endpoints()
         self.update_configure_params()
 
-    def _part_params(self, part_contexts: Dict[Part, Context] = None, params: ConfigureParams = None) -> PartContextParams:
+    def _part_params(
+        self, part_contexts: Dict[Part, Context] = None, params: ConfigureParams = None
+    ) -> PartContextParams:
         if part_contexts is None:
             part_contexts = self.part_contexts
         if params is None:
@@ -276,7 +329,9 @@ class RunnableController(builtin.controllers.ManagerController):
     # This will be serialized, so maintain camelCase for axesToMove
     # noinspection PyPep8Naming
     @add_call_types
-    def validate(self, generator: AGenerator, axesToMove: AAxesToMove = None, **kwargs: Any) -> AConfigureParams:
+    def validate(
+        self, generator: AGenerator, axesToMove: AAxesToMove = None, **kwargs: Any
+    ) -> AConfigureParams:
         """Validate configuration parameters and return validated parameters.
 
         Doesn't take device state into account so can be run in any state
@@ -291,22 +346,24 @@ class RunnableController(builtin.controllers.ManagerController):
         part_contexts = self.create_part_contexts()
         # Get any status from all parts
         status_part_info = self.run_hooks(
-            ReportStatusHook(p, c) for p, c in part_contexts.items())
+            ReportStatusHook(p, c) for p, c in part_contexts.items()
+        )
         while iterations > 0:
             # Try up to 10 times to get a valid set of parameters
             iterations -= 1
             # Validate the params with all the parts
             validate_part_info = self.run_hooks(
                 ValidateHook(p, c, status_part_info, **kwargs)
-                for p, c, kwargs in self._part_params(part_contexts, params))
+                for p, c, kwargs in self._part_params(part_contexts, params)
+            )
             tweaks = ParameterTweakInfo.filter_values(validate_part_info)
             if tweaks:
                 for tweak in tweaks:
                     deserialized = self._block.configure.meta.takes.elements[
-                        tweak.parameter].validate(tweak.value)
+                        tweak.parameter
+                    ].validate(tweak.value)
                     setattr(params, tweak.parameter, deserialized)
-                    self.log.debug(
-                        "Tweaking %s to %s", tweak.parameter, deserialized)
+                    self.log.debug("Tweaking %s to %s", tweak.parameter, deserialized)
             else:
                 # Consistent set, just return the params
                 return params
@@ -324,7 +381,9 @@ class RunnableController(builtin.controllers.ManagerController):
     # This will be serialized, so maintain camelCase for axesToMove
     # noinspection PyPep8Naming
     @add_call_types
-    def configure(self, generator: AGenerator, axesToMove: AAxesToMove = None, **kwargs: Any) -> AConfigureParams:
+    def configure(
+        self, generator: AGenerator, axesToMove: AAxesToMove = None, **kwargs: Any
+    ) -> AConfigureParams:
         """Validate the params then configure the device ready for run().
 
         Try to prepare the device as much as possible so that run() is quick to
@@ -354,8 +413,9 @@ class RunnableController(builtin.controllers.ManagerController):
         if state == ss.FINISHED:
             # If we were finished then do a reset before configuring
             self.run_hooks(
-                builtin.hooks.ResetHook(p, c) for p, c in
-                self.create_part_contexts().items())
+                builtin.hooks.ResetHook(p, c)
+                for p, c in self.create_part_contexts().items()
+            )
         # Clear out any old part contexts now rather than letting gc do it
         for context in self.part_contexts.values():
             context.unsubscribe_all()
@@ -366,8 +426,7 @@ class RunnableController(builtin.controllers.ManagerController):
         # Store the params for use in seek()
         self.configure_params = params
         # Tell everything to get into the right state to Configure
-        self.run_hooks(PreConfigureHook(p, c)
-                       for p, c in self.part_contexts.items())
+        self.run_hooks(PreConfigureHook(p, c) for p, c in self.part_contexts.items())
         # This will calculate what we need from the generator, possibly a long
         # call
         params.generator.prepare()
@@ -377,21 +436,23 @@ class RunnableController(builtin.controllers.ManagerController):
         self.configured_steps.set_value(0)
         # TODO: We can be cleverer about this and support a different number
         # of steps per run for each run by examining the generator structure
-        self.steps_per_run = get_steps_per_run(
-            params.generator, params.axesToMove)
+        self.steps_per_run = get_steps_per_run(params.generator, params.axesToMove)
         # Get any status from all parts
-        part_info = self.run_hooks(ReportStatusHook(p, c)
-                                   for p, c in self.part_contexts.items())
+        part_info = self.run_hooks(
+            ReportStatusHook(p, c) for p, c in self.part_contexts.items()
+        )
         # Run the configure command on all parts, passing them info from
         # ReportStatus. Parts should return any reporting info for PostConfigure
         completed_steps = 0
         steps_to_do = self.steps_per_run
         part_info = self.run_hooks(
             ConfigureHook(p, c, completed_steps, steps_to_do, part_info, **kw)
-            for p, c, kw in self._part_params())
+            for p, c, kw in self._part_params()
+        )
         # Take configuration info and reflect it as attribute updates
-        self.run_hooks(PostConfigureHook(p, c, part_info)
-                       for p, c in self.part_contexts.items())
+        self.run_hooks(
+            PostConfigureHook(p, c, part_info) for p, c in self.part_contexts.items()
+        )
         # Update the completed and configured steps
         self.configured_steps.set_value(steps_to_do)
         self.completed_steps.meta.display.set_limitHigh(steps_to_do)
@@ -455,18 +516,24 @@ class RunnableController(builtin.controllers.ManagerController):
         if completed_steps < self.total_steps.value:
             steps_to_do = self.steps_per_run
             part_info = self.run_hooks(
-                ReportStatusHook(p, c) for p, c in self.part_contexts.items())
+                ReportStatusHook(p, c) for p, c in self.part_contexts.items()
+            )
             self.completed_steps.set_value(completed_steps)
             self.run_hooks(
                 PostRunArmedHook(
-                    p, c, completed_steps, steps_to_do, part_info, **kwargs)
-                for p, c, kwargs in self._part_params())
+                    p, c, completed_steps, steps_to_do, part_info, **kwargs
+                )
+                for p, c, kwargs in self._part_params()
+            )
             self.configured_steps.set_value(completed_steps + steps_to_do)
         else:
             self.run_hooks(
-                PostRunReadyHook(p, c) for p, c in self.part_contexts.items())
+                PostRunReadyHook(p, c) for p, c in self.part_contexts.items()
+            )
 
-    def update_completed_steps(self, part: object, completed_steps: RunProgressInfo) -> None:
+    def update_completed_steps(
+        self, part: object, completed_steps: RunProgressInfo
+    ) -> None:
         with self._lock:
             # Update
             self.progress_updates[part] = completed_steps.steps
@@ -488,10 +555,11 @@ class RunnableController(builtin.controllers.ManagerController):
             self.resume_queue.put(False)
 
     def do_abort(self) -> None:
-        self.run_hooks(
-            AbortHook(p, c) for p, c in self.create_part_contexts().items())
+        self.run_hooks(AbortHook(p, c) for p, c in self.create_part_contexts().items())
 
-    def try_aborting_function(self, start_state: str, end_state: str, func: Callable[..., None], *args: Any) -> None:
+    def try_aborting_function(
+        self, start_state: str, end_state: str, func: Callable[..., None], *args: Any
+    ) -> None:
         try:
             # To make the running function fail we need to stop any running
             # contexts (if running a hook) or make transition() fail with
@@ -502,8 +570,7 @@ class RunnableController(builtin.controllers.ManagerController):
                 self.transition(start_state)
                 for context in self.part_contexts.values():
                     context.stop()
-            if original_state not in (
-                    ss.READY, ss.ARMED, ss.PAUSED, ss.FINISHED):
+            if original_state not in (ss.READY, ss.ARMED, ss.PAUSED, ss.FINISHED):
                 # Something was running, let it finish aborting
                 try:
                     self.abort_queue.get(timeout=DEFAULT_TIMEOUT)
@@ -556,20 +623,20 @@ class RunnableController(builtin.controllers.ManagerController):
                 lastGoodStep -= 1
             next_state = ss.PAUSED
 
-        self.try_aborting_function(
-            ss.SEEKING, next_state, self.do_pause, lastGoodStep)
+        self.try_aborting_function(ss.SEEKING, next_state, self.do_pause, lastGoodStep)
 
     def do_pause(self, completed_steps: int) -> None:
-        self.run_hooks(
-            PauseHook(p, c) for p, c in self.create_part_contexts().items())
+        self.run_hooks(PauseHook(p, c) for p, c in self.create_part_contexts().items())
         in_run_steps = completed_steps % self.steps_per_run
         steps_to_do = self.steps_per_run - in_run_steps
         part_info = self.run_hooks(
-            ReportStatusHook(p, c) for p, c in self.part_contexts.items())
+            ReportStatusHook(p, c) for p, c in self.part_contexts.items()
+        )
         self.completed_steps.set_value(completed_steps)
         self.run_hooks(
             SeekHook(p, c, completed_steps, steps_to_do, part_info, **kwargs)
-            for p, c, kwargs in self._part_params())
+            for p, c, kwargs in self._part_params()
+        )
         self.configured_steps.set_value(completed_steps + steps_to_do)
 
     @add_call_types

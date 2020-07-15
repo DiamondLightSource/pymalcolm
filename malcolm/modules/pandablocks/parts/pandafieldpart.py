@@ -1,9 +1,16 @@
 from annotypes import Anno, Any
 
-from malcolm.core import Part, snake_to_camel, BooleanMeta, VMeta, \
-    PartRegistrar, TimeStamp, Alarm
-from ..pandablocksclient import PandABlocksClient
+from malcolm.core import (
+    Alarm,
+    BooleanMeta,
+    Part,
+    PartRegistrar,
+    TimeStamp,
+    VMeta,
+    snake_to_camel,
+)
 
+from ..pandablocksclient import PandABlocksClient
 
 with Anno("Client for setting and getting field"):
     AClient = PandABlocksClient
@@ -21,8 +28,14 @@ class PandAFieldPart(Part):
     """This will normally be instantiated by the PandABox assembly, not created
     in yaml"""
 
-    def __init__(self, client: AClient, meta: AMeta, block_name: ABlockName, field_name: AFieldName,
-                 initial_value: AInitialValue = None) -> None:
+    def __init__(
+        self,
+        client: AClient,
+        meta: AMeta,
+        block_name: ABlockName,
+        field_name: AFieldName,
+        initial_value: AInitialValue = None,
+    ) -> None:
         part_name = field_name.replace(".", "_")
         super(PandAFieldPart, self).__init__(part_name)
         self.client = client
@@ -57,4 +70,3 @@ class PandAFieldPart(Part):
         self.pending_change = True
         self.client.set_field(self.block_name, self.field_name, value)
         self.attr.set_value(value)
-

@@ -2,11 +2,17 @@ import functools
 
 from annotypes import Anno
 
-from malcolm.core import Alarm, ProcessStartHook, UnpublishedInfo, \
-    UUnpublishedInfos, Context
-from .basiccontroller import BasicController, AMri
-from .clientcomms import ClientComms
+from malcolm.core import (
+    Alarm,
+    Context,
+    ProcessStartHook,
+    UnpublishedInfo,
+    UUnpublishedInfos,
+)
+
 from ..util import wait_for_stateful_block_init
+from .basiccontroller import AMri, BasicController
+from .clientcomms import ClientComms
 
 with Anno("Malcolm resource id of client comms"):
     AComms = str
@@ -25,14 +31,12 @@ class ProxyController(BasicController):
         self.comms = comms
         self.publish = publish
         self.client_comms = None
-        self.health.set_value(
-            "Uninitialized", alarm=Alarm.invalid("Uninitialized"))
+        self.health.set_value("Uninitialized", alarm=Alarm.invalid("Uninitialized"))
         # Hooks
         self.register_hooked(ProcessStartHook, self.init)
 
     def init(self) -> UUnpublishedInfos:
-        self.client_comms: ClientComms = self.process.get_controller(
-            self.comms)
+        self.client_comms: ClientComms = self.process.get_controller(self.comms)
         # Wait until connected
         context = Context(self.process)
         wait_for_stateful_block_init(context, self.comms)
@@ -42,18 +46,17 @@ class ProxyController(BasicController):
             return UnpublishedInfo(self.mri)
 
     def get_post_function(self, method_name):
-        return functools.partial(
-            self.client_comms.send_post, self.mri, method_name)
+        return functools.partial(self.client_comms.send_post, self.mri, method_name)
 
     def get_put_function(self, attribute_name):
-        return functools.partial(
-            self.client_comms.send_put, self.mri, attribute_name)
+        return functools.partial(self.client_comms.send_put, self.mri, attribute_name)
 
     def check_field_writeable(self, field):
         # Let the server do this
         pass
 
-    def update_method_logs(self, method, took_value, took_ts, returned_value,
-                           returned_alarm):
+    def update_method_logs(
+        self, method, took_value, took_ts, returned_value, returned_alarm
+    ):
         # Let the server do this
         pass

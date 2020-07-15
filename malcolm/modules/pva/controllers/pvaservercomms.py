@@ -1,18 +1,32 @@
+from typing import Dict, List, Optional, Set
+
 from annotypes import add_call_types, stringify_error
 from cothread import cothread
 from p4p import Value
-from p4p.server import Server, DynamicProvider, ServerOperation
+from p4p.server import DynamicProvider, Server, ServerOperation
 from p4p.server.cothread import Handler, SharedPV
 
-from malcolm.core import Subscribe, Error, APublished, Controller, Delta, \
-    Return, Response, Put, Post, Unsubscribe, \
-    ProcessPublishHook, method_return_unpacked, Method, \
-    BlockMeta, MethodModel, RLock
+from malcolm.core import (
+    APublished,
+    BlockMeta,
+    Controller,
+    Delta,
+    Error,
+    Method,
+    MethodModel,
+    Post,
+    ProcessPublishHook,
+    Put,
+    Response,
+    Return,
+    RLock,
+    Subscribe,
+    Unsubscribe,
+    method_return_unpacked,
+)
 from malcolm.modules import builtin
-from .pvaconvert import convert_dict_to_value, update_path, \
-    convert_value_to_dict
 
-from typing import Optional, Dict, List, Set
+from .pvaconvert import convert_dict_to_value, convert_value_to_dict, update_path
 
 
 class BlockHandler(Handler):
@@ -29,12 +43,12 @@ class BlockHandler(Handler):
         value = op.value()
         if value.getID() == "epics:nt/NTURI:1.0":
             # We got an NTURI, get path from path and parameters from query
-            assert value.scheme == "pva", \
-                "Can only handle NTURI with scheme=pva"
+            assert value.scheme == "pva", "Can only handle NTURI with scheme=pva"
             prefix = self.controller.mri + "."
-            assert value.path.startswith(prefix), \
-                "NTURI path '%s' doesn't start with '%s'" % (value.path, prefix)
-            method = value.path[len(prefix):]
+            assert value.path.startswith(
+                prefix
+            ), "NTURI path '%s' doesn't start with '%s'" % (value.path, prefix)
+            method = value.path[len(prefix) :]
             parameters = convert_value_to_dict(value.query)
         else:
             # We got something else, take path from pvRequest method and our mri
@@ -49,13 +63,17 @@ class BlockHandler(Handler):
             parameters = convert_value_to_dict(value)
         path = [self.controller.mri, method]
         view = self.controller.block_view()[method]
-        assert isinstance(view, Method), \
-            "%s.%s is not a Method so cannot do RPC" % tuple(path)
+        assert isinstance(
+            view, Method
+        ), "%s.%s is not a Method so cannot do RPC" % tuple(path)
         add_wrapper = method_return_unpacked() in view.meta.tags
 
         self.controller.log.debug(
-            "%s: RPC method %s called with params %s", self.controller.mri,
-            method, parameters)
+            "%s: RPC method %s called with params %s",
+            self.controller.mri,
+            method,
+            parameters,
+        )
         post = Post(path=path, parameters=parameters)
 
         def handle_post_response(response: Response) -> None:
@@ -70,23 +88,32 @@ class BlockHandler(Handler):
                 if ret:
                     self.controller.log.debug(
                         "%s: RPC method %s returned with value %s",
-                        self.controller.mri, method, ret)
+                        self.controller.mri,
+                        method,
+                        ret,
+                    )
                 else:
                     self.controller.log.debug(
-                        "%s: RPC method %s returned",
-                        self.controller.mri, method)
+                        "%s: RPC method %s returned", self.controller.mri, method
+                    )
                 op.done(v)
             else:
                 if isinstance(response, Error):
                     message = stringify_error(response.message)
                     self.controller.log.debug(
                         "%s: RPC method %s resulted in an error (%s)",
-                        self.controller.mri, method, message)
+                        self.controller.mri,
+                        method,
+                        message,
+                    )
                 else:
                     message = "BadResponse: %s" % response.to_dict()
                     self.controller.log.debug(
                         "%s: RPC method %s got a bad response (%s)",
-                        self.controller.mri, method, message)
+                        self.controller.mri,
+                        method,
+                        message,
+                    )
                 op.done(error=message)
 
         post.set_callback(handle_post_response)
@@ -102,28 +129,31 @@ class BlockHandler(Handler):
         #  {"table.value.colA", "table.value.colB", "table.value", "table"}
         # Or if self.field:
         #  {"value"}
-        changed_fields_inc_parents = op.value().changedSet(
-            parents=True, expand=False)
+        changed_fields_inc_parents = op.value().changedSet(parents=True, expand=False)
         # Taking the intersection with all puttable paths should yield the
         # thing we want to change, so value_changed would be:
         #  {"attr.value"} or {"table.value"} or {"value"}
         value_changed = changed_fields_inc_parents.intersection(self.put_paths)
-        assert len(value_changed) == 1, \
-            "Can only do a Put to a single field, got %s" % list(value_changed)
+        assert (
+            len(value_changed) == 1
+        ), "Can only do a Put to a single field, got %s" % list(value_changed)
         changed = list(value_changed)[0]
         if self.field is not None:
             # Only accept a Put to "value"
-            assert changed == "value", \
-                "Can only put to value of %s.%s, not %s" % (
-                    self.controller.mri, self.field, changed)
+            assert changed == "value", "Can only put to value of %s.%s, not %s" % (
+                self.controller.mri,
+                self.field,
+                changed,
+            )
             path += [self.field, "value"]
             op_value = op.value()
         else:
             # Get the path and string "value" from the put value
             split = changed.split(".")
-            assert len(split) == 2 and split[1] == "value", \
-                "Can only put to value of %s.%s, not %s" % (
-                    self.controller.mri, split[0], split[1])
+            assert len(split) == 2 and split[1] == "value", (
+                "Can only put to value of %s.%s, not %s"
+                % (self.controller.mri, split[0], split[1])
+            )
             path += list(split)
             op_value = op.value()[split[0]]
         value = convert_value_to_dict(op_value)["value"]
@@ -149,8 +179,9 @@ class BlockHandler(Handler):
             if self.pv:
                 # onFirstConnect has been called, should be able to update it
                 try:
-                    assert isinstance(response, Delta), \
+                    assert isinstance(response, Delta), (
                         "Expecting Delta response, got %s" % response
+                    )
                     # We got a delta, create or update value and notify
                     if self.value is None:
                         # Open it with the value
@@ -162,22 +193,27 @@ class BlockHandler(Handler):
                 except Exception:
                     self.controller.log.debug(
                         "Closing pv because of error in response %s",
-                        response, exc_info=True)
+                        response,
+                        exc_info=True,
+                    )
                     # We got a return or error, close the connection to clients
                     self.pv.close()
 
     def _create_initial_value(self, response: Delta) -> None:
         # Called with the lock taken
-        assert len(response.changes) == 1 and \
-               len(response.changes[0]) == 2 and \
-               response.changes[0][0] == [], \
-               "Expected root update, got %s" % (response.changes,)
+        assert (
+            len(response.changes) == 1
+            and len(response.changes[0]) == 2
+            and response.changes[0][0] == []
+        ), "Expected root update, got %s" % (response.changes,)
         self.value = convert_dict_to_value(response.changes[0][1])
         unputtable_ids = (MethodModel.typeid, BlockMeta.typeid)
         if not self.field:
             self.put_paths = set(
-                "%s.value" % x for x, v in self.value.items()
-                if v.getID() not in unputtable_ids)
+                "%s.value" % x
+                for x, v in self.value.items()
+                if v.getID() not in unputtable_ids
+            )
         elif self.value.getID() not in unputtable_ids:
             self.put_paths = {"value"}
         else:
@@ -189,10 +225,10 @@ class BlockHandler(Handler):
         # Called with the lock taken
         self.value.unmark()
         for change in delta.changes:
-            assert len(change) == 2, \
-                "Path %s deleted" % change[0]
-            assert len(change[0]) > 0, \
-                "Can't handle root update %s after initial" % (change,)
+            assert len(change) == 2, "Path %s deleted" % change[0]
+            assert len(change[0]) > 0, "Can't handle root update %s after initial" % (
+                change,
+            )
             # Path will have at least one element
             path, update = change
             update_path(self.value, path, update)
@@ -258,7 +294,8 @@ class PvaServerComms(builtin.controllers.ServerComms):
     def makeChannel(self, channel_name: str, src: str) -> SharedPV:
         # Need to spawn as we take a lock here and in process
         return cothread.CallbackResult(
-            self._make_channel, channel_name, src, callback_timeout=1.0)
+            self._make_channel, channel_name, src, callback_timeout=1.0
+        )
 
     def _make_channel(self, channel_name: str, src: str) -> SharedPV:
         self.log.debug("Making PV %s for %s", channel_name, src)
@@ -283,7 +320,7 @@ class PvaServerComms(builtin.controllers.ServerComms):
                 # version of the full structure. The mapperMode option allows us
                 # to tell p4p to send a slice instead
                 # https://github.com/mdavidsaver/pvDataCPP/blob/master/src/copy/pv/createRequest.h#L76
-                pv = SharedPV(handler=handler, options={'mapperMode': 'Slice'})
+                pv = SharedPV(handler=handler, options={"mapperMode": "Slice"})
                 pvs[field] = pv
             return pv
 
@@ -323,4 +360,3 @@ class PvaServerComms(builtin.controllers.ServerComms):
                 # Close pv with force destroy on, this will call
                 # onLastDisconnect
                 pv.close(destroy=True, sync=True, timeout=1.0)
-

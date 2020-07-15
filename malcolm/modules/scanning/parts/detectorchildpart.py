@@ -1,19 +1,41 @@
-from annotypes import add_call_types, Anno, Any, stringify_error
-from scanpointgenerator import StaticPointGenerator, SquashingExcluder, \
-    CompoundGenerator
-
-from malcolm.core import BadValueError, APartName, Future, Put, Request
-from malcolm.modules import builtin
-from ..infos import DatasetProducedInfo, DetectorMutiframeInfo
-from ..hooks import ConfigureHook, PostRunArmedHook, \
-    SeekHook, RunHook, ACompletedSteps, AContext, ValidateHook, \
-    UParameterTweakInfos, PostRunReadyHook, AbortHook, PreConfigureHook, \
-    AGenerator, AAxesToMove, UInfos, AFileDir, AFileTemplate, APartInfo
-from ..infos import ParameterTweakInfo, RunProgressInfo
-from ..util import RunnableStates, DetectorTable, ADetectorTable
-
 from typing import Dict, Tuple
 
+from annotypes import Anno, Any, add_call_types, stringify_error
+from scanpointgenerator import (
+    CompoundGenerator,
+    SquashingExcluder,
+    StaticPointGenerator,
+)
+
+from malcolm.core import APartName, BadValueError, Future, Put, Request
+from malcolm.modules import builtin
+
+from ..hooks import (
+    AAxesToMove,
+    AbortHook,
+    ACompletedSteps,
+    AContext,
+    AFileDir,
+    AFileTemplate,
+    AGenerator,
+    APartInfo,
+    ConfigureHook,
+    PostRunArmedHook,
+    PostRunReadyHook,
+    PreConfigureHook,
+    RunHook,
+    SeekHook,
+    UInfos,
+    UParameterTweakInfos,
+    ValidateHook,
+)
+from ..infos import (
+    DatasetProducedInfo,
+    DetectorMutiframeInfo,
+    ParameterTweakInfo,
+    RunProgressInfo,
+)
+from ..util import ADetectorTable, DetectorTable, RunnableStates
 
 with Anno("The initial value of FramesPerStep for this detector at configure"):
     AInitialFramesPerStep = int
@@ -30,12 +52,13 @@ class DetectorChildPart(builtin.parts.ChildPart):
     """Part controlling a child detector Block that exposes a configure/run
     interface with fileDir and fileTemplate"""
 
-    def __init__(self,
-                 name: APartName,
-                 mri: AMri,
-                 initial_visibility: AInitialVisibility = False,
-                 initial_frames_per_step: AInitialFramesPerStep = 1,
-                 ) -> None:
+    def __init__(
+        self,
+        name: APartName,
+        mri: AMri,
+        initial_visibility: AInitialVisibility = False,
+        initial_frames_per_step: AInitialFramesPerStep = 1,
+    ) -> None:
         super(DetectorChildPart, self).__init__(name, mri, initial_visibility)
         # frames per scan step given by the detector table at configure()
         self.initial_frames_per_step = initial_frames_per_step
@@ -58,11 +81,12 @@ class DetectorChildPart(builtin.parts.ChildPart):
         registrar.hook(AbortHook, self.on_abort)
 
     @add_call_types
-    def on_layout(self,
-                  context: AContext,
-                  ports: builtin.hooks.APortMap,
-                  layout: builtin.hooks.ALayoutTable
-                  ) -> builtin.hooks.ULayoutInfos:
+    def on_layout(
+        self,
+        context: AContext,
+        ports: builtin.hooks.APortMap,
+        layout: builtin.hooks.ALayoutTable,
+    ) -> builtin.hooks.ULayoutInfos:
         ret = super(DetectorChildPart, self).on_layout(context, ports, layout)
         # Tell the controller to expose some extra configure parameters
         configure_info = ConfigureHook.create_info(self.on_configure)
@@ -75,8 +99,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
             else:
                 enable = False
                 frames_per_step = 1
-            rows.append([
-                enable, self.name, self.mri, 0.0, frames_per_step])
+            rows.append([enable, self.name, self.mri, 0.0, frames_per_step])
         configure_info.defaults["detectors"] = DetectorTable.from_rows(rows)
         columns = configure_info.metas["detectors"].elements
         columns["name"].set_writeable(False)
@@ -99,7 +122,8 @@ class DetectorChildPart(builtin.parts.ChildPart):
             super(DetectorChildPart, self).on_init(context)
         except BadValueError:
             self.log.exception(
-                "Detector %s was faulty at init and is not usable", self.name)
+                "Detector %s was faulty at init and is not usable", self.name
+            )
             self.faulty = True
 
     @add_call_types
@@ -113,18 +137,20 @@ class DetectorChildPart(builtin.parts.ChildPart):
     # Must match those passed in configure() Method, so need to be camelCase
     # noinspection PyPep8Naming
     @add_call_types
-    def on_validate(self,
-                    context: AContext,
-                    part_info: APartInfo,
-                    generator: AGenerator,
-                    fileDir: AFileDir,
-                    detectors: ADetectorTable = None,
-                    axesToMove: AAxesToMove = None,
-                    fileTemplate: AFileTemplate = "%s.h5",
-                    ) -> UParameterTweakInfos:
+    def on_validate(
+        self,
+        context: AContext,
+        part_info: APartInfo,
+        generator: AGenerator,
+        fileDir: AFileDir,
+        detectors: ADetectorTable = None,
+        axesToMove: AAxesToMove = None,
+        fileTemplate: AFileTemplate = "%s.h5",
+    ) -> UParameterTweakInfos:
         # Work out if we are taking part
         enable, frames_per_step, kwargs = self._configure_args(
-            generator, fileDir, detectors, axesToMove, fileTemplate)
+            generator, fileDir, detectors, axesToMove, fileTemplate
+        )
         ret = []
         tweak_detectors = False
         if self.name not in detectors.name:
@@ -141,12 +167,16 @@ class DetectorChildPart(builtin.parts.ChildPart):
             try:
                 return child.validate(**params)
             except Exception as e:
-                raise BadValueError("Validate of %s failed: %s" % (
-                    self.mri, stringify_error(e)))
+                raise BadValueError(
+                    "Validate of %s failed: %s" % (self.mri, stringify_error(e))
+                )
 
         # Check something else is multiplying out triggers
-        multiframe = [i for i in DetectorMutiframeInfo.filter_values(part_info)
-                      if i.mri == self.mri]
+        multiframe = [
+            i
+            for i in DetectorMutiframeInfo.filter_values(part_info)
+            if i.mri == self.mri
+        ]
         if enable:
             if self.faulty:
                 raise BadValueError(
@@ -155,8 +185,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
                 )
             # Check that if we are told to set exposure that we take it
             if "exposure" in kwargs and not multiframe and not takes_exposure:
-                raise BadValueError(
-                    "Detector %s doesn't take exposure" % self.name)
+                raise BadValueError("Detector %s doesn't take exposure" % self.name)
             # If asked to guess frames per step, do so
             if frames_per_step < 1:
                 if kwargs.get("exposure", 0) == 0:
@@ -168,15 +197,15 @@ class DetectorChildPart(builtin.parts.ChildPart):
                     exposure = kwargs.pop("exposure")
                     returns = do_validate(**kwargs)
                     dead_time = generator.duration - returns["exposure"]
-                    frames_per_step = generator.duration // (
-                            exposure + dead_time)
+                    frames_per_step = generator.duration // (exposure + dead_time)
                     kwargs["exposure"] = exposure
                 tweak_detectors = True
             if frames_per_step > 1 and not multiframe:
                 raise BadValueError(
                     "There are no trigger multipliers setup for Detector '%s' "
                     "so framesPerStep can only be 0 or 1 for this row in the "
-                    "detectors table" % self.name)
+                    "detectors table" % self.name
+                )
             # This is a Serializable with the correct entries
             returns = do_validate(**kwargs)
             # Add in the exposure in case it is returned
@@ -210,19 +239,23 @@ class DetectorChildPart(builtin.parts.ChildPart):
             ret.append(ParameterTweakInfo("detectors", new_detectors))
         return ret
 
-    def _configure_args(self,
-                        generator: AGenerator,
-                        file_dir: AFileDir,
-                        detectors: ADetectorTable = None,
-                        axes_to_move: AAxesToMove = None,
-                        file_template: AFileTemplate = "%s.h5",
-                        ) -> Tuple[bool, int, Dict[str, Any]]:
+    def _configure_args(
+        self,
+        generator: AGenerator,
+        file_dir: AFileDir,
+        detectors: ADetectorTable = None,
+        axes_to_move: AAxesToMove = None,
+        file_template: AFileTemplate = "%s.h5",
+    ) -> Tuple[bool, int, Dict[str, Any]]:
         # Check the detector table to see what we need to do
         for enable, name, mri, exposure, frames in detectors.rows():
             if name == self.name and enable:
                 # Found a row saying to take part
-                assert mri == self.mri, \
-                    "%s has mri %s, passed %s" % (name, self.mri, mri)
+                assert mri == self.mri, "%s has mri %s, passed %s" % (
+                    name,
+                    self.mri,
+                    mri,
+                )
                 break
         else:
             # Didn't find a row or no frames, don't take part
@@ -251,7 +284,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
             # formatName is the unique part of the HDF filename, so use the part
             # name for this
             formatName=self.name,
-            fileTemplate=file_template
+            fileTemplate=file_template,
         )
         if exposure > 0.0:
             kwargs["exposure"] = exposure
@@ -260,36 +293,41 @@ class DetectorChildPart(builtin.parts.ChildPart):
     # Must match those passed in configure() Method, so need to be camelCase
     # noinspection PyPep8Naming
     @add_call_types
-    def on_configure(self,
-                     context: AContext,
-                     generator: AGenerator,
-                     fileDir: AFileDir,
-                     detectors: ADetectorTable = None,
-                     axesToMove: AAxesToMove = None,
-                     fileTemplate: AFileTemplate = "%s.h5",
-                     ) -> UInfos:
+    def on_configure(
+        self,
+        context: AContext,
+        generator: AGenerator,
+        fileDir: AFileDir,
+        detectors: ADetectorTable = None,
+        axesToMove: AAxesToMove = None,
+        fileTemplate: AFileTemplate = "%s.h5",
+    ) -> UInfos:
         # Work out if we are taking part
         enable, self.frames_per_step, kwargs = self._configure_args(
-            generator, fileDir, detectors, axesToMove, fileTemplate)
+            generator, fileDir, detectors, axesToMove, fileTemplate
+        )
         if not enable:
             # We aren't taking part in the scan
             self.frames_per_step = 0
             return
         else:
-            assert self.frames_per_step > 0, \
+            assert self.frames_per_step > 0, (
                 "Zero frames per step for %s, this shouldn't happen" % self.name
+            )
         child = context.block_view(self.mri)
-        if "exposure" in kwargs and "exposure" not in \
-                child.configure.meta.takes.elements:
+        if (
+            "exposure" in kwargs
+            and "exposure" not in child.configure.meta.takes.elements
+        ):
             kwargs.pop("exposure")
         child.configure(**kwargs)
         # Report back any datasets the child has to our parent
-        assert hasattr(child, "datasets"), \
-            "Detector %s doesn't have a dataset table, did you add a " \
+        assert hasattr(child, "datasets"), (
+            "Detector %s doesn't have a dataset table, did you add a "
             "scanning.parts.DatasetTablePart to it?" % self.mri
+        )
         datasets_table = child.datasets.value
-        info_list = [DatasetProducedInfo(*row) for
-                     row in datasets_table.rows()]
+        info_list = [DatasetProducedInfo(*row) for row in datasets_table.rows()]
         return info_list
 
     @add_call_types
@@ -301,8 +339,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
         child = context.block_view(self.mri)
         child.completedSteps.subscribe_value(self.update_completed_steps)
         bad_states = [ss.DISABLING, ss.ABORTING, ss.FAULT]
-        match_future = child.when_value_matches_async(
-            "state", ss.POSTRUN, bad_states)
+        match_future = child.when_value_matches_async("state", ss.POSTRUN, bad_states)
         if child.state.value == ss.ARMED:
             self.run_future = child.run_async()
         else:

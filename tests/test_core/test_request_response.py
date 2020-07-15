@@ -1,11 +1,12 @@
-import unittest
 import os
-from mock import MagicMock, ANY
+import unittest
+
 from annotypes import json_decode
+from mock import ANY, MagicMock
 
 from malcolm.compat import OrderedDict
-from malcolm.core.request import Request, Get, Post, Subscribe, Unsubscribe, Put
-from malcolm.core.response import Return, Error, Update, Delta, Response
+from malcolm.core.request import Get, Post, Put, Request, Subscribe, Unsubscribe
+from malcolm.core.response import Delta, Error, Response, Return, Update
 
 
 def get_doc_json(fname):
@@ -18,7 +19,6 @@ def get_doc_json(fname):
 
 
 class TestRequest(unittest.TestCase):
-
     def setUp(self):
         self.callback = MagicMock()
         self.o = Request(32)
@@ -34,11 +34,9 @@ class TestRequest(unittest.TestCase):
         assert response.to_dict() == Return(id=32, value=5).to_dict()
 
     def test_respond_with_error(self):
-        cb, response = self.o.error_response(
-            exception=ValueError("Test Error"))
+        cb, response = self.o.error_response(exception=ValueError("Test Error"))
         assert cb == self.callback
-        assert response.to_dict() == \
-               Error(id=32, message=ANY).to_dict()
+        assert response.to_dict() == Error(id=32, message=ANY).to_dict()
         assert str(response.message) == "Test Error"
 
     def test_setters(self):
@@ -48,7 +46,6 @@ class TestRequest(unittest.TestCase):
 
 
 class TestGet(unittest.TestCase):
-
     def setUp(self):
         self.callback = MagicMock()
         self.path = ["BL18I:XSPRESS3", "state", "value"]
@@ -70,7 +67,6 @@ class TestGet(unittest.TestCase):
 
 
 class TestPut(unittest.TestCase):
-
     def setUp(self):
         self.callback = MagicMock()
         self.path = ["BL18I:XSPRESS3:HDF", "filePath", "value"]
@@ -90,7 +86,6 @@ class TestPut(unittest.TestCase):
 
 
 class TestPost(unittest.TestCase):
-
     def setUp(self):
         self.callback = MagicMock()
         self.path = ["BL18I:XSPRESS3", "configure"]
@@ -112,7 +107,6 @@ class TestPost(unittest.TestCase):
 
 
 class TestSubscribe(unittest.TestCase):
-
     def setUp(self):
         self.callback = MagicMock()
         self.path = ["BL18I:XSPRESS3"]
@@ -150,7 +144,6 @@ class TestSubscribe(unittest.TestCase):
 
 
 class TestUnsubscribe(unittest.TestCase):
-
     def setUp(self):
         self.callback = MagicMock()
         self.subscribe = Subscribe(32, ["."])
@@ -209,6 +202,3 @@ class TestResponse(unittest.TestCase):
         assert r.typeid == "malcolm:core/Delta:1.0"
         assert r.id == 123
         assert r.changes == changes
-
-
-

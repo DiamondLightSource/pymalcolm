@@ -9,8 +9,10 @@ class StateSet(object):
 
     def transition_allowed(self, initial_state: str, target_state: str) -> bool:
         """Check if a transition between two states is allowed"""
-        assert initial_state in self._allowed, \
-            "%s is not in %s" % (initial_state, list(self._allowed))
+        assert initial_state in self._allowed, "%s is not in %s" % (
+            initial_state,
+            list(self._allowed),
+        )
         return target_state in self._allowed[initial_state]
 
     def set_allowed(self, initial_state: str, *allowed_states: str) -> None:

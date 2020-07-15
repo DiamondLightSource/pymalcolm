@@ -1,11 +1,11 @@
-import os
-import subprocess
 import imp
 import importlib
+import os
+import subprocess
 import tempfile
 
-from annotypes import Anno, add_call_types
 import numpy as np
+from annotypes import Anno, add_call_types
 
 from malcolm.core import Define
 
@@ -104,8 +104,7 @@ def export_env_string(name: AEnvName, value: AEnvValue) -> ADefine:
 
 with Anno("The name of the exported module"):
     AModuleName = str
-with Anno("The path of a python package dir to insert as "
-          "malcolm.modules.<name>"):
+with Anno("The path of a python package dir to insert as " "malcolm.modules.<name>"):
     AModulePath = str
 
 

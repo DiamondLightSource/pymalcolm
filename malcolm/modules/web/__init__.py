@@ -1,1 +1,1 @@
-from . import controllers, parts, hooks, infos
+from . import controllers, hooks, infos, parts  # noqa

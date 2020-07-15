@@ -3,16 +3,17 @@ import tempfile
 
 import pytest
 from mock import MagicMock
+from scanpointgenerator import (
+    CompoundGenerator,
+    LineGenerator,
+    SquashingExcluder,
+    StaticPointGenerator,
+)
 
-from scanpointgenerator import LineGenerator, CompoundGenerator, \
-    StaticPointGenerator, SquashingExcluder
-
-from malcolm.core import Context, Process, Part, PartRegistrar, \
-    StringMeta, NumberMeta
+from malcolm.core import Context, NumberMeta, Part, PartRegistrar, Process, StringMeta
 from malcolm.modules.ADPandABlocks.blocks import panda_pulse_trigger_block
 from malcolm.modules.ADPandABlocks.parts import PandAPulseTriggerPart
-from malcolm.modules.builtin.controllers import ManagerController, \
-    BasicController
+from malcolm.modules.builtin.controllers import BasicController, ManagerController
 from malcolm.modules.builtin.parts import ChildPart
 from malcolm.modules.builtin.util import ExportTable
 from malcolm.modules.demo.blocks import detector_block
@@ -43,7 +44,6 @@ class PulsePart(Part):
 
 
 class TestPandaPulseTriggerPart(ChildTestCase):
-
     def setUp(self):
         self.process = Process("Process")
         self.context = Context(self.process)
@@ -55,8 +55,8 @@ class TestPandaPulseTriggerPart(ChildTestCase):
         controller.add_part(self.pulse_part)
         self.process.add_controller(controller)
         self.panda.add_part(
-            ChildPart("PULSE3", "PANDA:PULSE3",
-                      initial_visibility=True, stateful=False))
+            ChildPart("PULSE3", "PANDA:PULSE3", initial_visibility=True, stateful=False)
+        )
         self.process.add_controller(self.panda)
 
         # And the detector
@@ -65,8 +65,12 @@ class TestPandaPulseTriggerPart(ChildTestCase):
 
         # Make the child block holding panda and pmac mri
         self.child = self.create_child_block(
-            panda_pulse_trigger_block, self.process,
-            mri="SCAN:PULSE", panda="PANDA", detector="DET")
+            panda_pulse_trigger_block,
+            self.process,
+            mri="SCAN:PULSE",
+            panda="PANDA",
+            detector="DET",
+        )
 
         # And our part under test
         self.o = PandAPulseTriggerPart("detTrigger", "SCAN:PULSE")
@@ -80,12 +84,14 @@ class TestPandaPulseTriggerPart(ChildTestCase):
         # Now start the process off and tell the panda which sequencer tables
         # to use
         self.process.start()
-        exports = ExportTable.from_rows([
-            ('PULSE3.width', 'detTriggerWidth'),
-            ('PULSE3.step', 'detTriggerStep'),
-            ('PULSE3.delay', 'detTriggerDelay'),
-            ('PULSE3.pulses', 'detTriggerPulses'),
-        ])
+        exports = ExportTable.from_rows(
+            [
+                ("PULSE3.width", "detTriggerWidth"),
+                ("PULSE3.step", "detTriggerStep"),
+                ("PULSE3.delay", "detTriggerDelay"),
+                ("PULSE3.pulses", "detTriggerPulses"),
+            ]
+        )
         self.panda.set_exports(exports)
         self.tmpdir = tempfile.mkdtemp()
 
@@ -94,12 +100,9 @@ class TestPandaPulseTriggerPart(ChildTestCase):
         shutil.rmtree(self.tmpdir)
 
     def check_pulse_mocks(self, width, step, delay, pulses):
-        self.pulse_part.mocks["width"].assert_called_once_with(
-            pytest.approx(width))
-        self.pulse_part.mocks["step"].assert_called_once_with(
-            pytest.approx(step))
-        self.pulse_part.mocks["delay"].assert_called_once_with(
-            pytest.approx(delay))
+        self.pulse_part.mocks["width"].assert_called_once_with(pytest.approx(width))
+        self.pulse_part.mocks["step"].assert_called_once_with(pytest.approx(step))
+        self.pulse_part.mocks["delay"].assert_called_once_with(pytest.approx(delay))
         self.pulse_part.mocks["pulses"].assert_called_once_with(pulses)
 
     def test_configure_multiple_no_exposure(self):
@@ -107,11 +110,8 @@ class TestPandaPulseTriggerPart(ChildTestCase):
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
         generator = CompoundGenerator([ys, xs], [], [], 1.0)
         generator.prepare()
-        detectors = DetectorTable.from_rows([
-            [True, "det", "DET", 0.0, 5]
-        ])
-        self.o.on_configure(
-            self.context, generator, detectors)
+        detectors = DetectorTable.from_rows([[True, "det", "DET", 0.0, 5]])
+        self.o.on_configure(self.context, generator, detectors)
         assert self.o.generator_duration == 1.0
         assert self.o.frames_per_step == 5
         # Detector would normally be configured by DetectorChildPart
@@ -128,9 +128,7 @@ class TestPandaPulseTriggerPart(ChildTestCase):
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
         generator = CompoundGenerator([ys, xs], [], [], 1.0)
         generator.prepare()
-        detectors = DetectorTable.from_rows([
-            [True, "det", "DET", 0.0, 5]
-        ])
+        detectors = DetectorTable.from_rows([[True, "det", "DET", 0.0, 5]])
         b = self.scan.block_view()
         b.configure(generator, self.tmpdir, detectors=detectors)
         self.check_pulse_mocks(0.19899, 0.2, 0.000505, 5)
@@ -140,9 +138,7 @@ class TestPandaPulseTriggerPart(ChildTestCase):
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
         generator = CompoundGenerator([ys, xs], [], [], 1.0)
         generator.prepare()
-        detectors = DetectorTable.from_rows([
-            [True, "det", "DET", 0.1, 5]
-        ])
+        detectors = DetectorTable.from_rows([[True, "det", "DET", 0.1, 5]])
         b = self.scan.block_view()
         b.configure(generator, self.tmpdir, detectors=detectors)
         self.check_pulse_mocks(0.1, 0.2, 0.05, 5)

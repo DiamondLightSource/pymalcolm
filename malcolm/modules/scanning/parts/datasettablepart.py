@@ -1,15 +1,17 @@
 from annotypes import add_call_types
 
-from malcolm.core import Part, PartRegistrar, TableMeta, AttributeModel
+from malcolm.core import AttributeModel, Part, PartRegistrar, TableMeta
 from malcolm.modules import builtin
+
+from ..hooks import APartInfo, PostConfigureHook
 from ..infos import DatasetProducedInfo
 from ..util import DatasetTable
-from ..hooks import PostConfigureHook, APartInfo
 
 
 class DatasetTablePart(Part):
     """Exposes an Attribute that reports the datasets that will be written
     during a scan"""
+
     datasets: AttributeModel = None
 
     def setup(self, registrar: PartRegistrar) -> None:

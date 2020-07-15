@@ -1,6 +1,6 @@
-from threading import Thread
 import atexit
 import sys
+from threading import Thread
 
 from annotypes import Anno, Array
 from tornado.ioloop import IOLoop
@@ -19,6 +19,7 @@ class IOLoopHelper(object):
                 # the event loop is not created automatically if we are not
                 # the main thread
                 import asyncio
+
                 asyncio.set_event_loop(asyncio.new_event_loop())
             loop = IOLoop.current()
             cls._loop = loop

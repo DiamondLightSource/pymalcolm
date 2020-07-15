@@ -1,17 +1,16 @@
-from collections import namedtuple, OrderedDict
 import logging
 import sys
+from collections import OrderedDict, namedtuple
 
 # Create a module level logger
 log = logging.getLogger(__name__)
 
 
-BlockData = namedtuple(
-    "BlockData", "number,description,fields")
-FieldData = namedtuple(
-    "FieldData", "field_type,field_subtype,description,labels")
+BlockData = namedtuple("BlockData", "number,description,fields")
+FieldData = namedtuple("FieldData", "field_type,field_subtype,description,labels")
 TableFieldData = namedtuple(
-    "TableFieldData", "bits_hi,bits_lo,description,labels,signed")
+    "TableFieldData", "bits_hi,bits_lo,description,labels,signed"
+)
 
 
 def strip_ok(resp):
@@ -21,13 +20,19 @@ def strip_ok(resp):
 
 
 if sys.version_info[0] >= 3:
+
     def encode(obj):
-        return obj.encode('utf-8')
+        return obj.encode("utf-8")
+
     def decode(obj):
-        return obj.decode('utf-8')
+        return obj.decode("utf-8")
+
+
 else:
+
     def encode(obj):
         return obj
+
     def decode(obj):
         return obj
 
@@ -35,7 +40,7 @@ else:
 class PandABlocksClient(object):
     # Sentinel that tells the send_loop and recv_loop to stop
     STOP = object()
-    
+
     def __init__(self, hostname="localhost", port=8888, queue_cls=None):
         if queue_cls is None:
             try:
@@ -64,6 +69,7 @@ class PandABlocksClient(object):
     def start(self, spawn=None, socket_cls=None):
         if spawn is None:
             from multiprocessing.pool import ThreadPool
+
             self._thread_pool = ThreadPool(2)
             spawn = self._thread_pool.apply_async
         if socket_cls is None:
@@ -78,15 +84,16 @@ class PandABlocksClient(object):
         self._send_spawned = spawn(self._send_loop)
         self._recv_spawned = spawn(self._recv_loop)
         self.started = True
-        
+
     def stop(self):
         assert self.started, "Send and recv threads not started"
-        self._send_queue.put((self.STOP, None))    
+        self._send_queue.put((self.STOP, None))
         self._send_spawned.wait()
         import socket
+
         try:
             self._socket.shutdown(socket.SHUT_RD)
-        except:
+        except Exception:
             pass
         self._recv_spawned.wait()
         self._socket.close()
@@ -171,9 +178,11 @@ class PandABlocksClient(object):
                     if line == ".":
                         self._respond(self._completed_response_lines)
                     else:
-                        assert line[0] == "!", \
-                            "Multiline response {} doesn't start with !" \
-                            .format(repr(line))
+                        assert (
+                            line[0] == "!"
+                        ), "Multiline response {} doesn't start with !".format(
+                            repr(line)
+                        )
                         self._completed_response_lines.append(line[1:])
                 else:
                     self._respond(line)
@@ -229,14 +238,14 @@ class PandABlocksClient(object):
             unsorted_fields = {}
             for line in self.recv(field_queues[block_name]):
                 split = line.split()
-                assert len(split) in (3, 4), \
-                    "Expected field_data to have len 3 or 4, got {}"\
-                    .format(len(split))
+                assert len(split) in (
+                    3,
+                    4,
+                ), "Expected field_data to have len 3 or 4, got {}".format(len(split))
                 if len(split) == 3:
                     split.append("")
                 field_name, index, field_type, field_subtype = split
-                unsorted_fields[field_name] = (
-                    int(index), field_type, field_subtype)
+                unsorted_fields[field_name] = (int(index), field_type, field_subtype)
 
             # Sort the field list
             def get_field_index(field_name):
@@ -246,19 +255,20 @@ class PandABlocksClient(object):
 
             # Request description for each field
             field_desc_queues = self.parameterized_send(
-                "*DESC.%s.%%s?\n" % block_name, field_names)
+                "*DESC.%s.%%s?\n" % block_name, field_names
+            )
 
             # Request enum labels for fields that are enums
             enum_fields = []
             for field_name in field_names:
                 _, field_type, field_subtype = unsorted_fields[field_name]
-                if field_type in ("bit_mux", "pos_mux") or field_subtype == \
-                        "enum":
+                if field_type in ("bit_mux", "pos_mux") or field_subtype == "enum":
                     enum_fields.append(field_name)
                 elif field_type == "ext_out":
                     enum_fields.append(field_name + ".CAPTURE")
             enum_queues = self.parameterized_send(
-                "*ENUMS.%s.%%s?\n" % block_name, enum_fields)
+                "*ENUMS.%s.%%s?\n" % block_name, enum_fields
+            )
 
             # Get desc and enum data for each field
             for field_name in field_names:
@@ -271,7 +281,8 @@ class PandABlocksClient(object):
                     labels = []
                 description = strip_ok(self.recv(field_desc_queues[field_name]))
                 fields[field_name] = FieldData(
-                    field_type, field_subtype, description, labels)
+                    field_type, field_subtype, description, labels
+                )
 
         return blocks
 
@@ -325,14 +336,16 @@ class PandABlocksClient(object):
                 # Field is an enum, get its values
                 if split[2] == "enum":
                     enum_queues[name] = self.send(
-                        "*ENUMS.%s.%s[].%s?\n" % (block, field, name))
+                        "*ENUMS.%s.%s[].%s?\n" % (block, field, name)
+                    )
                 elif split[2] == "int":
                     signed = True
             fields[name] = (split[0], signed)
 
         # Request description for each field
         desc_queues = self.parameterized_send(
-            "*DESC.%s.%s[].%%s?\n" % (block, field), list(fields))
+            "*DESC.%s.%s[].%%s?\n" % (block, field), list(fields)
+        )
         for name, (bits_str, signed) in fields.items():
             bits_hi, bits_lo = [int(x) for x in bits_str.split(":")]
             description = strip_ok(self.recv(desc_queues[name]))
@@ -340,16 +353,14 @@ class PandABlocksClient(object):
                 labels = self.recv(enum_queues[name])
             else:
                 labels = None
-            fields[name] = TableFieldData(
-                bits_hi, bits_lo, description, labels, signed)
+            fields[name] = TableFieldData(bits_hi, bits_lo, description, labels, signed)
         return fields
 
     def get_field(self, block, field):
         try:
             resp = self.send_recv("%s.%s?\n" % (block, field))
         except ValueError as e:
-            raise ValueError("Error getting %s.%s: %s" % (
-                block, field, e))
+            raise ValueError("Error getting %s.%s: %s" % (block, field, e))
         else:
             return strip_ok(resp)
 
@@ -365,8 +376,7 @@ class PandABlocksClient(object):
             try:
                 resp = self.recv(queue)
             except ValueError as e:
-                raise ValueError(
-                    "Error setting %s to %r: %s" % (field, value, e))
+                raise ValueError("Error setting %s to %r: %s" % (field, value, e))
             else:
                 assert resp == "OK", "Expected OK, got %r" % resp
 

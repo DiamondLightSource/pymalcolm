@@ -1,6 +1,7 @@
 from annotypes import Anno
 
 from malcolm.modules import builtin
+
 from ..util import AClient
 
 with Anno("The field of *METADATA to set when label is changed"):
@@ -9,7 +10,9 @@ ALabelValue = builtin.parts.ALabelValue
 
 
 class PandALabelPart(builtin.parts.LabelPart):
-    def __init__(self, client: AClient, metadata_field: AMetadataField, value: ALabelValue) -> None:
+    def __init__(
+        self, client: AClient, metadata_field: AMetadataField, value: ALabelValue
+    ) -> None:
         super(PandALabelPart, self).__init__(value)
         self.client = client
         self.metadata_field = metadata_field

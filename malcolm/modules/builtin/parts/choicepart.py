@@ -1,10 +1,10 @@
-from annotypes import Anno, Array, Sequence, Union
 from enum import Enum
 
-from malcolm.core import Part, PartRegistrar, ChoiceMeta, APartName, \
-    AMetaDescription
-from ..util import set_tags, AWriteable, AConfig, AGroup, AWidget
+from annotypes import Anno, Array, Sequence, Union
 
+from malcolm.core import AMetaDescription, APartName, ChoiceMeta, Part, PartRegistrar
+
+from ..util import AConfig, AGroup, AWidget, AWriteable, set_tags
 
 with Anno("Possible choices for this attribute"):
     AChoices = Array[str]
@@ -23,16 +23,18 @@ AWidget = AWidget
 
 class ChoicePart(Part):
     """Create a single choice Attribute on the Block"""
-    def __init__(self,
-                 name: APartName,
-                 description: AMetaDescription,
-                 choices: UChoices,
-                 value: AValue,
-                 writeable: AWriteable = False,
-                 config: AConfig = 1,
-                 group: AGroup = None,
-                 widget: AWidget = None,
-                 ) -> None:
+
+    def __init__(
+        self,
+        name: APartName,
+        description: AMetaDescription,
+        choices: UChoices,
+        value: AValue,
+        writeable: AWriteable = False,
+        config: AConfig = 1,
+        group: AGroup = None,
+        widget: AWidget = None,
+    ) -> None:
         super(ChoicePart, self).__init__(name)
         meta = ChoiceMeta(description, choices)
         set_tags(meta, writeable, config, group, widget)

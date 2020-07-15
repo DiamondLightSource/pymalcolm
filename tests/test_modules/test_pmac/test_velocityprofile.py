@@ -20,50 +20,54 @@ class TestPmacStatusPart(unittest.TestCase):
             profile = VelocityProfile(v1, v2, d, t, 2.0, 10000)
             profile.get_profile()
             d_res = profile.calculate_distance()
-            assert np.isclose(d_res, d), \
-                "Wrong d({}). Expected d {}, vm {}, v1 {}, v2 {}, t {}".format(
-                    d_res, d, profile.vm, v1, v2, t)
+            assert np.isclose(
+                d_res, d
+            ), "Wrong d({}). Expected d {}, vm {}, v1 {}, v2 {}, t {}".format(
+                d_res, d, profile.vm, v1, v2, t
+            )
 
     @staticmethod
     def do_test_time_range(v1, v2, quantize=False):
         if quantize:
-            ts = np.arange(.0105, 20, 1.0007)
+            ts = np.arange(0.0105, 20, 1.0007)
         else:
-            ts = np.arange(.01, 20, .1)
+            ts = np.arange(0.01, 20, 0.1)
         for t in ts:
             d = 100
-            profile = VelocityProfile(v1, v2, d, t, 2.0, 10, interval=.002)
+            profile = VelocityProfile(v1, v2, d, t, 2.0, 10, interval=0.002)
             profile.get_profile()
             if quantize:
                 profile.quantize()
             d_res = profile.calculate_distance()
-            assert np.isclose(d_res, 100), \
-                "Wrong d({}). Expected d {}, vm {}, v1 {}, v2 {}, t {}".format(
-                    d_res, d, profile.vm, profile.v1, profile.v2, profile.tv2)
-            if quantize and profile.t_total >= .002:
-                assert profile.t1 > .002
-                assert profile.t2 > .002
-                assert profile.tm > .002 or profile.tm == 0
+            assert np.isclose(
+                d_res, 100
+            ), "Wrong d({}). Expected d {}, vm {}, v1 {}, v2 {}, t {}".format(
+                d_res, d, profile.vm, profile.v1, profile.v2, profile.tv2
+            )
+            if quantize and profile.t_total >= 0.002:
+                assert profile.t1 > 0.002
+                assert profile.t2 > 0.002
+                assert profile.tm > 0.002 or profile.tm == 0
 
     @staticmethod
     def do_test_acceleration_range(v1, v2, quantize=False):
         a = 1000000
-        while a > .001:
-            d = .001
-            profile = VelocityProfile(
-                v1, v2, d, .1, a, 100, 10, interval=.009
-            )
+        while a > 0.001:
+            d = 0.001
+            profile = VelocityProfile(v1, v2, d, 0.1, a, 100, 10, interval=0.009)
             profile.get_profile()
             if quantize:
                 profile.quantize()
             d_res = profile.calculate_distance()
-            assert np.isclose(d_res, d), \
-                "Wrong d({}). Expected d {}, vm {}, v1 {}, v2 {}, t {}".format(
-                    d_res, d, profile.vm, profile.v1, profile.v2, profile.tv2)
-            if quantize and profile.t_total >= .009:
-                assert profile.t1 > .009
-                assert profile.t2 > .009
-                assert profile.tm > .009 or profile.tm == 0
+            assert np.isclose(
+                d_res, d
+            ), "Wrong d({}). Expected d {}, vm {}, v1 {}, v2 {}, t {}".format(
+                d_res, d, profile.vm, profile.v1, profile.v2, profile.tv2
+            )
+            if quantize and profile.t_total >= 0.009:
+                assert profile.t1 > 0.009
+                assert profile.t2 > 0.009
+                assert profile.tm > 0.009 or profile.tm == 0
 
             a /= 10
 
@@ -75,9 +79,11 @@ class TestPmacStatusPart(unittest.TestCase):
             profile = VelocityProfile(v1, v2, d, t, 2.0, v_max)
             profile.get_profile()
             d_res = profile.calculate_distance()
-            assert np.isclose(d_res, 100), \
-                "Wrong d({}). Expected d {}, vm {}, v1 {}, v2 {}, t {}".format(
-                    d_res, d, profile.vm, profile.v1, profile.v2, profile.tv2)
+            assert np.isclose(
+                d_res, 100
+            ), "Wrong d({}). Expected d {}, vm {}, v1 {}, v2 {}, t {}".format(
+                d_res, d, profile.vm, profile.v1, profile.v2, profile.tv2
+            )
 
     def test_zero_zero(self):
         self.do_test_acceleration_range(0.0, 0.0, quantize=True)

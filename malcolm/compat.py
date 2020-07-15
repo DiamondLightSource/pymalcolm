@@ -1,27 +1,28 @@
 import inspect
-import threading
 import logging
-import sys
-from xml.etree import cElementTree as ET
 import os
-
+import sys
+import threading
+from xml.etree import cElementTree as ET
 
 if sys.version_info < (3,):
     # python 2
     import Queue as queue
 else:
     # python 3
-    import queue
+    import queue  # noqa
 
 if sys.version_info < (3,):
     # python 2
-    str_ = basestring
+    str_ = basestring  # noqa
 
     def clean_repr(x):
-        if isinstance(x, unicode):
+        if isinstance(x, unicode):  # noqa
             return repr(x)[1:]
         else:
             return repr(x)
+
+
 else:
     # python 3
     str_ = str
@@ -29,7 +30,7 @@ else:
 
 if sys.version_info < (3,):
     # python 2
-    long_ = long  # pylint:disable=invalid-name
+    long_ = long  # pylint:disable=invalid-name # noqa
 else:
     # python 3
     long_ = int  # pylint:disable=invalid-name
@@ -40,7 +41,7 @@ try:
     from ruamel.ordereddict import ordereddict as OrderedDict
 except ImportError:
     # Fallback to slower collections one
-    from collections import OrderedDict
+    from collections import OrderedDict  # noqa
 
 
 def get_profiler_dir():
@@ -71,24 +72,28 @@ def et_to_string(element: ET.Element) -> str:
 
 # Exception handling from future.utils
 if sys.version_info < (3,):
-    exec('''
+    exec(
+        """
 def raise_with_traceback(exc, traceback=Ellipsis):
     if traceback == Ellipsis:
         _, _, traceback = sys.exc_info()
     raise exc, None, traceback
-''')
+"""
+    )
 else:
+
     def raise_with_traceback(exc, traceback=Ellipsis):
         if traceback == Ellipsis:
             _, _, traceback = sys.exc_info()
         raise exc.with_traceback(traceback)
+
 
 try:
     # Python2
     from thread import get_ident as get_thread_ident
 except ImportError:
     # Python3
-    from threading import get_ident as get_thread_ident
+    from threading import get_ident as get_thread_ident  # noqa
 
 
 try:
@@ -99,7 +104,7 @@ except ImportError:
     class QueueHandler(logging.Handler):
         """Cut down version of the QueueHandler in Python3"""
 
-        def __init__(self, queue):
+        def __init__(self, queue):  # noqa
             logging.Handler.__init__(self)
             self.queue = queue
 
@@ -127,9 +132,10 @@ if sys.version_info < (3, 5):
     # Python2 and old Python3 without respect_handler_level
     class QueueListener(object):
         """Cut down version of the QueueHandler in Python3.5"""
+
         _sentinel = None
 
-        def __init__(self, queue, *handlers, **kwargs):
+        def __init__(self, queue, *handlers, **kwargs):  # noqa
             self.queue = queue
             self.handlers = handlers
             self._thread = None
@@ -157,7 +163,7 @@ if sys.version_info < (3, 5):
             The thread will terminate if it sees a sentinel object in the queue.
             """
             q = self.queue
-            has_task_done = hasattr(q, 'task_done')
+            has_task_done = hasattr(q, "task_done")
             while True:
                 record = q.get(True)
                 if record is self._sentinel:
@@ -170,6 +176,8 @@ if sys.version_info < (3, 5):
             self.queue.put_nowait(self._sentinel)
             self._thread.join()
             self._thread = None
+
+
 else:
     # Python3.5 introduced respect_handler_level
-    from logging.handlers import QueueListener
+    from logging.handlers import QueueListener  # noqa

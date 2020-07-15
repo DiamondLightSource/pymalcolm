@@ -1,5 +1,6 @@
-from malcolm.core import Controller, StringMeta, AMri, ADescription, Widget
-from ..infos import LabelInfo, HealthInfo
+from malcolm.core import ADescription, AMri, Controller, StringMeta, Widget
+
+from ..infos import HealthInfo, LabelInfo
 
 # Pull re-used annotypes into our namespace in case we are subclassed
 AMri = AMri
@@ -8,6 +9,7 @@ ADescription = ADescription
 
 class BasicController(Controller):
     """Basic Controller with Health and Title updating"""
+
     def __init__(self, mri: AMri, description: ADescription = "") -> None:
         super(BasicController, self).__init__(mri, description)
         self._faults = {}  # Dict[Part, Alarm]
@@ -34,8 +36,7 @@ class BasicController(Controller):
                 self._faults[reporter] = alarm
             if self._faults:
                 # Sort them by severity
-                faults = sorted(self._faults.values(),
-                                key=lambda a: a.severity.value)
+                faults = sorted(self._faults.values(), key=lambda a: a.severity.value)
                 alarm = faults[-1]
                 text = faults[-1].message
             else:

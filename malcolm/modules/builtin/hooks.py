@@ -1,9 +1,10 @@
 import weakref
 
-from annotypes import Anno, Any, Mapping, Sequence, Array, Union, TypeVar
+from annotypes import Anno, Any, Array, Mapping, Sequence, TypeVar, Union
 
-from malcolm.core import Hook, Part, Context
-from .infos import PortInfo, LayoutInfo
+from malcolm.core import Context, Hook, Part
+
+from .infos import LayoutInfo, PortInfo
 from .util import LayoutTable
 
 with Anno("The part that has attached to the Hook"):
@@ -18,10 +19,12 @@ T = TypeVar("T")
 
 class ControllerHook(Hook[T]):
     """A hook that takes Part and Context for use in controllers"""
+
     def __init__(self, part: APart, context: AContext, **kwargs: Any) -> None:
         # Pass a weak reference to our children
         super(ControllerHook, self).__init__(
-            part, context=weakref.proxy(context), **kwargs)
+            part, context=weakref.proxy(context), **kwargs
+        )
         # But hold a strong reference here to stop it disappearing
         self.context = context
 
@@ -53,8 +56,9 @@ class DisableHook(ControllerHook[None]):
 
 with Anno("The PortInfos for all the parts"):
     APortMap = Mapping[str, Array[PortInfo]]
-with Anno("A possibly partial set of changes to the layout table that "
-          "should be acted on"):
+with Anno(
+    "A possibly partial set of changes to the layout table that " "should be acted on"
+):
     ALayoutTable = LayoutTable
 with Anno("The current layout information"):
     ALayoutInfos = Array[LayoutInfo]
@@ -64,9 +68,10 @@ ULayoutInfos = Union[ALayoutInfos, Sequence[LayoutInfo], LayoutInfo, None]
 class LayoutHook(ControllerHook[ULayoutInfos]):
     """Called when layout table set and at init to update child layout"""
 
-    def __init__(self, part: APart, context: AContext, ports: APortMap, layout: ALayoutTable) -> None:
-        super(LayoutHook, self).__init__(
-            part, context, ports=ports, layout=layout)
+    def __init__(
+        self, part: APart, context: AContext, ports: APortMap, layout: ALayoutTable
+    ) -> None:
+        super(LayoutHook, self).__init__(part, context, ports=ports, layout=layout)
 
     def validate_return(self, ret: ULayoutInfos) -> ALayoutInfos:
         """Check that all returned infos are LayoutInfos"""
@@ -80,9 +85,10 @@ with Anno("The serialized structure to load"):
 class LoadHook(ControllerHook[None]):
     """Called at load() to load child settings from a structure"""
 
-    def __init__(self, part: APart, context: AContext, structure: AStructure, init: AInit) -> None:
-        super(LoadHook, self).__init__(
-            part, context, structure=structure, init=init)
+    def __init__(
+        self, part: APart, context: AContext, structure: AStructure, init: AInit
+    ) -> None:
+        super(LoadHook, self).__init__(part, context, structure=structure, init=init)
 
 
 class SaveHook(ControllerHook[AStructure]):
@@ -90,6 +96,5 @@ class SaveHook(ControllerHook[AStructure]):
 
     def validate_return(self, ret: AStructure) -> AStructure:
         """Check that a serialized structure is returned"""
-        assert isinstance(ret, dict), \
-            "Expected a structure, got %r" % (ret,)
+        assert isinstance(ret, dict), "Expected a structure, got %r" % (ret,)
         return ret

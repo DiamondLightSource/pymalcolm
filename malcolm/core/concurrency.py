@@ -1,12 +1,13 @@
 import logging
 import time
+from typing import Any, Callable, Dict, Tuple, TypeVar, Union
 
 import cothread
 
-from malcolm.compat import get_thread_ident, get_stack_size
+from malcolm.compat import get_stack_size, get_thread_ident
+
 from .errors import TimeoutError
 
-from typing import TypeVar, Callable, Any, Tuple, Dict, Union
 T = TypeVar("T")
 
 
@@ -20,6 +21,7 @@ RLock = cothread.RLock
 
 class Spawned(object):
     """Internal object keeping track of a spawned function"""
+
     NO_RESULT = object()
 
     def __init__(self, func: Callable[..., Any], args: Tuple, kwargs: Dict) -> None:
@@ -36,7 +38,11 @@ class Spawned(object):
         except Exception as e:
             log.debug(
                 "Exception calling %s(*%s, **%s)",
-                self._function, self._args, self._kwargs, exc_info=True)
+                self._function,
+                self._args,
+                self._kwargs,
+                exc_info=True,
+            )
             self._result = e
         # We finished running the function, so remove the reference to it
         # in case it's stopping garbage collection
@@ -64,6 +70,7 @@ class Spawned(object):
 
 class Queue(object):
     """Threadsafe and cothreadsafe queue with gets in calling thread"""
+
     def __init__(self):
         if get_thread_ident() == cothread.scheduler_thread_id:
             self._event_queue = cothread.EventQueue()

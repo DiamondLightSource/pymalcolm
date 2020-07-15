@@ -1,18 +1,17 @@
 import time
+from typing import Dict, Sequence, Set, Tuple
 
 from annotypes import Anno
 from cothread.cosocket import socket
 
-from malcolm.core import Queue, TimeoutError, TimeStamp, NumberMeta, Widget, \
-    Display
+from malcolm.core import Display, NumberMeta, Queue, TimeoutError, TimeStamp, Widget
 from malcolm.modules import builtin
-from .pandablockcontroller import PandABlockController
+
+from ..pandablocksclient import PandABlocksClient
 from ..parts.pandaactionpart import PandAActionPart
 from ..parts.pandabussespart import PandABussesPart
-from ..pandablocksclient import PandABlocksClient
 from ..util import DOC_URL_BASE, ADocUrlBase
-
-from typing import Sequence, Tuple, Dict, Set
+from .pandablockcontroller import PandABlockController
 
 with Anno("Hostname of the box"):
     AHostname = str
@@ -35,18 +34,19 @@ POLL_PERIOD_REPORT = 1
 
 
 class PandAManagerController(builtin.controllers.ManagerController):
-    def __init__(self,
-                 mri: AMri,
-                 config_dir: AConfigDir,
-                 hostname: AHostname = "localhost",
-                 port: APort = 8888,
-                 doc_url_base: ADocUrlBase = DOC_URL_BASE,
-                 poll_period: APollPeriod = 0.1,
-                 template_designs: ATemplateDesigns = "",
-                 initial_design: AInitialDesign = "",
-                 use_git: AUseGit = True,
-                 description: ADescription = "",
-                 ) -> None:
+    def __init__(
+        self,
+        mri: AMri,
+        config_dir: AConfigDir,
+        hostname: AHostname = "localhost",
+        port: APort = 8888,
+        doc_url_base: ADocUrlBase = DOC_URL_BASE,
+        poll_period: APollPeriod = 0.1,
+        template_designs: ATemplateDesigns = "",
+        initial_design: AInitialDesign = "",
+        use_git: AUseGit = True,
+        description: ADescription = "",
+    ) -> None:
         super(PandAManagerController, self).__init__(
             mri=mri,
             config_dir=config_dir,
@@ -75,12 +75,12 @@ class PandAManagerController(builtin.controllers.ManagerController):
         self._poll_spawned = None
         # Poll period reporting
         self.last_poll_period = NumberMeta(
-            "float64", "The time between the last 2 polls of the hardware",
+            "float64",
+            "The time between the last 2 polls of the hardware",
             tags=[Widget.TEXTUPDATE.tag()],
-            display=Display(units="s", precision=3)
+            display=Display(units="s", precision=3),
         ).create_attribute_model(poll_period)
-        self.field_registry.add_attribute_model(
-            "lastPollPeriod", self.last_poll_period)
+        self.field_registry.add_attribute_model("lastPollPeriod", self.last_poll_period)
         # Bus tables
         self.busses: PandABussesPart = self._make_busses()
         self.add_part(self.busses)
@@ -136,8 +136,10 @@ class PandAManagerController(builtin.controllers.ManagerController):
                     pass
                 # Poll for changes
                 self.handle_changes(self._client.get_changes())
-                if last_poll_period != self.last_poll_period.value and \
-                        next_poll - last_poll_update > POLL_PERIOD_REPORT:
+                if (
+                    last_poll_period != self.last_poll_period.value
+                    and next_poll - last_poll_update > POLL_PERIOD_REPORT
+                ):
                     self.last_poll_period.set_value(last_poll_period)
                     last_poll_update = next_poll
                 next_poll += last_poll_period
@@ -173,8 +175,7 @@ class PandAManagerController(builtin.controllers.ManagerController):
                         pos_names.append("%s.%s" % (block_name, field_name))
 
                 # Make the child controller and add it to the process
-                controller, child_part = self._make_child_block(
-                    block_name, block_data)
+                controller, child_part = self._make_child_block(block_name, block_data)
                 controllers += [controller]
                 child_parts += [child_part]
                 self._child_controllers[block_name] = controller
@@ -186,7 +187,6 @@ class PandAManagerController(builtin.controllers.ManagerController):
         self.process.add_controllers(controllers)
         for part in child_parts:
             self.add_part(part)
-
 
         # Create the busses from their initial sets of values
         pcap_bit_fields = self._client.get_pcap_bits_fields()
@@ -207,22 +207,31 @@ class PandAManagerController(builtin.controllers.ManagerController):
         self.handle_changes(self._client.get_changes())
         # Then once more to let bit_outs toggle back
         self.handle_changes(())
-        assert not self._bit_out_changes, \
+        assert not self._bit_out_changes, (
             "There are still bit_out changes %s" % self._bit_out_changes
+        )
 
     def _make_busses(self) -> PandABussesPart:
         return PandABussesPart("busses", self._client)
 
     def _make_child_block(self, block_name, block_data):
         controller = PandABlockController(
-            self._client, self.mri, block_name, block_data, self._doc_url_base)
+            self._client, self.mri, block_name, block_data, self._doc_url_base
+        )
         if block_name == "PCAP":
-            controller.add_part(PandAActionPart(
-                self._client, "*PCAP", "ARM", "Arm position capture", []))
-            controller.add_part(PandAActionPart(
-                self._client, "*PCAP", "DISARM", "Disarm position capture", []))
+            controller.add_part(
+                PandAActionPart(
+                    self._client, "*PCAP", "ARM", "Arm position capture", []
+                )
+            )
+            controller.add_part(
+                PandAActionPart(
+                    self._client, "*PCAP", "DISARM", "Disarm position capture", []
+                )
+            )
         child_part = builtin.parts.ChildPart(
-            name=block_name, mri=controller.mri, stateful=False)
+            name=block_name, mri=controller.mri, stateful=False
+        )
         return controller, child_part
 
     def _handle_change(self, k, v, bus_changes, block_changes, bit_out_changes):
@@ -284,8 +293,7 @@ class PandAManagerController(builtin.controllers.ManagerController):
 
         # Work out which change is needed for which block
         for k, v in changes:
-            self._handle_change(
-                k, v, bus_changes, block_changes, bit_out_changes)
+            self._handle_change(k, v, bus_changes, block_changes, bit_out_changes)
 
         # Notify the Blocks that they need to handle these changes
         if bus_changes:

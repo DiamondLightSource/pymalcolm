@@ -1,3 +1,9 @@
-from . import util, parts
-from .util import APartName, AMetaDescription, AWidget, AGroup, \
-    AConfig, ASinkPort
+from . import parts, util  # noqa
+from .util import (  # noqa
+    AConfig,
+    AGroup,
+    AMetaDescription,
+    APartName,
+    ASinkPort,
+    AWidget,
+)

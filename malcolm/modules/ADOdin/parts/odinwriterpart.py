@@ -1,14 +1,13 @@
 import os
+from typing import Dict, Iterator, List
 
 import h5py
 from annotypes import Anno, add_call_types
-from vdsgen import InterleaveVDSGenerator, ReshapeVDSGenerator
 from scanpointgenerator import CompoundGenerator
+from vdsgen import InterleaveVDSGenerator, ReshapeVDSGenerator
 
-from malcolm.core import APartName, Future, Info, PartRegistrar, BadValueError
+from malcolm.core import APartName, BadValueError, Future, Info, PartRegistrar
 from malcolm.modules import builtin, scanning
-
-from typing import List, Dict, Iterator
 
 PartInfo = Dict[str, List[Info]]
 
@@ -33,7 +32,9 @@ def greater_than_zero(v: int) -> bool:
     return v > 0
 
 
-def create_dataset_infos(name: str, generator: CompoundGenerator, filename: str, secondary_set: str) -> Iterator[Info]:
+def create_dataset_infos(
+    name: str, generator: CompoundGenerator, filename: str, secondary_set: str
+) -> Iterator[Info]:
     # Update the dataset table
     generator_rank = len(generator.dimensions)
 
@@ -44,7 +45,8 @@ def create_dataset_infos(name: str, generator: CompoundGenerator, filename: str,
         type=scanning.infos.DatasetType.PRIMARY,
         rank=generator_rank + 2,
         path="/entry/detector/data",
-        uniqueid="/entry/detector_uid/uid")
+        uniqueid="/entry/detector_uid/uid",
+    )
 
     # Add other datasources
     yield scanning.infos.DatasetProducedInfo(
@@ -53,7 +55,8 @@ def create_dataset_infos(name: str, generator: CompoundGenerator, filename: str,
         type=scanning.infos.DatasetType.SECONDARY,
         rank=generator_rank + 2,
         path="/entry/detector_%s/%s" % (secondary_set, secondary_set),
-        uniqueid="/entry/detector_uid/uid")
+        uniqueid="/entry/detector_uid/uid",
+    )
 
     # Add any setpoint dimensions
     for dim in generator.axes:
@@ -63,7 +66,8 @@ def create_dataset_infos(name: str, generator: CompoundGenerator, filename: str,
             type=scanning.infos.DatasetType.POSITION_SET,
             rank=1,
             path="/entry/detector/%s_set" % dim,
-            uniqueid="")
+            uniqueid="",
+        )
 
 
 def files_shape(frames, block_size, file_count):
@@ -73,45 +77,55 @@ def files_shape(frames, block_size, file_count):
     remainder = int(frames) % int(file_count * block_size)
 
     # distribute the remainder
-    remainders = [block_size if remains > block_size else remains
-                  for remains in range(remainder, 0, -block_size)]
+    remainders = [
+        block_size if remains > block_size else remains
+        for remains in range(remainder, 0, -block_size)
+    ]
     # pad the remainders list with zeros
     remainders += [0] * (file_count - len(remainders))
 
-    shape = tuple(int(per_file * block_size + remainders[i])
-                  for i in range(file_count))
+    shape = tuple(int(per_file * block_size + remainders[i]) for i in range(file_count))
     return shape
 
 
-def one_vds(vds_folder, vds_name, files, width, height,
-            shape, generator, alternates, block_size, source_node,
-            target_node, d_type):
+def one_vds(
+    vds_folder,
+    vds_name,
+    files,
+    width,
+    height,
+    shape,
+    generator,
+    alternates,
+    block_size,
+    source_node,
+    target_node,
+    d_type,
+):
     # this vds reshapes from 1 file per data writer to a single 1D data set
     gen = InterleaveVDSGenerator(
         vds_folder,
         files=files,
-        source={'height': width,
-                'width': height,
-                'dtype': d_type,
-                'shape': shape
-                },
+        source={"height": width, "width": height, "dtype": d_type, "shape": shape},
         output=vds_name,
         source_node=source_node,
         target_node="process/" + target_node + "_interleave",
         block_size=block_size,
-        log_level=1)
+        log_level=1,
+    )
     gen.generate_vds()
 
     # this VDS shapes the data to match the dimensions of the scan
-    gen = ReshapeVDSGenerator(path=vds_folder,
-                              files=[vds_name],
-                              source_node="process/" + target_node +
-                                          "_interleave",
-                              target_node=target_node,
-                              output=vds_name,
-                              shape=generator.shape,
-                              alternate=alternates,
-                              log_level=1)
+    gen = ReshapeVDSGenerator(
+        path=vds_folder,
+        files=[vds_name],
+        source_node="process/" + target_node + "_interleave",
+        target_node=target_node,
+        output=vds_name,
+        shape=generator.shape,
+        alternate=alternates,
+        log_level=1,
+    )
 
     gen.generate_vds()
 
@@ -139,30 +153,63 @@ def create_vds(generator, raw_name, vds_path, child, uid_name, sum_name):
         )
     alternates = None
 
-    files = [os.path.join(
-        vds_folder, '{}_{:06d}.h5'.format(raw_name, i + 1))
-        for i in range(hdf_count)]
+    files = [
+        os.path.join(vds_folder, "{}_{:06d}.h5".format(raw_name, i + 1))
+        for i in range(hdf_count)
+    ]
     shape = (hdf_shape, image_height, image_width)
 
     # prepare a vds for the image data
-    one_vds(vds_folder, vds_name, files, image_width, image_height,
-            shape, generator, alternates, block_size,
-            'data', 'data', data_type)
+    one_vds(
+        vds_folder,
+        vds_name,
+        files,
+        image_width,
+        image_height,
+        shape,
+        generator,
+        alternates,
+        block_size,
+        "data",
+        "data",
+        data_type,
+    )
 
     shape = (hdf_shape, 1, 1)
 
     # prepare a vds for the unique IDs
-    one_vds(vds_folder, vds_name, files, 1, 1,
-            shape, generator, alternates, block_size,
-            uid_name, 'uid', 'uint64')
+    one_vds(
+        vds_folder,
+        vds_name,
+        files,
+        1,
+        1,
+        shape,
+        generator,
+        alternates,
+        block_size,
+        uid_name,
+        "uid",
+        "uint64",
+    )
     # prepare a vds for the sums
-    one_vds(vds_folder, vds_name, files, 1, 1,
-            shape, generator, alternates, block_size,
-            sum_name, 'sum', 'uint64')
+    one_vds(
+        vds_folder,
+        vds_name,
+        files,
+        1,
+        1,
+        shape,
+        generator,
+        alternates,
+        block_size,
+        sum_name,
+        "sum",
+        "uint64",
+    )
 
 
-set_bases = ["/entry/detector/", "/entry/detector_sum/",
-             "/entry/detector_uid/"]
+set_bases = ["/entry/detector/", "/entry/detector_sum/", "/entry/detector_uid/"]
 set_data = ["/data", "/sum", "/uid"]
 
 
@@ -187,16 +234,16 @@ def add_nexus_nodes(generator, vds_file_path):
 
     pad_dims += ["."] * 2  # assume a 2 dimensional detector
 
-    with h5py.File(vds_file_path, 'r+', libver="latest") as vds:
+    with h5py.File(vds_file_path, "r+", libver="latest") as vds:
         for data, node in zip(set_data, set_bases):
             # create a group for this entry
             vds.require_group(node)
             # points to the axis demand data sets
             vds[node].attrs["axes"] = pad_dims
-            vds[node].attrs["NX_class"] = ['NXdata']
+            vds[node].attrs["NX_class"] = ["NXdata"]
 
             # points to the detector dataset for this entry
-            vds[node].attrs["signal"] = data.split('/')[-1]
+            vds[node].attrs["signal"] = data.split("/")[-1]
             # a hard link from this entry 'signal' to the actual data
             vds[node + data] = vds[data]
 
@@ -206,24 +253,22 @@ def add_nexus_nodes(generator, vds_file_path):
             for i, d in enumerate(generator.dimensions):
                 for axis in d.axes:
                     # add signal data dimension for axis
-                    axis_indices = '{}_set_indices'.format(axis)
+                    axis_indices = "{}_set_indices".format(axis)
                     vds[node].attrs[axis_indices] = i
 
                     # demand positions for axis
-                    axis_set = '{}_set'.format(axis)
+                    axis_set = "{}_set".format(axis)
                     if axis_sets.get(axis_set):
                         # link to the first entry's demand list
                         vds[node + axis_set] = axis_sets[axis_set]
                     else:
                         # create the demand list for the first entry only
                         axis_demands = d.get_positions(axis)
-                        vds.create_dataset(
-                            node + axis_set, data=axis_demands)
-                        vds[node + axis_set].attrs["units"] = \
-                            generator.units[axis]
+                        vds.create_dataset(node + axis_set, data=axis_demands)
+                        vds[node + axis_set].attrs["units"] = generator.units[axis]
                     axis_sets[axis_set] = vds[node + axis_set]
 
-        vds['entry'].attrs["NX_class"] = ['NXentry']
+        vds["entry"].attrs["NX_class"] = ["NXentry"]
 
 
 # We will set these attributes on the child block, so don't save them
@@ -240,14 +285,15 @@ class OdinWriterPart(builtin.parts.ChildPart):
     layout_filename: str = None
     exposure_time: float = None
 
-    def __init__(self,
-                 name: APartName,
-                 mri: AMri,
-                 initial_visibility: AInitialVisibility = True,
-                 uid_name: AUidName = "uid",
-                 sum_name: ASumName = "sum",
-                 secondary_set: ASecondaryDataset = "sum"
-                 ) -> None:
+    def __init__(
+        self,
+        name: APartName,
+        mri: AMri,
+        initial_visibility: AInitialVisibility = True,
+        uid_name: AUidName = "uid",
+        sum_name: ASumName = "sum",
+        secondary_set: ASecondaryDataset = "sum",
+    ) -> None:
         self.uid_name = uid_name
         self.sum_name = sum_name
         self.secondary_set = secondary_set
@@ -261,12 +307,12 @@ class OdinWriterPart(builtin.parts.ChildPart):
     def setup(self, registrar: PartRegistrar) -> None:
         super(OdinWriterPart, self).setup(registrar)
         # Tell the controller to expose some extra configure parameters
-        registrar.report(scanning.hooks.ConfigureHook.create_info(
-            self.on_configure))
+        registrar.report(scanning.hooks.ConfigureHook.create_info(self.on_configure))
         # Hooks
         registrar.hook(scanning.hooks.ConfigureHook, self.on_configure)
-        registrar.hook((scanning.hooks.PostRunArmedHook,
-                        scanning.hooks.SeekHook), self.on_seek)
+        registrar.hook(
+            (scanning.hooks.PostRunArmedHook, scanning.hooks.SeekHook), self.on_seek
+        )
         registrar.hook(scanning.hooks.RunHook, self.on_run)
         registrar.hook(scanning.hooks.PostRunReadyHook, self.on_post_run_ready)
         registrar.hook(scanning.hooks.AbortHook, self.on_abort)
@@ -279,15 +325,16 @@ class OdinWriterPart(builtin.parts.ChildPart):
     # Allow CamelCase as these parameters will be serialized
     # noinspection PyPep8Naming
     @add_call_types
-    def on_configure(self,
-                     context: scanning.hooks.AContext,
-                     completed_steps: scanning.hooks.ACompletedSteps,
-                     steps_to_do: scanning.hooks.AStepsToDo,
-                     generator: scanning.hooks.AGenerator,
-                     fileDir: scanning.hooks.AFileDir,
-                     formatName: scanning.hooks.AFormatName = "odin",
-                     fileTemplate: scanning.hooks.AFileTemplate = "%s.h5",
-                     ) -> scanning.hooks.UInfos:
+    def on_configure(
+        self,
+        context: scanning.hooks.AContext,
+        completed_steps: scanning.hooks.ACompletedSteps,
+        steps_to_do: scanning.hooks.AStepsToDo,
+        generator: scanning.hooks.AGenerator,
+        fileDir: scanning.hooks.AFileDir,
+        formatName: scanning.hooks.AFormatName = "odin",
+        fileTemplate: scanning.hooks.AFileTemplate = "%s.h5",
+    ) -> scanning.hooks.UInfos:
 
         self.exposure_time = generator.duration
 
@@ -298,45 +345,57 @@ class OdinWriterPart(builtin.parts.ChildPart):
         file_dir = fileDir.rstrip(os.sep)
 
         # derive file path from template as AreaDetector would normally do
-        fileName = fileTemplate.replace('%s', formatName)
+        fileName = fileTemplate.replace("%s", formatName)
 
         # this is path to the requested file which will be a VDS
         vds_full_filename = os.path.join(fileDir, fileName)
 
         # this is the path to underlying file the odin writer will write to
-        raw_file_name = fileTemplate.replace('%s', formatName + '_raw_data')
+        raw_file_name = fileTemplate.replace("%s", formatName + "_raw_data")
         raw_file_basename, _ = os.path.splitext(raw_file_name)
 
-        assert "." in vds_full_filename, \
+        assert "." in vds_full_filename, (
             "File extension for %r should be supplied" % vds_full_filename
-        futures = child.put_attribute_values_async(dict(
-            numCapture=steps_to_do,
-            filePath=file_dir + os.sep,
-            fileName=raw_file_basename))
+        )
+        futures = child.put_attribute_values_async(
+            dict(
+                numCapture=steps_to_do,
+                filePath=file_dir + os.sep,
+                fileName=raw_file_basename,
+            )
+        )
         context.wait_all_futures(futures)
 
         # Start the plugin
         self.start_future = child.start_async()
         # Start a future waiting for the first array
         self.array_future = child.when_value_matches_async(
-            "numCaptured", greater_than_zero)
+            "numCaptured", greater_than_zero
+        )
 
-        create_vds(generator, raw_file_basename, vds_full_filename, child,
-                   self.uid_name, self.sum_name)
+        create_vds(
+            generator,
+            raw_file_basename,
+            vds_full_filename,
+            child,
+            self.uid_name,
+            self.sum_name,
+        )
         add_nexus_nodes(generator, vds_full_filename)
 
         # Return the dataset information
         dataset_infos = list(
-            create_dataset_infos(formatName, generator, fileName,
-                                 self.secondary_set))
+            create_dataset_infos(formatName, generator, fileName, self.secondary_set)
+        )
         return dataset_infos
 
     @add_call_types
-    def on_seek(self,
-                context: scanning.hooks.AContext,
-                completed_steps: scanning.hooks.ACompletedSteps,
-                steps_to_do: scanning.hooks.AStepsToDo,
-                ) -> None:
+    def on_seek(
+        self,
+        context: scanning.hooks.AContext,
+        completed_steps: scanning.hooks.ACompletedSteps,
+        steps_to_do: scanning.hooks.AStepsToDo,
+    ) -> None:
         # This is rewinding or setting up for another batch, so the detector
         # will skip to a uniqueID that has not been produced yet
         self.unique_id_offset = completed_steps - self.done_when_reaches
@@ -346,7 +405,8 @@ class OdinWriterPart(builtin.parts.ChildPart):
         child.arrayCounter.put_value(0)
         # Start a future waiting for the first array
         self.array_future = child.when_value_matches_async(
-            "numCaptured", greater_than_zero)
+            "numCaptured", greater_than_zero
+        )
 
     @add_call_types
     def on_run(self, context: scanning.hooks.AContext) -> None:
@@ -355,8 +415,10 @@ class OdinWriterPart(builtin.parts.ChildPart):
         child = context.block_view(self.mri)
         child.numCaptured.subscribe_value(self.update_completed_steps)
         child.when_value_matches(
-            "numCaptured", self.done_when_reaches,
-            event_timeout=self.exposure_time + FRAME_TIMEOUT)
+            "numCaptured",
+            self.done_when_reaches,
+            event_timeout=self.exposure_time + FRAME_TIMEOUT,
+        )
 
     @add_call_types
     def on_post_run_ready(self, context: scanning.hooks.AContext) -> None:

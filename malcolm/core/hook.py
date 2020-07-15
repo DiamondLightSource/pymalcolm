@@ -1,16 +1,15 @@
-import time
 import logging
+import time
+from typing import Callable, Dict, List, Optional, Tuple, Type, Union
 
-from annotypes import Anno, WithCallTypes, Any, Generic, \
-    TypeVar, Sequence
+from annotypes import Anno, Any, Generic, Sequence, TypeVar, WithCallTypes
 
 from malcolm.compat import OrderedDict, getargspec
+
 from .concurrency import Queue, Spawned
 from .errors import AbortedError
-from .loggable import Loggable
 from .info import Info
-
-from typing import Callable, List, Dict, Tuple, Type, Union, Optional
+from .loggable import Loggable
 
 # Create a module level logger
 log = logging.getLogger(__name__)
@@ -30,7 +29,8 @@ def make_args_gen(func: Callable) -> ArgsGen:
     if need_args and not call_types:
         raise TypeError(
             "Function %s takes arguments but doesn't have call_types. Did you "
-            "forget to decorate with @add_call_types?" % func)
+            "forget to decorate with @add_call_types?" % func
+        )
 
     def args_gen(keys: List[str]) -> List[str]:
         return call_types.keys()
@@ -40,14 +40,16 @@ def make_args_gen(func: Callable) -> ArgsGen:
 
 class Hookable(Loggable, WithCallTypes):
     """Baseclass of something that can be attached to a hook"""
-    name: str = None
-    hooked: Dict[Type['Hook'], Tuple[Hooked, ArgsGen]] = None
 
-    def register_hooked(self,
-                        hooks: Union[Type['Hook'], Sequence[Type['Hook']]],
-                        func: Hooked,
-                        args_gen: Optional[ArgsGen] = None
-                        ) -> None:
+    name: str = None
+    hooked: Dict[Type["Hook"], Tuple[Hooked, ArgsGen]] = None
+
+    def register_hooked(
+        self,
+        hooks: Union[Type["Hook"], Sequence[Type["Hook"]]],
+        func: Hooked,
+        args_gen: Optional[ArgsGen] = None,
+    ) -> None:
         """Register func to be run when any of the hooks are run by parent
 
         Args:
@@ -65,7 +67,7 @@ class Hookable(Loggable, WithCallTypes):
         for hook_cls in hooks:
             self.hooked[hook_cls] = (func, args_gen)
 
-    def on_hook(self, hook: 'Hook') -> None:
+    def on_hook(self, hook: "Hook") -> None:
         """Takes a hook, and optionally calls hook.run on a function"""
         try:
             func, args_gen = self.hooked[type(hook)]
@@ -93,11 +95,11 @@ class Hook(Generic[T], WithCallTypes):
     def name(self):
         return type(self).__name__
 
-    def set_spawn(self, spawn: Callable[..., Spawned]) -> 'Hook':
+    def set_spawn(self, spawn: Callable[..., Spawned]) -> "Hook":
         self._spawn = spawn
         return self
 
-    def set_queue(self, queue: Queue) -> 'Hook':
+    def set_queue(self, queue: Queue) -> "Hook":
         self._queue = queue
         return self
 
@@ -108,17 +110,18 @@ class Hook(Generic[T], WithCallTypes):
     def __call__(self, func: Callable[..., T], args_gen: ArgsGen = None) -> None:
         """Spawn the function, passing kwargs specified by func.call_types or
         keys if given"""
-        assert not self.spawned, \
-            "Hook has already spawned a function, cannot run another"
+        assert (
+            not self.spawned
+        ), "Hook has already spawned a function, cannot run another"
         self.prepare()
         if args_gen is None:
             args_gen = make_args_gen(func)
         # TODO: should we check the return types here?
         supplied = list(self._kwargs)
         demanded = args_gen(supplied)
-        assert set(supplied).issuperset(demanded), \
-            "Hook demanded arguments %s, but only supplied %s" % (
-                demanded, supplied)
+        assert set(supplied).issuperset(
+            demanded
+        ), "Hook demanded arguments %s, but only supplied %s" % (demanded, supplied)
         kwargs = {k: self._kwargs[k] for k in demanded}
         self.spawned = self._spawn(self._run, func, kwargs)
 
@@ -130,8 +133,9 @@ class Hook(Generic[T], WithCallTypes):
             log.info("%s: %s has been aborted", self.child, func)
             result = e
         except Exception as e:  # pylint:disable=broad-except
-            log.exception("%s: %s(**%s) raised exception %s",
-                          self.child, func, kwargs, e)
+            log.exception(
+                "%s: %s(**%s) raised exception %s", self.child, func, kwargs, e
+            )
             result = e
         self._queue.put((self, result))
 
@@ -159,12 +163,13 @@ def start_hooks(hooks: List[Hook]) -> Tuple[Queue, List[Hook]]:
     return hook_queue, hook_spawned
 
 
-def wait_hooks(logger: logging.Logger,
-               hook_queue: Queue,
-               hook_spawned: List[Hook],
-               timeout: float = None,
-               exception_check: bool = True
-               ) -> Dict[str, List[Info]]:
+def wait_hooks(
+    logger: logging.Logger,
+    hook_queue: Queue,
+    hook_spawned: List[Hook],
+    timeout: float = None,
+    exception_check: bool = True,
+) -> Dict[str, List[Info]]:
     # timeout is time to wait for spawned processes to complete on abort,
     # not time for them to run for
     # Wait for them all to finish
@@ -184,12 +189,20 @@ def wait_hooks(logger: logging.Logger,
         if hook_spawned:
             logger.debug(
                 "%s: Child %s returned %r after %ss. Still waiting for %s",
-                hook.name, hook.child.name, ret, duration,
-                [h.child.name for h in hook_spawned])
+                hook.name,
+                hook.child.name,
+                ret,
+                duration,
+                [h.child.name for h in hook_spawned],
+            )
         else:
             logger.debug(
                 "%s: Child %s returned %r after %ss. Returning...",
-                hook.name, hook.child.name, ret, duration)
+                hook.name,
+                hook.child.name,
+                ret,
+                duration,
+            )
 
         if isinstance(ret, Exception) and exception_check:
             if not isinstance(ret, AbortedError):

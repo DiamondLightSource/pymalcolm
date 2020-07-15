@@ -1,8 +1,8 @@
 from annotypes import Anno
 
 from malcolm.core import Part, PartRegistrar, StringMeta, Widget
-from ..util import set_tags
 
+from ..util import set_tags
 
 with Anno("If given, path to svg for initial value"):
     ASvg = str
@@ -10,6 +10,7 @@ with Anno("If given, path to svg for initial value"):
 
 class IconPart(Part):
     """Part representing a the icon a GUI should display"""
+
     def __init__(self, svg: ASvg = "") -> None:
         super(IconPart, self).__init__("icon")
         meta = StringMeta("SVG icon for the Block")
