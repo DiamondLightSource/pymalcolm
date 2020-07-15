@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Set, Tuple, Type, TypeVar
 
 from annotypes import Anno, add_call_types
 
-from malcolm.compat import OrderedDict, clean_repr
+from malcolm.compat import OrderedDict
 from malcolm.core import (
     APartName,
     Attribute,
@@ -332,8 +332,8 @@ class ChildPart(Part):
             message = "%s.%s.value = %s not %s" % (
                 self.name,
                 name,
-                clean_repr(new_value),
-                clean_repr(original_value),
+                repr(new_value),
+                repr(original_value),
             )
         last_message = self.modified_messages.get(name, None)
         if message != last_message:

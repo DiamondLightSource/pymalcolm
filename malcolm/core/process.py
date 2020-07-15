@@ -2,7 +2,7 @@ from typing import Any, Callable, List, TypeVar
 
 from annotypes import Anno, Array, Sequence, Union
 
-from malcolm.compat import OrderedDict, str_
+from malcolm.compat import OrderedDict
 
 from .concurrency import Spawned
 from .controller import DEFAULT_TIMEOUT, Controller
@@ -64,7 +64,7 @@ class ProcessStopHook(Hook[None]):
 class Process(Loggable):
     """Hosts a number of Controllers and provides spawn capabilities"""
 
-    def __init__(self, name: str_ = "Process") -> None:
+    def __init__(self, name: str = "Process") -> None:
         self.set_logger(process_name=name)
         self.name = name
         self._controllers = OrderedDict()  # mri -> Controller

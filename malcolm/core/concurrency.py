@@ -1,10 +1,11 @@
 import logging
 import time
+from threading import get_ident as get_thread_ident
 from typing import Any, Callable, Dict, Tuple, TypeVar, Union
 
 import cothread
 
-from malcolm.compat import get_stack_size, get_thread_ident
+from malcolm.compat import get_stack_size
 
 from .errors import TimeoutError
 

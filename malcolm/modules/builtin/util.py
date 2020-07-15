@@ -4,7 +4,7 @@ from xml.etree import cElementTree as ET
 
 from annotypes import Anno, Array, Sequence, Union
 
-from malcolm.compat import et_to_string, str_
+from malcolm.compat import et_to_string
 from malcolm.core import (
     DEFAULT_TIMEOUT,
     Port,
@@ -184,12 +184,12 @@ def no_save(*attribute_names):
         additions = set()
         for attribute_name in attribute_names:
             if isinstance(attribute_name, collections.abc.Iterable) and not isinstance(
-                attribute_name, str_
+                attribute_name, str
             ):
                 additions |= set(attribute_name)
             else:
                 additions.add(attribute_name)
-        bad = [x for x in additions if not isinstance(x, str_)]
+        bad = [x for x in additions if not isinstance(x, str)]
         assert not bad, "Cannot add non-string attribute names to no_save: %s" % bad
         existing = cls.no_save_attribute_names or set()
         cls.no_save_attribute_names = existing | additions

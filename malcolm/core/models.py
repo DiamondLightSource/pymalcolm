@@ -19,7 +19,7 @@ from annotypes import (
     to_array,
 )
 
-from malcolm.compat import OrderedDict, str_
+from malcolm.compat import OrderedDict
 
 from .alarm import Alarm
 from .camel import camel_to_title
@@ -31,8 +31,6 @@ from .timestamp import TimeStamp
 
 def check_type(value, typ):
     if typ != Any:
-        if typ == str:
-            typ = str_
         assert isinstance(value, typ), "Expected %s, got %r" % (typ, value)
 
 
@@ -69,7 +67,7 @@ class Model(Serializable):
                 child = getattr(self, name)
                 child.set_notifier_path(notifier, self.path + [name])
 
-    def set_endpoint_data(self, name: str_, value: Any) -> Any:
+    def set_endpoint_data(self, name: str, value: Any) -> Any:
         try:
             ct = self.call_types[name]
         except KeyError:
@@ -87,10 +85,7 @@ class Model(Serializable):
                 if isinstance(value.seq, (tuple, list)):
                     # Variable array, check types of each instance
                     # TODO: this might harm performance
-                    if ct.typ == str:
-                        typ = str_
-                    else:
-                        typ = ct.typ
+                    typ = ct.typ
                     for x in value.seq:
                         assert isinstance(x, typ), "Expected Array[%r], got %r" % (
                             ct.typ,
@@ -496,11 +491,11 @@ class ChoiceMeta(VMeta):
                     enum_typ,
                     choice,
                 )
-            elif not isinstance(choice, str_):
+            elif not isinstance(choice, str):
                 enum_typ = type(choice)
             if isinstance(choice, Enum):
                 # Our choice value must be a string
-                assert isinstance(choice.value, str_), (
+                assert isinstance(choice.value, str), (
                     "Expected Enum choice to have str value, got %r with "
                     "value %r" % (choice, choice.value)
                 )
@@ -509,7 +504,7 @@ class ChoiceMeta(VMeta):
                 choices_lookup[choice] = choice
                 new_choices.append(choice)
             else:
-                assert isinstance(choice, str_), "Expected string choice, got %s" % (
+                assert isinstance(choice, str), "Expected string choice, got %s" % (
                     choice,
                 )
                 # Map the string to itself
@@ -717,7 +712,7 @@ class StringMeta(VMeta):
         """Check if the value is valid returns it"""
         if value is None:
             return ""
-        elif isinstance(value, str_):
+        elif isinstance(value, str):
             return value
         else:
             return str(value)
@@ -786,7 +781,7 @@ class ChoiceArrayMeta(ChoiceMeta, VArrayMeta):
             return Array[self.enum_cls]()
         else:
             ret = []
-            if isinstance(value, str_):
+            if isinstance(value, str):
                 value = [value]
             # If we have an Array of the right type, start off assuming it's the
             # same
@@ -834,7 +829,7 @@ class StringArrayMeta(VArrayMeta):
         """Check if the value is valid returns it"""
         cast = to_array(Array[str], value)
         for v in cast:
-            assert isinstance(v, str_), "Expected Array[str], got %r" % (value,)
+            assert isinstance(v, str), "Expected Array[str], got %r" % (value,)
         return cast
 
     def doc_type_string(self) -> str:
@@ -1295,7 +1290,7 @@ class BlockModel(Model):
         self.meta = self.set_endpoint_data("meta", BlockMeta())
 
     def set_endpoint_data(self, name: str, value: ModelOrDict) -> Any:
-        name = deserialize_object(name, str_)
+        name = deserialize_object(name, str)
         if name == "meta":
             value = deserialize_object(value, BlockMeta)
         else:

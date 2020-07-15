@@ -4,8 +4,9 @@ import signal
 import sys
 import time
 from enum import Enum
+from threading import get_ident as get_thread_ident
 
-from malcolm.compat import get_profiler_dir, get_thread_ident
+from malcolm.compat import get_profiler_dir
 
 
 class ProfilerMode(Enum):

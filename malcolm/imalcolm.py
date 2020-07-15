@@ -5,13 +5,13 @@ import getpass
 import json
 import logging.config
 import os
+import queue
 import sys
 import threading
+from logging.handlers import QueueListener
 
 
 def make_async_logging(log_config):
-    from malcolm.compat import QueueListener, queue
-
     # Now we have our user specified logging config, pipe all logging messages
     # through a queue to make it asynchronous
 
@@ -22,7 +22,7 @@ def make_async_logging(log_config):
     # a queue, and set it as the handler for the root logger (and children)
     q = queue.Queue()
     log_config["handlers"]["queue"] = {
-        "class": "malcolm.compat.QueueHandler",
+        "class": "logging.handlers.QueueHandler",
         "queue": q,
     }
     log_config["root"]["handlers"] = ["queue"]
@@ -189,7 +189,7 @@ def try_prepare_locals(q, args):
 
 def main():
     print("Loading malcolm...")
-    from malcolm.compat import queue
+    # import queue
     from malcolm.profiler import Profiler
 
     args = parse_args()

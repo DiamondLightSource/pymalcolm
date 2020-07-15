@@ -8,7 +8,7 @@ from typing import Callable, Dict, List, Tuple
 from annotypes import NO_DEFAULT, Anno, Any
 from ruamel import yaml
 
-from malcolm.compat import OrderedDict, raise_with_traceback, str_
+from malcolm.compat import OrderedDict, raise_with_traceback
 from malcolm.core import Controller, Define, MethodMeta, Part, YamlError
 
 # Create a module level logger
@@ -313,7 +313,7 @@ class Section(object):
 def replace_substitutions(value, substitutions):
     if isinstance(value, MutableSequence):
         value = [replace_substitutions(v, substitutions) for v in value]
-    elif isinstance(value, str_):
+    elif isinstance(value, str):
         for s in substitutions:
             value = value.replace("$(%s)" % s, str(substitutions[s]))
     return value

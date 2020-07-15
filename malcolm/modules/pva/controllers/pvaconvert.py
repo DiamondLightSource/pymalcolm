@@ -5,7 +5,7 @@ import numpy as np
 from annotypes import Array
 from p4p import Type, Value
 
-from malcolm.compat import OrderedDict, long_, str_
+from malcolm.compat import OrderedDict
 from malcolm.core import AlarmSeverity, AlarmStatus
 from malcolm.core.models import NTTable
 
@@ -31,7 +31,7 @@ type_specifiers = {
 specifier_types = {v: k for k, v in type_specifiers.items()}
 
 # Add some aliases
-type_specifiers.update({bool: "?", int: "l", long_: "l", float: "d"})
+type_specifiers.update({bool: "?", int: "l", float: "d"})
 
 
 try:
@@ -95,7 +95,7 @@ def convert_to_type_tuple_value(value: Any) -> Tuple[Any, Any]:
     elif isinstance(value, Enum):
         spec = "s"
         value_for_set = value.value
-    elif isinstance(value, str_):
+    elif isinstance(value, str):
         spec = "s"
         value_for_set = value
     else:
