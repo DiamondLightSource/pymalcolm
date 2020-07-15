@@ -276,7 +276,7 @@ class OdinWriterPart(builtin.parts.ChildPart):
         registrar.hook(scanning.hooks.RunHook, self.on_run)
         registrar.hook(scanning.hooks.PostRunReadyHook, self.on_post_run_ready)
         registrar.hook(scanning.hooks.AbortHook, self.on_abort)
-        registrar.hook(scanning.hooks.PauseHook, self.on_pause)
+        # registrar.hook(scanning.hooks.PauseHook, self.on_pause)
 
     @add_call_types
     def on_pause(self, context):
@@ -347,9 +347,9 @@ class OdinWriterPart(builtin.parts.ChildPart):
                 ):
         # type: (...) -> None
         # This is rewinding or setting up for another batch, so the detector
-        # will skip to a uniqueID that has not been produced yet
-        self.unique_id_offset = completed_steps - self.done_when_reaches
-        self.done_when_reaches += steps_to_do
+        # will reset count to zero and set UID offset appropriately
+        self.unique_id_offset = completed_steps # - self.done_when_reaches
+        self.done_when_reaches = steps_to_do
         child = context.block_view(self.mri)
         # set UID offset for file writing
         child.uidOffset.put_value(self.unique_id_offset)
