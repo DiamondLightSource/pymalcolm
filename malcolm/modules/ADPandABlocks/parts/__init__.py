@@ -1,8 +1,8 @@
 # Expose a nice namespace
 from malcolm.core import submodule_all
 
-from .pandaalternatingdivpart import PandAAlternatingDivPart  # noqa
-from .pandapulsetriggerpart import AInitialVisibility, PandAPulseTriggerPart  # noqa
-from .pandaseqtriggerpart import AMri, APartName, PandASeqTriggerPart  # noqa
+from .pandaalternatingdivpart import PandAAlternatingDivPart
+from .pandapulsetriggerpart import AInitialVisibility, PandAPulseTriggerPart
+from .pandaseqtriggerpart import AMri, APartName, PandASeqTriggerPart
 
 __all__ = submodule_all(globals())

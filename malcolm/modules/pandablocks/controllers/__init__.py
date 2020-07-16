@@ -1,13 +1,8 @@
 # Expose a nice namespace
 from malcolm.core import submodule_all
 
-from .pandablockcontroller import (  # noqa
-    ABlockName,
-    AClient,
-    ADocUrlBase,
-    PandABlockController,
-)
-from .pandamanagercontroller import (  # noqa
+from .pandablockcontroller import ABlockName, AClient, ADocUrlBase, PandABlockController
+from .pandamanagercontroller import (
     AConfigDir,
     ADescription,
     AHostname,

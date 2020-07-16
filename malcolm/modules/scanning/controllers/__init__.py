@@ -1,7 +1,7 @@
 # Expose a nice namespace
 from malcolm.core import submodule_all
 
-from .runnablecontroller import (  # noqa
+from .runnablecontroller import (
     AConfigDir,
     ADescription,
     AInitialDesign,

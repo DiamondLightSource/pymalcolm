@@ -1,7 +1,7 @@
 # Expose a nice namespace
 from malcolm.core import submodule_all
 
-from .blockpart import (  # noqa
+from .blockpart import (
     AConfig,
     AGroup,
     AMetaDescription,
@@ -10,8 +10,8 @@ from .blockpart import (  # noqa
     AWriteable,
     BlockPart,
 )
-from .childpart import AInitialVisibility, AMri, APartName, ChildPart  # noqa
-from .choicepart import (  # noqa
+from .childpart import AInitialVisibility, AMri, APartName, ChildPart
+from .choicepart import (
     AConfig,
     AGroup,
     AMetaDescription,
@@ -20,7 +20,7 @@ from .choicepart import (  # noqa
     AWriteable,
     ChoicePart,
 )
-from .float64part import (  # noqa
+from .float64part import (
     AConfig,
     AGroup,
     ALimitHigh,
@@ -33,11 +33,11 @@ from .float64part import (  # noqa
     AWriteable,
     Float64Part,
 )
-from .grouppart import AMetaDescription, APartName, GroupPart  # noqa
-from .helppart import AHelpUrl, APartName, HelpPart  # noqa
-from .iconpart import ASvg, IconPart  # noqa
-from .labelpart import ALabelValue, LabelPart  # noqa
-from .stringpart import (  # noqa
+from .grouppart import AMetaDescription, APartName, GroupPart
+from .helppart import AHelpUrl, APartName, HelpPart
+from .iconpart import ASvg, IconPart
+from .labelpart import ALabelValue, LabelPart
+from .stringpart import (
     AConfig,
     AGroup,
     AMetaDescription,

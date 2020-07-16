@@ -1,1 +1,1 @@
-from . import controllers  # noqa
+from . import controllers

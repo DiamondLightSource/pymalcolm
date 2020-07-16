@@ -1,1 +1,1 @@
-from . import controllers, defines, parts  # noqa
+from . import controllers, defines, parts

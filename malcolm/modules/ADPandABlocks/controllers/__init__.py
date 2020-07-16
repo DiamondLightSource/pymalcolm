@@ -1,7 +1,7 @@
 # Expose a nice namespace
 from malcolm.core import submodule_all
 
-from .pandarunnablecontroller import (  # noqa
+from .pandarunnablecontroller import (
     AConfigDir,
     ADescription,
     AHostname,

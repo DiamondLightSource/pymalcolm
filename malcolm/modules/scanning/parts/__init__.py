@@ -1,23 +1,18 @@
 # Expose a nice namespace
 from malcolm.core import submodule_all
 
-from .attributeprerunpart import AttributePreRunPart  # noqa
-from .datasettablepart import DatasetTablePart  # noqa
-from .detectorchildpart import (  # noqa
-    AInitialVisibility,
-    AMri,
-    APartName,
-    DetectorChildPart,
-)
-from .exposuredeadtimepart import (  # noqa
+from .attributeprerunpart import AttributePreRunPart
+from .datasettablepart import DatasetTablePart
+from .detectorchildpart import AInitialVisibility, AMri, APartName, DetectorChildPart
+from .exposuredeadtimepart import (
     AInitialAccuracy,
     AInitialReadoutTime,
     AMinExposure,
     ExposureDeadtimePart,
 )
-from .minturnaroundpart import MinTurnaroundPart  # noqa
-from .scanrunnerpart import ScanRunnerPart  # noqa
-from .simultaneousaxespart import SimultaneousAxesPart, USimultaneousAxes  # noqa
-from .unrollingpart import UnrollingPart  # noqa
+from .minturnaroundpart import MinTurnaroundPart
+from .scanrunnerpart import ScanRunnerPart
+from .simultaneousaxespart import SimultaneousAxesPart, USimultaneousAxes
+from .unrollingpart import UnrollingPart
 
 __all__ = submodule_all(globals())

@@ -1,9 +1,2 @@
-from . import parts, util  # noqa
-from .util import (  # noqa
-    AConfig,
-    AGroup,
-    AMetaDescription,
-    APartName,
-    ASinkPort,
-    AWidget,
-)
+from . import parts, util
+from .util import AConfig, AGroup, AMetaDescription, APartName, ASinkPort, AWidget

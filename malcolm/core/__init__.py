@@ -1,11 +1,11 @@
 # Make a nice namespace
-from .alarm import Alarm, AlarmSeverity, AlarmStatus  # noqa
-from .camel import CAMEL_RE, camel_to_title, snake_to_camel  # noqa
-from .concurrency import Queue, RLock, Spawned, sleep  # noqa
-from .context import Context  # noqa
-from .controller import DEFAULT_TIMEOUT, ADescription, AMri, Controller  # noqa
-from .define import Define  # noqa
-from .errors import (  # noqa
+from .alarm import Alarm, AlarmSeverity, AlarmStatus
+from .camel import CAMEL_RE, camel_to_title, snake_to_camel
+from .concurrency import Queue, RLock, Spawned, sleep
+from .context import Context
+from .controller import DEFAULT_TIMEOUT, ADescription, AMri, Controller
+from .define import Define
+from .errors import (
     AbortedError,
     BadValueError,
     FieldError,
@@ -16,11 +16,11 @@ from .errors import (  # noqa
     UnexpectedError,
     YamlError,
 )
-from .future import Future  # noqa
-from .hook import AHookable, Hook, Hookable  # noqa
-from .info import Info  # noqa
-from .loggable import Loggable  # noqa
-from .models import (  # noqa
+from .future import Future
+from .hook import AHookable, Hook, Hookable
+from .info import Info
+from .loggable import Loggable
+from .models import (
     ALimitHigh,
     ALimitLow,
     AMetaDescription,
@@ -52,9 +52,9 @@ from .models import (  # noqa
     VMeta,
 )
 from .moduleutil import submodule_all
-from .notifier import Notifier  # noqa
-from .part import PART_NAME_RE, APartName, Part, PartRegistrar  # noqa
-from .process import (  # noqa
+from .notifier import Notifier
+from .part import PART_NAME_RE, APartName, Part, PartRegistrar
+from .process import (
     APublished,
     Process,
     ProcessPublishHook,
@@ -63,19 +63,11 @@ from .process import (  # noqa
     UnpublishedInfo,
     UUnpublishedInfos,
 )
-from .request import (  # noqa
-    Get,
-    PathRequest,
-    Post,
-    Put,
-    Request,
-    Subscribe,
-    Unsubscribe,
-)
-from .response import Delta, Error, Response, Return, Update  # noqa
-from .stateset import StateSet  # noqa
-from .table import Table  # noqa
-from .tags import (  # noqa
+from .request import Get, PathRequest, Post, Put, Request, Subscribe, Unsubscribe
+from .response import Delta, Error, Response, Return, Update
+from .stateset import StateSet
+from .table import Table
+from .tags import (
     Port,
     Widget,
     badge_value_tag,
@@ -89,8 +81,8 @@ from .tags import (  # noqa
     without_group_tags,
     without_linked_value_tags,
 )
-from .timestamp import TimeStamp  # noqa
-from .views import Attribute, Block, Method  # noqa
+from .timestamp import TimeStamp
+from .views import Attribute, Block, Method
 
 # Make a nice namespace
 __all__ = submodule_all(globals(), only_classes=False)
