@@ -304,9 +304,8 @@ class OdinWriterPart(builtin.parts.ChildPart):
 
         # On initial configure, expect to get the demanded number of frames
         self.done_when_reaches = completed_steps + steps_to_do
-        if self.unique_id_offset is None:
+        if completed_steps == 0:
             self.unique_id_offset = 1
-        if self.frame_offset is None:
             self.frame_offset = 0
         child = context.block_view(self.mri)
         child.uidOffset.put_value(self.unique_id_offset)        
@@ -391,9 +390,7 @@ class OdinWriterPart(builtin.parts.ChildPart):
     def on_post_run_ready(self, context):
         # type: (scanning.hooks.AContext) -> None
         # If this is the last one, wait until the file is closed
-        context.wait_all_futures(self.start_future)        
-        self.unique_id_offset = None
-        self.frame_offset = None
+        context.wait_all_futures(self.start_future)
 
     @add_call_types
     def on_abort(self, context):
