@@ -79,17 +79,24 @@
     description: type of the pixel data
     rbv: $(prefix):DataType
 
-#- ca.parts.CALongPa#-rt:
-#    name: flushData# PerNFrames
-#    description: Nu# mber of frames to capture between HDF dataset flushes
-#    pv: $(prefix):N# umFramesFlush
-#    rbv_suffix: _RB# V
+#- ca.parts.CALongPart:
+#    name: flushDataPerNFrames
+#    description: Number of frames to capture between HDF dataset flushes
+#    pv: $(prefix):NumFramesFlush
+#    rbv_suffix: _RBV
 
 - ca.parts.CALongPart:
     name: uidOffset
     description: value to offset UID by
     pv: $(prefix):PARAM:UID:Adjustment
     rbv_suffix: _RBV
+
+- ca.parts.CALongPart:
+    name: frameOffset
+    description: value to offset frame index by
+    pv: $(prefix):OFF:Adjustment
+    rbv_suffix: _RBV
+    
 
 # Filename
 - ca.parts.CACharArrayPart:

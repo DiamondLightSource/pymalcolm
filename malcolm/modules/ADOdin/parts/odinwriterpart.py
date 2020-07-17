@@ -5,7 +5,7 @@ from annotypes import Anno, add_call_types, TYPE_CHECKING
 from vdsgen import InterleaveVDSGenerator, ReshapeVDSGenerator
 from scanpointgenerator import CompoundGenerator
 
-from malcolm.core import APartName, Future, Info, PartRegistrar, BadValueError
+from malcolm.core import APartName, Future, Info, PartRegistrar, BadValueError, errors
 from malcolm.modules import builtin, scanning
 
 if TYPE_CHECKING:
@@ -230,7 +230,7 @@ def add_nexus_nodes(generator, vds_file_path):
 
 
 # We will set these attributes on the child block, so don't save them
-@builtin.util.no_save("fileName", "filePath", "numCapture")
+@builtin.util.no_save("fileName", "filePath", "numCapture", "uidOffset")
 class OdinWriterPart(builtin.parts.ChildPart):
     """Part for controlling an `hdf_writer_block` in a Device"""
 
@@ -239,6 +239,7 @@ class OdinWriterPart(builtin.parts.ChildPart):
     array_future = None  # type: Future
     done_when_reaches = None  # type: int
     unique_id_offset = None  # type: int
+    frame_offset = None  # type: int
     # The HDF5 layout file we write to say where the datasets go
     layout_filename = None  # type: str
     exposure_time = None  # type: float
@@ -249,12 +250,14 @@ class OdinWriterPart(builtin.parts.ChildPart):
                  initial_visibility=True,  # type: AInitialVisibility
                  uid_name="uid",  # type: AUidName
                  sum_name="sum",  # type: ASumName
-                 secondary_set="sum"  # type: ASecondaryDataset
+                 secondary_set="sum",  # type: ASecondaryDataset
+                 driver_mri=None  # type: AMri
                  ):
         # type: (...) -> None
         self.uid_name = uid_name
         self.sum_name = sum_name
         self.secondary_set = secondary_set
+        self.drv_mri = driver_mri
         super(OdinWriterPart, self).__init__(name, mri, initial_visibility)
 
     @add_call_types
@@ -301,8 +304,13 @@ class OdinWriterPart(builtin.parts.ChildPart):
 
         # On initial configure, expect to get the demanded number of frames
         self.done_when_reaches = completed_steps + steps_to_do
-        self.unique_id_offset = 0
+        if self.unique_id_offset is None:
+            self.unique_id_offset = 1
+        if self.frame_offset is None:
+            self.frame_offset = 0
         child = context.block_view(self.mri)
+        child.uidOffset.put_value(self.unique_id_offset)        
+        child.frameOffset.put_value(self.frame_offset)
         file_dir = fileDir.rstrip(os.sep)
 
         # derive file path from template as AreaDetector would normally do
@@ -318,7 +326,7 @@ class OdinWriterPart(builtin.parts.ChildPart):
         assert "." in vds_full_filename, \
             "File extension for %r should be supplied" % vds_full_filename
         futures = child.put_attribute_values_async(dict(
-            numCapture=steps_to_do,
+            numCapture=self.done_when_reaches,
             filePath=file_dir + os.sep,
             fileName=raw_file_basename))
         context.wait_all_futures(futures)
@@ -348,13 +356,22 @@ class OdinWriterPart(builtin.parts.ChildPart):
         # type: (...) -> None
         # This is rewinding or setting up for another batch, so the detector
         # will reset count to zero and set UID offset appropriately
-        self.unique_id_offset = completed_steps # - self.done_when_reaches
-        self.done_when_reaches = steps_to_do
+        
         child = context.block_view(self.mri)
-        # set UID offset for file writing
-        child.uidOffset.put_value(self.unique_id_offset)
+        # Wait until Odin stops receiving frames
+        try:
+            child.when_value_matches(
+                "numCaptured", self.done_when_reaches,
+                event_timeout=self.exposure_time + 5)
+        except errors.TimeoutError:
+            pass
+        current_count = child.numCaptured.value
+        self.unique_id_offset = self.done_when_reaches
+        self.frame_offset = (completed_steps - self.done_when_reaches) + 1  
+        self.done_when_reaches = steps_to_do + current_count
+        #drv = context.block_view(self.drv_mri)
         # Just reset the array counter_block
-        child.arrayCounter.put_value(0)
+        #drv.arrayCounter.put_value(0)
         # Start a future waiting for the first array
         self.array_future = child.when_value_matches_async(
             "numCaptured", greater_than_zero)
@@ -374,7 +391,9 @@ class OdinWriterPart(builtin.parts.ChildPart):
     def on_post_run_ready(self, context):
         # type: (scanning.hooks.AContext) -> None
         # If this is the last one, wait until the file is closed
-        context.wait_all_futures(self.start_future)
+        context.wait_all_futures(self.start_future)        
+        self.unique_id_offset = None
+        self.frame_offset = None
 
     @add_call_types
     def on_abort(self, context):
