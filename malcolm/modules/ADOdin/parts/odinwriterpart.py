@@ -230,7 +230,7 @@ def add_nexus_nodes(generator, vds_file_path):
 
 
 # We will set these attributes on the child block, so don't save them
-@builtin.util.no_save("fileName", "filePath", "numCapture", "uidOffset")
+@builtin.util.no_save("fileName", "filePath", "numCapture", "uidOffset", "frameOffset")
 class OdinWriterPart(builtin.parts.ChildPart):
     """Part for controlling an `hdf_writer_block` in a Device"""
 
@@ -367,7 +367,11 @@ class OdinWriterPart(builtin.parts.ChildPart):
         current_count = child.numCaptured.value
         self.unique_id_offset = self.done_when_reaches
         self.frame_offset = (completed_steps - self.done_when_reaches) + 1  
-        self.done_when_reaches = steps_to_do + current_count
+        
+        child.uidOffset.put_value(self.unique_id_offset)        
+        child.frameOffset.put_value(self.frame_offset)
+
+        self.done_when_reaches = steps_to_do + current_count - 1
         #drv = context.block_view(self.drv_mri)
         # Just reset the array counter_block
         #drv.arrayCounter.put_value(0)
