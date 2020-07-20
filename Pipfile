@@ -38,12 +38,7 @@ ipython = "==7.15.0"
 # Put coverage here so we don't interfere with debugging in the IDE
 tests = "python -m pytest --cov=malcolm --log-format='%(asctime)s.%(msecs)03d %(filename)-25s %(lineno)4d %(levelname)-8s %(message)s' --log-date-format='%Y-%m-%d %H:%M:%S' tests"
 docs = "sphinx-build -b html docs docs/html"
-tests-no-cov = "python -m pytest --log-format='%(asctime)s.%(msecs)03d %(filename)-25s %(lineno)4d %(levelname)-8s %(message)s' --log-date-format='%Y-%m-%d %H:%M:%S' tests"
-test-scanning-no-cov = "python -m pytest --log-format='%(asctime)s.%(msecs)03d %(filename)-25s %(lineno)4d %(levelname)-8s %(message)s' --log-date-format='%Y-%m-%d %H:%M:%S' tests/test_modules/test_scanning"
-black-code = "black malcolm/ -t py37"
-black-tests = "black tests/ -t py37"
-flake8-code = "flake8 malcolm"
-flake8-tests = "flake8 tests"
+flake8 = "flake8 malcolm tests --benchmark"
 
 [pipenv]
 allow_prereleases = true

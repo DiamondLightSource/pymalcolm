@@ -16,6 +16,8 @@ from malcolm.core import (
     group_tag,
 )
 
+from .parts import ChildPart
+
 with Anno("Is the attribute writeable?"):
     AWriteable = bool
 with Anno(
@@ -180,7 +182,7 @@ def no_save(*attribute_names):
             be saved
     """
 
-    def decorator(cls: Type["ChildPart"]) -> Type["ChildPart"]:
+    def decorator(cls: Type[ChildPart]) -> Type[ChildPart]:
         additions = set()
         for attribute_name in attribute_names:
             if isinstance(attribute_name, collections.abc.Iterable) and not isinstance(
