@@ -33,6 +33,8 @@ class TestKinematicsSavuPart(ChildTestCase):
         self.panda.add_part(self.busses)
         self.process.add_controller(self.panda)
 
+        # TODO: Add axes to the positions table
+
         # And the PMAC
         pmac_block = make_block_creator(
             os.path.join(os.path.dirname(__file__), "..", "test_pmac", "blah"),
@@ -145,13 +147,22 @@ class TestKinematicsSavuPart(ChildTestCase):
             ]
         )
    
-        kin_infos = [DatasetProducedInfo('lab_y.mean', 'p00-1234-savuproc/p00-1234-savu_processed.nxs', DatasetType.POSITION_VALUE, 2, '/entry/ymean', None), DatasetProducedInfo('lab_y.max', 'p00-1234-savuproc/p00-1234-savu_processed.nxs', DatasetType.POSITION_MAX, 0, '/entry/ymax', None), DatasetProducedInfo('lab_y.min', 'p00-1234-savuproc/p00-1234-savu_processed.nxs', DatasetType.POSITION_MIN, 0, '/entry/ymin', None)]
+        kin_infos = [
+DatasetProducedInfo('y.mean', 'p00-1234-kinematics-vds.nxs', DatasetType.POSITION_VALUE, 2, '/entry/y.mean', ''),
+DatasetProducedInfo('y.max', 'p00-1234-kinematics-vds.nxs', DatasetType.POSITION_MAX, 2, '/entry/y.max', ''),
+DatasetProducedInfo('y.min', 'p00-1234-kinematics-vds.nxs', DatasetType.POSITION_MIN, 2, '/entry/y.min', ''),
+DatasetProducedInfo('x.mean', 'p00-1234-kinematics-vds.nxs', DatasetType.POSITION_VALUE, 2, '/entry/x.mean', ''),
+DatasetProducedInfo('x.max', 'p00-1234-kinematics-vds.nxs', DatasetType.POSITION_MAX, 2, '/entry/x.max', ''),
+DatasetProducedInfo('x.min', 'p00-1234-kinematics-vds.nxs', DatasetType.POSITION_MIN, 2, '/entry/x.min', '')]
 
         infos = self.o.configure(
             self.context, fileDir=tmp_dir, generator=generator,
             axesToMove=AXES, fileTemplate=file_template, part_info=part_info
         )
-        self.assertEquals(infos, kin_infos)        
+        
+        self.assertEquals(len(infos), len(kin_infos))
+        for info in kin_infos:
+            assert str(info) in [str(x) for x in infos]        
 
         self.o.post_configure(self.context, part_info)
 

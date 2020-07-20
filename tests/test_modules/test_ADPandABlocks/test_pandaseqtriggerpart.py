@@ -38,7 +38,7 @@ class PositionsPart(Part):
             # encoder in the geobrick layer
             scale=[1.0, -0.001, 0.001],
             offset=[0.0, 0.0, 0.0],
-            capture=[PositionCapture.NO] * 3,
+            capture=[PositionCapture.MIN_MAX_MEAN] * 3,
             datasetName=["I0", 'x', 'y'],
             datasetType=[AttributeDatasetType.MONITOR,
                          AttributeDatasetType.POSITION,

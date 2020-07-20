@@ -182,7 +182,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
             dtypes["min"] = scanning.infos.DatasetType.POSITION_MIN
             dtypes["max"] = scanning.infos.DatasetType.POSITION_MAX
         for axis in self.q_value_mapping.values():
-            rank = len(generator.dimensions) + 2
+            rank = len(generator.dimensions)
             for k, v in dtypes.items():   
                 PATH='/entry/' + axis + "." + k
                 produced_datasets += [
