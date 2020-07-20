@@ -260,7 +260,7 @@ DatasetProducedInfo('x.min', 'p00-1234-kinematics-vds.nxs', DatasetType.POSITION
         # Check xmean is there
         vds_path = os.path.join(tmp_dir, data_name + '-kinematics-vds.nxs')
         vds_file = h5py.File(vds_path, "r")
-        xmean = vds_file['/entry/xmean']
+        xmean = vds_file['/entry/x.mean']
         self.assertEquals(xmean.shape, (5, 5))
         self.assertEquals(xmean[0][0], 555)
         self.assertEquals(xmean[2][1], 666)
