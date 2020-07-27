@@ -1,14 +1,15 @@
 import time
+from typing import Union
 
 import numpy as np
 from annotypes import Anno, Serializable
 
 with Anno("Seconds since Jan 1, 1970 00:00:00 UTC"):
-    ASecondsPastEpoch = np.int64
+    ASecondsPastEpoch = Union[np.int64]
 with Anno("Nanoseconds relative to the secondsPastEpoch field"):
-    ANanoseconds = np.int32
+    ANanoseconds = Union[np.int32]
 with Anno("An integer value whose interpretation is deliberately undefined"):
-    AUserTag = np.int32
+    AUserTag = Union[np.int32]
 
 
 zero32 = np.int32(0)
@@ -41,7 +42,7 @@ class TimeStamp(Serializable):
     def to_time(self) -> float:
         return self.secondsPastEpoch + 1e-9 * self.nanoseconds
 
-    zero = None  # filled in below
+    zero: Union["TimeStamp", None] = None  # filled in below
 
 
-TimeStamp.zero = TimeStamp(0, zero32)
+TimeStamp.zero = TimeStamp(zero32, zero32)

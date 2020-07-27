@@ -1,3 +1,5 @@
+from typing import cast
+
 import numpy as np
 
 from malcolm.compat import OrderedDict
@@ -95,7 +97,7 @@ class PandATablePart(PandAFieldPart):
 
     def handle_change(self, value: str, ts: TimeStamp) -> None:
         value = self.table_from_list(value)
-        self.attr.set_value_alarm_ts(value, Alarm.ok, ts)
+        self.attr.set_value_alarm_ts(value, cast(Alarm, Alarm.ok), ts)
 
     def set_field(self, value):
         int_values = self.list_from_table(value)

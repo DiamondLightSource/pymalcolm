@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Union
 
 import numpy as np
 from annotypes import Anno, Serializable, deserialize_object
@@ -76,7 +77,7 @@ class Alarm(Serializable):
     def __eq__(self, other):
         return not self != other
 
-    ok = None  # filled in below
+    ok: Union[None, "Alarm"] = None  # filled in below
 
 
 Alarm.ok = Alarm()

@@ -1,4 +1,6 @@
-from annotypes import Anno, Any
+from typing import Any, Tuple
+
+from annotypes import Anno
 
 from malcolm.core import Context, NumberMeta, PartRegistrar
 from malcolm.modules import ADCore, builtin, scanning
@@ -84,7 +86,7 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
 
     def get_adjusted_exposure_time_and_acquire_period(
         self, duration: float, readout_time: float, exposure_time: float
-    ) -> (float, float):
+    ) -> Tuple[float, float]:
         # It seems that the difference between acquirePeriod and exposure
         # doesn't tell the whole story, we seem to need an additional bit
         # of readout (or something) time on top

@@ -1,7 +1,7 @@
 from contextlib import contextmanager
-from typing import Any, Callable, Dict, Iterable, List, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Tuple, Union
 
-from annotypes import TYPE_CHECKING, Anno, stringify_error
+from annotypes import Anno, stringify_error
 
 from malcolm.compat import OrderedDict
 
@@ -52,7 +52,7 @@ class Controller(Hookable):
         self._block.meta.set_tags([version_tag()])
         self._notifier = Notifier(mri, self._lock, self._block)
         self._block.set_notifier_path(self._notifier, [mri])
-        self._write_functions = {}
+        self._write_functions: Dict[str, Callable[..., Any]] = {}
         self.field_registry = FieldRegistry()
         self.info_registry = InfoRegistry()
 
@@ -93,7 +93,7 @@ class Controller(Hookable):
             for name, child, writeable_func, needs_context in part_fields:
                 self.add_block_field(name, child, writeable_func, needs_context)
 
-    @property
+    @property  # type: ignore
     @contextmanager
     def lock_released(self):
         self._lock.release()
@@ -108,6 +108,7 @@ class Controller(Hookable):
 
     def block_view(self, context: Context = None) -> Block:
         if context is None:
+            assert self.process, "No process for context."
             context = Context(self.process)
         with self._lock:
             child_view = make_view(self, context, self._block)
@@ -122,12 +123,12 @@ class Controller(Hookable):
 
     def handle_request(self, request: Request) -> Spawned:
         """Spawn a new thread that handles Request"""
+        assert self.process, "No process to handle request"
         return self.process.spawn(self._handle_request, request)
 
     def _handle_request(self, request: Request) -> None:
         responses = []
         with self._lock:
-            # self.log.debug(request)
             if isinstance(request, Get):
                 handler = self._handle_get
             elif isinstance(request, Put):
@@ -148,7 +149,7 @@ class Controller(Hookable):
             try:
                 cb(response)
             except Exception:
-                self.log.exception("Exception notifying %s", response)
+                self.log_exception(f"Exception notifying {response}")
                 raise
 
     def _handle_get(self, request: Get) -> CallbackResponses:
@@ -291,7 +292,8 @@ class Controller(Hookable):
         hooks = list(hooks)
         if not hooks:
             return Queue(), []
-        self.log.debug("%s: %s: Starting hook", self.mri, hooks[0].name)
+        self.log_debug(f"{self.mri}: {hooks[0].name}: Starting hook")
+        assert self.process, "No process for starting hooks"
         for hook in hooks:
             hook.set_spawn(self.process.spawn)
         # Take the lock so that no hook abort can come in between now and
@@ -308,6 +310,6 @@ class Controller(Hookable):
                 self.log, hook_queue, hook_spawned, DEFAULT_TIMEOUT
             )
         else:
-            self.log.debug("%s: No Parts hooked", self.mri)
+            self.log_debug(f"{self.mri}: No Parts hooked")
             return_dict = {}
         return return_dict

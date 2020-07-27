@@ -1,7 +1,8 @@
 import os
 from enum import Enum
+from typing import Sequence, Union
 
-from annotypes import Anno, Array, Sequence, Union
+from annotypes import Anno, Array
 
 from malcolm.core import Table
 
@@ -21,13 +22,13 @@ SVG_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "icons"))
 
 
 with Anno("Block and Field name for the Bit"):
-    ABitNames = Array[str]
+    ABitNames = Union[Array[str]]
 UBitNames = Union[ABitNames, Sequence[str]]
 with Anno("Current value for the Bit"):
-    ABitValues = Array[bool]
+    ABitValues = Union[Array[bool]]
 UBitValues = Union[ABitValues, Sequence[bool]]
 with Anno("Request this field is captured in PCAP"):
-    ABitCaptures = Array[bool]
+    ABitCaptures = Union[Array[bool]]
 UBitCaptures = Union[ABitCaptures, Sequence[bool]]
 
 
@@ -58,22 +59,22 @@ class PositionCapture(Enum):
 
 
 with Anno("Block and Field name for the Position"):
-    APositionNames = Array[str]
+    APositionNames = Union[Array[str]]
 UPositionNames = Union[APositionNames, Sequence[str]]
 with Anno("Current scaled value for the Position"):
-    APositionValues = Array[float]
+    APositionValues = Union[Array[float]]
 UPositionValues = Union[APositionValues, Sequence[float]]
 with Anno("Units for the scaled value of the Position"):
-    APositionUnits = Array[str]
+    APositionUnits = Union[Array[str]]
 UPositionUnits = Union[APositionUnits, Sequence[str]]
 with Anno("Scale factor to calculate scaled value of the Position"):
-    APositionScales = Array[float]
+    APositionScales = Union[Array[float]]
 UPositionScales = Union[APositionScales, Sequence[float]]
 with Anno("Offset to calculate scaled value of the Position"):
-    APositionOffsets = Array[float]
+    APositionOffsets = Union[Array[float]]
 UPositionOffsets = Union[APositionOffsets, Sequence[float]]
 with Anno("Whether and what to capture with PCAP"):
-    APositionCaptures = Array[PositionCapture]
+    APositionCaptures = Union[Array[PositionCapture]]
 UPositionCaptures = Union[APositionCaptures, Sequence[PositionCapture]]
 
 

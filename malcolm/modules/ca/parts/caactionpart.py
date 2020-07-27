@@ -1,8 +1,9 @@
 import time
+from typing import Optional
 
 from annotypes import Anno
 
-from malcolm.core import Part, PartRegistrar, Queue, TimeoutError, tags
+from malcolm.core import MethodModel, Part, PartRegistrar, Queue, TimeoutError, tags
 from malcolm.modules import builtin
 
 from .. import util
@@ -48,7 +49,7 @@ class CAActionPart(Part):
         self.value = value
         self.wait = wait
         self.throw = throw
-        self.method = None
+        self.method: Optional[MethodModel] = None
 
     def setup(self, registrar: PartRegistrar) -> None:
         super(CAActionPart, self).setup(registrar)

@@ -76,7 +76,7 @@ class ProcessController(builtin.controllers.ManagerController):
     ) -> None:
         super(ProcessController, self).__init__(mri, config_dir)
         self.ioc = None
-        self.ioc_blocks = OrderedDict()
+        self.ioc_blocks: OrderedDict = OrderedDict()
         self.prefix = prefix
         self.bl_iocs = ioc_list.split(" ")
         if self.bl_iocs[-1] == "":
@@ -100,7 +100,7 @@ class ProcessController(builtin.controllers.ManagerController):
         self.stats["hostname"] = (
             hostname if len(hostname) < 39 else hostname[:35] + "..."
         )
-        self.stats["pid"] = os.getpid()
+        self.stats["pid"] = str(os.getpid())
 
         self.pymalcolm_path = StringMeta(
             "Path to pymalcolm executable", tags=[Widget.MULTILINETEXTUPDATE.tag()]

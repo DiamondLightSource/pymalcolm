@@ -3,6 +3,7 @@ import importlib
 import os
 import subprocess
 import tempfile
+from typing import Union
 
 import numpy as np
 from annotypes import Anno, add_call_types
@@ -28,9 +29,9 @@ with Anno("The name of the defined parameter"):
 with Anno("The value of the defined parameter"):
     AStringValue = str
 with Anno("The value of the defined parameter"):
-    AFloat64Value = np.float64
+    AFloat64Value = Union[np.float64]
 with Anno("The value of the defined parameter"):
-    AInt32Value = np.int32
+    AInt32Value = Union[np.int32]
 with Anno("The Define that has been created"):
     ADefine = Define
 
@@ -85,7 +86,7 @@ with Anno("The shell command to run to get the value from"):
 def cmd_string(name: AName, cmd: ACmd) -> ADefine:
     """Define a string parameter coming from a shell command to be used within
     this YAML file. Trailing newlines will be stripped."""
-    value = subprocess.check_output(cmd, shell=True).rstrip("\n")
+    value = subprocess.check_output(cmd, shell=True).rstrip(b"\n")
     return Define(name, value)
 
 

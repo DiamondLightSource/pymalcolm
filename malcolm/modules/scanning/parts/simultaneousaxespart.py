@@ -1,4 +1,6 @@
-from annotypes import Anno, Array, Sequence, Union, add_call_types
+from typing import Sequence, Union
+
+from annotypes import Anno, Array, add_call_types
 
 from malcolm.core import (
     APartName,
@@ -12,7 +14,7 @@ from malcolm.core import (
 from ..hooks import AAxesToMove, ValidateHook
 
 with Anno("Initial value for set of axes that can be moved at the same time"):
-    ASimultaneousAxes = Array[str]
+    ASimultaneousAxes = Union[Array[str]]
 USimultaneousAxes = Union[ASimultaneousAxes, Sequence[str], str]
 
 

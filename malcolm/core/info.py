@@ -1,7 +1,5 @@
 import inspect
-from typing import Dict, List, Mapping, Optional, Sequence, Type
-
-from annotypes import TypeVar
+from typing import Dict, List, Mapping, Optional, Sequence, Type, TypeVar
 
 from malcolm.compat import OrderedDict
 
@@ -22,7 +20,7 @@ class Info(object):
         return "%s(%s)" % (self.__class__.__name__, args)
 
     @classmethod
-    def filter_parts(cls: Type[T], part_info: PartInfo) -> Dict[str, List[T]]:
+    def filter_parts(cls: Type["Info"], part_info: PartInfo) -> Dict[str, List[T]]:
         """Filter the part_info dict looking for instances of our class
 
         Args:
@@ -42,7 +40,7 @@ class Info(object):
         return filtered
 
     @classmethod
-    def filter_values(cls: Type[T], part_info: PartInfo) -> List[T]:
+    def filter_values(cls: Type["Info"], part_info: PartInfo) -> List[T]:
         """Filter the part_info dict list looking for instances of our class
 
         Args:
@@ -52,14 +50,15 @@ class Info(object):
         Returns:
             list: [info] where info is a subclass of cls
         """
-        filtered = []
+        filtered: List[T] = []
+        info_list: Sequence
         for info_list in cls.filter_parts(part_info).values():
             filtered += info_list
         return filtered
 
     @classmethod
     def filter_single_value(
-        cls: Type[T], part_info: PartInfo, error_msg: str = None
+        cls: Type["Info"], part_info: PartInfo, error_msg: str = None
     ) -> T:
         """Filter the part_info dict list looking for a single instance of our
         class
@@ -73,7 +72,7 @@ class Info(object):
         Returns:
             info subclass of cls
         """
-        filtered = cls.filter_values(part_info)
+        filtered: List[T] = cls.filter_values(part_info)
         if len(filtered) != 1:
             if error_msg is None:
                 error_msg = "Expected a single %s, got %s of them" % (

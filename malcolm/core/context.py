@@ -1,20 +1,18 @@
 import logging
 import time
 import weakref
-from typing import Any, Callable, List, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Tuple, Union
 
 import cothread
-from annotypes import TYPE_CHECKING
 
 from .concurrency import Queue
 from .errors import AbortedError, BadValueError, TimeoutError
 from .future import Future
-from .request import Post, Put, Subscribe, Unsubscribe
+from .request import Post, Put, Request, Subscribe, Unsubscribe
 from .response import Error, Return, Update
 
 if TYPE_CHECKING:
     from .process import Process
-    from .views import Block
     from .controller import Controller
     from .models import Model
 
@@ -34,10 +32,10 @@ class Context(object):
         self._notify_args = ()
         self._process = process
         self._next_id = 1
-        self._futures = {}  # dict {int id: Future)}
-        self._subscriptions = {}  # dict {int id: (func, args)}
-        self._requests = {}  # dict {Future: Request}
-        self._pending_unsubscribes = {}  # dict {Future: Subscribe}
+        self._futures: Dict[int, Future] = {}
+        self._subscriptions: Dict[int, Tuple[Callable, Any]] = {}
+        self._requests: Dict[Future, Request] = {}
+        self._pending_unsubscribes: Dict[Future, Subscribe] = {}
         # If not None, wait for this before listening to STOPs
         self._sentinel_stop = None
 
@@ -49,7 +47,7 @@ class Context(object):
         controller = self._process.get_controller(mri)
         return controller
 
-    def block_view(self, mri: str) -> "Block":
+    def block_view(self, mri: str) -> Any:
         """Get a view of a block
 
         Args:
@@ -309,6 +307,7 @@ class Context(object):
             else:
                 filtered_futures.append(f)
 
+        until: Union[float, None]
         while filtered_futures:
             if event_timeout is not None:
                 until = time.time() + event_timeout
@@ -441,8 +440,8 @@ class When(object):
 
             condition_satisfied.__name__ = "equals_%s" % good_value
         self.condition_satisfied = condition_satisfied
-        self.future: Future = None
-        self.context: Context = None
+        self.future: Union[Future, None] = None
+        self.context: Union[Context, None] = None
         self.last = None
 
     def set_future_context(self, future: Future, context: Context) -> None:
@@ -458,11 +457,13 @@ class When(object):
                 satisfied = self.condition_satisfied(value)
             except Exception:
                 # Bad value, so unsubscribe
-                self.context.unsubscribe(self.future)
+                if self.context:
+                    self.context.unsubscribe(self.future)
                 self.future = None
                 raise
             else:
                 if satisfied:
                     # All done, so unsubscribe
-                    self.context.unsubscribe(self.future)
+                    if self.context:
+                        self.context.unsubscribe(self.future)
                     self.future = None

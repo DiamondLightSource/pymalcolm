@@ -1,7 +1,7 @@
 # Treat all division as float division even in python2
 from __future__ import division
 
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 from annotypes import Anno, add_call_types
@@ -10,6 +10,7 @@ from scanpointgenerator import Point
 from malcolm.core import APartName, Attribute, Block, Context, PartRegistrar
 from malcolm.modules import builtin, pmac, scanning
 from malcolm.modules.pmac.util import all_points_joined
+from malcolm.modules.scanning.infos import MinTurnaroundInfo
 
 from ..util import SequencerTable, Trigger
 
@@ -107,7 +108,7 @@ def _get_blocks(context: Context, panda_mri: str) -> List[Block]:
 
 
 def _what_moves_most(
-    point, axis_mapping: Tuple[Point, Dict[str, pmac.infos.MotorInfo]]
+    point: Point, axis_mapping: Dict[str, pmac.infos.MotorInfo]
 ) -> Tuple[str, int, bool]:
     """Work out which axis from the given axis mapping moves most for this
     point"""
@@ -150,7 +151,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
     """
 
     def __init__(
-        self, name: APartName, mri: AMri, initial_visibility: AInitialVisibility = None
+        self, name: APartName, mri: AMri, initial_visibility: AInitialVisibility = True
     ) -> None:
         super(PandASeqTriggerPart, self).__init__(
             name, mri, initial_visibility=initial_visibility, stateful=False
@@ -166,15 +167,15 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         # The last point we loaded
         self.last_point = None
         # What is the mapping of scannable name to MotorInfo
-        self.axis_mapping = {}
+        self.axis_mapping: Dict[str, pmac.infos.MotorInfo] = {}
         # The minimum turnaround time for non-joined points
-        self.min_turnaround = 0
+        self.min_turnaround = 0.0
         # The minimum time between turnaround points
-        self.min_interval = 0
+        self.min_interval = 0.0
         # {(scannable, increasing): trigger_enum}
-        self.trigger_enums = {}
+        self.trigger_enums: Dict[Tuple[str, bool], str] = {}
         # The panda Block we will be prodding
-        self.panda = None
+        self.panda: Optional[Any] = None
 
     def setup(self, registrar: PartRegistrar) -> None:
         super(PandASeqTriggerPart, self).setup(registrar)
@@ -223,6 +224,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
             seq_pos[seqa_pos_inp] = "POS%s" % suff.upper()
 
         # Fix the mres and offsets from the panda positions table
+        assert self.panda, "No PandA"
         positions_table = self.panda.positions.value
         for i, name in enumerate(positions_table.name):
             try:
@@ -275,7 +277,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         row_trigger = child.rowTrigger.value
 
         # See if there is a minimum turnaround
-        infos = scanning.infos.MinTurnaroundInfo.filter_values(part_info)
+        infos: List[MinTurnaroundInfo] = MinTurnaroundInfo.filter_values(part_info)
         if infos:
             assert len(infos) == 1, "Expected 0 or 1 MinTurnaroundInfos, got %d" % len(
                 infos
@@ -450,6 +452,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         return rows
 
     def _fill_sequencer(self, seq_table: Attribute) -> None:
+        assert self.generator, "No generator"
         points = self.generator.get_points(self.loaded_up_to, self.scan_up_to)
 
         if points is None or len(points) == 0:
@@ -510,4 +513,5 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
     @add_call_types
     def on_run(self, context: scanning.hooks.AContext) -> None:
         # Call sequence table enable
+        assert self.panda, "No PandA"
         self.panda.seqSetEnable()

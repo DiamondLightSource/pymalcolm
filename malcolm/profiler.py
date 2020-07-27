@@ -5,6 +5,7 @@ import sys
 import time
 from enum import Enum
 from threading import get_ident as get_thread_ident
+from typing import List
 
 from malcolm.compat import get_profiler_dir
 
@@ -19,7 +20,7 @@ class ProfilerMode(Enum):
 # A combination of plop.Collector and plot.Formatter
 class Profiler(object):
     def __init__(
-        self, dirname: str = None, mode: ProfilerMode = ProfilerMode.PROF
+        self, dirname: str = "", mode: ProfilerMode = ProfilerMode.PROF
     ) -> None:
         if not dirname:
             dirname = get_profiler_dir()
@@ -30,7 +31,7 @@ class Profiler(object):
         self.start_time = None
         self.running = False
         self.stopping = False
-        self.stacks = []
+        self.stacks: List = []
         sig = mode.value[1]
         signal.signal(sig, self.handler)
         signal.siginterrupt(sig, False)

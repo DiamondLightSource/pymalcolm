@@ -1,7 +1,18 @@
 import re
-from typing import Callable, Dict, List, Optional, Sequence, Tuple, Type, Union
+from typing import (
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+    cast,
+)
 
-from annotypes import Anno, TypeVar
+from annotypes import Anno
 
 from malcolm.compat import OrderedDict
 
@@ -17,7 +28,9 @@ T = TypeVar("T")
 
 Field = Union[AttributeModel, MethodModel]
 FieldDict = Dict[object, List[Tuple[str, Field, Callable, bool]]]
-Callback = Callable[[object, Info], None]
+Info_co = TypeVar("Info_co", covariant=True)
+object_co = TypeVar("object_co", covariant=True)
+Callback = Callable[[object_co, Info_co], None]
 Hooked = Callable[..., T]
 ArgsGen = Callable[[List[str]], List[str]]
 
@@ -51,6 +64,7 @@ class FieldRegistry(object):
         """Register a function to be added to the block"""
         if name is None:
             name = func.__name__
+        without: Union[Tuple[str], Tuple[()]]
         if needs_context:
             call_types = getattr(func, "call_types", {})
             context_anno: Anno = call_types.get("context", None)
@@ -79,7 +93,7 @@ class FieldRegistry(object):
         self,
         name: str,
         attr: AttributeModel,
-        writeable_func: Optional[Callable] = None,
+        writeable_func: Optional["Callable"] = None,
         owner: object = None,
         needs_context: bool = False,
     ) -> AttributeModel:
@@ -91,21 +105,21 @@ class FieldRegistry(object):
         owner: object,
         name: str,
         model: Field,
-        writeable_func: Callable,
-        needs_context: bool,
+        writeable_func: Optional["Callable"] = None,
+        needs_context: bool = False,
     ) -> None:
         assert CAMEL_RE.match(name), "Field %r published by %s is not camelCase" % (
             name,
             owner,
         )
-        for o, part_fields in self.fields.items():
-            existing = [x for x in part_fields if x[0] == name]
+        for o, fields in self.fields.items():
+            existing = [x for x in fields if x[0] == name]
             assert not existing, (
                 "Field %r published by %s would overwrite one made by %s"
                 % (name, owner, o)
             )
         part_fields = self.fields.setdefault(owner, [])
-        part_fields.append((name, model, writeable_func, needs_context))
+        part_fields.append((name, model, cast(Callable, writeable_func), needs_context))
 
 
 class InfoRegistry(object):
@@ -129,7 +143,7 @@ class InfoRegistry(object):
 
 
 class Part(Hookable):
-    registrar: "PartRegistrar" = None
+    registrar: Optional["PartRegistrar"] = None
 
     def __init__(self, name: APartName) -> None:
         assert PART_NAME_RE.match(name), (
@@ -137,7 +151,7 @@ class Part(Hookable):
             + " got %r" % name
         )
         self.set_logger(part_name=name)
-        self.name = name
+        self.name: str = name
 
     def setup(self, registrar: "PartRegistrar") -> None:
         """Use the given `PartRegistrar` to populate the hooks and fields.
@@ -204,7 +218,7 @@ class PartRegistrar(object):
         self,
         name: str,
         attr: AttributeModel,
-        writeable_func: Optional[Callable] = None,
+        writeable_func: Optional["Callable"] = None,
         needs_context: bool = False,
     ) -> AttributeModel:
         """Register a pre-existing AttributeModel to be added to the Block"""

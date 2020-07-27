@@ -1,8 +1,8 @@
 import collections.abc
-from typing import Iterable, Type
+from typing import TYPE_CHECKING, Iterable, Sequence, Type, Union
 from xml.etree import cElementTree as ET
 
-from annotypes import Anno, Array, Sequence, Union
+from annotypes import Anno, Array
 
 from malcolm.compat import et_to_string
 from malcolm.core import (
@@ -15,6 +15,9 @@ from malcolm.core import (
     config_tag,
     group_tag,
 )
+
+if TYPE_CHECKING:
+    from .parts import ChildPart  # noqa: F401
 
 with Anno("Is the attribute writeable?"):
     AWriteable = bool
@@ -65,15 +68,15 @@ def set_tags(
 
 
 with Anno("Names of the layout parts"):
-    ANameArray = Array[str]
+    ANameArray = Union[Array[str]]
 with Anno("Malcolm full names of child blocks"):
-    AMriArray = Array[str]
+    AMriArray = Union[Array[str]]
 with Anno("X Coordinates of child blocks"):
-    AXArray = Array[float]
+    AXArray = Union[Array[float]]
 with Anno("Y Coordinates of child blocks"):
-    AYArray = Array[float]
+    AYArray = Union[Array[float]]
 with Anno("Whether child blocks are visible"):
-    AVisibleArray = Array[bool]
+    AVisibleArray = Union[Array[bool]]
 UNameArray = Union[ANameArray, Sequence[str]]
 UMriArray = Union[AMriArray, Sequence[str]]
 UXArray = Union[AXArray, Sequence[float]]
@@ -98,9 +101,9 @@ class LayoutTable(Table):
 
 
 with Anno("Name of the block.field to export"):
-    ASourceNameArray = Array[str]
+    ASourceNameArray = Union[Array[str]]
 with Anno("Name of the field to export as"):
-    AExportNameArray = Array[str]
+    AExportNameArray = Union[Array[str]]
 USourceNameArray = Union[ASourceNameArray, Sequence[str]]
 UExportNameArray = Union[AExportNameArray, Sequence[str]]
 

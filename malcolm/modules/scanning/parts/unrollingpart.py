@@ -21,7 +21,7 @@ class UnrollingPart(Part):
     ) -> UParameterTweakInfos:
         if len(axesToMove) in (0, 1):
             # We can't have multiple dimensions here, so this must be ok
-            return
+            return None
         # Check that we have a Squashing excluder in the generator which
         # contains all the axesToMove
         for excluder in generator.excluders:
@@ -29,7 +29,7 @@ class UnrollingPart(Part):
                 axesToMove
             ):
                 # We have already squashed the axes, so nothing to do
-                return
+                return None
         # We need to squash any dimension containing axesToMove down
         serialized = dict(generator.to_dict())
         serialized["excluders"] = list(serialized["excluders"]) + [

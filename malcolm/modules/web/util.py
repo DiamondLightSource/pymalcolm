@@ -1,6 +1,7 @@
 import atexit
 import sys
 from threading import Thread
+from typing import Optional, Union
 
 from annotypes import Anno, Array
 from tornado.ioloop import IOLoop
@@ -9,8 +10,8 @@ from malcolm.core import Table
 
 
 class IOLoopHelper(object):
-    _loop: IOLoop = None
-    _thread: Thread = None
+    _loop: Optional[IOLoop] = None
+    _thread: Optional[Thread] = None
 
     @classmethod
     def loop(cls):
@@ -52,9 +53,9 @@ class IOLoopHelper(object):
 
 
 with Anno("The Malcolm Resource Identifier for the Block"):
-    AMris = Array[str]
+    AMris = Union[Array[str]]
 with Anno("A human readable label for the Block"):
-    ALabels = Array[str]
+    ALabels = Union[Array[str]]
 
 
 class BlockTable(Table):

@@ -1,6 +1,6 @@
-from typing import Callable, Dict, Iterable, List, Tuple, Type
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Type
 
-from annotypes import Anno, Any, add_call_types, deserialize_object, json_encode
+from annotypes import Anno, add_call_types, deserialize_object, json_encode
 from scanpointgenerator import CompoundGenerator
 
 from malcolm.compat import OrderedDict
@@ -115,7 +115,8 @@ def update_configure_model(
                         if k in defaults:
                             rows += defaults[k].rows()
                         rows += info.defaults[k].rows()
-                        defaults[k] = meta.table_cls.from_rows(rows)
+                        if meta.table_cls:
+                            defaults[k] = meta.table_cls.from_rows(rows)
                     else:
                         defaults[k] = info.defaults[k]
 
@@ -188,14 +189,14 @@ class RunnableController(builtin.controllers.ManagerController):
         # Any custom ConfigureParams subclasses requested by Parts
         self.part_configure_params: PartConfigureParams = {}
         # Params passed to configure()
-        self.configure_params: ConfigureParams = None
+        self.configure_params: Optional[ConfigureParams] = None
         # Progress reporting dict of completed_steps for each part
-        self.progress_updates: Dict[Part, int] = None
+        self.progress_updates: Optional[Dict[Part, int]] = None
         # Queue so that do_run can wait to see why it was aborted and resume if
         # needed
-        self.resume_queue: Queue = None
+        self.resume_queue: Optional[Queue] = None
         # Queue so we can wait for aborts to complete
-        self.abort_queue: Queue = None
+        self.abort_queue: Optional[Queue] = None
         # Stored for pause
         self.steps_per_run: int = 0
         # Create sometimes writeable attribute for the current completed scan
@@ -279,7 +280,7 @@ class RunnableController(builtin.controllers.ManagerController):
         """Tell controller part needs different things passed to Configure"""
         with self.changes_squashed:
             # Update the dict
-            if part:
+            if part and info:
                 self.part_configure_params[part] = info
 
             # No process yet, so don't do this yet
@@ -322,8 +323,9 @@ class RunnableController(builtin.controllers.ManagerController):
             params = self.configure_params
         for part, context in part_contexts.items():
             args = {}
-            for k in params.call_types:
-                args[k] = getattr(params, k)
+            if params:
+                for k in params.call_types:
+                    args[k] = getattr(params, k)
             yield part, context, args
 
     # This will be serialized, so maintain camelCase for axesToMove
@@ -356,14 +358,16 @@ class RunnableController(builtin.controllers.ManagerController):
                 ValidateHook(p, c, status_part_info, **kwargs)
                 for p, c, kwargs in self._part_params(part_contexts, params)
             )
-            tweaks = ParameterTweakInfo.filter_values(validate_part_info)
+            tweaks: List[ParameterTweakInfo] = ParameterTweakInfo.filter_values(
+                validate_part_info
+            )
             if tweaks:
                 for tweak in tweaks:
                     deserialized = self._block.configure.meta.takes.elements[
                         tweak.parameter
                     ].validate(tweak.value)
                     setattr(params, tweak.parameter, deserialized)
-                    self.log.debug("Tweaking %s to %s", tweak.parameter, deserialized)
+                    self.log_debug("Tweaking {tweak.parameter} to {deserialized}")
             else:
                 # Consistent set, just return the params
                 return params
@@ -401,7 +405,8 @@ class RunnableController(builtin.controllers.ManagerController):
             self.do_configure(state, params)
             self.abortable_transition(ss.ARMED)
         except AbortedError:
-            self.abort_queue.put(None)
+            if self.abort_queue:
+                self.abort_queue.put(None)
             raise
         except Exception as e:
             self.go_to_error_state(e)
@@ -422,6 +427,7 @@ class RunnableController(builtin.controllers.ManagerController):
         # These are the part tasks that abort() and pause() will operate on
         self.part_contexts = self.create_part_contexts()
         # So add one for ourself too so we can be aborted
+        assert self.process, "No attached process"
         self.part_contexts[self] = Context(self.process)
         # Store the params for use in seek()
         self.configure_params = params
@@ -491,10 +497,11 @@ class RunnableController(builtin.controllers.ManagerController):
                     if self.abort_queue:
                         self.abort_queue.put(None)
                     # Wait for a response on the resume_queue
-                    should_resume = self.resume_queue.get()
+                    if self.resume_queue:
+                        should_resume = self.resume_queue.get()
                     if should_resume:
                         # we need to resume
-                        self.log.debug("Resuming run")
+                        self.log_debug("Resuming run")
                     else:
                         # we don't need to resume, just drop out
                         raise
@@ -532,12 +539,14 @@ class RunnableController(builtin.controllers.ManagerController):
             )
 
     def update_completed_steps(
-        self, part: object, completed_steps: RunProgressInfo
+        self, part: Part, completed_steps: RunProgressInfo
     ) -> None:
         with self._lock:
             # Update
-            self.progress_updates[part] = completed_steps.steps
-            min_completed_steps = min(self.progress_updates.values())
+            if self.progress_updates is not None:
+                self.progress_updates[part] = completed_steps.steps
+            if self.progress_updates:
+                min_completed_steps = min(self.progress_updates.values())
             if min_completed_steps > self.completed_steps.value:
                 self.completed_steps.set_value(min_completed_steps)
 
@@ -575,7 +584,7 @@ class RunnableController(builtin.controllers.ManagerController):
                 try:
                     self.abort_queue.get(timeout=DEFAULT_TIMEOUT)
                 except TimeoutError:
-                    self.log.warning("Timeout waiting while %s" % start_state)
+                    self.log_warning("Timeout waiting while {start_state}")
             with self._lock:
                 # Now we've waited for a while we can remove the error state
                 # for transition in case a hook triggered it rather than a
@@ -586,7 +595,8 @@ class RunnableController(builtin.controllers.ManagerController):
             func(*args)
             self.abortable_transition(end_state)
         except AbortedError:
-            self.abort_queue.put(None)
+            if self.abort_queue:
+                self.abort_queue.put(None)
             raise
         except Exception as e:  # pylint:disable=broad-except
             self.go_to_error_state(e)
@@ -647,7 +657,8 @@ class RunnableController(builtin.controllers.ManagerController):
         will return in Fault state.
         """
         self.transition(ss.RUNNING)
-        self.resume_queue.put(True)
+        if self.resume_queue:
+            self.resume_queue.put(True)
         # self.run will now take over
 
     def do_disable(self) -> None:

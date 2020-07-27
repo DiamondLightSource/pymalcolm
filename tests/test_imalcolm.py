@@ -13,7 +13,7 @@ class MyHandler(logging.Handler):
 
 
 # Need to put it somewhere importable so logging.config.dictConfig can find it
-malcolm.imalcolm.MyHandler = MyHandler
+setattr(malcolm.imalcolm, "MyHandler", MyHandler)
 
 
 class TestIMalcolm(unittest.TestCase):

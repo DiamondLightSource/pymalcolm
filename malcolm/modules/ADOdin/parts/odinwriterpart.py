@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Iterator, List
+from typing import Dict, Iterator, List, Optional
 
 import h5py
 from annotypes import Anno, add_call_types
@@ -277,13 +277,13 @@ class OdinWriterPart(builtin.parts.ChildPart):
     """Part for controlling an `hdf_writer_block` in a Device"""
 
     # Future for the start action
-    start_future: Future = None
-    array_future: Future = None
-    done_when_reaches: int = None
-    unique_id_offset: int = None
+    start_future: Optional[Future] = None
+    array_future: Optional[Future] = None
+    done_when_reaches: int = 0
+    unique_id_offset: int = 0
     # The HDF5 layout file we write to say where the datasets go
-    layout_filename: str = None
-    exposure_time: float = None
+    layout_filename: str = ""
+    exposure_time: float = 0.0
 
     def __init__(
         self,
@@ -432,4 +432,5 @@ class OdinWriterPart(builtin.parts.ChildPart):
 
     def update_completed_steps(self, value: int) -> None:
         completed_steps = value + self.unique_id_offset
+        assert self.registrar, "No registrar"
         self.registrar.report(scanning.infos.RunProgressInfo(completed_steps))

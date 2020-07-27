@@ -1,7 +1,7 @@
 from contextlib import contextmanager
-from typing import Any, Callable, Dict, List, Tuple
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Tuple
 
-from annotypes import TYPE_CHECKING, Array, FrozenOrderedDict
+from annotypes import Array, FrozenOrderedDict
 
 from .concurrency import RLock
 from .loggable import Loggable
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 
 class DummyNotifier(object):
-    @property
+    @property  # type: ignore
     @contextmanager
     def changes_squashed(self):
         yield
@@ -124,7 +124,7 @@ class Notifier(Loggable):
             try:
                 cb(response)
             except Exception:
-                self.log.exception("Exception notifying %s", response)
+                self.log_exception(f"Exception notifying {response}")
                 raise
 
 
@@ -152,7 +152,7 @@ class NotifierNode(object):
             list: [(callback, Response)] that need to be called
         """
         ret = []
-        child_changes = {}
+        child_changes: Dict[str, List] = {}
         for change in changes:
             # Add any changes that our children need to know about
             self._add_child_change(change, child_changes)
@@ -171,8 +171,8 @@ class NotifierNode(object):
                 ret.append(request.delta_response(changes))
 
         # Now notify our children
-        for name, child_changes in child_changes.items():
-            ret += self.children[name].notify_changes(child_changes)
+        for name, changes in child_changes.items():
+            ret += self.children[name].notify_changes(changes)
         return ret
 
     def _add_child_change(self, change: List, child_changes: Dict[str, List]) -> None:
@@ -206,7 +206,7 @@ class NotifierNode(object):
                 that needs to be passed to a child as a result of this
         """
         self.data = data
-        child_change_dict = {}
+        child_change_dict: Dict[str, List] = {}
         # Reflect change of data to children
         for name in self.children:
             child_data = getattr(data, name, None)

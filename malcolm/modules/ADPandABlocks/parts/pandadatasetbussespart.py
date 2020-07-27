@@ -49,6 +49,7 @@ class PandADatasetBussesPart(pandablocks.parts.PandABussesPart):
 
     def on_report_status(self) -> scanning.hooks.UInfos:
         ret = []
+        assert self.bits, "No bits"
         bits_table: DatasetBitsTable = self.bits.value
         for i, capture in enumerate(bits_table.capture):
             ds_name = bits_table.datasetName[i]
@@ -60,6 +61,7 @@ class PandADatasetBussesPart(pandablocks.parts.PandABussesPart):
                         attr=bits_table.name[i],
                     )
                 )
+        assert self.positions, "No positions"
         pos_table: DatasetPositionsTable = self.positions.value
         for i, capture in enumerate(pos_table.capture):
             ds_name = pos_table.datasetName[i]

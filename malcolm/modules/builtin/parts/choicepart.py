@@ -1,13 +1,14 @@
 from enum import Enum
+from typing import Sequence, Union
 
-from annotypes import Anno, Array, Sequence, Union
+from annotypes import Anno, Array
 
 from malcolm.core import AMetaDescription, APartName, ChoiceMeta, Part, PartRegistrar
 
 from ..util import AConfig, AGroup, AWidget, AWriteable, set_tags
 
 with Anno("Possible choices for this attribute"):
-    AChoices = Array[str]
+    AChoices = Union[Array[str]]
 with Anno("Initial value of the created attribute"):
     AValue = str
 UChoices = Union[AChoices, Sequence[Enum], Sequence[str], str]

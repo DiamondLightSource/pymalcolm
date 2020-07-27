@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Union
 
 import numpy as np
 from annotypes import Array
@@ -34,16 +34,10 @@ specifier_types = {v: k for k, v in type_specifiers.items()}
 type_specifiers.update({bool: "?", int: "l", float: "d"})
 
 
-try:
-    # Python2
-    type_specifiers[unicode] = "s"
-except NameError:
-    # Python3
-    pass
-
-
 def convert_to_type_tuple_value(value: Any) -> Tuple[Any, Any]:
     # cheaper than a subclass check
+    value_for_set: Any
+    spec: Union[str, Tuple[str, Any, List]]
     if value.__class__ is Array:
         if issubclass(value.typ, Enum):
             spec = "as"

@@ -3,7 +3,7 @@ from __future__ import division
 
 import re
 from enum import Enum
-from typing import Dict, List
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 from annotypes import add_call_types
@@ -12,6 +12,7 @@ from scanpointgenerator import CompoundGenerator
 from malcolm.core import Block, Future, PartRegistrar, Put, Request
 from malcolm.modules import builtin, scanning
 from malcolm.modules.pmac.util import get_motion_trigger
+from malcolm.modules.scanning.infos import MinTurnaroundInfo, MotionTrigger
 
 from ..infos import MotorInfo
 from ..util import (
@@ -73,17 +74,17 @@ AMri = builtin.parts.AMri
 
 class PmacChildPart(builtin.parts.ChildPart):
     def __init__(
-        self, name: APartName, mri: AMri, initial_visibility: AIV = None
+        self, name: APartName, mri: AMri, initial_visibility: AIV = False
     ) -> None:
         super(PmacChildPart, self).__init__(name, mri, initial_visibility)
         # Axis information stored from validate
-        self.axis_mapping: Dict[str, MotorInfo] = None
+        self.axis_mapping: Dict[str, MotorInfo] = {}
         # Lookup of the completed_step value for each point
         self.completed_steps_lookup: List[int] = []
         # The minimum turnaround time for non-joined points
-        self.min_turnaround = 0
+        self.min_turnaround = 0.0
         # The minimum turnaround time for non-joined points
-        self.min_interval = 0
+        self.min_interval = 0.0
         # If we are currently loading then block loading more points
         self.loading = False
         # Where we have generated into profile
@@ -91,10 +92,10 @@ class PmacChildPart(builtin.parts.ChildPart):
         # Where we should stop loading points
         self.steps_up_to = 0
         # What sort of triggers to output
-        self.output_triggers = None
+        self.output_triggers: Optional[MotionTrigger] = None
         # Profile points that haven't been sent yet
         # {timeArray/velocityMode/userPrograms/a/b/c/u/v/w/x/y/z: [elements]}
-        self.profile = {}
+        self.profile: Dict[str, List] = {}
         # accumulated intervals since the last PVT point used by sparse
         # trajectory logic
         self.time_since_last_pvt = 0
@@ -155,7 +156,7 @@ class PmacChildPart(builtin.parts.ChildPart):
         # servo cycle
         trigger = get_motion_trigger(part_info)
         if trigger != scanning.infos.MotionTrigger.EVERY_POINT:
-            return
+            return None
         # Find the duration
         assert generator.duration > 0, "Can only do fixed duration at the moment"
         servo_freq = child.servoFrequency()
@@ -175,6 +176,8 @@ class PmacChildPart(builtin.parts.ChildPart):
             new_generator = CompoundGenerator.from_dict(serialized)
             new_generator.duration = duration
             return scanning.infos.ParameterTweakInfo("generator", new_generator)
+        else:
+            return None
 
     def move_to_start(self, child: Block, cs_port: str, completed_steps: int) -> Future:
         # Work out what method to call
@@ -236,7 +239,9 @@ class PmacChildPart(builtin.parts.ChildPart):
             return
 
         # See if there is a minimum turnaround
-        infos = scanning.infos.MinTurnaroundInfo.filter_values(part_info)
+        infos: List[MinTurnaroundInfo] = scanning.infos.MinTurnaroundInfo.filter_values(
+            part_info
+        )
         if infos:
             assert len(infos) == 1, "Expected 0 or 1 MinTurnaroundInfos, got %d" % len(
                 infos
@@ -276,6 +281,7 @@ class PmacChildPart(builtin.parts.ChildPart):
             userPrograms=[UserPrograms.ZERO_PROGRAM],
         )
         child.executeProfile()
+        fs: Union[List, Future]
         if motion_axes:
             # Start off the move to the start
             fs = self.move_to_start(child, cs_port, completed_steps)
@@ -406,6 +412,7 @@ class PmacChildPart(builtin.parts.ChildPart):
     }
 
     def get_user_program(self, point_type: PointType) -> int:
+        assert self.output_triggers, "No output triggers"
         return self.user_program[self.output_triggers][point_type]
 
     def calculate_profile_from_velocities(

@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 from annotypes import add_call_types
 
 from malcolm.core import AttributeModel, Part, PartRegistrar, TableMeta
@@ -12,7 +14,7 @@ class DatasetTablePart(Part):
     """Exposes an Attribute that reports the datasets that will be written
     during a scan"""
 
-    datasets: AttributeModel = None
+    datasets: Optional[AttributeModel] = None
 
     def setup(self, registrar: PartRegistrar) -> None:
         self.datasets = TableMeta.from_table(
@@ -27,7 +29,11 @@ class DatasetTablePart(Part):
     def on_post_configure(self, part_info: APartInfo) -> None:
         # Update the dataset table
         name, filename, typ, rank, path, uid = [], [], [], [], [], []
-        for i in DatasetProducedInfo.filter_values(part_info):
+        i: DatasetProducedInfo
+        filtered_values: List[DatasetProducedInfo] = DatasetProducedInfo.filter_values(
+            part_info
+        )
+        for i in filtered_values:
             name.append(i.name)
             filename.append(i.filename)
             typ.append(i.type)
@@ -35,7 +41,8 @@ class DatasetTablePart(Part):
             path.append(i.path)
             uid.append(i.uniqueid)
         datasets_table = DatasetTable(name, filename, typ, rank, path, uid)
-        self.datasets.set_value(datasets_table)
+        if self.datasets:
+            self.datasets.set_value(datasets_table)
 
     def on_reset(self):
         self.datasets.set_value(None)

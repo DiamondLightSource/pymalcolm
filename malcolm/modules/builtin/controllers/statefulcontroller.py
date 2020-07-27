@@ -68,6 +68,7 @@ class StatefulController(BasicController):
 
     def create_part_contexts(self) -> Dict[Part, Context]:
         part_contexts = OrderedDict()
+        assert self.process, "No attached process"
         for part in self.parts.values():
             part_contexts[part] = Context(self.process)
         return part_contexts

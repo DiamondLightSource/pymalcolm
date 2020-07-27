@@ -1,6 +1,6 @@
-from typing import Callable, Dict, TypeVar
+from typing import Any, Callable, Dict, Mapping, Sequence, TypeVar, Union
 
-from annotypes import NO_DEFAULT, Anno, Any, Array, Mapping, Sequence, Union
+from annotypes import NO_DEFAULT, Anno, Array
 from scanpointgenerator import CompoundGenerator
 
 from malcolm.compat import OrderedDict
@@ -15,15 +15,15 @@ with Anno("The Infos returned from other Parts"):
     APartInfo = Mapping[str, Array[Info]]
 UPartInfo = Union[APartInfo, Mapping[str, Sequence[Info]]]
 with Anno("Infos about current Part status to be passed to other parts"):
-    AInfos = Array[Info]
+    AInfos = Union[Array[Info]]
 
 with Anno("Generator instance providing specification for scan"):
-    AGenerator = CompoundGenerator
+    AGenerator = Union[CompoundGenerator]
 with Anno("List of axes in inner dimension of generator that should be moved"):
-    AAxesToMove = Array[str]
+    AAxesToMove = Union[Array[str]]
 UAxesToMove = Union[AAxesToMove, Sequence[str]]
 with Anno("Parameters that need to be changed to make them compatible"):
-    AParameterTweakInfos = Array[ParameterTweakInfo]
+    AParameterTweakInfos = Union[Array[ParameterTweakInfo]]
 UInfos = Union[AInfos, Sequence[Info], Info, None]
 UParameterTweakInfos = Union[
     AParameterTweakInfos, Sequence[ParameterTweakInfo], ParameterTweakInfo, None
@@ -48,7 +48,7 @@ AContext = builtin.hooks.AContext
 ControllerHook = builtin.hooks.ControllerHook
 
 
-def check_array_info(anno: T, value: Any) -> T:
+def check_array_info(anno: Array, value: Any) -> T:
     assert anno.is_array and issubclass(anno.typ, Info), (
         "Expected Anno wrapping Array[something], got %s" % anno
     )

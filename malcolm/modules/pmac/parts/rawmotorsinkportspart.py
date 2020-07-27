@@ -1,3 +1,5 @@
+from typing import List
+
 from annotypes import Anno
 
 from malcolm.core import (
@@ -42,10 +44,10 @@ class RawMotorSinkPortsPart(Part):
         builtin.util.set_tags(meta, group=group)
         self.axis_num_attr = meta.create_attribute_model()
         # Subscriptions
-        self.monitors = []
+        self.monitors: List = []
         self.port = None
         self.axis = None
-        self.port_choices = []
+        self.port_choices: List = []
 
     def setup(self, registrar: PartRegistrar) -> None:
         registrar.add_attribute_model("pmac", self.pmac_attr)

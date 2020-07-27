@@ -3,9 +3,9 @@ import inspect
 import logging
 import os
 from collections.abc import MutableSequence
-from typing import Callable, Dict, List, Tuple
+from typing import Any, Callable, Dict, List, Tuple
 
-from annotypes import NO_DEFAULT, Anno, Any
+from annotypes import NO_DEFAULT, Anno
 from ruamel import yaml
 
 from malcolm.compat import OrderedDict, raise_with_traceback

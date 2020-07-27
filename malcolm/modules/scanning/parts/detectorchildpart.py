@@ -1,6 +1,6 @@
-from typing import Dict, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple, cast
 
-from annotypes import Anno, Any, add_call_types, stringify_error
+from annotypes import Anno, add_call_types, stringify_error
 from scanpointgenerator import (
     CompoundGenerator,
     SquashingExcluder,
@@ -64,7 +64,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
         self.initial_frames_per_step = initial_frames_per_step
         self.frames_per_step = initial_frames_per_step
         # Stored between runs
-        self.run_future: Future = None
+        self.run_future: Optional[Future] = None
         # If it was faulty at init, allow it to exist, and ignore reset commands
         # but don't let it be configured or run
         self.faulty = False
@@ -104,6 +104,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
         columns = configure_info.metas["detectors"].elements
         columns["name"].set_writeable(False)
         columns["mri"].set_writeable(False)
+        assert self.registrar, "No registrar found"
         self.registrar.report(configure_info)
         return ret
 
@@ -121,8 +122,8 @@ class DetectorChildPart(builtin.parts.ChildPart):
         try:
             super(DetectorChildPart, self).on_init(context)
         except BadValueError:
-            self.log.exception(
-                "Detector %s was faulty at init and is not usable", self.name
+            self.log_exception(
+                f"Detector {self.name} was faulty at init and is not usable"
             )
             self.faulty = True
 
@@ -153,10 +154,11 @@ class DetectorChildPart(builtin.parts.ChildPart):
         )
         ret = []
         tweak_detectors = False
-        if self.name not in detectors.name:
-            # There isn't a row for us, so add one in on validate, it will be
-            # disabled but that is truthful
-            tweak_detectors = True
+        if detectors:
+            if self.name not in detectors.name:
+                # There isn't a row for us, so add one in on validate, it will be
+                # disabled but that is truthful
+                tweak_detectors = True
 
         child = context.block_view(self.mri)
         takes_exposure = "exposure" in child.validate.meta.takes.elements
@@ -172,11 +174,12 @@ class DetectorChildPart(builtin.parts.ChildPart):
                 )
 
         # Check something else is multiplying out triggers
-        multiframe = [
-            i
-            for i in DetectorMutiframeInfo.filter_values(part_info)
-            if i.mri == self.mri
-        ]
+        multiframe: List[DetectorMutiframeInfo] = []
+        info: DetectorMutiframeInfo
+        for info in DetectorMutiframeInfo.filter_values(part_info):
+            if cast(DetectorMutiframeInfo, info).mri == self.mri:
+                multiframe.append(info)
+
         if enable:
             if self.faulty:
                 raise BadValueError(
@@ -227,13 +230,15 @@ class DetectorChildPart(builtin.parts.ChildPart):
             # Detector table changed, make a new onw
             det_row = [enable, self.name, self.mri, exposure, frames_per_step]
             rows = []
-            for row in detectors.rows():
-                if row[1] == self.name:
-                    rows.append(det_row)
-                    det_row = None
-                else:
-                    rows.append(row)
-            if det_row:
+            if detectors:
+                append_det_row = True
+                for row in detectors.rows():
+                    if row[1] == self.name:
+                        rows.append(det_row)
+                        append_det_row = False
+                    else:
+                        rows.append(row)
+            if append_det_row:
                 rows.append(det_row)
             new_detectors = DetectorTable.from_rows(rows)
             ret.append(ParameterTweakInfo("detectors", new_detectors))
@@ -248,22 +253,23 @@ class DetectorChildPart(builtin.parts.ChildPart):
         file_template: AFileTemplate = "%s.h5",
     ) -> Tuple[bool, int, Dict[str, Any]]:
         # Check the detector table to see what we need to do
-        for enable, name, mri, exposure, frames in detectors.rows():
-            if name == self.name and enable:
-                # Found a row saying to take part
-                assert mri == self.mri, "%s has mri %s, passed %s" % (
-                    name,
-                    self.mri,
-                    mri,
-                )
-                break
-        else:
-            # Didn't find a row or no frames, don't take part
-            return False, 0, {}
+        if detectors:
+            for enable, name, mri, exposure, frames in detectors.rows():
+                if name == self.name and enable:
+                    # Found a row saying to take part
+                    assert mri == self.mri, "%s has mri %s, passed %s" % (
+                        name,
+                        self.mri,
+                        mri,
+                    )
+                    break
+            else:
+                # Didn't find a row or no frames, don't take part
+                return False, 0, {}
         # If we had more than one frame per point, multiply out
         if frames > 1:
             axis_name = name + "_frames_per_step"
-            axes_to_move = list(axes_to_move) + [axis_name]
+            axes_to_move = list(cast(Iterable, axes_to_move)) + [axis_name]
             # We need to multiply up the last dimension by frames
             serialized = dict(generator.to_dict())
             serialized["generators"] = list(serialized["generators"]) + [
@@ -309,7 +315,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
         if not enable:
             # We aren't taking part in the scan
             self.frames_per_step = 0
-            return
+            return None
         else:
             assert self.frames_per_step > 0, (
                 "Zero frames per step for %s, this shouldn't happen" % self.name
@@ -349,7 +355,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
         except BadValueError:
             # If child went into Fault state, raise the friendlier run_future
             # exception
-            if child.state.value == ss.FAULT:
+            if child.state.value == ss.FAULT and self.run_future:
                 raise self.run_future.exception()
             else:
                 raise
@@ -377,4 +383,5 @@ class DetectorChildPart(builtin.parts.ChildPart):
         child.abort()
 
     def update_completed_steps(self, value: int) -> None:
+        assert self.registrar, "No registrar"
         self.registrar.report(RunProgressInfo(value // self.frames_per_step))

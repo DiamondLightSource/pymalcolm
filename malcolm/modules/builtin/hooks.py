@@ -1,6 +1,7 @@
 import weakref
+from typing import Any, Mapping, Sequence, TypeVar, Union
 
-from annotypes import Anno, Any, Array, Mapping, Sequence, TypeVar, Union
+from annotypes import Anno, Array
 
 from malcolm.core import Context, Hook, Part
 
@@ -38,34 +39,34 @@ class ControllerHook(Hook[T]):
         self.context.stop()
 
 
-class InitHook(ControllerHook[None]):
+class InitHook(ControllerHook):
     """Called when this controller is told to start by the process"""
 
 
-class ResetHook(ControllerHook[None]):
+class ResetHook(ControllerHook):
     """Called at reset() to reset all parts to a known good state"""
 
 
-class HaltHook(ControllerHook[None]):
+class HaltHook(ControllerHook):
     """Called when this controller is told to halt"""
 
 
-class DisableHook(ControllerHook[None]):
+class DisableHook(ControllerHook):
     """Called at disable() to stop all parts updating their attributes"""
 
 
 with Anno("The PortInfos for all the parts"):
-    APortMap = Mapping[str, Array[PortInfo]]
+    APortMap = Union[Mapping[str, Array[PortInfo]]]
 with Anno(
     "A possibly partial set of changes to the layout table that " "should be acted on"
 ):
     ALayoutTable = LayoutTable
 with Anno("The current layout information"):
-    ALayoutInfos = Array[LayoutInfo]
+    ALayoutInfos = Union[Array[LayoutInfo]]
 ULayoutInfos = Union[ALayoutInfos, Sequence[LayoutInfo], LayoutInfo, None]
 
 
-class LayoutHook(ControllerHook[ULayoutInfos]):
+class LayoutHook(ControllerHook):
     """Called when layout table set and at init to update child layout"""
 
     def __init__(
@@ -79,10 +80,10 @@ class LayoutHook(ControllerHook[ULayoutInfos]):
 
 
 with Anno("The serialized structure to load"):
-    AStructure = Mapping[str, Any]
+    AStructure = Union[Mapping[str, Any]]
 
 
-class LoadHook(ControllerHook[None]):
+class LoadHook(ControllerHook):
     """Called at load() to load child settings from a structure"""
 
     def __init__(
@@ -91,7 +92,7 @@ class LoadHook(ControllerHook[None]):
         super(LoadHook, self).__init__(part, context, structure=structure, init=init)
 
 
-class SaveHook(ControllerHook[AStructure]):
+class SaveHook(ControllerHook):
     """Called at save() to serialize child settings into a dict structure"""
 
     def validate_return(self, ret: AStructure) -> AStructure:

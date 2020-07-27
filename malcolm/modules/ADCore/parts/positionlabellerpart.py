@@ -74,6 +74,7 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         else:
             # This is rewinding or setting up for another batch, so the detector
             # will skip to a uniqueID that has not been produced yet
+            assert self.done_when_reaches, "Done when reaches not assigned"
             id_start = self.done_when_reaches + 1
             self.done_when_reaches += steps_to_do
         # Delete any remaining old positions
@@ -104,15 +105,16 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         child.stop()
 
     def load_more_positions(self, number_left: int, child: Any) -> None:
-        if (
-            not self.loading
-            and self.end_index < self.steps_up_to
-            and number_left < POSITIONS_PER_XML * N_LOAD_AHEAD
-        ):
-            self.loading = True
-            xml, self.end_index = self._make_xml(self.end_index)
-            child.xml.put_value(xml)
-            self.loading = False
+        if self.end_index and self.steps_up_to:
+            if (
+                not self.loading
+                and self.end_index < self.steps_up_to
+                and number_left < POSITIONS_PER_XML * N_LOAD_AHEAD
+            ):
+                self.loading = True
+                xml, self.end_index = self._make_xml(self.end_index)
+                child.xml.put_value(xml)
+                self.loading = False
 
     def _make_xml(self, start_index: int) -> Tuple[str, int]:
 
@@ -120,15 +122,17 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         xml = '<?xml version="1.0" ?><pos_layout><dimensions>'
 
         # Make an index for every hdf index
-        for i in range(len(self.generator.dimensions)):
-            xml += '<dimension name="d%d" />' % i
+        if self.generator:
+            for i in range(len(self.generator.dimensions)):
+                xml += '<dimension name="d%d" />' % i
 
         # Add the actual positions
         xml += "</dimensions><positions>"
 
         end_index = start_index + POSITIONS_PER_XML
-        if end_index > self.steps_up_to:
-            end_index = self.steps_up_to
+        if self.steps_up_to:
+            if end_index > self.steps_up_to:
+                end_index = self.steps_up_to
 
         for i in range(start_index, end_index):
             point = self.generator.get_point(i)

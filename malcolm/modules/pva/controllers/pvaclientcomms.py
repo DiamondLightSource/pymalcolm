@@ -16,7 +16,7 @@ class PvaClientComms(builtin.controllers.ClientComms):
 
     _monitors = None
     _ctxt = None
-    _queues = {}
+    _queues: Dict[str, Queue] = {}
 
     def do_init(self):
         super(PvaClientComms, self).do_init()

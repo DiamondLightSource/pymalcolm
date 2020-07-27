@@ -1,5 +1,6 @@
 import shutil
 import tempfile
+from typing import Dict
 
 import pytest
 from mock import MagicMock
@@ -10,7 +11,15 @@ from scanpointgenerator import (
     StaticPointGenerator,
 )
 
-from malcolm.core import Context, NumberMeta, Part, PartRegistrar, Process, StringMeta
+from malcolm.core import (
+    AttributeModel,
+    Context,
+    NumberMeta,
+    Part,
+    PartRegistrar,
+    Process,
+    StringMeta,
+)
 from malcolm.modules.ADPandABlocks.blocks import panda_pulse_trigger_block
 from malcolm.modules.ADPandABlocks.parts import PandAPulseTriggerPart
 from malcolm.modules.builtin.controllers import BasicController, ManagerController
@@ -24,8 +33,8 @@ from malcolm.testutil import ChildTestCase
 
 
 class PulsePart(Part):
-    mocks = None
-    units = None
+    mocks: Dict[str, MagicMock] = {}
+    units: Dict[str, AttributeModel] = {}
 
     def setup(self, registrar: PartRegistrar) -> None:
         self.mocks = {}

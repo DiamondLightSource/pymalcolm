@@ -1,7 +1,6 @@
-from __future__ import print_function
-
 import difflib
 import unittest
+from typing import Dict, List, Tuple
 
 from p4p import Type, Value
 from p4p.client.raw import RemoteError
@@ -73,7 +72,7 @@ health_attribute_tuple = (
     ],
 )
 
-empty_map_meta_tuple = (
+empty_map_meta_tuple: Tuple[str, str, List] = (
     "S",
     "malcolm:core/MapMeta:1.0",
     [("elements", ("S", None, [])), ("required", "as")],
@@ -114,7 +113,7 @@ empty_method_tuple = (
     ],
 )
 
-empty_map_meta_dict = {"elements": {}, "required": []}
+empty_map_meta_dict: Dict = {"elements": {}, "required": []}
 
 empty_method_log_dict = {
     "value": {},

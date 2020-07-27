@@ -30,7 +30,7 @@ def et_to_string(element: ET.Element) -> str:
     try:
         xml += ET.tostring(element, encoding="unicode")
     except LookupError:
-        xml += ET.tostring(element)
+        xml += ET.tostring(element).decode()
     return xml
 
 

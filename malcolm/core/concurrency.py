@@ -27,7 +27,7 @@ class Spawned(object):
 
     def __init__(self, func: Callable[..., Any], args: Tuple, kwargs: Dict) -> None:
         self._result_queue = Queue()
-        self._result: Union[T, Exception] = self.NO_RESULT
+        self._result: Union[Any, Exception] = self.NO_RESULT
         self._function = func
         self._args = args
         self._kwargs = kwargs

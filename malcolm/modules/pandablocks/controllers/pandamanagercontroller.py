@@ -1,5 +1,5 @@
 import time
-from typing import Dict, Sequence, Set, Tuple
+from typing import Any, Dict, Sequence, Set, Tuple
 
 from annotypes import Anno
 from cothread.cosocket import socket
@@ -278,7 +278,7 @@ class PandAManagerController(builtin.controllers.ManagerController):
     def handle_changes(self, changes: Sequence[Tuple[str, str]]) -> None:
         ts = TimeStamp()
         # {block_name: {field_name: field_value}}
-        block_changes = {}
+        block_changes: Dict[str, Any] = {}
         # {full_field: field_value}
         bus_changes = {}
 
@@ -292,8 +292,8 @@ class PandAManagerController(builtin.controllers.ManagerController):
             block_changes.setdefault(block_name, {})[field_name] = v
 
         # Work out which change is needed for which block
-        for k, v in changes:
-            self._handle_change(k, v, bus_changes, block_changes, bit_out_changes)
+        for key, value in changes:
+            self._handle_change(key, value, bus_changes, block_changes, bit_out_changes)
 
         # Notify the Blocks that they need to handle these changes
         if bus_changes:

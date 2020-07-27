@@ -47,6 +47,8 @@ class MisbehavingPart(MotionChildPart):
             new_generator = CompoundGenerator.from_dict(serialized)
             new_generator.duration = 0.1
             return ParameterTweakInfo("generator", new_generator)
+        else:
+            return None
 
     # Allow CamelCase for arguments as they will be serialized by parent
     # noinspection PyPep8Naming

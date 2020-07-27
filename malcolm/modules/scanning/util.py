@@ -5,8 +5,10 @@ rules are applied:
 - All types required to initialize info classes are in the infos namespace
 - util depends on hooks and infos (not vice versa)"""
 
+from typing import Any, Dict, Sequence, Union
+
 import numpy as np
-from annotypes import Anno, Any, Array, Sequence, Serializable, Union
+from annotypes import Anno, Array, Serializable
 from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import (
@@ -42,7 +44,7 @@ class ConfigureParams(Serializable):
     ) -> None:
         if kwargs:
             # Got some additional args to report
-            self.call_types = ConfigureParams.call_types.copy()
+            self.call_types: Dict[str, Anno] = ConfigureParams.call_types.copy()
             for k in kwargs:
                 # We don't use this apart from its presence,
                 # so no need to fill in description, typ, etc.
@@ -78,17 +80,17 @@ class PointGeneratorMeta(VMeta):
 
 
 with Anno("Dataset names"):
-    ADatasetNames = Array[str]
+    ADatasetNames = Union[Array[str]]
 with Anno("Filenames of HDF files relative to fileDir"):
-    AFilenames = Array[str]
+    AFilenames = Union[Array[str]]
 with Anno("Types of dataset"):
-    ADatasetTypes = Array[DatasetType]
+    ADatasetTypes = Union[Array[DatasetType]]
 with Anno("Rank (number of dimensions) of the dataset"):
-    ARanks = Array[np.int32]
+    ARanks = Union[Array[np.int32]]
 with Anno("Dataset paths within HDF files"):
-    APaths = Array[str]
+    APaths = Union[Array[str]]
 with Anno("UniqueID array paths within HDF files"):
-    AUniqueIDs = Array[str]
+    AUniqueIDs = Union[Array[str]]
 UDatasetNames = Union[ADatasetNames, Sequence[str]]
 UFilenames = Union[AFilenames, Sequence[str]]
 UDatasetTypes = Union[ADatasetTypes, Sequence[DatasetType]]
@@ -118,15 +120,15 @@ class DatasetTable(Table):
 
 
 with Anno("Whether the detectors are enabled or not"):
-    AEnable = Array[bool]
+    AEnable = Union[Array[bool]]
 with Anno("Detector names"):
-    ADetectorNames = Array[str]
+    ADetectorNames = Union[Array[str]]
 with Anno("Detector block mris"):
-    ADetectorMris = Array[str]
+    ADetectorMris = Union[Array[str]]
 with Anno("Exposure of each detector frame for the current scan"):
-    AExposures = Array[float]
+    AExposures = Union[Array[float]]
 with Anno("Number of detector frames for each generator point"):
-    AFramesPerStep = Array[np.int32]
+    AFramesPerStep = Union[Array[np.int32]]
 UEnable = Union[AEnable, Sequence[bool]]
 UDetectorNames = Union[ADetectorNames, Sequence[str]]
 UDetectorMris = Union[ADetectorMris, Sequence[str]]

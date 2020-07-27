@@ -1,5 +1,6 @@
 import unittest
 from collections import OrderedDict
+from typing import Union
 
 import numpy
 from annotypes import Anno, Array
@@ -7,9 +8,9 @@ from annotypes import Anno, Array
 from malcolm.core import Table
 
 with Anno("Row A"):
-    AA = Array[str]
+    AA = Union[Array[str]]
 with Anno("Row B"):
-    AB = Array[int]
+    AB = Union[Array[int]]
 
 
 class MyTable(Table):

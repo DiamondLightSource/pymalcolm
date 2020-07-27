@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, Optional
 
 from annotypes import add_call_types
 from ruamel import yaml
@@ -8,7 +9,6 @@ from scanpointgenerator import CompoundGenerator, LineGenerator
 
 from malcolm.core import (
     AbortedError,
-    AttributeModel,
     NotWriteableError,
     NumberMeta,
     PartRegistrar,
@@ -17,8 +17,8 @@ from malcolm.core import (
     Widget,
     config_tag,
 )
-from malcolm.core.views import Block
 from malcolm.modules import builtin
+from malcolm.modules.builtin.parts import ChildPart
 from malcolm.modules.scanning.util import RunnableStates
 
 from ..hooks import AContext
@@ -66,93 +66,74 @@ class Scan:
         self.repeats = repeats
 
 
-class ScanRunnerPart(builtin.parts.ChildPart):
+class ScanRunnerPart(ChildPart):
     """Used to run sets of scans defined in a YAML file with a scan block"""
 
-    # Attributes
-    runner_state: AttributeModel = None
-    runner_status_message: AttributeModel = None
-    scans_configured: AttributeModel = None
-    scans_completed: AttributeModel = None
-    scan_file: AttributeModel = None
-    scan_successes: AttributeModel = None
-    scan_failures: AttributeModel = None
-    current_scan_set: AttributeModel = None
-    output_directory: AttributeModel = None
-
-    def __init__(self: APartName, name: AMri, mri: AMri) -> None:
-        super(ScanRunnerPart, self).__init__(
-            name, mri, stateful=False, initial_visibility=True
-        )
+    def __init__(self, name: APartName, mri: AMri) -> None:
+        super().__init__(name, mri, stateful=False, initial_visibility=True)
         self.runner_config = None
-        self.context = None
-        self.scan_sets = {}
-
-    def setup(self, registrar: PartRegistrar) -> None:
-        super(ScanRunnerPart, self).setup(registrar)
+        self.context: Optional[AContext] = None
+        self.scan_sets: Dict[str, Scan] = {}
 
         self.runner_state = StringMeta(
             "Runner state", tags=Widget.TEXTUPDATE.tag()
         ).create_attribute_model("Idle")
-        registrar.add_attribute_model(
-            "runnerState", self.runner_state, self.runner_state.set_value
-        )
-
         self.runner_status_message = StringMeta(
             "Runner status message", tags=Widget.TEXTUPDATE.tag()
         ).create_attribute_model("Idle")
+        self.scan_file = StringMeta(
+            "Path to input scan file", tags=[config_tag(), Widget.TEXTINPUT.tag()]
+        ).create_attribute_model()
+        self.scans_configured = NumberMeta(
+            "int64", "Number of configured scans", tags=Widget.TEXTUPDATE.tag()
+        ).create_attribute_model()
+        self.current_scan_set = StringMeta(
+            "Current scan set", tags=Widget.TEXTUPDATE.tag()
+        ).create_attribute_model()
+        self.scans_completed = NumberMeta(
+            "int64", "Number of scans completed", tags=Widget.TEXTUPDATE.tag()
+        ).create_attribute_model()
+        self.scan_successes = NumberMeta(
+            "int64", "Successful scans", tags=[Widget.TEXTUPDATE.tag()]
+        ).create_attribute_model()
+        self.scan_failures = NumberMeta(
+            "int64", "Failed scans", tags=[Widget.TEXTUPDATE.tag()]
+        ).create_attribute_model()
+        self.output_directory = StringMeta(
+            "Root output directory (will create a sub-directory inside)",
+            tags=[config_tag(), Widget.TEXTINPUT.tag()],
+        ).create_attribute_model()
+
+    def setup(self, registrar: PartRegistrar) -> None:
+        super().setup(registrar)
+
+        # Register attributes
+        registrar.add_attribute_model(
+            "runnerState", self.runner_state, self.runner_state.set_value
+        )
         registrar.add_attribute_model(
             "runnerStatusMessage",
             self.runner_status_message,
             self.runner_status_message.set_value,
         )
-
-        self.scan_file = StringMeta(
-            "Path to input scan file", tags=[config_tag(), Widget.TEXTINPUT.tag()]
-        ).create_attribute_model()
         registrar.add_attribute_model(
             "scanFile", self.scan_file, self.scan_file.set_value
         )
-
-        self.scans_configured = NumberMeta(
-            "int64", "Number of scans configured", tags=Widget.TEXTUPDATE.tag()
-        ).create_attribute_model()
         registrar.add_attribute_model(
             "scansConfigured", self.scans_configured, self.scans_configured.set_value
         )
-
-        self.current_scan_set = StringMeta(
-            "Current scan set", tags=Widget.TEXTUPDATE.tag()
-        ).create_attribute_model()
         registrar.add_attribute_model(
             "currentScanSet", self.current_scan_set, self.current_scan_set.set_value
         )
-
-        self.scans_completed = NumberMeta(
-            "int64", "Number of scans completed", tags=Widget.TEXTUPDATE.tag()
-        ).create_attribute_model()
         registrar.add_attribute_model(
             "scansCompleted", self.scans_completed, self.scans_completed.set_value
         )
-
-        self.scan_successes = NumberMeta(
-            "int64", "Successful scans", tags=[Widget.TEXTUPDATE.tag()]
-        ).create_attribute_model()
         registrar.add_attribute_model(
             "scanSuccesses", self.scan_successes, self.scan_successes.set_value
         )
-
-        self.scan_failures = NumberMeta(
-            "int64", "Failed scans", tags=[Widget.TEXTUPDATE.tag()]
-        ).create_attribute_model()
         registrar.add_attribute_model(
             "scanFailures", self.scan_failures, self.scan_failures.set_value
         )
-
-        self.output_directory = StringMeta(
-            "Root output directory (will create a sub-directory inside)",
-            tags=[config_tag(), Widget.TEXTINPUT.tag()],
-        ).create_attribute_model()
         registrar.add_attribute_model(
             "outputDirectory", self.output_directory, self.output_directory.set_value
         )
@@ -172,7 +153,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
             self.runner_status_message.set_value("Could not read scan file")
             raise
 
-    def parse_yaml(self, string: str) -> ...:
+    def parse_yaml(self, string: str) -> Any:
         try:
             parsed_yaml = yaml.safe_load(string)
             return parsed_yaml
@@ -339,11 +320,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         return set_directory
 
     def run_scan_set(
-        self,
-        scan_set: Scan,
-        scan_block: Block,
-        sub_directory: str,
-        report_filepath: str,
+        self, scan_set: Scan, scan_block: Any, sub_directory: str, report_filepath: str,
     ) -> None:
         # Update scan set
         self.current_scan_set.set_value(scan_set.name)
@@ -378,7 +355,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
     def run_scan(
         self,
         set_name: str,
-        scan_block: Block,
+        scan_block: Any,
         set_directory: str,
         scan_number: int,
         report_filepath: str,
@@ -389,6 +366,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
                 set_name=set_name, scan_no=scan_number
             )
         )
+        assert self.context, "No context found"
 
         # Make individual scan directory
         scan_directory = self.create_and_get_scan_directory(set_directory, scan_number)
@@ -409,10 +387,9 @@ class ScanRunnerPart(builtin.parts.ChildPart):
             outcome = ScanOutcome.MISCONFIGURED
         except Exception as e:
             outcome = ScanOutcome.MISCONFIGURED
-            self.log.error(
-                "Unhandled exception for scan {no} in {set}: ({t}) {e}".format(
-                    t=type(e), no=scan_number, set=set_name, e=e
-                )
+            self.log_error(
+                f"Unhandled exception for scan {scan_number} in {set_name}: "
+                f"({type(e)}) {e}"
             )
 
         # Run if configure was successful
@@ -430,9 +407,10 @@ class ScanRunnerPart(builtin.parts.ChildPart):
                 outcome = ScanOutcome.FAIL
             except Exception as e:
                 outcome = ScanOutcome.OTHER
-                self.log.error(
-                    ("Unhandled exception for scan {no} in {set}: " "({t}) {e}").format(
-                        t=type(e), no=scan_number, set=set_name, e=e
+                self.log_error(
+                    (
+                        f"Unhandled exception for scan {scan_number} in {set_name}: "
+                        f"({type(e)}) {e}"
                     )
                 )
             else:

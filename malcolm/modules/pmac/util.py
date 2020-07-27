@@ -11,6 +11,7 @@ from scanpointgenerator.core.point import Points
 
 from malcolm.core import Context
 from malcolm.modules import builtin, scanning
+from malcolm.modules.scanning.infos import MotionTriggerInfo
 
 from .infos import MotorInfo
 
@@ -260,7 +261,9 @@ def profile_between_points(
 def get_motion_trigger(
     part_info: scanning.hooks.APartInfo,
 ) -> scanning.infos.MotionTrigger:
-    infos = scanning.infos.MotionTriggerInfo.filter_values(part_info)
+    infos: List[MotionTriggerInfo] = scanning.infos.MotionTriggerInfo.filter_values(
+        part_info
+    )
     if infos:
         assert len(infos) == 1, "Expected 0 or 1 MotionTriggerInfo, got %d" % len(infos)
         trigger = infos[0].trigger

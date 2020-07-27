@@ -1,4 +1,4 @@
-from annotypes import Any
+from typing import Any
 
 from malcolm.core import Context
 from malcolm.modules import ADCore, builtin, scanning
@@ -23,11 +23,11 @@ class XmapDriverPart(ADCore.parts.DetectorDriverPart):
         context: Context,
         completed_steps: scanning.hooks.ACompletedSteps,
         steps_to_do: scanning.hooks.AStepsToDo,
-        duration: int,
+        duration: float,
         part_info: scanning.hooks.APartInfo,
         **kwargs: Any,
     ) -> None:
-        super(XmapDriverPart, self).setup_detector(
+        super().setup_detector(
             context,
             completed_steps,
             steps_to_do,

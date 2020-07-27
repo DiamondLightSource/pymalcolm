@@ -1,6 +1,6 @@
-from typing import Any, Callable, List, TypeVar
+from typing import Any, Callable, List, Sequence, Set, TypeVar, Union, cast
 
-from annotypes import Anno, Array, Sequence, Union
+from annotypes import Anno, Array
 
 from malcolm.compat import OrderedDict
 
@@ -10,7 +10,6 @@ from .errors import TimeoutError
 from .hook import AHookable, Hook, start_hooks, wait_hooks
 from .info import Info
 from .loggable import Loggable
-from .views import Block
 
 T = TypeVar("T")
 
@@ -26,7 +25,7 @@ STOPPING = 3
 
 
 with Anno("The list of currently published Controller mris"):
-    APublished = Array[str]
+    APublished = Union[Array[str]]
 
 
 class UnpublishedInfo(Info):
@@ -34,7 +33,7 @@ class UnpublishedInfo(Info):
         self.mri = mri
 
 
-class ProcessPublishHook(Hook[None]):
+class ProcessPublishHook(Hook):
     """Called when a new block is added"""
 
     def __init__(self, child: AHookable, published: APublished) -> None:
@@ -42,13 +41,13 @@ class ProcessPublishHook(Hook[None]):
 
 
 with Anno("Each of these reports that the controller should not be published"):
-    AUnpublishedInfos = Array[UnpublishedInfo]
+    AUnpublishedInfos = Union[Array[UnpublishedInfo]]
 UUnpublishedInfos = Union[
     AUnpublishedInfos, Sequence[UnpublishedInfo], UnpublishedInfo, None
 ]
 
 
-class ProcessStartHook(Hook[None]):
+class ProcessStartHook(Hook):
     """Called at start() to start all child controllers"""
 
     def validate_return(self, ret: UUnpublishedInfos) -> AUnpublishedInfos:
@@ -57,7 +56,7 @@ class ProcessStartHook(Hook[None]):
         return AUnpublishedInfos(ret)
 
 
-class ProcessStopHook(Hook[None]):
+class ProcessStopHook(Hook):
     """Called at stop() to gracefully stop all child controllers"""
 
 
@@ -68,9 +67,9 @@ class Process(Loggable):
         self.set_logger(process_name=name)
         self.name = name
         self._controllers = OrderedDict()  # mri -> Controller
-        self._unpublished = set()  # [mri] for unpublishable controllers
+        self._unpublished: Set[str] = set()  # [mri] for unpublishable controllers
         self.state = STOPPED
-        self._spawned = []
+        self._spawned: List[Spawned] = []
         self._spawn_count = 0
 
     def start(self, timeout=DEFAULT_TIMEOUT):
@@ -92,7 +91,10 @@ class Process(Loggable):
     ) -> bool:
         # Start just the given controller_list
         infos = self._run_hook(ProcessStartHook, controller_list, timeout=timeout)
-        new_unpublished = set(info.mri for info in UnpublishedInfo.filter_values(infos))
+        info: UnpublishedInfo
+        new_unpublished = set()
+        for info in UnpublishedInfo.filter_values(infos):
+            new_unpublished.add(cast(UnpublishedInfo, info).mri)
         self._unpublished |= new_unpublished
         if len(controller_list) > len(new_unpublished):
             return True
@@ -251,7 +253,7 @@ class Process(Loggable):
         except KeyError:
             raise ValueError("No controller registered for mri '%s'" % mri)
 
-    def block_view(self, mri: str) -> Block:
+    def block_view(self, mri: str) -> Any:
         """Get a Block view from a Controller with given mri"""
         controller = self.get_controller(mri)
         block = controller.block_view()

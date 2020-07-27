@@ -1,7 +1,7 @@
 import logging
-from typing import Callable, List, Tuple
+from typing import Any, Callable, List, Mapping, Sequence, Tuple, Union
 
-from annotypes import Anno, Any, Array, Mapping, Sequence, Serializable, Union
+from annotypes import Anno, Array, Serializable
 
 from .response import Delta, Error, Response, Return, Update
 
@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 with Anno("ID that should be used for any responses"):
     AId = int
 with Anno("Path to target Block substructure"):
-    APath = Array[str]
+    APath = Union[Array[str]]
 with Anno("Value to put"):
     AValue = Any
 with Anno("If set then return the current value in Return when Put completes"):
@@ -36,10 +36,10 @@ class Request(Serializable):
     def __init__(self, id: AId = 0) -> None:
         self.id = id
 
-        def callback(_: Response) -> None:
+        def callback(response: Response) -> None:
             pass
 
-        self.callback = callback
+        self.callback: Callback = callback
 
     def set_callback(self, callback: Callback) -> None:
         """Set the callback to be called on response"""
@@ -81,7 +81,7 @@ class PathRequest(Request):
 class Get(PathRequest):
     """Create a Get Request object"""
 
-    __slots__ = []
+    __slots__: List[str] = []
 
 
 @Serializable.register_subclass("malcolm:core/Put:1.0")
@@ -146,4 +146,4 @@ class Subscribe(PathRequest):
 class Unsubscribe(Request):
     """Create an Unsubscribe Request object"""
 
-    __slots__ = []
+    __slots__: List[str] = []

@@ -1,4 +1,4 @@
-from annotypes import Any
+from typing import Any
 
 from malcolm.core import Alarm, Part, PartRegistrar, Port, StringMeta
 from malcolm.modules import builtin, ca

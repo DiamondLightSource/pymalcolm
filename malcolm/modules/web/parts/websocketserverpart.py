@@ -3,7 +3,7 @@ import logging
 import os
 import socket
 import struct
-from typing import Dict
+from typing import Dict, Optional
 
 import cothread
 from annotypes import Anno, add_call_types, deserialize_object, json_decode, json_encode
@@ -62,17 +62,17 @@ def get_ip_validator(ifname):
 # For some reason tornado doesn't make us implement all abstract methods
 # noinspection PyAbstractClass
 class MalcWebSocketHandler(WebSocketHandler):
-    _registrar = None
-    _id_to_mri = None
+    _registrar: Optional[PartRegistrar] = None
+    _id_to_mri: Optional[Dict[int, str]] = None
     _validators = None
     _writeable = None
-    _queue = None
+    _queue: Optional[Queue] = None
     _counter = None
 
     def initialize(self, registrar=None, validators=()):
-        self._registrar: PartRegistrar = registrar
+        self._registrar = registrar
         # {id: mri}
-        self._id_to_mri: Dict[int, str] = {}
+        self._id_to_mri = {}
         self._validators = validators
         self._queue = Queue()
         self._counter = 0
@@ -148,13 +148,18 @@ class MalcWebSocketHandler(WebSocketHandler):
                 # Websocket is dead so we can clear the subscription key.
                 # Subsequent updates may come in before the unsubscribe, but
                 # ignore them as we can't do anything about it
-                mri = self._id_to_mri.pop(response.id, None)
-                if mri:
-                    log.info("WebSocket Error: unsubscribing from stale handle")
-                    unsubscribe = Unsubscribe(response.id)
-                    unsubscribe.set_callback(self.on_response)
-                    self._registrar.report(builtin.infos.RequestInfo(unsubscribe, mri))
-        cothread.Callback(self._queue.put, None)
+                if self._id_to_mri:
+                    mri = self._id_to_mri.pop(response.id, None)
+                    if mri:
+                        log.info("WebSocket Error: unsubscribing from stale handle")
+                        unsubscribe = Unsubscribe(response.id)
+                        unsubscribe.set_callback(self.on_response)
+                        if self._registrar:
+                            self._registrar.report(
+                                builtin.infos.RequestInfo(unsubscribe, mri)
+                            )
+            if self._queue:
+                cothread.Callback(self._queue.put, None)
 
     # http://stackoverflow.com/q/24851207
     # TODO: remove this when the web gui is hosted from the box

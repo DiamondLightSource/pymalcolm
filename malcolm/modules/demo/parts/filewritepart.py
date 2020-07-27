@@ -40,7 +40,7 @@ class FileWritePart(Part):
         # The hdf file we will write
         self._hdf: h5py.File = None
         # Configure args and progress info
-        self._exposure = None
+        self._exposure = 0.0
         self._generator: scanning.hooks.AGenerator = None
         self._completed_steps = 0
         self._steps_to_do = 0
@@ -97,6 +97,7 @@ class FileWritePart(Part):
         # Start time so everything is relative
         end_of_exposure = time.time() + self._exposure
         last_flush = end_of_exposure
+        assert self.registrar, "Part has no registrar"
         for i in range(
             self._completed_steps, self._completed_steps + self._steps_to_do
         ):
@@ -105,7 +106,7 @@ class FileWritePart(Part):
             # Simulate waiting for an exposure and writing the data
             wait_time = end_of_exposure - time.time()
             context.sleep(wait_time)
-            self.log.debug("Writing data for point %s", i)
+            self.log_debug(f"Writing data for point {i}")
             self._write_data(point, i)
             # Flush the datasets if it is time to
             if time.time() - last_flush > FLUSH_PERIOD:

@@ -1,6 +1,6 @@
-from annotypes import Any
+from typing import Any, Dict
 
-from malcolm.core import Part, PartRegistrar, Port, StringMeta
+from malcolm.core import AttributeModel, Part, PartRegistrar, Port, StringMeta
 from malcolm.modules import ca
 
 from ..util import CS_AXIS_NAMES
@@ -27,7 +27,7 @@ class CSSourcePortsPart(Part):
             on_connect=self.update_tags,
         )
         # These will be the "axis" Source Ports
-        self.axis_attrs = {}
+        self.axis_attrs: Dict[str, AttributeModel] = {}
 
     def setup(self, registrar: PartRegistrar) -> None:
         self.caa.setup(registrar, self.name, self.register_hooked)

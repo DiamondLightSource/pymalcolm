@@ -1,8 +1,8 @@
 import os
-from typing import Optional
+from typing import Any, List, Optional, Sequence, Union
 from xml.etree import cElementTree as ET
 
-from annotypes import Anno, Any, Array, Sequence, Union, add_call_types
+from annotypes import Anno, Array, add_call_types
 
 from malcolm.compat import et_to_string
 from malcolm.core import (
@@ -11,11 +11,13 @@ from malcolm.core import (
     BadValueError,
     Context,
     Future,
+    Info,
     PartRegistrar,
     TableMeta,
     config_tag,
 )
 from malcolm.modules import builtin, scanning
+from malcolm.modules.scanning.infos import ExposureDeadtimeInfo
 
 from ..infos import FilePathTranslatorInfo, NDArrayDatasetInfo, NDAttributeDatasetInfo
 from ..util import (
@@ -30,7 +32,7 @@ from ..util import (
 with Anno("Is main detector dataset useful to publish in DatasetTable?"):
     AMainDatasetUseful = bool
 with Anno("List of trigger modes that do not use hardware triggers"):
-    ASoftTriggerModes = Array[str]
+    ASoftTriggerModes = Union[Array[str]]
 USoftTriggerModes = Union[ASoftTriggerModes, Sequence[str]]
 
 # Pull re-used annotypes into our namespace in case we are subclassed
@@ -64,7 +66,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         self.extra_attributes = TableMeta.from_table(
             ExtraAttributesTable,
             "Extra attributes to be added to the dataset",
-            writeable=(
+            writeable=[
                 "name",
                 "pv",
                 "description",
@@ -72,7 +74,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
                 "sourceType",
                 "dataType",
                 "datasetType",
-            ),
+            ],
             extra_tags=[config_tag()],
         ).create_attribute_model()
         self.runs_on_windows = runs_on_windows
@@ -83,7 +85,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         # CompletedSteps = arrayCounter + self.uniqueid_offset
         self.uniqueid_offset = 0
         # A future that completes when detector start calls back
-        self.start_future: Future = None
+        self.start_future: Optional[Future] = None
 
     def setup_detector(
         self,
@@ -117,7 +119,9 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         # Might need to reset acquirePeriod as it's sometimes wrong
         # in some detectors
         try:
-            info = scanning.infos.ExposureDeadtimeInfo.filter_single_value(part_info)
+            info: ExposureDeadtimeInfo = ExposureDeadtimeInfo.filter_single_value(
+                part_info
+            )
         except BadValueError:
             # This is ok, no exposure info
             pass
@@ -239,7 +243,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
 
     @add_call_types
     def on_report_status(self) -> scanning.hooks.UInfos:
-        ret = []
+        ret: List[Info] = []
         if self.main_dataset_useful:
             ret.append(NDArrayDatasetInfo(rank=2))
         for name, dataset_type in zip(
@@ -318,6 +322,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         if not self.is_hardware_triggered:
             # Start now if we are software triggered
             self.arm_detector(context)
+        assert self.registrar, "No assigned registrar"
         self.wait_for_detector(
             context, self.registrar, event_timeout=self.frame_timeout
         )

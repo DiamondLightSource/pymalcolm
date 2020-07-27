@@ -1,7 +1,7 @@
 import unittest
-from typing import Any, Callable, List, Optional, Type
+from typing import Any, Callable, List, Optional, Sequence, Type, Union
 
-from annotypes import Sequence, Union, add_call_types
+from annotypes import add_call_types
 from mock import MagicMock as Mock
 from mock import patch
 
@@ -112,12 +112,13 @@ class ChildTestCase(unittest.TestCase):
             args_gen = getattr(func, "call_types", {}).keys
         if not isinstance(hooks, Sequence):
             hooks = [hooks]
-        for hook in hooks:
-            assert part.hooked[hook] == (func, args_gen)
+        if part.hooked:
+            for hook in hooks:
+                assert part.hooked[hook] == (func, args_gen)
 
 
 class PublishController(Controller):
-    published = []
+    published: List[APublished] = []
 
     def on_hook(self, hook):
         if isinstance(hook, ProcessPublishHook):

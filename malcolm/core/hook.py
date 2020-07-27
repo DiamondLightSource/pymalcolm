@@ -1,8 +1,20 @@
 import logging
 import time
-from typing import Callable, Dict, List, Optional, Tuple, Type, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generic,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
-from annotypes import Anno, Any, Generic, Sequence, TypeVar, WithCallTypes
+from annotypes import Anno, WithCallTypes
 
 from malcolm.compat import OrderedDict, getargspec
 
@@ -41,8 +53,8 @@ def make_args_gen(func: Callable) -> ArgsGen:
 class Hookable(Loggable, WithCallTypes):
     """Baseclass of something that can be attached to a hook"""
 
-    name: str = None
-    hooked: Dict[Type["Hook"], Tuple[Hooked, ArgsGen]] = None
+    name: Union[str, None] = None
+    hooked: Union[Dict[Type["Hook"], Tuple[Hooked, ArgsGen]], None] = None
 
     def register_hooked(
         self,
@@ -70,8 +82,11 @@ class Hookable(Loggable, WithCallTypes):
     def on_hook(self, hook: "Hook") -> None:
         """Takes a hook, and optionally calls hook.run on a function"""
         try:
-            func, args_gen = self.hooked[type(hook)]
-        except (KeyError, TypeError):
+            if self.hooked is not None:
+                func, args_gen = self.hooked[type(hook)]
+            else:
+                return
+        except KeyError:
             return
         else:
             hook(func, args_gen)
@@ -87,9 +102,9 @@ class Hook(Generic[T], WithCallTypes):
     def __init__(self, child: AHookable, **kwargs: Any) -> None:
         self.child = child
         self._kwargs = kwargs
-        self._queue: Queue = None
-        self._spawn: Callable[..., Spawned] = None
-        self.spawned: Spawned = None
+        self._queue: Union[Queue, None] = None
+        self._spawn: Union[Callable[..., Spawned], None] = None
+        self.spawned: Union[Spawned, None] = None
 
     @property
     def name(self):
@@ -123,9 +138,11 @@ class Hook(Generic[T], WithCallTypes):
             demanded
         ), "Hook demanded arguments %s, but only supplied %s" % (demanded, supplied)
         kwargs = {k: self._kwargs[k] for k in demanded}
-        self.spawned = self._spawn(self._run, func, kwargs)
+        if self._spawn is not None:
+            self.spawned = self._spawn(self._run, func, kwargs)
 
     def _run(self, func: Callable[..., T], kwargs: Dict[str, Any]) -> None:
+        result: Union[T, Exception]
         try:
             result = func(**kwargs)
             result = self.validate_return(result)
@@ -137,13 +154,14 @@ class Hook(Generic[T], WithCallTypes):
                 "%s: %s(**%s) raised exception %s", self.child, func, kwargs, e
             )
             result = e
-        self._queue.put((self, result))
+        if self._queue:
+            self._queue.put((self, result))
 
     def stop(self) -> None:
         """Override this if we can stop"""
         raise RuntimeError("%s cannot be stopped" % self.name)
 
-    def validate_return(self, ret: T) -> None:
+    def validate_return(self, ret: T) -> Any:
         """Override this if the function is expected to return something to
         to validate its value"""
         assert not ret, "Expected no return, got %s" % (ret,)
@@ -164,7 +182,7 @@ def start_hooks(hooks: List[Hook]) -> Tuple[Queue, List[Hook]]:
 
 
 def wait_hooks(
-    logger: logging.Logger,
+    logger: Optional[logging.Logger],
     hook_queue: Queue,
     hook_spawned: List[Hook],
     timeout: float = None,
@@ -174,35 +192,37 @@ def wait_hooks(
     # not time for them to run for
     # Wait for them all to finish
     return_dict = OrderedDict()
-    for hook in hook_spawned:
-        return_dict[hook.child.name] = None
+    for spawned_hook in hook_spawned:
+        return_dict[spawned_hook.child.name] = None
     start = time.time()
-    hook_spawned = set(hook_spawned)
-    while hook_spawned:
+    hook_spawned_set = set(hook_spawned)
+    while hook_spawned_set:
         hook: Hook
         ret: Any
         hook, ret = hook_queue.get()
-        hook_spawned.remove(hook)
+        hook_spawned_set.remove(hook)
         # Wait for the process to terminate
-        hook.spawned.wait(timeout)
+        if hook.spawned:
+            hook.spawned.wait(timeout)
         duration = time.time() - start
-        if hook_spawned:
-            logger.debug(
-                "%s: Child %s returned %r after %ss. Still waiting for %s",
-                hook.name,
-                hook.child.name,
-                ret,
-                duration,
-                [h.child.name for h in hook_spawned],
-            )
-        else:
-            logger.debug(
-                "%s: Child %s returned %r after %ss. Returning...",
-                hook.name,
-                hook.child.name,
-                ret,
-                duration,
-            )
+        if logger:
+            if hook_spawned_set:
+                logger.debug(
+                    "%s: Child %s returned %r after %ss. Still waiting for %s",
+                    hook.name,
+                    hook.child.name,
+                    ret,
+                    duration,
+                    [h.child.name for h in hook_spawned_set],
+                )
+            else:
+                logger.debug(
+                    "%s: Child %s returned %r after %ss. Returning...",
+                    hook.name,
+                    hook.child.name,
+                    ret,
+                    duration,
+                )
 
         if isinstance(ret, Exception) and exception_check:
             if not isinstance(ret, AbortedError):
@@ -212,7 +232,8 @@ def wait_hooks(
                     h.stop()
             # Wait for them to finish
             for h in hook_spawned:
-                h.spawned.wait(timeout)
+                if h.spawned:
+                    h.spawned.wait(timeout)
             raise ret
         else:
             return_dict[hook.child.name] = ret

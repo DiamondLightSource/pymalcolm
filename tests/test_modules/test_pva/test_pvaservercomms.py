@@ -58,20 +58,17 @@ class TestBlockHandler(unittest.TestCase):
         bad_response_message = "BadResponse: this is a bad response indeed"
         self.op_mock.done.assert_called_once_with(error=bad_response_message)
 
+        ordered_dict = OrderedDict([("typeid", "value_id")])
         rpc_call = call(
-            "%s: RPC method %s called with params %s",
-            self.controller_mock.mri,
-            method,
-            OrderedDict([("typeid", "value_id")]),
+            f"{self.controller_mock.mri}: RPC method {method} called with params "
+            f"{ordered_dict}"
         )
 
         response_call = call(
-            "%s: RPC method %s got a bad response (%s)",
-            self.controller_mock.mri,
-            method,
-            bad_response_message,
+            f"{self.controller_mock.mri}: RPC method {method} got a bad response "
+            f"({bad_response_message})"
         )
-        self.controller_mock.log.debug.assert_has_calls([rpc_call, response_call])
+        self.controller_mock.log_debug.assert_has_calls([rpc_call, response_call])
 
     @patch("malcolm.modules.pva.controllers.pvaservercomms.convert_value_to_dict")
     @patch("malcolm.modules.pva.controllers.pvaservercomms.Put")

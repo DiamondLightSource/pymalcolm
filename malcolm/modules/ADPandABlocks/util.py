@@ -1,3 +1,5 @@
+from typing import Union
+
 import numpy as np
 from annotypes import Anno, Array
 
@@ -26,15 +28,15 @@ class Trigger(object):
 
 
 with Anno("Number of times the line will repeat"):
-    ALineRepeatsArray = Array[np.uint16]
+    ALineRepeatsArray = Union[Array[np.uint16]]
 with Anno("The trigger condition to start the phases"):
-    ATriggerArray = Array[str]
+    ATriggerArray = Union[Array[str]]
 with Anno("The position that can be used in trigger condition"):
-    APositionArray = Array[np.int32]
+    APositionArray = Union[Array[np.int32]]
 with Anno("The time that the phase should take"):
-    ATimeArray = Array[np.uint32]
+    ATimeArray = Union[Array[np.uint32]]
 with Anno("Output value during the phase"):
-    AOutArray = Array[bool]
+    AOutArray = Union[Array[bool]]
 
 # TODO - WHAT GIVES HERE ?? -
 #  AAttributeNames and AAttributeNames causes an IDE error in references below

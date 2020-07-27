@@ -97,6 +97,8 @@ class Port(Enum):
                 source_sink, port, extra = match.groups()
                 return source_sink == "source", cls(port), extra
 
+        return None
+
 
 def group_tag(group_name: str) -> str:
     """Marks this field as belonging to a group"""
@@ -154,6 +156,8 @@ def get_config_tag(tags: Sequence[str]) -> Union[str, None]:
     for tag in tags:
         if tag.startswith("config:"):
             return tag
+
+    return None
 
 
 def without_config_tags(tags):

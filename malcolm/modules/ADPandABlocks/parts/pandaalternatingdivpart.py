@@ -21,7 +21,7 @@ class PandAAlternatingDivPart(builtin.parts.ChildPart):
     """
 
     def __init__(
-        self, name: APartName, mri: AMri, initial_visibility: AInitialVisibility = None
+        self, name: APartName, mri: AMri, initial_visibility: AInitialVisibility = False
     ) -> None:
         super(PandAAlternatingDivPart, self).__init__(
             name, mri, initial_visibility=initial_visibility, stateful=False
@@ -57,6 +57,7 @@ class PandAAlternatingDivPart(builtin.parts.ChildPart):
         child = context.block_view(self.mri)
         panda_mri = child.panda.value
         # Check that PandA has frames_per_step of 2
+        assert detectors, "No detectors found in table. Expecting a PandA"
         try:
             for i, mri in enumerate(detectors.mri):
                 if mri == panda_mri:

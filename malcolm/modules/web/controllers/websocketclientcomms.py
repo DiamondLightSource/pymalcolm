@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Tuple
+from typing import Callable, Dict, Optional, Tuple
 
 from annotypes import Anno, deserialize_object, json_decode, json_encode
 from cothread import cothread
@@ -55,7 +55,7 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
         # {new_id: request}
         self._request_lookup: Dict[int, Request] = {}
         self._next_id = 1
-        self._conn: WebSocketClientConnection = None
+        self._conn: Optional[WebSocketClientConnection] = None
         # Create read-only attribute for the remotely reachable blocks
         self.remote_blocks = TableMeta.from_table(
             BlockTable, "Remotely reachable blocks"
@@ -185,7 +185,7 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
                 for change in response.changes:
                     self._handle_change(block, change)
         except Exception:
-            self.log.exception("Error handling %s", response)
+            self.log_exception(f"Error handling {response}")
             raise
         finally:
             done_queue.put(None)

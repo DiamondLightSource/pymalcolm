@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Type, Union, cast
 
 from malcolm.core import (
     Alarm,
@@ -40,8 +40,8 @@ def make_updated_table(old_value: Table, column_changes: Dict[str, List[Any]]) -
 
 class PandABussesPart(Part):
     # Tables to make metas from
-    bits_table_cls = BitsTable
-    positions_table_cls = PositionsTable
+    bits_table_cls: Type[BitsTable] = BitsTable
+    positions_table_cls: Type[PositionsTable] = PositionsTable
 
     # Attributes
     bits = None
@@ -52,16 +52,16 @@ class PandABussesPart(Part):
         self._client = client
         # Row index lookups
         # {bit_name: index}
-        self._bit_indexes = {}
+        self._bit_indexes: Dict[str, int] = {}
         # {pos_name: index}
-        self._pos_indexes = {}
+        self._pos_indexes: Dict[str, int] = {}
         # {pos_index: value}
-        self._pos_values = {}
+        self._pos_values: Dict[int, int] = {}
         # Forward and reverse bit lookups
         # {pcap_capture_field: [bit_index]}
-        self._pcap_bit_indexes = {}
+        self._pcap_bit_indexes: Dict[str, List[int]] = {}
         # {bit_name: pcap_capture_field}
-        self._bit_pcap_fields = {}
+        self._bit_pcap_fields: Dict[str, str] = {}
 
     def setup(self, registrar: PartRegistrar) -> None:
         self.bits = TableMeta.from_table(
@@ -86,7 +86,7 @@ class PandABussesPart(Part):
         registrar.add_attribute_model("positions", self.positions, self.set_positions)
 
     def get_column_changes(self, old: Table, new: Table) -> Dict[str, List[Any]]:
-        column_changes = {}
+        column_changes: Dict[str, List[Any]] = {}
         lookup = {k: i for i, k in enumerate(old.name)}
         for i, name in enumerate(new.name):
             for k in old:
@@ -96,7 +96,7 @@ class PandABussesPart(Part):
                     try:
                         j = lookup[name]
                     except KeyError:
-                        self.log.warning("Ignoring table row with name %s" % name)
+                        self.log_warning(f"Ignoring table row with name {name}")
                     else:
                         if old[k][j] != new_value:
                             # row changed
@@ -104,42 +104,44 @@ class PandABussesPart(Part):
         return column_changes
 
     def set_bits(self, value: BitsTable) -> None:
-        column_changes = self.get_column_changes(self.bits.value, value)
-        if "capture" in column_changes:
-            # If capture changed, set PCAP bits
-            field_values = {}
-            for bit in value.name:
-                capture = column_changes["capture"][self._bit_indexes[bit]]
-                capture_field = self._bit_pcap_fields[bit]
-                if capture:
-                    # If told to capture, this trumps anything it currently
-                    # holds
-                    field_values[capture_field] = "Value"
-                else:
-                    # If not already set, set it to No
-                    field_values.setdefault(capture_field, "No")
-            self._client.set_fields(field_values)
-        if column_changes:
-            new_value = make_updated_table(self.bits.value, column_changes)
-            self.bits.set_value(new_value)
+        if self.bits:
+            column_changes = self.get_column_changes(self.bits.value, value)
+            if "capture" in column_changes:
+                # If capture changed, set PCAP bits
+                field_values = {}
+                for bit in value.name:
+                    capture = column_changes["capture"][self._bit_indexes[bit]]
+                    capture_field = self._bit_pcap_fields[bit]
+                    if capture:
+                        # If told to capture, this trumps anything it currently
+                        # holds
+                        field_values[capture_field] = "Value"
+                    else:
+                        # If not already set, set it to No
+                        field_values.setdefault(capture_field, "No")
+                self._client.set_fields(field_values)
+            if column_changes:
+                new_value = make_updated_table(self.bits.value, column_changes)
+                self.bits.set_value(new_value)
 
     def set_positions(self, value: PositionsTable) -> None:
-        column_changes = self.get_column_changes(self.positions.value, value)
-        for attr in ("capture", "scale", "offset", "units"):
-            if attr in column_changes:
-                # If attribute changed, set field bits
-                field_values = {}
-                for i, name in enumerate(self.positions.value.name):
-                    field = "%s.%s" % (name, attr.upper())
-                    value = column_changes[attr][i]
-                    if attr == "capture":
-                        # Convert Enum to string value for capture string
-                        value = value.value
-                    field_values[field] = value
-                self._client.set_fields(field_values)
-        if column_changes:
-            new_value = make_updated_table(self.positions.value, column_changes)
-            self.positions.set_value(new_value)
+        if self.positions:
+            column_changes = self.get_column_changes(self.positions.value, value)
+            for attr in ("capture", "scale", "offset", "units"):
+                if attr in column_changes:
+                    # If attribute changed, set field bits
+                    field_values = {}
+                    for i, name in enumerate(self.positions.value.name):
+                        field = "%s.%s" % (name, attr.upper())
+                        value = column_changes[attr][i]
+                        if attr == "capture":
+                            # Convert Enum to string value for capture string
+                            value = value.value
+                        field_values[field] = value
+                    self._client.set_fields(field_values)
+            if column_changes:
+                new_value = make_updated_table(self.positions.value, column_changes)
+                self.positions.set_value(new_value)
 
     @staticmethod
     def _make_initial_bits_table(bit_names: List[str]) -> BitsTable:
@@ -166,7 +168,7 @@ class PandABussesPart(Part):
         self, pcap_bits_fields: Dict[str, List[str]], pos_names: List[str]
     ) -> None:
         # Bits
-        bit_names = []
+        bit_names: List[str] = []
         self._bit_indexes = {}
         self._pcap_bit_indexes = {}
         self._bit_pcap_fields = {}
@@ -180,9 +182,11 @@ class PandABussesPart(Part):
                     bit_names.append(bit)
                     self._bit_indexes[bit] = index
             self._pcap_bit_indexes[k] = indexes
-        self.bits.set_value(self._make_initial_bits_table(bit_names))
+        if self.bits:
+            self.bits.set_value(self._make_initial_bits_table(bit_names))
         # Positions
-        self.positions.set_value(self._make_initial_pos_table(pos_names))
+        if self.positions:
+            self.positions.set_value(self._make_initial_pos_table(pos_names))
         # Pos lookups
         self._pos_indexes = {k: i for i, k in enumerate(pos_names)}
         for i, k in enumerate(pos_names):
@@ -194,10 +198,11 @@ class PandABussesPart(Part):
         self, field_name: str, value: bool, column_changes: Dict[str, List[Any]]
     ) -> Optional[bool]:
         i = self._bit_indexes.get(field_name, None)
-        if i is not None:
+        if i is not None and self.bits:
             # It's a bit, update the table changes
             update_column(column_changes, "value", self.bits.value)[i] = value
             return True
+        return None
 
     def _handle_pos(
         self, field_name: str, value: str, column_changes: Dict[str, List[Any]]
@@ -212,36 +217,45 @@ class PandABussesPart(Part):
                 # Another field change
                 assert len(split) == 3, "Bad Pos field name: %s" % field_name
                 column = split[-1].lower()
+                parsed_value: Union[str, float, PositionCapture]
                 if column in ("scale", "offset"):
-                    value = float(value)
+                    parsed_value = float(value)
                 elif column == "capture":
-                    value = PositionCapture(value)
-                update_column(column_changes, column, self.positions.value)[i] = value
+                    parsed_value = PositionCapture(value)
+                else:
+                    parsed_value = value
+                if self.positions:
+                    update_column(column_changes, column, self.positions.value)[
+                        i
+                    ] = parsed_value
             # Grab scale and offset
-            table_value = self.positions.value
-            scale = column_changes.get("scale", table_value.scale)[i]
-            offset = column_changes.get("offset", table_value.offset)[i]
+            if self.positions:
+                table_value = self.positions.value
+                scale = column_changes.get("scale", table_value.scale)[i]
+                offset = column_changes.get("offset", table_value.offset)[i]
 
-            # It's a pos, update the value column with what we know
-            update_column(column_changes, "value", self.positions.value)[i] = (
-                self._pos_values[i] * scale + offset
-            )
+                # It's a pos, update the value column with what we know
+                update_column(column_changes, "value", self.positions.value)[i] = (
+                    self._pos_values[i] * scale + offset
+                )
             return True
+        return None
 
     def _handle_pcap(
         self, field_name: str, value: str, column_changes: Dict[str, List[Any]]
     ) -> Optional[bool]:
         # This should be a pcap bits field...
         indexes = self._pcap_bit_indexes.get(field_name, None)
-        if indexes is not None:
+        if indexes is not None and self.bits:
             capture = value != "No"
             for i in indexes:
                 update_column(column_changes, "capture", self.bits.value)[i] = capture
             return True
+        return None
 
     def handle_changes(self, changes: Dict[str, Any], ts: TimeStamp) -> None:
-        bit_column_changes = {}
-        pos_column_changes = {}
+        bit_column_changes: Dict[str, Any] = {}
+        pos_column_changes: Dict[str, Any] = {}
         for k, v in changes.items():
             assert (
                 self._handle_bit(k, v, bit_column_changes)
@@ -249,9 +263,9 @@ class PandABussesPart(Part):
                 or self._handle_pcap(k, v, bit_column_changes)
             ), ("Don't know how to handle %s" % k)
         # Update the tables
-        if bit_column_changes:
+        if bit_column_changes and self.bits:
             new_value = make_updated_table(self.bits.value, bit_column_changes)
-            self.bits.set_value_alarm_ts(new_value, Alarm.ok, ts)
-        if pos_column_changes:
+            self.bits.set_value_alarm_ts(new_value, cast(Alarm, Alarm.ok), ts)
+        if pos_column_changes and self.positions:
             new_value = make_updated_table(self.positions.value, pos_column_changes)
-            self.positions.set_value_alarm_ts(new_value, Alarm.ok, ts)
+            self.positions.set_value_alarm_ts(new_value, cast(Alarm, Alarm.ok), ts)

@@ -1,3 +1,5 @@
+from typing import Optional
+
 from malcolm.core import (
     AttributeModel,
     NumberMeta,
@@ -12,9 +14,9 @@ class CounterPart(Part):
     """Defines a counter `Attribute` with zero and increment `Method` objects"""
 
     #: Writeable Attribute holding the current counter value
-    counter: AttributeModel = None
+    counter: Optional[AttributeModel] = None
     #: Writeable Attribute holding the amount to increment() by
-    delta: AttributeModel = None
+    delta: Optional[AttributeModel] = None
 
     def setup(self, registrar: PartRegistrar) -> None:
         super(CounterPart, self).setup(registrar)

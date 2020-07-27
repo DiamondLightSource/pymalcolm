@@ -1,9 +1,8 @@
-# Treat all division as float division even in python2
-from __future__ import division
+from typing import Optional
 
 from annotypes import add_call_types
 
-from malcolm.core import CAMEL_RE, APartName, BadValueError, Block, PartRegistrar
+from malcolm.core import CAMEL_RE, APartName, BadValueError, PartRegistrar
 from malcolm.modules import builtin, scanning
 
 # Pull re-used annotypes into our namespace in case we are subclassed
@@ -28,7 +27,7 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
     """
 
     def __init__(
-        self, name: APartName, mri: AMri, initial_visibility: AInitialVisibility = None
+        self, name: APartName, mri: AMri, initial_visibility: AInitialVisibility = True
     ) -> None:
         super(PandAPulseTriggerPart, self).__init__(
             name, mri, initial_visibility=initial_visibility, stateful=False
@@ -39,11 +38,11 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
         # The stored generator duration and detector framesPerStep from
         # configure
         self.generator_duration = None
-        self.frames_per_step = None
+        self.frames_per_step = 1
         # The panda Block we will be prodding
-        self.panda: Block = None
+        self.panda = None
         # The detector Block we will be reading from
-        self.detector: Block = None
+        self.detector = None
 
     def setup(self, registrar: PartRegistrar) -> None:
         super(PandAPulseTriggerPart, self).setup(registrar)
@@ -85,47 +84,50 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
         self.detector = context.block_view(detector_mri)
 
         # Get the framesPerStep for this detector from the detectors table
-        for enable, _, mri, _, frames_per_step in detectors.rows():
-            if mri == detector_mri:
-                # Found a row telling us how many frames per step to generate
-                if enable:
-                    assert (
-                        frames_per_step > 0
-                    ), "Zero frames per step for %s, how did this happen?" % (mri)
-                    self.frames_per_step = frames_per_step
-                else:
-                    self.frames_per_step = 0
-                break
-        else:
-            raise BadValueError(
-                "Detector table %s doesn't contain row for %s"
-                % (detectors, detector_mri)
-            )
+        if detectors:
+            for enable, _, mri, _, frames_per_step in detectors.rows():
+                if mri == detector_mri:
+                    # Found a row telling us how many frames per step to generate
+                    if enable:
+                        assert (
+                            frames_per_step > 0
+                        ), "Zero frames per step for %s, how did this happen?" % (mri)
+                        self.frames_per_step = frames_per_step
+                    else:
+                        self.frames_per_step = 0
+                    break
+            else:
+                raise BadValueError(
+                    "Detector table %s doesn't contain row for %s"
+                    % (detectors, detector_mri)
+                )
 
         # Check that the Attributes we expect are exported
         pulse_name = None
         suffixes = ["Pulses", "Width", "Step", "Delay"]
         expected_exports = set(self.name + s for s in suffixes)
-        for source, export in self.panda.exports.value.rows():
-            if export in expected_exports:
-                part_name = source.split(".")[0]
-                if pulse_name:
-                    assert part_name == pulse_name, (
-                        "Export %s defined for a different pulse block" % export
-                    )
-                else:
-                    pulse_name = part_name
-                expected_exports.remove(export)
-        assert not expected_exports, "PandA %r did not define exports %s" % (
-            panda_mri,
-            sorted(expected_exports),
-        )
+        if self.panda:
+            for source, export in self.panda.exports.value.rows():
+                if export in expected_exports:
+                    part_name = source.split(".")[0]
+                    if pulse_name:
+                        assert part_name == pulse_name, (
+                            "Export %s defined for a different pulse block" % export
+                        )
+                    else:
+                        pulse_name = part_name
+                    expected_exports.remove(export)
+            assert not expected_exports, "PandA %r did not define exports %s" % (
+                panda_mri,
+                sorted(expected_exports),
+            )
 
         # Find the PULSE Block for further checks
-        pulse_mri = None
-        for name, mri, _, _, _ in self.panda.layout.value.rows():
-            if name == pulse_name:
-                pulse_mri = mri
+        pulse_mri: Optional[str] = None
+        if self.panda:
+            for name, mri, _, _, _ in self.panda.layout.value.rows():
+                if name == pulse_name:
+                    pulse_mri = mri
         assert pulse_mri, "Can't find mri for pulse block %r" % pulse_name
 
         # Check that the Attributes have the right units for all except Pulses

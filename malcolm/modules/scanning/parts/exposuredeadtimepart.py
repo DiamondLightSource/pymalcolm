@@ -93,6 +93,8 @@ class ExposureDeadtimePart(Part):
         new_exposure = info.calculate_exposure(generator.duration, exposure)
         if new_exposure != exposure:
             return ParameterTweakInfo("exposure", new_exposure)
+        else:
+            return None
 
     @add_call_types
     def on_configure(self, exposure: AExposure = 0.0) -> None:

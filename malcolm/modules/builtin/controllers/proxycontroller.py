@@ -1,4 +1,5 @@
 import functools
+from typing import Optional
 
 from annotypes import Anno
 
@@ -30,13 +31,14 @@ class ProxyController(BasicController):
         super(ProxyController, self).__init__(mri)
         self.comms = comms
         self.publish = publish
-        self.client_comms = None
+        self.client_comms: Optional[ClientComms] = None
         self.health.set_value("Uninitialized", alarm=Alarm.invalid("Uninitialized"))
         # Hooks
         self.register_hooked(ProcessStartHook, self.init)
 
     def init(self) -> UUnpublishedInfos:
-        self.client_comms: ClientComms = self.process.get_controller(self.comms)
+        assert self.process, "No attached process"
+        self.client_comms = self.process.get_controller(self.comms)
         # Wait until connected
         context = Context(self.process)
         wait_for_stateful_block_init(context, self.comms)
@@ -44,6 +46,8 @@ class ProxyController(BasicController):
         self.client_comms.sync_proxy(self.mri, self._block)
         if not self.publish:
             return UnpublishedInfo(self.mri)
+        else:
+            return None
 
     def get_post_function(self, method_name):
         return functools.partial(self.client_comms.send_post, self.mri, method_name)

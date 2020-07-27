@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Sequence, Tuple, Union, cast
 
 from annotypes import Anno
 
@@ -98,43 +98,47 @@ class PandABlockController(builtin.controllers.BasicController):
         for field_name, field_data in block_data.fields.items():
             self._make_parts_for(field_name, field_data)
 
-    def handle_changes(self, changes: Dict[str, Any], ts: TimeStamp) -> None:
+    def handle_changes(
+        self, changes: Union[Dict[str, Any], Sequence[Tuple[str, str]]], ts: TimeStamp
+    ) -> None:
         with self.changes_squashed:
             icon_needs_update = False
-            for k, v in changes.items():
-                # Health changes are for us
-                if k.upper() == "HEALTH":
-                    if v.upper() == "OK":
-                        alarm = Alarm.ok
+            if isinstance(changes, Dict):
+                for k, v in changes.items():
+                    # Health changes are for us
+                    if k.upper() == "HEALTH":
+                        if v.upper() == "OK":
+                            alarm = Alarm.ok
+                        else:
+                            alarm = Alarm.major(v)
+                        self.update_health(
+                            self, builtin.infos.HealthInfo(cast(Alarm, alarm), ts)
+                        )
+                        continue
+                    # Work out if there is a part we need to notify
+                    try:
+                        part = self.field_parts[k]
+                    except KeyError:
+                        self.log_exception(f"Can't handle field {self.block_name}.{k}")
+                        part = None
+                    if part is None:
+                        continue
+                    part.handle_change(v, ts)
+                    if not icon_needs_update:
+                        icon_needs_update = k in self.icon_part.update_fields
+                    try:
+                        mux_meta = self.mux_metas[k]
+                    except KeyError:
+                        pass
                     else:
-                        alarm = Alarm.major(v)
-                    self.update_health(self, builtin.infos.HealthInfo(alarm, ts))
-                    continue
-                # Work out if there is a part we need to notify
-                try:
-                    part = self.field_parts[k]
-                except KeyError:
-                    self.log.exception(
-                        "Can't handle field %s.%s" % (self.block_name, k)
-                    )
-                    part = None
-                if part is None:
-                    continue
-                part.handle_change(v, ts)
-                if not icon_needs_update:
-                    icon_needs_update = k in self.icon_part.update_fields
-                try:
-                    mux_meta = self.mux_metas[k]
-                except KeyError:
-                    pass
-                else:
-                    self._handle_mux_update(mux_meta, v)
+                        self._handle_mux_update(mux_meta, v)
             if icon_needs_update:
-                d = {
-                    k: self.field_parts[k].attr.value
-                    for k in self.icon_part.update_fields
-                    if k in self.field_parts
-                }
+                d = {}
+                for key in self.icon_part.update_fields:
+                    if key in self.field_parts:
+                        field_part = self.field_parts[key]
+                        if field_part:
+                            d[key] = field_part.attr.value
                 icon = builtin.util.SVGIcon(self.icon_part.svg_text)
                 self.icon_part.update_icon(icon, d)
                 self.icon_part.attr.set_value(str(icon), ts=ts)

@@ -1,3 +1,5 @@
+from typing import Optional
+
 from annotypes import Anno, add_call_types
 from cothread import cothread
 from tornado.httpserver import HTTPServer
@@ -20,9 +22,9 @@ class HTTPServerComms(builtin.controllers.ServerComms):
     def __init__(self, mri: builtin.controllers.AMri, port: APort = 8008) -> None:
         super(HTTPServerComms, self).__init__(mri)
         self.port = port
-        self._server: HTTPServer = None
+        self._server: Optional[HTTPServer] = None
         self._server_started = False
-        self._application: Application = None
+        self._application: Optional[Application] = None
         self.blocks = TableMeta.from_table(
             BlockTable, "List of local Blocks to serve up"
         ).create_attribute_model()
@@ -66,6 +68,7 @@ class HTTPServerComms(builtin.controllers.ServerComms):
     @add_call_types
     def publish(self, published: APublished) -> None:
         rows = []
+        assert self.process, "No attached process"
         for mri in published:
             label = self.process.block_view(mri).meta.label
             if not label:
@@ -80,5 +83,6 @@ class HTTPServerComms(builtin.controllers.ServerComms):
             # This is for us
             controller = self
         else:
+            assert self.process, "No attached process"
             controller = self.process.get_controller(info.mri)
         cothread.Callback(controller.handle_request, info.request)

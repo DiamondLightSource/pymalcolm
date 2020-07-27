@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, cast
 
 from annotypes import add_call_types, stringify_error
 from cothread import cothread
@@ -37,7 +37,7 @@ class BlockHandler(Handler):
         self.field = field
         self.pv: Optional[SharedPV] = None
         self.value: Value = None
-        self.put_paths: Set[str] = None
+        self.put_paths: Set[str] = set()
 
     def rpc(self, pv: SharedPV, op: ServerOperation) -> None:
         value = op.value()
@@ -68,16 +68,15 @@ class BlockHandler(Handler):
         ), "%s.%s is not a Method so cannot do RPC" % tuple(path)
         add_wrapper = method_return_unpacked() in view.meta.tags
 
-        self.controller.log.debug(
-            "%s: RPC method %s called with params %s",
-            self.controller.mri,
-            method,
-            parameters,
+        self.controller.log_debug(
+            f"{self.controller.mri}: RPC method {method} called with "
+            f"params {parameters}"
         )
         post = Post(path=path, parameters=parameters)
 
         def handle_post_response(response: Response) -> None:
             if isinstance(response, Return):
+                ret: Any
                 if add_wrapper:
                     # Method gave us return unpacked (bare string or other type)
                     # so we must wrap it in a structure to send it
@@ -86,33 +85,27 @@ class BlockHandler(Handler):
                     ret = response.value
                 v = convert_dict_to_value(ret)
                 if ret:
-                    self.controller.log.debug(
-                        "%s: RPC method %s returned with value %s",
-                        self.controller.mri,
-                        method,
-                        ret,
+                    self.controller.log_debug(
+                        f"{self.controller.mri}: RPC method {method} returned with "
+                        f"value {ret}"
                     )
                 else:
-                    self.controller.log.debug(
-                        "%s: RPC method %s returned", self.controller.mri, method
+                    self.controller.log_debug(
+                        f"{self.controller.mri}: RPC method {method} returned"
                     )
                 op.done(v)
             else:
                 if isinstance(response, Error):
                     message = stringify_error(response.message)
-                    self.controller.log.debug(
-                        "%s: RPC method %s resulted in an error (%s)",
-                        self.controller.mri,
-                        method,
-                        message,
+                    self.controller.log_debug(
+                        f"{self.controller.mri}: RPC method {method} resulted in "
+                        f"error ({message})"
                     )
                 else:
                     message = "BadResponse: %s" % response.to_dict()
-                    self.controller.log.debug(
-                        "%s: RPC method %s got a bad response (%s)",
-                        self.controller.mri,
-                        method,
-                        message,
+                    self.controller.log_debug(
+                        f"{self.controller.mri}: RPC method {method} got a bad "
+                        f"response ({message})"
                     )
                 op.done(error=message)
 
@@ -185,15 +178,14 @@ class BlockHandler(Handler):
                     # We got a delta, create or update value and notify
                     if self.value is None:
                         # Open it with the value
-                        self.controller.log.debug("About to open")
+                        self.controller.log_debug("About to open")
                         self._create_initial_value(response)
                     elif self.pv.isOpen():
                         # Update it with values
                         self._update_value(response)
                 except Exception:
-                    self.controller.log.debug(
-                        "Closing pv because of error in response %s",
-                        response,
+                    self.controller.log_debug(
+                        f"Closing pv because of error in response {response}",
                         exc_info=True,
                     )
                     # We got a return or error, close the connection to clients
@@ -201,6 +193,7 @@ class BlockHandler(Handler):
 
     def _create_initial_value(self, response: Delta) -> None:
         # Called with the lock taken
+        assert response.changes, "No changes"
         assert (
             len(response.changes) == 1
             and len(response.changes[0]) == 2
@@ -218,22 +211,25 @@ class BlockHandler(Handler):
             self.put_paths = {"value"}
         else:
             self.put_paths = set()
-        self.controller.log.debug("Opening with %s", list(self.value))
-        self.pv.open(self.value)
+        self.controller.log_debug(f"Opening with {list(self.value)}")
+        if self.pv:
+            self.pv.open(self.value)
 
     def _update_value(self, delta: Delta) -> None:
         # Called with the lock taken
         self.value.unmark()
-        for change in delta.changes:
-            assert len(change) == 2, "Path %s deleted" % change[0]
-            assert len(change[0]) > 0, "Can't handle root update %s after initial" % (
-                change,
-            )
-            # Path will have at least one element
-            path, update = change
-            update_path(self.value, path, update)
+        if delta.changes:
+            for change in delta.changes:
+                assert len(change) == 2, "Path %s deleted" % change[0]
+                assert (
+                    len(change[0]) > 0
+                ), "Can't handle root update %s after initial" % (change,)
+                # Path will have at least one element
+                path, update = change
+                update_path(self.value, path, update)
         # No type change, post the updated value
-        self.pv.post(self.value)
+        if self.pv:
+            self.pv.post(self.value)
 
     # Need camelCase as called by p4p Server
     # noinspection PyPep8Naming
@@ -270,7 +266,7 @@ class PvaServerComms(builtin.controllers.ServerComms):
         super(PvaServerComms, self).__init__(mri)
         self._pva_server = None
         self._provider = None
-        self._published = set()
+        self._published: Set[str] = set()
         self._pvs: Dict[str, Dict[str, SharedPV]] = {}
         # Hooks
         self.register_hooked(ProcessPublishHook, self.publish)
@@ -298,7 +294,7 @@ class PvaServerComms(builtin.controllers.ServerComms):
         )
 
     def _make_channel(self, channel_name: str, src: str) -> SharedPV:
-        self.log.debug("Making PV %s for %s", channel_name, src)
+        self.log_debug(f"Making PV {channel_name} for {src}")
         if channel_name in self._published:
             # Someone is asking for a Block
             mri = channel_name
@@ -311,8 +307,9 @@ class PvaServerComms(builtin.controllers.ServerComms):
         with self._lock:
             pvs = self._pvs.setdefault(mri, {})
             try:
-                pv = pvs[field]
+                pv = pvs[cast(str, field)]
             except KeyError:
+                assert self.process, "No attached process"
                 controller = self.process.get_controller(mri)
                 handler = BlockHandler(controller, field)
                 # We want any client passing a pvRequest field() to ONLY receive
@@ -321,7 +318,7 @@ class PvaServerComms(builtin.controllers.ServerComms):
                 # to tell p4p to send a slice instead
                 # https://github.com/mdavidsaver/pvDataCPP/blob/master/src/copy/pv/createRequest.h#L76
                 pv = SharedPV(handler=handler, options={"mapperMode": "Slice"})
-                pvs[field] = pv
+                pvs[cast(str, field)] = pv
             return pv
 
     def do_init(self):

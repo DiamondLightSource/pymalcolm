@@ -1,3 +1,5 @@
+from typing import Union
+
 import numpy as np
 from annotypes import Anno, Array, add_call_types
 
@@ -16,13 +18,13 @@ MAX_NUM_POINTS = 4000000
 with Anno("The Asyn Port name of the Co-ordinate system port we want to scan"):
     ACSPort = str
 with Anno("The relative time points to scan in microseconds"):
-    ATimeArray = Array[np.int32]
+    ATimeArray = Union[Array[np.int32]]
 with Anno("The velocity mode of each point"):
-    AVelocityMode = Array[np.int32]
+    AVelocityMode = Union[Array[np.int32]]
 with Anno("Which user program to run for each point"):
-    AUserPrograms = Array[np.int32]
+    AUserPrograms = Union[Array[np.int32]]
 with Anno("The position the axis should be at for each point in the scan"):
-    ADemandTrajectory = Array[np.float64]
+    ADemandTrajectory = Union[Array[np.float64]]
 
 # Pull re-used annotypes into our namespace in case we are subclassed
 APartName = builtin.parts.APartName
@@ -102,11 +104,9 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
         # make sure a matching trajectory program is installed on the pmac
         if child.trajectoryProgVersion.value != TRAJECTORY_PROGRAM_NUM:
             if child.trajectoryProgVersion.value >= FALLBACK_TRAJ_PROGRAM_NUM:
-                self.log.warning(
-                    "pmac trajectory program is version %d"
-                    " version %d is recommended",
-                    FALLBACK_TRAJ_PROGRAM_NUM,
-                    TRAJECTORY_PROGRAM_NUM,
+                self.log_warning(
+                    f"pmac trajectory program is version {FALLBACK_TRAJ_PROGRAM_NUM}"
+                    " version {TRAJECTORY_PROGRAM_NUM} is recommended"
                 )
             else:
                 raise (
@@ -136,10 +136,8 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
                     "for a raw motor?\n%s" % (csPort, e)
                 )
             # Tell the trajectory scans which of the arrays to use
-            attribute_values = {
-                "use%s" % axis: axis in use_axes for axis in CS_AXIS_NAMES
-            }
-            child.put_attribute_values(attribute_values)
+            arrays = {"use%s" % axis: axis in use_axes for axis in CS_AXIS_NAMES}
+            child.put_attribute_values(arrays)
         else:
             # This is an append
             action = child.appendProfile

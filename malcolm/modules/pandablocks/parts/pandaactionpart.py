@@ -1,6 +1,8 @@
-from annotypes import Anno, Array, Sequence, Union
+from typing import Optional, Sequence, Union
 
-from malcolm.core import Part, PartRegistrar, snake_to_camel
+from annotypes import Anno, Array
+
+from malcolm.core import MethodModel, Part, PartRegistrar, snake_to_camel
 
 from ..pandablocksclient import PandABlocksClient
 
@@ -13,7 +15,7 @@ with Anno("Name of Field in TCP server"):
 with Anno("Description for the Method"):
     ADescription = str
 with Anno("Tags to be attached to Method"):
-    ATags = Array[str]
+    ATags = Union[Array[str]]
 UTags = Union[ATags, Sequence[str], str]
 
 
@@ -35,7 +37,7 @@ class PandAActionPart(Part):
         self.field_name = field_name
         self.description = description
         self.tags = tags
-        self.method = None
+        self.method: Optional[MethodModel] = None
 
     def setup(self, registrar: PartRegistrar) -> None:
         super(PandAActionPart, self).setup(registrar)

@@ -1,3 +1,5 @@
+from typing import Union
+
 from annotypes import Anno, add_call_types
 
 default_desc = "Default value for parameter. If not specified, parameter is " "required"
@@ -13,7 +15,7 @@ with Anno(default_desc):
 with Anno(default_desc):
     AInt32Default = int
 with Anno("The Anno representing the parameter"):
-    AAnno = Anno
+    AAnno = Union[Anno]
 
 
 def common_args(name, default):

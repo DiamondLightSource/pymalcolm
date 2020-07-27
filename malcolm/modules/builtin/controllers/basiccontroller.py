@@ -1,4 +1,6 @@
-from malcolm.core import ADescription, AMri, Controller, StringMeta, Widget
+from typing import Dict, Optional
+
+from malcolm.core import ADescription, Alarm, AMri, Controller, StringMeta, Widget
 
 from ..infos import HealthInfo, LabelInfo
 
@@ -12,7 +14,7 @@ class BasicController(Controller):
 
     def __init__(self, mri: AMri, description: ADescription = "") -> None:
         super(BasicController, self).__init__(mri, description)
-        self._faults = {}  # Dict[Part, Alarm]
+        self._faults: Dict[object, Alarm] = {}
         self.info_registry.add_reportable(LabelInfo, self.update_label)
         self.info_registry.add_reportable(HealthInfo, self.update_health)
         self.health = StringMeta(
@@ -34,12 +36,13 @@ class BasicController(Controller):
                 self._faults.pop(reporter, None)
             else:
                 self._faults[reporter] = alarm
+            alarm_to_set: Optional[Alarm]
             if self._faults:
                 # Sort them by severity
                 faults = sorted(self._faults.values(), key=lambda a: a.severity.value)
-                alarm = faults[-1]
+                alarm_to_set = faults[-1]
                 text = faults[-1].message
             else:
-                alarm = None
+                alarm_to_set = None
                 text = "OK"
-            self.health.set_value(text, alarm=alarm, ts=ts)
+            self.health.set_value(text, alarm=alarm_to_set, ts=ts)

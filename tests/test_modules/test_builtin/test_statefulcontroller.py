@@ -131,7 +131,7 @@ class TestStatefulController(unittest.TestCase):
         self.start_process()
         part_contexts = self.o.create_part_contexts()
         result = self.o.run_hooks(SaveHook(p, c) for p, c in part_contexts.items())
-        assert list(result) == ["testpart", "testpart2"]
+        assert set(result) == {"testpart", "testpart2"}
         assert result["testpart"] == dict(foo="bartestpart")
         assert result["testpart2"] == dict(foo="bartestpart2")
         # The part.context is a weakref, so compare on one of its strong

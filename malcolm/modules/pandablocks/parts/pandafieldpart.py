@@ -1,4 +1,6 @@
-from annotypes import Anno, Any
+from typing import Any, Callable, Optional, cast
+
+from annotypes import Anno
 
 from malcolm.core import (
     Alarm,
@@ -48,6 +50,7 @@ class PandAFieldPart(Part):
     def setup(self, registrar: PartRegistrar) -> None:
         super(PandAFieldPart, self).setup(registrar)
         attr_name = snake_to_camel(self.field_name.replace(".", "_"))
+        writeable_func: Optional[Callable]
         if self.meta.writeable:
             writeable_func = self.set_field
         else:
@@ -61,7 +64,7 @@ class PandAFieldPart(Part):
             if value == self.attr.value:
                 # Ignore this change
                 return
-        self.attr.set_value_alarm_ts(value, Alarm.ok, ts)
+        self.attr.set_value_alarm_ts(value, cast(Alarm, Alarm.ok), ts)
 
     def set_field(self, value):
         if isinstance(self.meta, BooleanMeta):

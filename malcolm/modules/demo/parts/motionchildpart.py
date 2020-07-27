@@ -1,5 +1,5 @@
 import time
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from annotypes import Anno, add_call_types
 
@@ -15,7 +15,7 @@ class MaybeMover(object):
     the last move didn't move it to that position"""
 
     def __init__(self, child: Block, axis: str) -> None:
-        self._last_move = None
+        self._last_move: Optional[float] = None
         self._move_async = child[axis + "Move_async"]
 
     def maybe_move_async(
@@ -34,15 +34,15 @@ class MotionChildPart(builtin.parts.ChildPart):
     # Generator instance
     _generator: scanning.hooks.AGenerator = None
     # Where to start
-    _completed_steps: int = None
+    _completed_steps: int = 0
     # How many steps to do
-    _steps_to_do: int = None
+    _steps_to_do: int = 0
     # When to blow up
-    _exception_step: int = None
+    _exception_step: int = 0
     # Which axes we should be moving
-    _axes_to_move: scanning.hooks.AAxesToMove = None
+    _axes_to_move: Optional[scanning.hooks.AAxesToMove] = None
     # MaybeMover objects to help with async moves
-    _movers: Dict[str, MaybeMover] = None
+    _movers: Dict[str, MaybeMover] = {}
 
     def setup(self, registrar: PartRegistrar) -> None:
         super(MotionChildPart, self).setup(registrar)
@@ -84,7 +84,7 @@ class MotionChildPart(builtin.parts.ChildPart):
         self._movers = {axis: MaybeMover(child, axis) for axis in axesToMove}
         # Move to start (instantly)
         first_point = generator.get_point(completed_steps)
-        fs = []
+        fs: List[Future] = []
         for axis, mover in self._movers.items():
             mover.maybe_move_async(fs, first_point.lower[axis])
         context.wait_all_futures(fs)
@@ -104,13 +104,14 @@ class MotionChildPart(builtin.parts.ChildPart):
             # Move the children (instantly) to the beginning of the point, then
             # start them moving to the end of the point, taking duration
             # seconds, populating a list of futures we can wait on
-            fs = []
+            fs: List[Future] = []
             for axis, mover in self._movers.items():
                 mover.maybe_move_async(fs, point.lower[axis])
                 mover.maybe_move_async(fs, point.upper[axis], move_duration)
             # Wait for the moves to complete
             context.wait_all_futures(fs)
             # Update the point as being complete
+            assert self.registrar, "Part has no registrar"
             self.registrar.report(scanning.infos.RunProgressInfo(i + 1))
             # If this is the exception step then blow up
             assert i + 1 != self._exception_step, (

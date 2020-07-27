@@ -1,7 +1,8 @@
 import os
 from enum import Enum
+from typing import Sequence, Union
 
-from annotypes import Anno, Array, Sequence, Union
+from annotypes import Anno, Array
 
 from malcolm.core import Table
 
@@ -59,20 +60,20 @@ with Anno("Is the IOC this part connects to running on Windows?"):
     APartRunsOnWindows = bool
 
 with Anno("NDAttribute name to be exported"):
-    AAttributeNames = Array[str]
+    AAttributeNames = Union[Array[str]]
 with Anno(
     "source ID for attribute (PV name for PVAttribute,"
     + "asyn param name for paramAttribute)"
 ):
-    ASourceIds = Array[str]
+    ASourceIds = Union[Array[str]]
 with Anno("PV descriptions"):
-    ADescriptions = Array[str]
+    ADescriptions = Union[Array[str]]
 with Anno("Types of attribute dataset"):
-    AAttributeTypes = Array[AttributeDatasetType]
+    AAttributeTypes = Union[Array[AttributeDatasetType]]
 with Anno("Type of attribute source"):
-    ASourceTypes = Array[SourceType]
+    ASourceTypes = Union[Array[SourceType]]
 with Anno("Type of attribute data"):
-    ADataTypes = Array[DataType]
+    ADataTypes = Union[Array[DataType]]
 UAttributeNames = Union[AAttributeNames, Sequence[str]]
 USourceIds = Union[ASourceIds, Sequence[str]]
 UDescriptions = Union[ADescriptions, Sequence[str]]

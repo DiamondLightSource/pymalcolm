@@ -1,6 +1,6 @@
 import os
 import time
-from typing import Dict, Iterator, List
+from typing import Dict, Iterator, List, Optional
 from xml.etree import cElementTree as ET
 
 from annotypes import Anno, add_call_types
@@ -46,14 +46,19 @@ def greater_than_zero(v: int) -> bool:
 
 
 def create_dataset_infos(
-    name: str, part_info: PartInfo, generator: CompoundGenerator, filename: str
+    name: str,
+    part_info: scanning.hooks.APartInfo,
+    generator: CompoundGenerator,
+    filename: str,
 ) -> Iterator[Info]:
     # Update the dataset table
     uniqueid = "/entry/NDAttributes/NDArrayUniqueId"
     generator_rank = len(generator.dimensions)
 
     # Get the detector name from the primary source
-    ndarray_infos = NDArrayDatasetInfo.filter_values(part_info)
+    ndarray_infos: List[NDArrayDatasetInfo] = NDArrayDatasetInfo.filter_values(
+        part_info
+    )
     assert len(ndarray_infos) in (0, 1), (
         "More than one NDArrayDatasetInfo defined %s" % ndarray_infos
     )
@@ -75,9 +80,10 @@ def create_dataset_infos(
         )
 
         # Add any secondary datasources
-        for calculated_info in CalculatedNDAttributeDatasetInfo.filter_values(
-            part_info
-        ):
+        calculated_infos: List[
+            CalculatedNDAttributeDatasetInfo
+        ] = CalculatedNDAttributeDatasetInfo.filter_values(part_info)
+        for calculated_info in calculated_infos:
             yield scanning.infos.DatasetProducedInfo(
                 name="%s.%s" % (name, calculated_info.name),
                 filename=filename,
@@ -88,7 +94,10 @@ def create_dataset_infos(
             )
 
     # Add all the other datasources
-    for dataset_info in NDAttributeDatasetInfo.filter_values(part_info):
+    dataset_infos: List[NDAttributeDatasetInfo] = NDAttributeDatasetInfo.filter_values(
+        part_info
+    )
+    for dataset_info in dataset_infos:
         yield scanning.infos.DatasetProducedInfo(
             name=dataset_info.name,
             filename=filename,
@@ -114,7 +123,7 @@ def create_dataset_infos(
 def set_dimensions(child: Block, generator: CompoundGenerator) -> List[Future]:
     num_dims = len(generator.dimensions)
     assert num_dims <= 10, "Can only do 10 dims, you gave me %s" % num_dims
-    attr_dict = dict(numExtraDims=num_dims - 1)
+    attr_dict: Dict = dict(numExtraDims=num_dims - 1)
     # Fill in dim name and size
     # NOTE: HDF writer has these filled with fastest moving first
     # while dimensions is slowest moving first
@@ -222,7 +231,7 @@ def make_nxdata(
 
 def make_layout_xml(
     generator: CompoundGenerator,
-    part_info: PartInfo,
+    part_info: scanning.hooks.APartInfo,
     write_all_nd_attributes: bool = False,
 ) -> str:
     # Make a root element with an NXEntry
@@ -238,7 +247,9 @@ def make_layout_xml(
     )
 
     # Check that there is only one primary source of detector data
-    ndarray_infos = NDArrayDatasetInfo.filter_values(part_info)
+    ndarray_infos: List[NDArrayDatasetInfo] = NDArrayDatasetInfo.filter_values(
+        part_info
+    )
     if not ndarray_infos:
         # Still need to put the data in the file, so manufacture something
         primary_rank = 2
@@ -261,21 +272,27 @@ def make_layout_xml(
     )
 
     # Now add any calculated sources of data
-    for dataset_info in CalculatedNDAttributeDatasetInfo.filter_values(part_info):
+    calc_dataset_infos: List[
+        CalculatedNDAttributeDatasetInfo
+    ] = CalculatedNDAttributeDatasetInfo.filter_values(part_info)
+    for calc_dataset_info in calc_dataset_infos:
         # if we are a secondary source, use the same rank as the det
         attr_el = make_nxdata(
-            dataset_info.name, primary_rank, entry_el, generator, link=True
+            calc_dataset_info.name, primary_rank, entry_el, generator, link=True
         )
         ET.SubElement(
             attr_el,
             "dataset",
-            name=dataset_info.name,
+            name=calc_dataset_info.name,
             source="ndattribute",
-            ndattribute=dataset_info.attr,
+            ndattribute=calc_dataset_info.attr,
         )
 
     # And then any other attribute sources of data
-    for dataset_info in NDAttributeDatasetInfo.filter_values(part_info):
+    dataset_infos: List[NDAttributeDatasetInfo] = NDAttributeDatasetInfo.filter_values(
+        part_info
+    )
+    for dataset_info in dataset_infos:
         # if we are a secondary source, use the same rank as the det
         attr_el = make_nxdata(
             dataset_info.name, primary_rank, entry_el, generator, link=True
@@ -353,15 +370,15 @@ class HDFWriterPart(builtin.parts.ChildPart):
     ) -> None:
         super(HDFWriterPart, self).__init__(name, mri)
         # Future for the start action
-        self.start_future: Future = None
-        self.array_future: Future = None
+        self.start_future: Optional[Future] = None
+        self.array_future: Optional[Future] = None
         self.done_when_reaches = 0
         # This is when uniqueId last updated
-        self.last_id_update = None
+        self.last_id_update: Optional[float] = None
         # CompletedSteps = arrayCounter + self.uniqueid_offset
         self.uniqueid_offset = 0
         # The HDF5 layout file we write to say where the datasets go
-        self.layout_filename: str = None
+        self.layout_filename: Optional[str] = None
         self.runs_on_windows = runs_on_windows
         # How long to wait between frame updates before error
         self.frame_timeout = 0.0
@@ -458,8 +475,9 @@ class HDFWriterPart(builtin.parts.ChildPart):
         futures += set_dimensions(child, generator)
         xml = make_layout_xml(generator, part_info, self.write_all_nd_attributes.value)
         self.layout_filename = make_xml_filename(file_dir, self.mri, suffix="layout")
-        with open(self.layout_filename, "w") as f:
-            f.write(xml)
+        if self.layout_filename:
+            with open(self.layout_filename, "w") as f:
+                f.write(xml)
         layout_filename_pv_value = self.layout_filename
         if self.runs_on_windows:
             layout_filename_pv_value = FilePathTranslatorInfo.translate_filepath(
@@ -562,4 +580,5 @@ class HDFWriterPart(builtin.parts.ChildPart):
     def update_completed_steps(self, value: int) -> None:
         completed_steps = value + self.uniqueid_offset
         self.last_id_update = time.time()
+        assert self.registrar, "No registrar assigned"
         self.registrar.report(scanning.infos.RunProgressInfo(completed_steps))

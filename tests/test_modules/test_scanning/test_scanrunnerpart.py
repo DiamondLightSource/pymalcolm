@@ -1281,6 +1281,9 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
         # Our mocked scan block will return nicely for a success
         self.scan_block_mock.run.return_value = None
 
+        # Mock context
+        self.scan_runner_part.context = Mock(name="context_mock")
+
         # Call the run_scan method
         self.scan_runner_part.run_scan(
             self.set_name,
@@ -1314,6 +1317,9 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
         # Our mocked scan block will throw an AssertionError
         self.scan_block_mock.configure.side_effect = AssertionError()
 
+        # Mock context
+        self.scan_runner_part.context = Mock(name="context_mock")
+
         # Call the run_scan method
         self.scan_runner_part.run_scan(
             self.set_name,
@@ -1346,6 +1352,9 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
     ):
         # Our mocked scan block will throw an exception
         self.scan_block_mock.configure.side_effect = ValueError("Invalid value")
+
+        # Mock context
+        self.scan_runner_part.context = Mock(name="context_mock")
 
         # Call the run_scan method
         self.scan_runner_part.run_scan(
@@ -1385,6 +1394,9 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
         # Our mocked scan block will raise a TimeoutError when called
         self.scan_block_mock.run.side_effect = TimeoutError()
 
+        # Mock context
+        self.scan_runner_part.context = Mock(name="context_mock")
+
         # Call the run_scan method
         self.scan_runner_part.run_scan(
             self.set_name,
@@ -1415,6 +1427,9 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
     def test_run_scan_fails_for_scan_NotWriteableError(self):
         # Our mocked scan block will raise a NotWriteableError when called
         self.scan_block_mock.run.side_effect = NotWriteableError()
+
+        # Mock context
+        self.scan_runner_part.context = Mock(name="context_mock")
 
         # Call the run_scan method
         self.scan_runner_part.run_scan(
@@ -1448,6 +1463,9 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
         # Our mocked scan block will raise an AbortedError when called
         self.scan_block_mock.run.side_effect = AbortedError()
 
+        # Mock context
+        self.scan_runner_part.context = Mock(name="context_mock")
+
         # Call the run_scan method
         self.scan_runner_part.run_scan(
             self.set_name,
@@ -1478,6 +1496,9 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
     def test_run_scan_fails_for_scan_AssertionError(self):
         # Our mocked scan block will raise a NotWriteableError when called
         self.scan_block_mock.run.side_effect = AssertionError()
+
+        # Mock context
+        self.scan_runner_part.context = Mock(name="context_mock")
 
         # Call the run_scan method
         self.scan_runner_part.run_scan(
@@ -1514,6 +1535,9 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
         # We also need to mock the logger to check it logs the exception
         logger_mock = Mock(name="logger_mock")
         self.scan_runner_part.log = logger_mock
+
+        # Mock context
+        self.scan_runner_part.context = Mock(name="context_mock")
 
         # Call the run_scan method
         self.scan_runner_part.run_scan(
@@ -1607,6 +1631,9 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
         report_string = "report_string"
         mock_report_string.return_value = report_string
         self.scan_runner_part.get_report_string = mock_report_string
+
+        # Mock context
+        self.scan_runner_part.context = Mock(name="context_mock")
 
         # Call the run_scan method
         self.scan_runner_part.run_scan(

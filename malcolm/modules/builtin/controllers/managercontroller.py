@@ -2,7 +2,7 @@ import os
 import socket
 import subprocess
 from distutils.version import StrictVersion
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Tuple, Union
 
 from annotypes import Anno, add_call_types, deserialize_object, json_decode, json_encode
 
@@ -52,6 +52,10 @@ with Anno(
     "Attribute. These cannot be saved over."
 ):
     ATemplateDesigns = str
+with Anno("Name of part"):
+    APartName = str
+with Anno("Name of attribute"):
+    AAttributeName = str
 
 # Pull re-used annotypes into our namespace in case we are subclassed
 AMri = AMri
@@ -84,6 +88,7 @@ class ManagerController(StatefulController):
         self.initial_design = initial_design
         self.use_git = use_git
         self.template_designs = template_designs
+        self.git_config: Union[Tuple, Tuple[str, str, str, str]]
         if use_git:
             if check_git_version("1.7.2"):
                 self.git_email = os.environ["USER"] + "@" + socket.gethostname()
@@ -101,12 +106,9 @@ class ManagerController(StatefulController):
         self.saved_exports = None
         # ((name, AttributeModel/MethodModel, setter, needs_context))
         self._current_part_fields = ()
-        # [Subscribe]
-        self._subscriptions = []
-        # {part_name: [PortInfo]}
-        self.port_info: Dict[str, List[PortInfo]] = {}
-        # {part: [attr_name]}
-        self.part_exportable = {}
+        self._subscriptions: List[Subscribe] = []
+        self.port_info: Dict[APartName, List[PortInfo]] = {}
+        self.part_exportable: Dict[Part, List[AAttributeName]] = {}
         # TODO: turn this into "exported attribute modified"
         self.context_modified: Dict[Part, Set[str]] = {}
         self.part_modified: Dict[Part, PartModifiedInfo] = {}
@@ -244,7 +246,7 @@ class ManagerController(StatefulController):
 
     def update_modified(self, part: Part = None, info: PartModifiedInfo = None) -> None:
         with self.changes_squashed:
-            if part:
+            if part and info:
                 # Update the alarm for the given part
                 self.part_modified[part] = info
             # Find the modified alarms for each visible part
@@ -287,7 +289,7 @@ class ManagerController(StatefulController):
         self, part: Part = None, info: PartExportableInfo = None
     ) -> None:
         with self.changes_squashed:
-            if part:
+            if part and info:
                 self.part_exportable[part] = info.names
                 self.port_info[part.name] = info.port_infos
             # If we haven't saved visibility yet these have been called
@@ -402,16 +404,19 @@ class ManagerController(StatefulController):
                     export.meta.set_tags(
                         without_config_tags(without_group_tags(export.meta.tags))
                     )
+
+                    ret["setter"] = setter
                 else:
 
-                    def setter(*args):
+                    def setter_star_args(*args):
                         context = Context(self.process)
                         context.post(path, *args)
+
+                    ret["setter"] = setter_star_args
 
                 # Regenerate label
                 export.meta.set_label(label)
                 ret["export"] = export
-                ret["setter"] = setter
             else:
                 # Subsequent calls, update it
                 with self.changes_squashed:

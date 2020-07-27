@@ -29,9 +29,9 @@ class BeamSelectorPart(PmacChildPart):
         tomoAngle: AAngle,
         diffAngle: AAngle,
         moveTime: ATime,
-        initial_visibility: AIV = None,
+        initial_visibility: AIV = False,
     ) -> None:
-        super(BeamSelectorPart, self).__init__(name, mri, initial_visibility)
+        super().__init__(name, mri, initial_visibility)
         self.selectorAxis = selectorAxis
 
         try:

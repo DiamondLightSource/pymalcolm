@@ -1,5 +1,5 @@
 import time
-from typing import Any, Callable, List, Optional, Sequence, Type, Union
+from typing import Any, Callable, Optional, Sequence, Type, Union
 
 from annotypes import Anno, Array
 
@@ -19,8 +19,7 @@ from malcolm.core import (
 from malcolm.modules import builtin
 
 Hooks = Union[Type[Hook], Sequence[Type[Hook]]]
-ArgsGen = Callable[[], List[str]]
-Register = Callable[[Hooks, Callable, Optional[ArgsGen]], None]
+Register = Callable[[Hooks, Callable], None]
 
 # Store them here for re-export
 APartName = APartName
@@ -48,9 +47,9 @@ with Anno("Full pv of demand and default for rbv"):
 with Anno("Override for rbv"):
     ARbv = str
 with Anno("List of PVs to monitor"):
-    APvList = Array[str]
+    APvList = Union[Array[str]]
 with Anno("List of names to give to monitored PVs"):
-    ANameList = Array[str]
+    ANameList = Union[Array[str]]
 with Anno("Set rbv to pv + rbv_suffix"):
     ARbvSuffix = str
 with Anno("Minimum time between attribute updates in seconds"):
@@ -93,7 +92,7 @@ class CABase(Loggable):
         # Camonitor subscription
         self.monitor = None
         self._update_after = 0
-        self._local_value = None
+        self._local_value: Optional[CATable] = None
         self._user_callback = callback
 
     def disconnect(self):

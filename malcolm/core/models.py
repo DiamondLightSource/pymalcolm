@@ -1,19 +1,27 @@
 import inspect
 from enum import Enum
-from typing import Callable, Dict, List, Tuple, Type
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    Type,
+    Union,
+    cast,
+)
 
 import numpy as np
 from annotypes import (
     NO_DEFAULT,
     Anno,
-    Any,
     Array,
     FrozenOrderedDict,
-    Mapping,
-    Optional,
-    Sequence,
     Serializable,
-    Union,
     WithCallTypes,
     deserialize_object,
     to_array,
@@ -35,9 +43,9 @@ def check_type(value, typ):
 
 
 class Model(Serializable):
-    notifier = DummyNotifier()
-    path = []
-    __slots__ = []
+    notifier: Union[Notifier, DummyNotifier] = DummyNotifier()
+    path: List[str] = []
+    __slots__: List[str] = []
 
     def set_notifier_path(
         self, notifier: Union[Notifier, DummyNotifier], path: List[str]
@@ -77,7 +85,7 @@ class Model(Serializable):
         else:
             if ct.is_array:
                 # Cast to right type, this will do some cheap validation
-                value: Array = ct(value)
+                value = cast(Array, ct(value))
                 # Check we have the right type
                 assert not Model.matches_type(
                     ct.typ
@@ -140,7 +148,7 @@ class Model(Serializable):
 with Anno("Description of what this element represents"):
     AMetaDescription = str
 with Anno("Generic text tags for client tools to interpret"):
-    ATags = Array[str]
+    ATags = Union[Array[str]]
 with Anno("Whether this element is currently writeable"):
     AWriteable = bool
 with Anno("A human readable label for the element"):
@@ -183,9 +191,9 @@ class Meta(Model):
 class VMeta(Meta):
     """Abstract base class for validating the values of Attributes"""
 
-    attribute_class = None
+    attribute_class: Union[Type["AttributeModel"], None] = None
     _annotype_lookup: Mapping[Tuple[type, bool, bool], Type["VMeta"]] = {}
-    __slots__ = []
+    __slots__: List[str] = []
 
     def validate(self, value: Any) -> Any:
         """Abstract function to validate a given value
@@ -207,6 +215,7 @@ class VMeta(Meta):
         Returns:
             AttributeModel: The created attribute model instance
         """
+        assert self.attribute_class, "No attribute class"
         attr = self.attribute_class(meta=self, value=initial_value)
         return attr
 
@@ -251,6 +260,7 @@ class VMeta(Meta):
     @classmethod
     def lookup_annotype_converter(cls, anno: Anno) -> Type["VMeta"]:
         """Look up a vmeta based on an Anno"""
+        bases: Union[List[Any], Tuple]
         if hasattr(anno.typ, "__bases__"):
             # This is a proper type
             bases = inspect.getmro(anno.typ)
@@ -303,10 +313,10 @@ class AttributeModel(Model):
         self.timeStamp = self.set_timeStamp(timeStamp)
         """When value was last set"""
 
-    def set_meta(self, meta: VMeta) -> VMeta:
+    def set_meta(self, meta: Union[VMeta, None]) -> VMeta:
         meta = deserialize_object(meta)
         # Check that the meta attribute_class is ourself
-        assert hasattr(meta, "attribute_class"), "Expected meta object, got %r" % meta
+        assert isinstance(meta, VMeta), "Expected meta object, got %s" % type(meta)
         assert isinstance(self, meta.attribute_class), (
             "Meta object needs to be attached to %s, we are a %s"
             % (meta.attribute_class, type(self))
@@ -324,13 +334,13 @@ class AttributeModel(Model):
         value = self.meta.validate(value)
         if set_alarm_ts:
             if alarm is None:
-                alarm = Alarm.ok
+                alarm = cast(Alarm, Alarm.ok)
             else:
-                alarm = deserialize_object(alarm, Alarm)
+                alarm = cast(Alarm, deserialize_object(alarm, Alarm))
             if ts is None:
-                ts = TimeStamp()
+                ts = cast(TimeStamp, TimeStamp())
             else:
-                ts = deserialize_object(ts, TimeStamp)
+                ts = cast(TimeStamp, deserialize_object(ts, TimeStamp))
             self.set_value_alarm_ts(value, alarm, ts)
         else:
             self.set_endpoint_data("value", value)
@@ -376,7 +386,7 @@ class AttributeModel(Model):
 class NTTable(AttributeModel):
     """AttributeModel containing a `TableMeta`"""
 
-    __slots__ = []
+    __slots__: List[str] = []
 
     def set_value_alarm_ts(self, value: AValue, alarm: Alarm, ts: TimeStamp) -> None:
         with self.notifier.changes_squashed:
@@ -404,7 +414,7 @@ class NTTable(AttributeModel):
 class NTScalarArray(AttributeModel):
     """AttributeModel containing a `VArrayMeta`"""
 
-    __slots__ = []
+    __slots__: List[str] = []
 
 
 @Serializable.register_subclass("epics:nt/NTScalar:1.0")
@@ -413,14 +423,14 @@ class NTScalar(AttributeModel):
     or `ChoiceMeta`
     """
 
-    __slots__ = []
+    __slots__: List[str] = []
 
 
 @Serializable.register_subclass("epics:nt/NTUnion:1.0")
 class NTUnion(AttributeModel):
     """AttributeModel containing a meta producing some object structure"""
 
-    __slots__ = []
+    __slots__: List[str] = []
 
 
 FALSE_STRINGS = {"0", "False", "false", "FALSE", "No", "no", "NO"}
@@ -432,7 +442,7 @@ class BooleanMeta(VMeta):
     """Meta object containing information for a boolean"""
 
     attribute_class = NTScalar
-    __slots__ = []
+    __slots__: List[str] = []
 
     def validate(self, value: Any) -> bool:
         """Cast value to boolean and return it"""
@@ -452,7 +462,7 @@ class BooleanMeta(VMeta):
 
 
 with Anno("Choices of valid strings"):
-    AChoices = Array[str]
+    AChoices = Union[Array[str]]
 
 UChoices = Union[AChoices, Sequence[Enum], Sequence[str]]
 
@@ -476,14 +486,16 @@ class ChoiceMeta(VMeta):
         super(ChoiceMeta, self).__init__(description, tags, writeable, label)
         self.choices_lookup: Dict[Any, Union[str, Enum]] = {}
         # Used for ChoiceMetaArray subclass only for producing Arrays
-        self.enum_cls = None
+        self.enum_cls: Union[Type, None] = None
         self.choices = self.set_choices(choices)
 
     def set_choices(self, choices: UChoices) -> AChoices:
         # Calculate a lookup from all possible entries to the choice value
         choices_lookup: Dict[Any, Union[str, Enum]] = {}
-        new_choices = []
-        enum_typ: Type = None
+        new_choices: List[Union[str, Enum]]
+        new_choices = []  # type: ignore
+        enum_typ: Union[Type, None] = None
+        choice: Union[object, None]
         for i, choice in enumerate(choices):
             # If we already have an enum type it must match
             if enum_typ is not None:
@@ -557,13 +569,13 @@ class ChoiceMeta(VMeta):
 
 
 with Anno("The lower bound of range within which the value must be set"):
-    ALimitLow = np.float64
+    ALimitLow = Union[np.float64]
 ULimitLow = Union[ALimitLow, float]
 with Anno("The upper bound of range within which the value must be set"):
-    ALimitHigh = np.float64
+    ALimitHigh = Union[np.float64]
 ULimitHigh = Union[ALimitHigh, float]
 with Anno("Number of significant figures to display"):
-    APrecision = np.int32
+    APrecision = Union[np.int32]
 UPrecision = Union[APrecision, int]
 with Anno("The units for the value"):
     AUnits = str
@@ -653,7 +665,7 @@ class NumberMeta(VMeta):
     ) -> None:
         super(NumberMeta, self).__init__(description, tags, writeable, label)
         # like np.float64
-        self._np_type: type = None
+        self._np_type: type = np.float64
         # like "float64"
         self.dtype = self.set_dtype(dtype)
         if display is None:
@@ -706,7 +718,7 @@ class StringMeta(VMeta):
     """Meta object containing information for a string"""
 
     attribute_class = NTScalar
-    __slots__ = []
+    __slots__: List[str] = []
 
     def validate(self, value: Any) -> str:
         """Check if the value is valid returns it"""
@@ -732,7 +744,7 @@ class VArrayMeta(VMeta):
     """
 
     attribute_class = NTScalarArray
-    __slots__ = []
+    __slots__: List[str] = []
 
 
 def to_np_array(dtype, value: Any) -> Any:
@@ -860,8 +872,8 @@ class TableMeta(VMeta):
         label: ALabel = "",
         elements: ATableElements = None,
     ) -> None:
-        self.table_cls: Type[Table] = None
-        self.elements = {}
+        self.table_cls: Union[Type[Table], None] = None
+        self.elements: Dict[str, Meta] = {}
         super(TableMeta, self).__init__(description, tags, writeable, label)
         # Do this after so writeable is honoured
         self.set_elements(elements if elements else {})
@@ -920,6 +932,7 @@ class TableMeta(VMeta):
         extra = keys - set(self.elements)
         assert not extra, "Supplied table has extra fields %s" % (extra,)
         args = {k: meta.validate(value[k]) for k, meta in self.elements.items()}
+        assert self.table_cls, "No table set"
         value = self.table_cls(**args)
         # Check column lengths
         value.validate_column_lengths()
@@ -943,8 +956,8 @@ class TableMeta(VMeta):
         table_cls: Type[Table],
         description: str,
         widget: Widget = None,
-        writeable: List[str] = (),
-        extra_tags: List[str] = (),
+        writeable: List[str] = [],
+        extra_tags: List[str] = [],
     ) -> "TableMeta":
         """Create a TableMeta object, using a Table subclass as the spec
 
@@ -974,18 +987,18 @@ class TableMeta(VMeta):
         assert Table.matches_type(anno.typ), "Expected Table, got %s" % anno.typ
         if writeable:
             # All fields are writeable
-            writeable = list(anno.typ.call_types)
+            writeable_fields = list(anno.typ.call_types)
         else:
             # No fields are writeable
-            writeable = []
-        return cls.from_table(anno.typ, anno.description, writeable=writeable)
+            writeable_fields = []
+        return cls.from_table(anno.typ, anno.description, writeable=writeable_fields)
 
 
 # Types used when deserializing to the class
 with Anno("Meta objects that are used to describe the elements in the map"):
     AElements = Mapping[str, VMeta]
 with Anno("The required elements in the map"):
-    ARequired = Array[str]
+    ARequired = Union[Array[str]]
 
 # A more permissive union to allow a wider range of set_* args
 URequired = Union[ARequired, Sequence[str], str]
@@ -1022,7 +1035,7 @@ class MapMeta(Model):
         return self.set_endpoint_data("required", ARequired(required))
 
     def validate(
-        self, param_dict: Dict[str, Any] = None, add_missing: bool = False
+        self, param_dict: Optional[Mapping[str, Any]] = None, add_missing: bool = False
     ) -> Dict[str, Any]:
         """Return a param dict in the right order, with the correct keys and
         values of the correct type with no extras or missing"""
@@ -1039,7 +1052,7 @@ class MapMeta(Model):
                 args[k] = m.validate(param_dict[k])
             elif add_missing:
                 args[k] = m.validate(None)
-        missing = set(self.required) - set(args)
+        missing: Set = set(self.required) - set(args)
         assert not missing, "Requires keys %s but only given %s" % (
             list(self.required),
             list(args),
@@ -1164,7 +1177,7 @@ class MethodMeta(Meta):
 with Anno("The last map this took/returned"):
     AMVValue = Mapping[str, Any]
 with Anno("The elements that were supplied in the map"):
-    APresent = Array[str]
+    APresent = Union[Array[str]]
 
 # A more permissive union to allow a wider range of set_* args
 UPresent = Union[APresent, Sequence[str], str]
@@ -1186,6 +1199,7 @@ class MethodLog(Serializable):
         alarm: AAlarm = None,
         timeStamp: ATimeStamp = None,
     ) -> None:
+        self.value: Union[Dict, AMVValue]
         if value is None:
             self.value = {}
         else:
@@ -1251,7 +1265,7 @@ class MethodModel(Model):
 
 # Types used when deserializing to the class
 with Anno("The list of fields currently in the Block"):
-    AFields = Array[str]
+    AFields = Union[Array[str]]
 
 # A more permissive union to allow a wider range of set_* args
 UFields = Union[AFields, Sequence[str], str]
@@ -1276,10 +1290,6 @@ class BlockMeta(Meta):
         return self.set_endpoint_data("fields", AFields(fields))
 
 
-# Anything that can be a child of a Block (or converted to one)
-ModelOrDict = Union[AttributeModel, MethodModel, BlockMeta, Mapping[str, Any]]
-
-
 @Serializable.register_subclass("malcolm:core/Block:1.0")
 class BlockModel(Model):
     """Data Model for a Block"""
@@ -1289,7 +1299,9 @@ class BlockModel(Model):
         self.call_types = OrderedDict()
         self.meta = self.set_endpoint_data("meta", BlockMeta())
 
-    def set_endpoint_data(self, name: str, value: ModelOrDict) -> Any:
+    def set_endpoint_data(
+        self, name: str, value: Union[AttributeModel, MethodModel, BlockMeta],
+    ) -> Any:
         name = deserialize_object(name, str)
         if name == "meta":
             value = deserialize_object(value, BlockMeta)

@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 from xml.etree import cElementTree as ET
 
 from annotypes import Anno, add_call_types
@@ -36,7 +37,7 @@ class StatsPluginPart(builtin.parts.ChildPart):
         super(StatsPluginPart, self).__init__(name, mri)
         self.statistic = statistic
         # The NDAttributes file we write to say what to capture
-        self.attributes_filename: str = None
+        self.attributes_filename: Optional[str] = None
         self.runs_on_windows = runs_on_windows
 
     def setup(self, registrar: PartRegistrar) -> None:
@@ -87,8 +88,9 @@ class StatsPluginPart(builtin.parts.ChildPart):
         )
         xml = self._make_attributes_xml()
         self.attributes_filename = make_xml_filename(fileDir, self.mri)
-        with open(self.attributes_filename, "w") as f:
-            f.write(xml)
+        if self.attributes_filename:
+            with open(self.attributes_filename, "w") as f:
+                f.write(xml)
         attributes_filename = self.attributes_filename
         if self.runs_on_windows:
             attributes_filename = FilePathTranslatorInfo.translate_filepath(
