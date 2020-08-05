@@ -35,9 +35,6 @@ install:
   - ifconfig
   - ls -al ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages
   - ls -al ${VIRTUAL_ENV}/bin
-  # Attempt to clear issue with numpy requiring cache clearing
-  - pip uninstall --yes numpy
-  - pip uninstall --yes numpy
   # Skip lock as it contains hashes from the subset installed on DLS PyPI
   - pipenv install --skip-lock --dev
   - ls -al ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages
