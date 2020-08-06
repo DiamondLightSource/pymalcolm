@@ -46,6 +46,8 @@ before_script:
 
 script:
   - pipenv run tests
+  # pytest hangs when run alongside flake8 - keep separate
+  - pipenv run flake8
   - pipenv run docs
 
 # submit coverage
