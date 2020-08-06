@@ -1,5 +1,3 @@
-from __future__ import division
-
 from annotypes import Anno, add_call_types
 
 from malcolm.core import APartName, Part, PartRegistrar, StringMeta, Widget, config_tag

@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     SubscriptionKeys = Dict[Tuple[Callback, int], Subscribe]
 
 
-class DummyNotifier(object):
+class DummyNotifier:
     @property  # type: ignore
     @contextmanager
     def changes_squashed(self):
@@ -128,7 +128,7 @@ class Notifier(Loggable):
                 raise
 
 
-class NotifierNode(object):
+class NotifierNode:
 
     # Define slots so it uses less resources to make these
     __slots__ = ["delta_requests", "update_requests", "children", "parent", "data"]

@@ -10,7 +10,7 @@ with Anno("If >0, raise an exception at the end of this step"):
     AExceptionStep = int
 
 
-class MaybeMover(object):
+class MaybeMover:
     """Helper object that does async moves on an axis of a child Block only if
     the last move didn't move it to that position"""
 

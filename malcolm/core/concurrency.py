@@ -20,7 +20,7 @@ sleep = cothread.Sleep
 RLock = cothread.RLock
 
 
-class Spawned(object):
+class Spawned:
     """Internal object keeping track of a spawned function"""
 
     NO_RESULT = object()
@@ -69,7 +69,7 @@ class Spawned(object):
         return self._result
 
 
-class Queue(object):
+class Queue:
     """Threadsafe and cothreadsafe queue with gets in calling thread"""
 
     def __init__(self):

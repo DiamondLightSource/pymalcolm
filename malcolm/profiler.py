@@ -18,7 +18,7 @@ class ProfilerMode(Enum):
 
 
 # A combination of plop.Collector and plot.Formatter
-class Profiler(object):
+class Profiler:
     def __init__(
         self, dirname: str = "", mode: ProfilerMode = ProfilerMode.PROF
     ) -> None:

@@ -180,7 +180,7 @@ def make_block_creator(
     return creator
 
 
-class Section(object):
+class Section:
     def __init__(self, filename, lineno, name, param_dict=None):
         self.filename = filename
         self.lineno = lineno

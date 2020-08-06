@@ -1,4 +1,4 @@
-class Future(object):
+class Future:
     """Represents the result of an asynchronous computation.
     This class has a similar API to concurrent.futures.Future but this
     simpler version is not thread safe"""

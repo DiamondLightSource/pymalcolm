@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 
-class Context(object):
+class Context:
     """Helper allowing Future style access to Block Attributes and Methods"""
 
     STOP = object()
@@ -424,7 +424,7 @@ class Context(object):
                 raise response.message
 
 
-class When(object):
+class When:
     def __init__(self, good_value: Callable[[Any], bool], bad_values: Any) -> None:
         if callable(good_value):
 

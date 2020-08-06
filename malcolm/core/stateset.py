@@ -3,7 +3,7 @@ from typing import List
 from malcolm.compat import OrderedDict
 
 
-class StateSet(object):
+class StateSet:
     def __init__(self) -> None:
         self._allowed = OrderedDict()
         # These are all the states we can possibly be in

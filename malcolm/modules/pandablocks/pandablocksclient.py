@@ -1,5 +1,4 @@
 import logging
-import sys
 from collections import OrderedDict, namedtuple
 
 # Create a module level logger
@@ -19,25 +18,7 @@ def strip_ok(resp):
     return value
 
 
-if sys.version_info[0] >= 3:
-
-    def encode(obj):
-        return obj.encode("utf-8")
-
-    def decode(obj):
-        return obj.decode("utf-8")
-
-
-else:
-
-    def encode(obj):
-        return obj
-
-    def decode(obj):
-        return obj
-
-
-class PandABlocksClient(object):
+class PandABlocksClient:
     # Sentinel that tells the send_loop and recv_loop to stop
     STOP = object()
 
@@ -138,7 +119,7 @@ class PandABlocksClient(object):
                 break
             try:
                 self._response_queues.put(response_queue)
-                self._socket.sendall(encode(message))
+                self._socket.sendall(message.encode("utf-8"))
             except Exception:  # pylint:disable=broad-except
                 log.exception("Exception sending message %s", message)
 
@@ -150,7 +131,7 @@ class PandABlocksClient(object):
                 yield line
             buf = lines[-1]
             # Get something new from the socket
-            rx = decode(self._socket.recv(4096))
+            rx = self._socket.recv(4096).decode("utf-8")
             if not rx:
                 break
             buf += rx

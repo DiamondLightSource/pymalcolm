@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 from annotypes import Anno, add_call_types
 
 from malcolm.core import Part, PartRegistrar

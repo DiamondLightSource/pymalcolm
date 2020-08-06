@@ -1,6 +1,3 @@
-# Treat all division as float division even in python2
-from __future__ import division
-
 import re
 from enum import Enum
 from typing import Dict, List, Optional, Union

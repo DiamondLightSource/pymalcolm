@@ -1,5 +1,5 @@
+import asyncio
 import atexit
-import sys
 from threading import Thread
 from typing import Optional, Union
 
@@ -9,19 +9,14 @@ from tornado.ioloop import IOLoop
 from malcolm.core import Table
 
 
-class IOLoopHelper(object):
+class IOLoopHelper:
     _loop: Optional[IOLoop] = None
     _thread: Optional[Thread] = None
 
     @classmethod
     def loop(cls):
         if cls._loop is None:
-            if sys.version_info.major == 3:
-                # the event loop is not created automatically if we are not
-                # the main thread
-                import asyncio
-
-                asyncio.set_event_loop(asyncio.new_event_loop())
+            asyncio.set_event_loop(asyncio.new_event_loop())
             loop = IOLoop.current()
             cls._loop = loop
 

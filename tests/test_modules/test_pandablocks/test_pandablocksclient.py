@@ -7,7 +7,6 @@ from malcolm.modules.pandablocks.pandablocksclient import (
     BlockData,
     FieldData,
     PandABlocksClient,
-    encode,
 )
 
 
@@ -18,9 +17,9 @@ class PandABoxControlTest(unittest.TestCase):
     def start(self, messages=None):
         self.socket = Mock()
         if isinstance(messages, list):
-            self.socket.recv.side_effect = [encode(item) for item in messages]
+            self.socket.recv.side_effect = [item.encode("utf-8") for item in messages]
         elif messages:
-            self.socket.recv.side_effect = [encode(messages)]
+            self.socket.recv.side_effect = [messages.encode("utf-8")]
 
         def socket_cls():
             return self.socket

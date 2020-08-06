@@ -42,7 +42,7 @@ with Anno("The name of the Part within the Controller"):
 PART_NAME_RE = re.compile(r"[a-zA-Z_\-0-9]*$")
 
 
-class FieldRegistry(object):
+class FieldRegistry:
     def __init__(self) -> None:
         self.fields: FieldDict = OrderedDict()
 
@@ -122,7 +122,7 @@ class FieldRegistry(object):
         part_fields.append((name, model, cast(Callable, writeable_func), needs_context))
 
 
-class InfoRegistry(object):
+class InfoRegistry:
     def __init__(self):
         self._reportable_infos: Dict[Type[Info], Callback] = {}
 
@@ -165,7 +165,7 @@ class Part(Hookable):
         pass
 
 
-class PartRegistrar(object):
+class PartRegistrar:
     """Utility object that allows Parts to register Methods and Attributes
     with their parent Controller that will appear in the Block
     """

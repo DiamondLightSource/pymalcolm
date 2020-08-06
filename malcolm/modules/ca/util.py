@@ -31,7 +31,7 @@ ASinkPort = builtin.util.ASinkPort
 APortBadge = builtin.util.APortBadge
 
 
-class CatoolsDeferred(object):
+class CatoolsDeferred:
     """Deferred gets of catools things"""
 
     def __getattr__(self, item):

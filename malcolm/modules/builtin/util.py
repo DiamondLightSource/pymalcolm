@@ -201,7 +201,7 @@ def no_save(*attribute_names):
     return decorator
 
 
-class SVGIcon(object):
+class SVGIcon:
     """Helper object for working with SVG icons"""
 
     def __init__(self, svg_text: str) -> None:

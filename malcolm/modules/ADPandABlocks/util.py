@@ -7,7 +7,7 @@ from malcolm.core import Table
 from malcolm.modules import ADCore, pandablocks
 
 
-class Trigger(object):
+class Trigger:
     """Convenience Enum for setting sequencer tables, will be translated into
     integer values by the TablePart. The strings must match what comes from the
     PandA"""

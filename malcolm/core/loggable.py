@@ -2,7 +2,7 @@ import logging
 from typing import Union
 
 
-class Loggable(object):
+class Loggable:
     """Utility class that provides a named logger for a class instance"""
 
     log: Union[logging.Logger, None] = None

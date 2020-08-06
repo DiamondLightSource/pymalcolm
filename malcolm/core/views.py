@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from .controller import Controller
 
 
-class View(object):
+class View:
     """View of a Model to allow Put, Get, Subscribe etc."""
 
     _controller: Union["Controller", None] = None

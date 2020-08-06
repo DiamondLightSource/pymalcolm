@@ -10,7 +10,7 @@ PartInfo = Mapping[str, Optional[Sequence]]
 T = TypeVar("T")
 
 
-class Info(object):
+class Info:
     """Base class that should be inherited from when a part needs to return
     something from a hooked function"""
 
