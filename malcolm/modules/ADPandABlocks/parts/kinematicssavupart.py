@@ -145,6 +145,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
                 break
 
         # Create the mapping of output q variables to axis names
+        # These correspond to the compound motors
         for mapping in axis_mapping.values():
             if mapping.cs_axis in pmac.util.CS_AXIS_NAMES:
                 q_value = pmac.util.CS_AXIS_NAMES.index(mapping.cs_axis) + 1
@@ -157,6 +158,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         self.pos_table = context.block_view(self.panda_mri).positions.value
 
         # Get the axis number for the inverse kinematics mapped in this cs_port
+        # These are raw motors
         self.axis_numbers = pmac.util.cs_axis_numbers(
             context, self.layout_table, self.cs_port
         )
@@ -200,11 +202,6 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
     @add_call_types
     def on_post_configure(self, context, part_info):
         # type: (scanning.hooks.AContext, scanning.hooks.APartInfo) -> None
-
-        # Get the axis number for the inverse kinematics mapped in this cs_port
-        self.axis_numbers = pmac.util.cs_axis_numbers(
-            context, self.layout_table, self.cs_port
-        )
 
         # Map these in the file
         dataset_infos = scanning.infos.DatasetProducedInfo.filter_values(
@@ -289,7 +286,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
             datasets which contain the kinematics code and variables, and
             whether to use min, mean and max datasets, or just the mean.
         - <ID>-savu_pl.nxs - Savu process list
-        - <ID>-vds.nxs - VDS file linking to Savu processed data
+        - <ID>-kinematics-vds.nxs - VDS file linking to Savu processed data
         """
 
         # Create the -savu.nxs file which contains the input data for Savu
