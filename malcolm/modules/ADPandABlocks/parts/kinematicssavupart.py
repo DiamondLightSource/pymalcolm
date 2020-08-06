@@ -77,15 +77,15 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         super(KinematicsSavuPart, self).setup(registrar)
         # Tell the controller to expose some extra configure parameters
         registrar.report(scanning.hooks.ConfigureHook.create_info(
-            self.configure))
+            self.on_configure))
         # Hooks
-        registrar.hook(scanning.hooks.ConfigureHook, self.configure)
-        registrar.hook(scanning.hooks.PostConfigureHook, self.post_configure)
+        registrar.hook(scanning.hooks.ConfigureHook, self.on_configure)
+        registrar.hook(scanning.hooks.PostConfigureHook, self.on_post_configure)
 
     # Allow CamelCase as these parameters will be serialized
     # noinspection PyPep8Naming
     @add_call_types
-    def configure(self,
+    def on_configure(self,
                   context,  # type: scanning.hooks.AContext
                   fileDir,  # type: scanning.hooks.AFileDir
                   generator,  # type: scanning.hooks.AGenerator
@@ -198,7 +198,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
             
 
     @add_call_types
-    def post_configure(self, context, part_info):
+    def on_post_configure(self, context, part_info):
         # type: (scanning.hooks.AContext, scanning.hooks.APartInfo) -> None
 
         # Get the axis number for the inverse kinematics mapped in this cs_port
