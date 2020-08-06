@@ -28,11 +28,11 @@ class GuiServerPart(Part):
     GuiHandler = IndexHandler
 
     def __init__(self, name: APartName = "gui", path: APath = www_dir) -> None:
-        super(GuiServerPart, self).__init__(name)
+        super().__init__(name)
         self.path = path
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(GuiServerPart, self).setup(registrar)
+        super().setup(registrar)
         # Hooks
         registrar.hook(ReportHandlersHook, self.on_report_handlers)
 

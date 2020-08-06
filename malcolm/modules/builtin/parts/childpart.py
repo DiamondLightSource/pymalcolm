@@ -111,7 +111,7 @@ class ChildPart(Part):
         stateful: AStateful = True,
     ) -> None:
         # For docs: after ChildPart init
-        super(ChildPart, self).__init__(name)
+        super().__init__(name)
         self.stateful = stateful
         self.mri = mri
         self.x: float = 0.0
@@ -131,7 +131,7 @@ class ChildPart(Part):
         self.port_infos: Dict[str, PortInfo] = {}
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(ChildPart, self).setup(registrar)
+        super().setup(registrar)
         # Hooks
         registrar.hook(InitHook, self.on_init)
         registrar.hook(HaltHook, self.on_halt)

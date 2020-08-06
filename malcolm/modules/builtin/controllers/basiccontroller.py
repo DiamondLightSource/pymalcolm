@@ -13,7 +13,7 @@ class BasicController(Controller):
     """Basic Controller with Health and Title updating"""
 
     def __init__(self, mri: AMri, description: ADescription = "") -> None:
-        super(BasicController, self).__init__(mri, description)
+        super().__init__(mri, description)
         self._faults: Dict[object, Alarm] = {}
         self.info_registry.add_reportable(LabelInfo, self.update_label)
         self.info_registry.add_reportable(HealthInfo, self.update_health)

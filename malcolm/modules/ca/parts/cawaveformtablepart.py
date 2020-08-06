@@ -32,7 +32,7 @@ class CAWaveformTablePart(Part):
     ) -> None:
         if len(pv_list) != len(name_list):
             raise BadValueError("List of PVs must be same length as list of names!")
-        super(CAWaveformTablePart, self).__init__(name)
+        super().__init__(name)
         self.display_from_pv = display_from_pv
         elements = {}
         for name in name_list:

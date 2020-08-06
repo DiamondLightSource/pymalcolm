@@ -22,7 +22,7 @@ class CADoublePart(Part):
         display_from_pv: util.AGetLimits = True,
         throw: util.AThrow = True,
     ) -> None:
-        super(CADoublePart, self).__init__(name)
+        super().__init__(name)
         self.display_from_pv = display_from_pv
         self.caa = util.CAAttribute(
             NumberMeta("float64", description),

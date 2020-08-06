@@ -23,7 +23,7 @@ class HelpPart(Part):
         name: APartName = "help",
         description: ADesc = "Help documentation for the Block",
     ) -> None:
-        super(HelpPart, self).__init__(name)
+        super().__init__(name)
         meta = StringMeta(description)
         set_tags(meta, widget=Widget.HELP)
         self.attr = meta.create_attribute_model(help_url)

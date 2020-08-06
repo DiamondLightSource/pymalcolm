@@ -18,7 +18,7 @@ class GroupPart(Part):
     """Part representing a GUI group other Attributes attach to"""
 
     def __init__(self, name: APartName, description: AMetaDescription) -> None:
-        super(GroupPart, self).__init__(name)
+        super().__init__(name)
         meta = ChoiceMeta(description, ["expanded", "collapsed"])
         set_tags(meta, writeable=True, widget=Widget.GROUP)
         self.attr = meta.create_attribute_model("expanded")

@@ -19,11 +19,11 @@ class ReframePluginPart(ADCore.parts.DetectorDriverPart):
     def __init__(
         self, name: APartName, mri: AMri, sample_freq: ASampleFreq = 10000.0
     ) -> None:
-        super(ReframePluginPart, self).__init__(name, mri)
+        super().__init__(name, mri)
         self.sample_freq = sample_freq
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(ReframePluginPart, self).setup(registrar)
+        super().setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ValidateHook, self.on_validate)
 
@@ -46,7 +46,7 @@ class ReframePluginPart(ADCore.parts.DetectorDriverPart):
         **kwargs: Any,
     ) -> None:
         nsamples = int(duration * self.sample_freq) - 1
-        super(ReframePluginPart, self).setup_detector(
+        super().setup_detector(
             context,
             completed_steps,
             steps_to_do,

@@ -11,7 +11,7 @@ class PandAIconPart(builtin.parts.IconPart):
     update_fields: Set = set()
 
     def __init__(self, client: AClient, block_name: ABlockName, svg: ASvg) -> None:
-        super(PandAIconPart, self).__init__(svg)
+        super().__init__(svg)
         self.client = client
         self.block_name = block_name
 

@@ -141,7 +141,7 @@ class StatefulStates(StateSet):
     READY = "Ready"
 
     def __init__(self):
-        super(StatefulStates, self).__init__()
+        super().__init__()
         self.create_block_transitions()
         self.create_error_disable_transitions()
 
@@ -168,7 +168,7 @@ class ManagerStates(StatefulStates):
     LOADING = "Loading"
 
     def create_block_transitions(self):
-        super(ManagerStates, self).create_block_transitions()
+        super().create_block_transitions()
         self.set_allowed(self.READY, self.SAVING)
         self.set_allowed(self.SAVING, self.READY)
         self.set_allowed(self.READY, self.LOADING)

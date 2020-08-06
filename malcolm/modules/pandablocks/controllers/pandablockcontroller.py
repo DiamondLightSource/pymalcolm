@@ -79,7 +79,7 @@ class PandABlockController(builtin.controllers.BasicController):
         block_data: ABlockData,
         doc_url_base: ADocUrlBase,
     ) -> None:
-        super(PandABlockController, self).__init__(
+        super().__init__(
             mri="%s:%s" % (mri_prefix, block_name)
         )
         # Store

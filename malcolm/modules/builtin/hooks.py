@@ -23,7 +23,7 @@ class ControllerHook(Hook[T]):
 
     def __init__(self, part: APart, context: AContext, **kwargs: Any) -> None:
         # Pass a weak reference to our children
-        super(ControllerHook, self).__init__(
+        super().__init__(
             part, context=weakref.proxy(context), **kwargs
         )
         # But hold a strong reference here to stop it disappearing
@@ -72,7 +72,7 @@ class LayoutHook(ControllerHook):
     def __init__(
         self, part: APart, context: AContext, ports: APortMap, layout: ALayoutTable
     ) -> None:
-        super(LayoutHook, self).__init__(part, context, ports=ports, layout=layout)
+        super().__init__(part, context, ports=ports, layout=layout)
 
     def validate_return(self, ret: ULayoutInfos) -> ALayoutInfos:
         """Check that all returned infos are LayoutInfos"""
@@ -89,7 +89,7 @@ class LoadHook(ControllerHook):
     def __init__(
         self, part: APart, context: AContext, structure: AStructure, init: AInit
     ) -> None:
-        super(LoadHook, self).__init__(part, context, structure=structure, init=init)
+        super().__init__(part, context, structure=structure, init=init)
 
 
 class SaveHook(ControllerHook):

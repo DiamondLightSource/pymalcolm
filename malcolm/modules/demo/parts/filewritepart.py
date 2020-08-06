@@ -31,7 +31,7 @@ class FileWritePart(Part):
     """Minimal interface demonstrating a file writing detector part"""
 
     def __init__(self, name: APartName, width: AWidth, height: AHeight) -> None:
-        super(FileWritePart, self).__init__(name)
+        super().__init__(name)
         # Store input arguments
         self._width = width
         self._height = height
@@ -48,7 +48,7 @@ class FileWritePart(Part):
         self._uid_offset = 0
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(FileWritePart, self).setup(registrar)
+        super().setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ConfigureHook, self.on_configure)
         registrar.hook(

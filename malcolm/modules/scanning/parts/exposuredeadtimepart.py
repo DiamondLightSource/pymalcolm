@@ -42,7 +42,7 @@ class ExposureDeadtimePart(Part):
         initial_frequency_accuracy: AInitialAccuracy = 50.0,
         min_exposure: AMinExposure = 0.0,
     ) -> None:
-        super(ExposureDeadtimePart, self).__init__(name)
+        super().__init__(name)
         self.readout_time = NumberMeta(
             "float64",
             readout_desc,
@@ -59,7 +59,7 @@ class ExposureDeadtimePart(Part):
         self.exposure = exposure_attribute(min_exposure)
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(ExposureDeadtimePart, self).setup(registrar)
+        super().setup(registrar)
         # Hooks
         registrar.hook(ReportStatusHook, self.on_report_status)
         registrar.hook(ValidateHook, self.on_validate)

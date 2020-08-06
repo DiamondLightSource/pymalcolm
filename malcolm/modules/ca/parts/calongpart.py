@@ -21,7 +21,7 @@ class CALongPart(Part):
         config: util.AConfig = True,
         throw: util.AThrow = True,
     ) -> None:
-        super(CALongPart, self).__init__(name)
+        super().__init__(name)
         self.caa = util.CAAttribute(
             NumberMeta("int32", description),
             util.catools.DBR_LONG,

@@ -29,7 +29,7 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
     def __init__(
         self, name: APartName, mri: AMri, initial_visibility: AInitialVisibility = True
     ) -> None:
-        super(PandAPulseTriggerPart, self).__init__(
+        super().__init__(
             name, mri, initial_visibility=initial_visibility, stateful=False
         )
         assert CAMEL_RE.match(name), (
@@ -45,7 +45,7 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
         self.detector = None
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(PandAPulseTriggerPart, self).setup(registrar)
+        super().setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
         registrar.hook(scanning.hooks.ConfigureHook, self.on_configure)

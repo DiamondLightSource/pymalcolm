@@ -48,7 +48,7 @@ class PandABussesPart(Part):
     positions = None
 
     def __init__(self, name: AMri, client: AClient) -> None:
-        super(PandABussesPart, self).__init__(name)
+        super().__init__(name)
         self._client = client
         # Row index lookups
         # {bit_name: index}

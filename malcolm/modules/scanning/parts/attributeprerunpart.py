@@ -31,7 +31,7 @@ class AttributePreRunPart(builtin.parts.ChildPart):
         reset_value: AResetVal,
         attribute_name: AAttrName = "shutter",
     ) -> None:
-        super(AttributePreRunPart, self).__init__(name, mri, initial_visibility=True)
+        super().__init__(name, mri, initial_visibility=True)
         self.pre_run_value = pre_run_value
         self.reset_value = reset_value
         self.attribute_name = attribute_name
@@ -43,7 +43,7 @@ class AttributePreRunPart(builtin.parts.ChildPart):
         self.no_save_attribute_names = existing | no_save_attrs
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(AttributePreRunPart, self).setup(registrar)
+        super().setup(registrar)
         # Hooks
         registrar.hook(hooks.PreRunHook, self.on_pre_run)
         registrar.hook(

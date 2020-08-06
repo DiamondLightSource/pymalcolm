@@ -42,7 +42,7 @@ class PandARunnableController(
         use_git: AUseGit = True,
         description: ADescription = "",
     ) -> None:
-        super(PandARunnableController, self).__init__(
+        super().__init__(
             mri=mri,
             config_dir=config_dir,
             hostname=hostname,
@@ -72,6 +72,6 @@ class PandARunnableController(
             )
             return controller, child_part
         else:
-            return super(PandARunnableController, self)._make_child_block(
+            return super()._make_child_block(
                 block_name, block_data
             )

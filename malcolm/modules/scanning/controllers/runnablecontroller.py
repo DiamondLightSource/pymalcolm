@@ -176,7 +176,7 @@ class RunnableController(builtin.controllers.ManagerController):
         use_git: AUseGit = True,
         description: ADescription = "",
     ) -> None:
-        super(RunnableController, self).__init__(
+        super().__init__(
             mri=mri,
             config_dir=config_dir,
             template_designs=template_designs,
@@ -269,7 +269,7 @@ class RunnableController(builtin.controllers.ManagerController):
         )
 
     def do_reset(self):
-        super(RunnableController, self).do_reset()
+        super().do_reset()
         self.configured_steps.set_value(0)
         self.completed_steps.set_value(0)
         self.total_steps.set_value(0)
@@ -311,7 +311,7 @@ class RunnableController(builtin.controllers.ManagerController):
                 method.set_returned()
 
     def update_block_endpoints(self):
-        super(RunnableController, self).update_block_endpoints()
+        super().update_block_endpoints()
         self.update_configure_params()
 
     def _part_params(
@@ -667,9 +667,9 @@ class RunnableController(builtin.controllers.ManagerController):
             context.stop()
         if self.resume_queue:
             self.resume_queue.put(False)
-        super(RunnableController, self).do_disable()
+        super().do_disable()
 
     def go_to_error_state(self, exception):
         if self.resume_queue:
             self.resume_queue.put(False)
-        super(RunnableController, self).go_to_error_state(exception)
+        super().go_to_error_state(exception)

@@ -20,7 +20,7 @@ class PandAAlternatingDivPart(builtin.parts.ChildPart):
     def __init__(
         self, name: APartName, mri: AMri, initial_visibility: AInitialVisibility = False
     ) -> None:
-        super(PandAAlternatingDivPart, self).__init__(
+        super().__init__(
             name, mri, initial_visibility=initial_visibility, stateful=False
         )
         assert CAMEL_RE.match(name), (
@@ -28,7 +28,7 @@ class PandAAlternatingDivPart(builtin.parts.ChildPart):
         )
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(PandAAlternatingDivPart, self).setup(registrar)
+        super().setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
         registrar.hook(scanning.hooks.ValidateHook, self.on_validate)

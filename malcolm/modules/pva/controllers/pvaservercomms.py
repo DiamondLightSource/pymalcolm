@@ -263,7 +263,7 @@ class PvaServerComms(builtin.controllers.ServerComms):
     """A class for communication between pva client and server"""
 
     def __init__(self, mri: builtin.controllers.AMri) -> None:
-        super(PvaServerComms, self).__init__(mri)
+        super().__init__(mri)
         self._pva_server = None
         self._provider = None
         self._published: Set[str] = set()
@@ -322,7 +322,7 @@ class PvaServerComms(builtin.controllers.ServerComms):
             return pv
 
     def do_init(self):
-        super(PvaServerComms, self).do_init()
+        super().do_init()
         if self._pva_server is None:
             self.log.info("Starting PVA server")
             self._provider = DynamicProvider("PvaServerComms", self)
@@ -330,7 +330,7 @@ class PvaServerComms(builtin.controllers.ServerComms):
             self.log.info("Started PVA server")
 
     def do_disable(self):
-        super(PvaServerComms, self).do_disable()
+        super().do_disable()
         if self._pva_server is not None:
             self.log.info("Stopping PVA server")
             # Stop the server

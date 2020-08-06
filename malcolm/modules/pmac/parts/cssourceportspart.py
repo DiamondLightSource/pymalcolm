@@ -16,7 +16,7 @@ class CSSourcePortsPart(Part):
     for the axes A-Z and I for the axis assignments"""
 
     def __init__(self, name: APartName, rbv: ARbv, group: AGroup = None) -> None:
-        super(CSSourcePortsPart, self).__init__(name)
+        super().__init__(name)
         self.meta = StringMeta("CS Port name")
         # This gives the port name
         self.caa = ca.util.CAAttribute(

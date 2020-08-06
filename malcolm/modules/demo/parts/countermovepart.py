@@ -24,12 +24,12 @@ class CounterMovePart(builtin.parts.ChildPart):
     """Provides control of a `counter_block` within a `ManagerController`"""
 
     def __init__(self, name: APartName, mri: AMri) -> None:
-        super(CounterMovePart, self).__init__(
+        super().__init__(
             name, mri, stateful=False, initial_visibility=True
         )
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(CounterMovePart, self).setup(registrar)
+        super().setup(registrar)
         # Method
         registrar.add_method_model(self.move, self.name + "Move", needs_context=True)
 

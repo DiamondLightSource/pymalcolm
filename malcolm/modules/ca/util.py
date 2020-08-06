@@ -198,7 +198,7 @@ class CAAttribute(CABase):
     ) -> None:
         self.set_logger(pv=pv, rbv=rbv)
         writeable = bool(pv)
-        super(CAAttribute, self).__init__(
+        super().__init__(
             meta,
             datatype,
             writeable,
@@ -303,7 +303,7 @@ class WaveformTableAttribute(CABase):
 
         self.set_logger(**logs)
         writeable = False
-        super(WaveformTableAttribute, self).__init__(
+        super().__init__(
             meta,
             datatype,
             writeable,

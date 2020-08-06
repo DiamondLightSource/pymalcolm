@@ -18,17 +18,17 @@ AMri = builtin.parts.AMri
 
 class CSPart(builtin.parts.ChildPart):
     def __init__(self, mri: AMri, cs: ACS) -> None:
-        super(CSPart, self).__init__("CS%d" % cs, mri, initial_visibility=True)
+        super().__init__("CS%d" % cs, mri, initial_visibility=True)
         self.cs = cs
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(CSPart, self).setup(registrar)
+        super().setup(registrar)
         # Add methods
         registrar.add_method_model(self.move, "moveCS%d" % self.cs, needs_context=True)
 
     @add_call_types
     def on_init(self, context: builtin.hooks.AContext) -> None:
-        super(CSPart, self).on_init(context)
+        super().on_init(context)
         # Check the port name matches our CS number
         child = context.block_view(self.mri)
         cs_port = child.port.value

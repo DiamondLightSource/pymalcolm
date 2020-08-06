@@ -39,7 +39,7 @@ class CAActionPart(Part):
         wait: AWait = True,
         throw: util.AThrow = True,
     ) -> None:
-        super(CAActionPart, self).__init__(name)
+        super().__init__(name)
         self.description = description
         self.pv = pv
         self.status_pv = status_pv
@@ -52,7 +52,7 @@ class CAActionPart(Part):
         self.method: Optional[MethodModel] = None
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(CAActionPart, self).setup(registrar)
+        super().setup(registrar)
         # Hooks
         registrar.hook(
             (builtin.hooks.InitHook, builtin.hooks.ResetHook), self.reconnect

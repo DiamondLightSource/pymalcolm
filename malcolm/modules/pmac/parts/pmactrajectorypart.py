@@ -57,7 +57,7 @@ def _zeros_or_right_length(array, num_points):
 @builtin.util.no_save("positions%s" % x for x in CS_AXIS_NAMES)
 class PmacTrajectoryPart(builtin.parts.ChildPart):
     def __init__(self, name: APartName, mri: AMri,) -> None:
-        super(PmacTrajectoryPart, self).__init__(name, mri, initial_visibility=True)
+        super().__init__(name, mri, initial_visibility=True)
         # The total number of points we have written
         self.total_points = 0
         self.points_scanned = NumberMeta(
@@ -65,7 +65,7 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
         ).create_attribute_model(0)
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(PmacTrajectoryPart, self).setup(registrar)
+        super().setup(registrar)
         # Add methods
         registrar.add_method_model(
             self.write_profile, "writeProfile", needs_context=True

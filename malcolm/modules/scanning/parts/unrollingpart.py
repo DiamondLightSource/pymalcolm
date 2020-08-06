@@ -39,6 +39,6 @@ class UnrollingPart(Part):
         return ParameterTweakInfo("generator", new_generator)
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(UnrollingPart, self).setup(registrar)
+        super().setup(registrar)
         # Hooks
         registrar.hook(ValidateHook, self.on_validate)

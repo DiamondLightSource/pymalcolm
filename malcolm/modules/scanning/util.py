@@ -173,7 +173,7 @@ class RunnableStates(builtin.util.ManagerStates):
     ABORTED = "Aborted"
 
     def create_block_transitions(self):
-        super(RunnableStates, self).create_block_transitions()
+        super().create_block_transitions()
         # Set transitions for normal states
         self.set_allowed(self.READY, self.CONFIGURING)
         self.set_allowed(self.CONFIGURING, self.ARMED)

@@ -58,7 +58,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         main_dataset_useful: AMainDatasetUseful = True,
         runs_on_windows: APartRunsOnWindows = False,
     ) -> None:
-        super(DetectorDriverPart, self).__init__(name, mri)
+        super().__init__(name, mri)
         self.soft_trigger_modes = soft_trigger_modes
         self.is_hardware_triggered = True
         self.main_dataset_useful = main_dataset_useful
@@ -210,7 +210,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         self.extra_attributes.set_value(value)
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(DetectorDriverPart, self).setup(registrar)
+        super().setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
         registrar.hook(
@@ -233,7 +233,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
 
     @add_call_types
     def on_reset(self, context: scanning.hooks.AContext) -> None:
-        super(DetectorDriverPart, self).on_reset(context)
+        super().on_reset(context)
         self.abort_detector(context)
         # Delete the layout XML file
         if self.attributes_filename and os.path.isfile(self.attributes_filename):

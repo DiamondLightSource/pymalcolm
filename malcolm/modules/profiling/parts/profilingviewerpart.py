@@ -29,11 +29,11 @@ class MalcolmViewHandler(ViewFlatHandler):
 
 class ProfilingViewerPart(Part):
     def __init__(self, name: APartName = "profiles") -> None:
-        super(ProfilingViewerPart, self).__init__(name)
+        super().__init__(name)
         options.datadir = get_profiler_dir()
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(ProfilingViewerPart, self).setup(registrar)
+        super().setup(registrar)
         # Hooks
         registrar.hook(web.hooks.ReportHandlersHook, self.on_report_handlers)
 

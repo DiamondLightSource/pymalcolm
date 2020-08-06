@@ -10,14 +10,14 @@ class EigerDriverPart(ADCore.parts.DetectorDriverPart):
         does not count frames when Odin is consuming the frames."""
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(EigerDriverPart, self).setup(registrar)
+        super().setup(registrar)
         registrar.hook(scanning.hooks.PostRunReadyHook, self.on_post_run_ready)
         registrar.hook(scanning.hooks.PostRunArmedHook, self.on_post_run_armed)
 
     def arm_detector(self, context: Context) -> None:
         child = context.block_view(self.mri)
         child.numImagesPerSeries.put_value(1)
-        super(EigerDriverPart, self).arm_detector(context)
+        super().arm_detector(context)
         # Wait for the fan to be ready before returning from configure
         child.when_value_matches("fanStateReady", 1)
 

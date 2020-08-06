@@ -39,7 +39,7 @@ class PandAFieldPart(Part):
         initial_value: AInitialValue = None,
     ) -> None:
         part_name = field_name.replace(".", "_")
-        super(PandAFieldPart, self).__init__(part_name)
+        super().__init__(part_name)
         self.client = client
         self.meta = meta
         self.block_name = block_name
@@ -48,7 +48,7 @@ class PandAFieldPart(Part):
         self.pending_change = False
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(PandAFieldPart, self).setup(registrar)
+        super().setup(registrar)
         attr_name = snake_to_camel(self.field_name.replace(".", "_"))
         writeable_func: Optional[Callable]
         if self.meta.writeable:

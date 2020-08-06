@@ -100,7 +100,7 @@ class BeamSelectorPart(PmacChildPart):
         # Reduce the exposure of the camera/detector
         generator.duration = exposure_time
 
-        super(BeamSelectorPart, self).on_configure(
+        super().on_configure(
             context, completed_steps, steps_to_do, part_info, new_generator, axesToMove
         )
 

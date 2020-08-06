@@ -150,7 +150,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
     def __init__(
         self, name: APartName, mri: AMri, initial_visibility: AInitialVisibility = True
     ) -> None:
-        super(PandASeqTriggerPart, self).__init__(
+        super().__init__(
             name, mri, initial_visibility=initial_visibility, stateful=False
         )
         # Stored generator for positions
@@ -175,7 +175,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         self.panda: Optional[Any] = None
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(PandASeqTriggerPart, self).setup(registrar)
+        super().setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
         registrar.hook(

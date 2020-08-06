@@ -47,7 +47,7 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
         port: APort = 8008,
         connect_timeout: AConnectTimeout = DEFAULT_TIMEOUT,
     ) -> None:
-        super(WebsocketClientComms, self).__init__(mri)
+        super().__init__(mri)
         self.hostname = hostname
         self.port = port
         self.connect_timeout = connect_timeout
@@ -63,7 +63,7 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
         self.field_registry.add_attribute_model("remoteBlocks", self.remote_blocks)
 
     def do_init(self):
-        super(WebsocketClientComms, self).do_init()
+        super().do_init()
         self._start_client()
 
     def _start_client(self):
@@ -145,11 +145,11 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
         cothread.Callback(self.remote_blocks.set_value, response.value)
 
     def do_disable(self):
-        super(WebsocketClientComms, self).do_disable()
+        super().do_disable()
         self._stop_client()
 
     def do_reset(self):
-        super(WebsocketClientComms, self).do_reset()
+        super().do_reset()
         self._start_client()
 
     def sync_proxy(self, mri, block):

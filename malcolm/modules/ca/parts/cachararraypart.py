@@ -20,7 +20,7 @@ class CACharArrayPart(Part):
         group: util.AGroup = None,
         config: util.AConfig = True,
     ) -> None:
-        super(CACharArrayPart, self).__init__(name)
+        super().__init__(name)
         self.caa = util.CAAttribute(
             StringMeta(description),
             util.catools.DBR_CHAR_STR,

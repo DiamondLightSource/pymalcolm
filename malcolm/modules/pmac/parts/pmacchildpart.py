@@ -73,7 +73,7 @@ class PmacChildPart(builtin.parts.ChildPart):
     def __init__(
         self, name: APartName, mri: AMri, initial_visibility: AIV = False
     ) -> None:
-        super(PmacChildPart, self).__init__(name, mri, initial_visibility)
+        super().__init__(name, mri, initial_visibility)
         # Axis information stored from validate
         self.axis_mapping: Dict[str, MotorInfo] = {}
         # Lookup of the completed_step value for each point
@@ -100,7 +100,7 @@ class PmacChildPart(builtin.parts.ChildPart):
         self.generator: CompoundGenerator = None
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(PmacChildPart, self).setup(registrar)
+        super().setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ValidateHook, self.on_validate)
         registrar.hook(scanning.hooks.PreConfigureHook, self.reload)
@@ -124,11 +124,11 @@ class PmacChildPart(builtin.parts.ChildPart):
             # it is in no_save (as it won't be in there)
             pass
         else:
-            super(PmacChildPart, self).notify_dispatch_request(request)
+            super().notify_dispatch_request(request)
 
     @add_call_types
     def on_reset(self, context: builtin.hooks.AContext) -> None:
-        super(PmacChildPart, self).on_reset(context)
+        super().on_reset(context)
         self.on_abort(context)
 
     # Allow CamelCase as arguments will be serialized

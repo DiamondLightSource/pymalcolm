@@ -21,7 +21,7 @@ class CABooleanPart(Part):
         config: util.AConfig = True,
         throw: util.AThrow = True,
     ) -> None:
-        super(CABooleanPart, self).__init__(name)
+        super().__init__(name)
         self.caa = util.CAAttribute(
             BooleanMeta(description),
             util.catools.DBR_LONG,

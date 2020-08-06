@@ -34,14 +34,14 @@ class StatsPluginPart(builtin.parts.ChildPart):
         statistic: AStatsName = StatisticsName.SUM,
         runs_on_windows: APartRunsOnWindows = False,
     ) -> None:
-        super(StatsPluginPart, self).__init__(name, mri)
+        super().__init__(name, mri)
         self.statistic = statistic
         # The NDAttributes file we write to say what to capture
         self.attributes_filename: Optional[str] = None
         self.runs_on_windows = runs_on_windows
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(StatsPluginPart, self).setup(registrar)
+        super().setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
         registrar.hook(scanning.hooks.ConfigureHook, self.on_configure)
@@ -101,7 +101,7 @@ class StatsPluginPart(builtin.parts.ChildPart):
 
     @add_call_types
     def on_reset(self, context: scanning.hooks.AContext) -> None:
-        super(StatsPluginPart, self).on_reset(context)
+        super().on_reset(context)
         # Delete the attribute XML file
         if self.attributes_filename and os.path.isfile(self.attributes_filename):
             os.remove(self.attributes_filename)

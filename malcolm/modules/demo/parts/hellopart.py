@@ -15,7 +15,7 @@ class HelloPart(Part):
     """Defines greet and error `Method` objects on a `Block`"""
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(HelloPart, self).setup(registrar)
+        super().setup(registrar)
         registrar.add_method_model(self.greet)
         registrar.add_method_model(self.error)
 

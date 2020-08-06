@@ -82,7 +82,7 @@ class ManagerController(StatefulController):
         use_git: AUseGit = True,
         description: ADescription = "",
     ) -> None:
-        super(ManagerController, self).__init__(mri=mri, description=description)
+        super().__init__(mri=mri, description=description)
         assert os.path.isdir(config_dir), "%s is not a directory" % config_dir
         self.config_dir = config_dir
         self.initial_design = initial_design
@@ -181,7 +181,7 @@ class ManagerController(StatefulController):
                 return output
 
     def do_init(self):
-        super(ManagerController, self).do_init()
+        super().do_init()
         # Try and make it a git repo, don't care if it fails
         self._run_git_cmd("init")
         # List the config_dir and add to choices
@@ -323,7 +323,7 @@ class ManagerController(StatefulController):
             self.add_block_field(name, child, writeable_func, needs_context)
 
     def add_part(self, part: Part) -> None:
-        super(ManagerController, self).add_part(part)
+        super().add_part(part)
         # Strip out the config tags of what we just added, as we will be
         # saving them ourself
         for name, field, _, _ in self.field_registry.fields.get(part, []):
@@ -432,7 +432,7 @@ class ManagerController(StatefulController):
         return ret["export"], ret["setter"]
 
     def create_part_contexts(self, only_visible=True):
-        part_contexts = super(ManagerController, self).create_part_contexts()
+        part_contexts = super().create_part_contexts()
         if only_visible:
             for part_name, visible in zip(
                 self.layout.value.name, self.layout.value.visible

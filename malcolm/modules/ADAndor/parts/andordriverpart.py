@@ -15,13 +15,13 @@ with Anno("Directory to write data to"):
 
 class AndorDriverPart(ADCore.parts.DetectorDriverPart):
     def __init__(self, name: APartName, mri: AMri) -> None:
-        super(AndorDriverPart, self).__init__(
+        super().__init__(
             name, mri, soft_trigger_modes=["Internal", "Software"]
         )
         self.exposure = scanning.util.exposure_attribute(min_exposure=0.0)
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(AndorDriverPart, self).setup(registrar)
+        super().setup(registrar)
         # Attributes
         registrar.add_attribute_model("exposure", self.exposure)
         # Tell the controller to pass "exposure" to configure
@@ -78,7 +78,7 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
         self.exposure.set_value(exposure)
         kwargs["exposure"] = exposure
 
-        super(AndorDriverPart, self).setup_detector(
+        super().setup_detector(
             context, completed_steps, steps_to_do, duration, part_info, **kwargs
         )
 

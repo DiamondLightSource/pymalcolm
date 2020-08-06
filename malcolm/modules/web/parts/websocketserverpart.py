@@ -177,11 +177,11 @@ class WebsocketServerPart(Part):
     def __init__(
         self, name: AName = "ws", subnet_validation: ASubnetValidation = True
     ) -> None:
-        super(WebsocketServerPart, self).__init__(name)
+        super().__init__(name)
         self.subnet_validation = subnet_validation
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(WebsocketServerPart, self).setup(registrar)
+        super().setup(registrar)
         # Hooks
         registrar.hook(ReportHandlersHook, self.on_report_handlers)
 

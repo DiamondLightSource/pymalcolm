@@ -48,7 +48,7 @@ class Float64Part(Part):
         precision: APrecision = 8,
         units: AUnits = "",
     ) -> None:
-        super(Float64Part, self).__init__(name)
+        super().__init__(name)
         display = Display(
             limitLow=limit_low, limitHigh=limit_high, precision=precision, units=units
         )

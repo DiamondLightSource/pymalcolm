@@ -26,7 +26,7 @@ class MinTurnaroundPart(Part):
         gap: AMinTurnaround = None,
         interval: ATurnaroundInterval = None,
     ) -> None:
-        super(MinTurnaroundPart, self).__init__(name)
+        super().__init__(name)
         self.gap = NumberMeta(
             "float64",
             "Minimum time for any gaps between non-joined points",

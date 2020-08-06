@@ -7,7 +7,7 @@ from malcolm.modules import ADCore, builtin, scanning
 @builtin.util.no_save("numImagesPerSeries")
 class TetrAMMDriverPart(ADCore.parts.DetectorDriverPart):
     def setup(self, registrar: PartRegistrar) -> None:
-        super(TetrAMMDriverPart, self).setup(registrar)
+        super().setup(registrar)
         registrar.hook(scanning.hooks.PostRunReadyHook, self.on_post_run_ready)
         registrar.hook(scanning.hooks.PostRunArmedHook, self.on_post_run_armed)
 

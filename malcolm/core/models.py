@@ -379,7 +379,7 @@ class AttributeModel(Model):
         if path == ["value"] and args:
             self.set_value(args[0], set_alarm_ts=False)
         else:
-            super(AttributeModel, self).apply_change(path, *args)
+            super().apply_change(path, *args)
 
 
 @Serializable.register_subclass("epics:nt/NTTable:1.0")
@@ -483,7 +483,7 @@ class ChoiceMeta(VMeta):
         writeable: AWriteable = False,
         label: ALabel = "",
     ) -> None:
-        super(ChoiceMeta, self).__init__(description, tags, writeable, label)
+        super().__init__(description, tags, writeable, label)
         self.choices_lookup: Dict[Any, Union[str, Enum]] = {}
         # Used for ChoiceMetaArray subclass only for producing Arrays
         self.enum_cls: Union[Type, None] = None
@@ -563,7 +563,7 @@ class ChoiceMeta(VMeta):
 
     @classmethod
     def from_annotype(cls, anno: Anno, writeable: bool, **kwargs: Any) -> VMeta:
-        return super(ChoiceMeta, cls).from_annotype(
+        return super().from_annotype(
             anno, writeable, choices=list(anno.typ)
         )
 
@@ -663,7 +663,7 @@ class NumberMeta(VMeta):
         label: ALabel = "",
         display: ADisplay = None,
     ) -> None:
-        super(NumberMeta, self).__init__(description, tags, writeable, label)
+        super().__init__(description, tags, writeable, label)
         # like np.float64
         self._np_type: type = np.float64
         # like "float64"
@@ -707,7 +707,7 @@ class NumberMeta(VMeta):
 
     @classmethod
     def from_annotype(cls, anno: Anno, writeable: bool, **kwargs: Any) -> VMeta:
-        return super(NumberMeta, cls).from_annotype(
+        return super().from_annotype(
             anno, writeable, dtype=_dtype_string_lookup[anno.typ]
         )
 
@@ -816,7 +816,7 @@ class ChoiceArrayMeta(ChoiceMeta, VArrayMeta):
                 return to_array(Array[self.enum_cls], ret)
 
     def doc_type_string(self) -> str:
-        return "[%s]" % super(ChoiceArrayMeta, self).doc_type_string()
+        return "[%s]" % super().doc_type_string()
 
 
 @Serializable.register_subclass("malcolm:core/NumberArrayMeta:1.0")
@@ -874,7 +874,7 @@ class TableMeta(VMeta):
     ) -> None:
         self.table_cls: Union[Type[Table], None] = None
         self.elements: Dict[str, Meta] = {}
-        super(TableMeta, self).__init__(description, tags, writeable, label)
+        super().__init__(description, tags, writeable, label)
         # Do this after so writeable is honoured
         self.set_elements(elements if elements else {})
 
@@ -1088,7 +1088,7 @@ class MethodMeta(Meta):
         self.takes = self.set_takes(takes if takes else MapMeta())
         self.returns = self.set_returns(returns if returns else MapMeta())
         self.defaults = self.set_defaults(defaults if defaults else {})
-        super(MethodMeta, self).__init__(description, tags, writeable, label)
+        super().__init__(description, tags, writeable, label)
 
     def set_takes(self, takes: ATakes) -> ATakes:
         takes = deserialize_object(takes, MapMeta)
@@ -1283,7 +1283,7 @@ class BlockMeta(Meta):
         label: ALabel = "",
         fields: UFields = (),
     ) -> None:
-        super(BlockMeta, self).__init__(description, tags, writeable, label)
+        super().__init__(description, tags, writeable, label)
         self.fields = self.set_fields(fields)
 
     def set_fields(self, fields: UFields) -> AFields:

@@ -297,15 +297,15 @@ class OdinWriterPart(builtin.parts.ChildPart):
         self.uid_name = uid_name
         self.sum_name = sum_name
         self.secondary_set = secondary_set
-        super(OdinWriterPart, self).__init__(name, mri, initial_visibility)
+        super().__init__(name, mri, initial_visibility)
 
     @add_call_types
     def on_reset(self, context: scanning.hooks.AContext) -> None:
-        super(OdinWriterPart, self).on_reset(context)
+        super().on_reset(context)
         self.on_abort(context)
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(OdinWriterPart, self).setup(registrar)
+        super().setup(registrar)
         # Tell the controller to expose some extra configure parameters
         registrar.report(scanning.hooks.ConfigureHook.create_info(self.on_configure))
         # Hooks

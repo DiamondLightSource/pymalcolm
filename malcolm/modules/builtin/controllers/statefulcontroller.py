@@ -37,7 +37,7 @@ class StatefulController(BasicController):
     state_set = ss()
 
     def __init__(self, mri: AMri, description: ADescription = "") -> None:
-        super(StatefulController, self).__init__(mri, description)
+        super().__init__(mri, description)
         self._children_writeable: ChildrenWriteable = {}
         self.state = ChoiceMeta(
             "StateMachine State of Block",
@@ -113,7 +113,7 @@ class StatefulController(BasicController):
 
     def check_field_writeable(self, field):
         try:
-            super(StatefulController, self).check_field_writeable(field)
+            super().check_field_writeable(field)
         except NotWriteableError as e:
             msg = "%s, maybe because Block state = %s" % (e, self.state.value)
             raise NotWriteableError(msg)
@@ -168,7 +168,7 @@ class StatefulController(BasicController):
             raise
 
     def add_block_field(self, name, child, writeable_func, needs_context):
-        super(StatefulController, self).add_block_field(
+        super().add_block_field(
             name, child, writeable_func, needs_context
         )
         # If we don't have a writeable func it can never be writeable

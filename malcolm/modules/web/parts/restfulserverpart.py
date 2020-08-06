@@ -71,10 +71,10 @@ with Anno("Part name and subdomain name to respond to queries on"):
 
 class RestfulServerPart(Part):
     def __init__(self, name: AName = "rest") -> None:
-        super(RestfulServerPart, self).__init__(name)
+        super().__init__(name)
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(RestfulServerPart, self).setup(registrar)
+        super().setup(registrar)
         # Hooks
         registrar.hook(ReportHandlersHook, self.on_report_handlers)
 

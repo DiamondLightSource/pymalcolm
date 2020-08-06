@@ -47,7 +47,7 @@ class PandAManagerController(builtin.controllers.ManagerController):
         use_git: AUseGit = True,
         description: ADescription = "",
     ) -> None:
-        super(PandAManagerController, self).__init__(
+        super().__init__(
             mri=mri,
             config_dir=config_dir,
             template_designs=template_designs,
@@ -89,7 +89,7 @@ class PandAManagerController(builtin.controllers.ManagerController):
         # start the poll loop and make block parts first to fill in our parts
         # before calling _set_block_children()
         self.start_poll_loop()
-        super(PandAManagerController, self).do_init()
+        super().do_init()
 
     def start_poll_loop(self):
         # queue to listen for stop events
@@ -104,12 +104,12 @@ class PandAManagerController(builtin.controllers.ManagerController):
             self._poll_spawned = self.process.spawn(self._poll_loop)
 
     def do_disable(self):
-        super(PandAManagerController, self).do_disable()
+        super().do_disable()
         self.stop_poll_loop()
 
     def do_reset(self):
         self.start_poll_loop()
-        super(PandAManagerController, self).do_reset()
+        super().do_reset()
 
     def _poll_loop(self):
         """At self.poll_period poll for changes"""

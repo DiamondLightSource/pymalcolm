@@ -59,7 +59,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
         initial_visibility: AInitialVisibility = False,
         initial_frames_per_step: AInitialFramesPerStep = 1,
     ) -> None:
-        super(DetectorChildPart, self).__init__(name, mri, initial_visibility)
+        super().__init__(name, mri, initial_visibility)
         # frames per scan step given by the detector table at configure()
         self.initial_frames_per_step = initial_frames_per_step
         self.frames_per_step = initial_frames_per_step
@@ -70,7 +70,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
         self.faulty = False
 
     def setup(self, registrar):
-        super(DetectorChildPart, self).setup(registrar)
+        super().setup(registrar)
         # Hooks
         registrar.hook(ValidateHook, self.on_validate)
         registrar.hook(PreConfigureHook, self.reload)
@@ -87,7 +87,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
         ports: builtin.hooks.APortMap,
         layout: builtin.hooks.ALayoutTable,
     ) -> builtin.hooks.ULayoutInfos:
-        ret = super(DetectorChildPart, self).on_layout(context, ports, layout)
+        ret = super().on_layout(context, ports, layout)
         # Tell the controller to expose some extra configure parameters
         configure_info = ConfigureHook.create_info(self.on_configure)
         # Override the detector table defaults and writeable
@@ -115,12 +115,12 @@ class DetectorChildPart(builtin.parts.ChildPart):
             # it is in no_save (as it won't be in there)
             pass
         else:
-            super(DetectorChildPart, self).notify_dispatch_request(request)
+            super().notify_dispatch_request(request)
 
     @add_call_types
     def on_init(self, context: AContext) -> None:
         try:
-            super(DetectorChildPart, self).on_init(context)
+            super().on_init(context)
         except BadValueError:
             self.log_exception(
                 f"Detector {self.name} was faulty at init and is not usable"
@@ -133,7 +133,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
             child = context.block_view(self.mri)
             if child.abort.meta.writeable:
                 child.abort()
-            super(DetectorChildPart, self).on_reset(context)
+            super().on_reset(context)
 
     # Must match those passed in configure() Method, so need to be camelCase
     # noinspection PyPep8Naming

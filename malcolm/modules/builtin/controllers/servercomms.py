@@ -12,7 +12,7 @@ class ServerComms(StatefulController):
     """Abstract class for dealing with requests from outside"""
 
     def __init__(self, mri: AMri, description: ADescription = "") -> None:
-        super(ServerComms, self).__init__(mri, description)
+        super().__init__(mri, description)
         self.info_registry.add_reportable(RequestInfo, self.update_request_received)
 
     def update_request_received(self, _: Part, info: RequestInfo) -> None:

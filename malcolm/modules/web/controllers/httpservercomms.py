@@ -20,7 +20,7 @@ class HTTPServerComms(builtin.controllers.ServerComms):
     """A class for communication between browser and server"""
 
     def __init__(self, mri: builtin.controllers.AMri, port: APort = 8008) -> None:
-        super(HTTPServerComms, self).__init__(mri)
+        super().__init__(mri)
         self.port = port
         self._server: Optional[HTTPServer] = None
         self._server_started = False
@@ -33,7 +33,7 @@ class HTTPServerComms(builtin.controllers.ServerComms):
         self.register_hooked(ProcessPublishHook, self.publish)
 
     def do_init(self):
-        super(HTTPServerComms, self).do_init()
+        super().do_init()
         part_info = self.run_hooks(
             ReportHandlersHook(part) for part in self.parts.values()
         )
@@ -58,11 +58,11 @@ class HTTPServerComms(builtin.controllers.ServerComms):
             self._server_started = False
 
     def do_disable(self):
-        super(HTTPServerComms, self).do_disable()
+        super().do_disable()
         self._stop_server()
 
     def do_reset(self):
-        super(HTTPServerComms, self).do_reset()
+        super().do_reset()
         self._start_server()
 
     @add_call_types

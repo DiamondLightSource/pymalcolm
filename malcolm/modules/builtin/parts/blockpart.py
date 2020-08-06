@@ -36,7 +36,7 @@ class BlockPart(Part):
         widget: AWidget = None,
         value: AValue = "",
     ) -> None:
-        super(BlockPart, self).__init__(name)
+        super().__init__(name)
         meta = StringMeta(description)
         set_tags(meta, writeable, config, group, widget, sink_port=Port.BLOCK)
         self.attr = meta.create_attribute_model(value)

@@ -142,7 +142,7 @@ class Block(View):
     """Object consisting of a number of Attributes and Methods"""
 
     def __init__(self, controller, context, data):
-        super(Block, self).__init__(controller, context, data)
+        super().__init__(controller, context, data)
         for endpoint in self._data:
             if isinstance(data[endpoint], MethodModel):
                 # Add _async versions of method

@@ -19,13 +19,13 @@ class PvaClientComms(builtin.controllers.ClientComms):
     _queues: Dict[str, Queue] = {}
 
     def do_init(self):
-        super(PvaClientComms, self).do_init()
+        super().do_init()
         self._ctxt = Context("pva", unwrap=False)
         self._queues: Dict[str, Queue] = {}
         self._monitors: Set[Subscription] = set()
 
     def do_disable(self):
-        super(PvaClientComms, self).do_disable()
+        super().do_disable()
         # Unsubscribe to all the monitors
         for m in self._monitors:
             m.close()

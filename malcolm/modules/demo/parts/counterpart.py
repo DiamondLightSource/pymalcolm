@@ -19,7 +19,7 @@ class CounterPart(Part):
     delta: Optional[AttributeModel] = None
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(CounterPart, self).setup(registrar)
+        super().setup(registrar)
         # Add some Attribute and Methods to the Block
         self.counter = NumberMeta(
             "float64",

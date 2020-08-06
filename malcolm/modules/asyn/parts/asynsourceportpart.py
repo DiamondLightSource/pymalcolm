@@ -27,7 +27,7 @@ class AsynSourcePortPart(Part):
         port_type: APortType,
         group: AGroup = None,
     ) -> None:
-        super(AsynSourcePortPart, self).__init__(name)
+        super().__init__(name)
         self.port_type = port_type
         self.meta = StringMeta(description)
         self.caa = ca.util.CAAttribute(

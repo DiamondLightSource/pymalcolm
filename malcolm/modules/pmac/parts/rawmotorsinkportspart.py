@@ -27,7 +27,7 @@ class RawMotorSinkPortsPart(Part):
     depicted as a Source Port on a Block"""
 
     def __init__(self, pv_prefix: APvPrefix, group: ca.util.AGroup = None) -> None:
-        super(RawMotorSinkPortsPart, self).__init__("sinkPorts")
+        super().__init__("sinkPorts")
         self.pvs = [pv_prefix + ":CsPort", pv_prefix + ":CsAxis"]
         self.rbvs = [
             pv_prefix + ":CsPort_RBV",

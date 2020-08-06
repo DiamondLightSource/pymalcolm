@@ -9,7 +9,7 @@ with Anno("The Servo Frequency of the PMAC in Hz"):
 
 class PmacStatusPart(builtin.parts.ChildPart):
     def setup(self, registrar: PartRegistrar) -> None:
-        super(PmacStatusPart, self).setup(registrar)
+        super().setup(registrar)
         # Add methods
         registrar.add_method_model(
             self.servo_frequency, "servoFrequency", needs_context=True

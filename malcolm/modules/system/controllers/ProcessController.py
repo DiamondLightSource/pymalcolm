@@ -74,7 +74,7 @@ class ProcessController(builtin.controllers.ManagerController):
         config_dir: builtin.controllers.AConfigDir,
         ioc_list: AIocList = "",
     ) -> None:
-        super(ProcessController, self).__init__(mri, config_dir)
+        super().__init__(mri, config_dir)
         self.ioc = None
         self.ioc_blocks: OrderedDict = OrderedDict()
         self.prefix = prefix
@@ -145,7 +145,7 @@ class ProcessController(builtin.controllers.ManagerController):
         if self.ioc is None:
             self.ioc = start_ioc(self.stats, self.prefix)
         self.get_ioc_list()
-        super(ProcessController, self).init()
+        super().init()
         msg = (
             """\
 pymalcolm %(pymalcolm_ver)s started

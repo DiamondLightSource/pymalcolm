@@ -9,7 +9,7 @@ from .dirparsepart import AIoc
 class IocIconPart(builtin.parts.IconPart):
     def __init__(self, ioc: AIoc, initial_svg: builtin.parts.ASvg) -> None:
         self.initial_svg = initial_svg
-        super(IocIconPart, self).__init__(initial_svg)
+        super().__init__(initial_svg)
         meta = StringMeta("Host Architecture")
         self.host_arch = ca.util.CAAttribute(
             meta,
@@ -21,7 +21,7 @@ class IocIconPart(builtin.parts.IconPart):
         )
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(IocIconPart, self).setup(registrar)
+        super().setup(registrar)
         self.host_arch.setup(registrar, "hostOs", self.register_hooked)
 
     def update_icon(self, arch):

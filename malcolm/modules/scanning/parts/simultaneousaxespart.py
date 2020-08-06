@@ -22,7 +22,7 @@ class SimultaneousAxesPart(Part):
     def __init__(
         self, name: APartName = "simultaneousAxes", value: USimultaneousAxes = None
     ) -> None:
-        super(SimultaneousAxesPart, self).__init__(name)
+        super().__init__(name)
         self.attr = StringArrayMeta(
             "Set of axes that can be specified in axesToMove at configure",
             tags=[Widget.TEXTINPUT.tag(), config_tag()],

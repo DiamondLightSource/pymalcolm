@@ -20,7 +20,7 @@ class ReportHandlersHook(Hook):
     """
 
     def __init__(self, part: APart) -> None:
-        super(ReportHandlersHook, self).__init__(part)
+        super().__init__(part)
 
     def validate_return(self, ret: UHandlerInfos) -> AHandlerInfos:
         return AHandlerInfos(ret)

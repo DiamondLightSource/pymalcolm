@@ -368,7 +368,7 @@ class HDFWriterPart(builtin.parts.ChildPart):
         runs_on_windows: APartRunsOnWindows = False,
         write_all_nd_attributes: AWriteAllNDAttributes = True,
     ) -> None:
-        super(HDFWriterPart, self).__init__(name, mri)
+        super().__init__(name, mri)
         # Future for the start action
         self.start_future: Optional[Future] = None
         self.array_future: Optional[Future] = None
@@ -391,7 +391,7 @@ class HDFWriterPart(builtin.parts.ChildPart):
 
     @add_call_types
     def on_reset(self, context: scanning.hooks.AContext) -> None:
-        super(HDFWriterPart, self).on_reset(context)
+        super().on_reset(context)
         self.on_abort(context)
         # HDFWriter might have still be writing so stop doesn't guarantee
         # flushed all frames start_future is in a different context so
@@ -404,7 +404,7 @@ class HDFWriterPart(builtin.parts.ChildPart):
             child.xmlLayout.put_value("")
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(HDFWriterPart, self).setup(registrar)
+        super().setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ConfigureHook, self.on_configure)
         registrar.hook(

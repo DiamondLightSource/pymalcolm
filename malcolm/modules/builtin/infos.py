@@ -53,7 +53,7 @@ class SinkPortInfo(PortInfo):
     def __init__(
         self, name: str, port: Port, disconnected_value: str, value: Any
     ) -> None:
-        super(SinkPortInfo, self).__init__(name, port)
+        super().__init__(name, port)
         self.disconnected_value = disconnected_value
         self.value = value
 
@@ -69,7 +69,7 @@ class SourcePortInfo(PortInfo):
     """
 
     def __init__(self, name: str, port: Port, connected_value: str) -> None:
-        super(SourcePortInfo, self).__init__(name, port)
+        super().__init__(name, port)
         self.connected_value = connected_value
 
 

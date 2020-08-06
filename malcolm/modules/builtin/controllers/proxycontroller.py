@@ -28,7 +28,7 @@ class ProxyController(BasicController):
     """Sync a local block with a given remote block"""
 
     def __init__(self, mri: AMri, comms: AComms, publish: APublish = False) -> None:
-        super(ProxyController, self).__init__(mri)
+        super().__init__(mri)
         self.comms = comms
         self.publish = publish
         self.client_comms: Optional[ClientComms] = None

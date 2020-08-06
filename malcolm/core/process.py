@@ -37,7 +37,7 @@ class ProcessPublishHook(Hook):
     """Called when a new block is added"""
 
     def __init__(self, child: AHookable, published: APublished) -> None:
-        super(ProcessPublishHook, self).__init__(child, published=published)
+        super().__init__(child, published=published)
 
 
 with Anno("Each of these reports that the controller should not be published"):

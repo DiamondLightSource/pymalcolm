@@ -23,7 +23,7 @@ class CADoubleArrayPart(Part):
         config: util.AConfig = True,
         display_from_pv: util.AGetLimits = True,
     ) -> None:
-        super(CADoubleArrayPart, self).__init__(name)
+        super().__init__(name)
         self.display_from_pv = display_from_pv
 
         self.caa = util.CAAttribute(

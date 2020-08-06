@@ -12,7 +12,7 @@ class IconPart(Part):
     """Part representing a the icon a GUI should display"""
 
     def __init__(self, svg: ASvg = "") -> None:
-        super(IconPart, self).__init__("icon")
+        super().__init__("icon")
         meta = StringMeta("SVG icon for the Block")
         set_tags(meta, widget=Widget.ICON)
         try:

@@ -16,7 +16,7 @@ class CompoundMotorSinkPortsPart(Part):
     is permanently assigned to by reading its motor record OUT link"""
 
     def __init__(self, name: APartName, rbv: ARbv, group: AGroup = None) -> None:
-        super(CompoundMotorSinkPortsPart, self).__init__(name)
+        super().__init__(name)
         meta = StringMeta("CS Axis")
         builtin.util.set_tags(meta, group=group, sink_port=Port.MOTOR)
         self.rbv = rbv

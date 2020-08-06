@@ -45,7 +45,7 @@ class MotionChildPart(builtin.parts.ChildPart):
     _movers: Dict[str, MaybeMover] = {}
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(MotionChildPart, self).setup(registrar)
+        super().setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.PreConfigureHook, self.reload)
         registrar.hook(

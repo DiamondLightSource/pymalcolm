@@ -36,7 +36,7 @@ class ChoicePart(Part):
         group: AGroup = None,
         widget: AWidget = None,
     ) -> None:
-        super(ChoicePart, self).__init__(name)
+        super().__init__(name)
         meta = ChoiceMeta(description, choices)
         set_tags(meta, writeable, config, group, widget)
         self.attr = meta.create_attribute_model(value)

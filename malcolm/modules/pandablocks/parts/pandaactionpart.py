@@ -31,7 +31,7 @@ class PandAActionPart(Part):
         description: ADescription,
         tags: UTags,
     ) -> None:
-        super(PandAActionPart, self).__init__(field_name)
+        super().__init__(field_name)
         self.client = client
         self.block_name = block_name
         self.field_name = field_name
@@ -40,7 +40,7 @@ class PandAActionPart(Part):
         self.method: Optional[MethodModel] = None
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(PandAActionPart, self).setup(registrar)
+        super().setup(registrar)
         method_name = snake_to_camel(self.field_name)
         self.method = registrar.add_method_model(
             self.set_field, method_name, self.description

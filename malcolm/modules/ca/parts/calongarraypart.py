@@ -22,7 +22,7 @@ class CALongArrayPart(Part):
         group: util.AGroup = None,
         config: util.AConfig = True,
     ) -> None:
-        super(CALongArrayPart, self).__init__(name)
+        super().__init__(name)
         self.caa = util.CAAttribute(
             NumberArrayMeta("int32", description),
             util.catools.DBR_LONG,

@@ -27,7 +27,7 @@ class FilepathTranslatorPart(Part):
         initial_path_prefix: APathPrefix = "/dls",
         initial_network_prefix: ANetworkPrefix = "",
     ) -> None:
-        super(FilepathTranslatorPart, self).__init__(name)
+        super().__init__(name)
         self.windows_drive_letter = StringMeta(
             drive_letter_desc, tags=[Widget.TEXTINPUT.tag(), config_tag()],
         ).create_attribute_model(initial_windows_drive_letter)
@@ -39,7 +39,7 @@ class FilepathTranslatorPart(Part):
         ).create_attribute_model(initial_network_prefix)
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(FilepathTranslatorPart, self).setup(registrar)
+        super().setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
         # Attributes

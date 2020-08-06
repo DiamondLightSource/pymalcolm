@@ -231,7 +231,7 @@ def main():
     class UserContext(Context):
         def post(self, path, params=None, timeout=None, event_timeout=None):
             try:
-                return super(UserContext, self).post(
+                return super().post(
                     path, params, timeout, event_timeout
                 )
             except KeyboardInterrupt:
@@ -245,16 +245,16 @@ def main():
             cothread.CallbackResult(self._make_proxy, comms, mri)
 
         def block_view(self, mri):
-            return cothread.CallbackResult(super(UserContext, self).block_view, mri)
+            return cothread.CallbackResult(super().block_view, mri)
 
         def make_view(self, controller, data, child_name):
             return cothread.CallbackResult(
-                super(UserContext, self).make_view, controller, data, child_name
+                super().make_view, controller, data, child_name
             )
 
         def handle_request(self, controller, request):
             cothread.CallbackResult(
-                super(UserContext, self).handle_request, controller, request
+                super().handle_request, controller, request
             )
 
     self = UserContext(process)

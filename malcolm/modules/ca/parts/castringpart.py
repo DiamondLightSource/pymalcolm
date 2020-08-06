@@ -32,7 +32,7 @@ class CAStringPart(Part):
         port_badge_attr: ABadgeAttr = None,
         port_badge_display: ABadgeDisplay = None,
     ) -> None:
-        super(CAStringPart, self).__init__(name)
+        super().__init__(name)
         port_badge = None
         if port_badge_mri and port_badge_attr and port_badge_display:
             port_badge = tags.badge_value_tag(

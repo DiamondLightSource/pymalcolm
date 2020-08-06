@@ -20,7 +20,7 @@ class CAChoicePart(Part):
         group: util.AGroup = None,
         config: util.AConfig = True,
     ) -> None:
-        super(CAChoicePart, self).__init__(name)
+        super().__init__(name)
         self.meta = ChoiceMeta(description)
         self.caa = util.CAAttribute(
             self.meta,

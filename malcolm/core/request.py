@@ -69,7 +69,7 @@ class PathRequest(Request):
     # Allow id to shadow builtin id so id is a key in the serialized dict
     # noinspection PyShadowingBuiltins
     def __init__(self, id: AId = 0, path: UPath = None) -> None:
-        super(PathRequest, self).__init__(id)
+        super().__init__(id)
         self.path = APath(path)
         if not self.path:
             raise ValueError(
@@ -95,7 +95,7 @@ class Put(PathRequest):
     def __init__(
         self, id: AId = 0, path: UPath = None, value: AValue = None, get: AGet = False
     ) -> None:
-        super(Put, self).__init__(id, path)
+        super().__init__(id, path)
         self.value = value
         self.get = get
 
@@ -111,7 +111,7 @@ class Post(PathRequest):
     def __init__(
         self, id: AId = 0, path: UPath = None, parameters: AParameters = None
     ) -> None:
-        super(Post, self).__init__(id, path)
+        super().__init__(id, path)
         self.parameters = parameters
 
 
@@ -126,7 +126,7 @@ class Subscribe(PathRequest):
     def __init__(
         self, id: AId = 0, path: UPath = None, delta: ADifferences = False
     ) -> None:
-        super(Subscribe, self).__init__(id, path)
+        super().__init__(id, path)
         self.delta = delta
 
     def update_response(self, value: Any) -> Tuple[Callback, Update]:

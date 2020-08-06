@@ -20,13 +20,13 @@ class MotorPreMovePart(builtin.parts.ChildPart):
         demand: ADemand,
         initial_visibility: AInitialVisibility = False,
     ) -> None:
-        super(MotorPreMovePart, self).__init__(
+        super().__init__(
             name, mri, stateful=False, initial_visibility=initial_visibility
         )
         self.demand = demand
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(MotorPreMovePart, self).setup(registrar)
+        super().setup(registrar)
         registrar.hook(scanning.hooks.ConfigureHook, self.on_configure)
 
     @add_call_types

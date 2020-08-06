@@ -93,7 +93,7 @@ class PandATablePart(PandAFieldPart):
         max_bits_hi = max(f.bits_hi for f in self.field_data.values())
         self.ints_per_row = int((max_bits_hi + 31) / 32)
         # Superclass will make the attribute for us
-        super(PandATablePart, self).__init__(client, meta, block_name, field_name)
+        super().__init__(client, meta, block_name, field_name)
 
     def handle_change(self, value: str, ts: TimeStamp) -> None:
         value = self.table_from_list(value)

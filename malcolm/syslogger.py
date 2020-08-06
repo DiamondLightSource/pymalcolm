@@ -28,4 +28,4 @@ class JsonSysLogHandler(logging.handlers.SysLogHandler):
         }
 
         record.extra = json.dumps(extra)
-        super(JsonSysLogHandler, self).emit(record)
+        super().emit(record)

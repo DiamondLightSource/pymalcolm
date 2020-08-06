@@ -34,7 +34,7 @@ class PositionLabellerPart(builtin.parts.ChildPart):
     done_when_reaches = None
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(PositionLabellerPart, self).setup(registrar)
+        super().setup(registrar)
         # Hooks
         registrar.hook(
             (
@@ -51,7 +51,7 @@ class PositionLabellerPart(builtin.parts.ChildPart):
 
     @add_call_types
     def on_reset(self, context: scanning.hooks.AContext) -> None:
-        super(PositionLabellerPart, self).on_reset(context)
+        super().on_reset(context)
         self.on_abort(context)
 
     @add_call_types

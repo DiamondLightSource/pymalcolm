@@ -74,7 +74,7 @@ class ValidateHook(ControllerHook[UParameterTweakInfos]):
         axesToMove: AAxesToMove,
         **kwargs: Any,
     ) -> None:
-        super(ValidateHook, self).__init__(
+        super().__init__(
             part,
             context,
             part_info=part_info,
@@ -128,7 +128,7 @@ class ConfigureHook(ControllerHook[UInfos]):
         axesToMove: AAxesToMove,
         **kwargs: Any,
     ) -> None:
-        super(ConfigureHook, self).__init__(
+        super().__init__(
             part,
             context,
             completed_steps=completed_steps,
@@ -168,7 +168,7 @@ class PostConfigureHook(ControllerHook[None]):
     in the Configure hook"""
 
     def __init__(self, part: APart, context: AContext, part_info: APartInfo) -> None:
-        super(PostConfigureHook, self).__init__(part, context, part_info=part_info)
+        super().__init__(part, context, part_info=part_info)
 
 
 class PreRunHook(ControllerHook[None]):
@@ -197,7 +197,7 @@ class PostRunArmedHook(ControllerHook[None]):
         axesToMove: AAxesToMove,
         **kwargs: Any,
     ) -> None:
-        super(PostRunArmedHook, self).__init__(
+        super().__init__(
             part,
             context,
             completed_steps=completed_steps,
@@ -236,7 +236,7 @@ class SeekHook(ControllerHook[None]):
         axesToMove: AAxesToMove,
         **kwargs: Any,
     ) -> None:
-        super(SeekHook, self).__init__(
+        super().__init__(
             part,
             context,
             completed_steps=completed_steps,

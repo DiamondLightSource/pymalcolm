@@ -11,7 +11,7 @@ class PandADatasetBussesPart(pandablocks.parts.PandABussesPart):
     positions_table_cls = DatasetPositionsTable
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(PandADatasetBussesPart, self).setup(registrar)
+        super().setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
 
