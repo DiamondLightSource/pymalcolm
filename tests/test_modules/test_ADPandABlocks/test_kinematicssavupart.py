@@ -155,7 +155,7 @@ DatasetProducedInfo('x.mean', 'p00-1234-kinematics-vds.nxs', DatasetType.POSITIO
 DatasetProducedInfo('x.max', 'p00-1234-kinematics-vds.nxs', DatasetType.POSITION_MAX, 2, '/entry/x.max', ''),
 DatasetProducedInfo('x.min', 'p00-1234-kinematics-vds.nxs', DatasetType.POSITION_MIN, 2, '/entry/x.min', '')]
 
-        infos = self.o.configure(
+        infos = self.o.on_configure(
             self.context, fileDir=tmp_dir, generator=generator,
             axesToMove=AXES, fileTemplate=file_template, part_info=part_info
         )
@@ -164,7 +164,7 @@ DatasetProducedInfo('x.min', 'p00-1234-kinematics-vds.nxs', DatasetType.POSITION
         for info in kin_infos:
             assert str(info) in [str(x) for x in infos]        
 
-        self.o.post_configure(self.context, part_info)
+        self.o.on_post_configure(self.context, part_info)
 
         # Check Savu file has been created and contains the correct entries
         savu_path = os.path.join(tmp_dir, data_name + '-savu.nxs')
