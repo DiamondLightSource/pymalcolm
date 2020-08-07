@@ -35,6 +35,21 @@
     description: Abort the current CS move
     pv: $(pv_prefix):Abort
 
+- ca.parts.CACharArrayPart:
+    name: qVariables
+    description: values of this CS's q variables in the slow poll
+    rbv: $(pv_prefix):Q_VARIABLES_RBV
+
+- ca.parts.CACharArrayPart:
+    name: forwardKinematic
+    description: the forward kinematic code for this CS
+    rbv: $(pv_prefix):FWD_KINEMATIC_RBV
+
+- ca.parts.CACharArrayPart:
+    name: inverseKinematic
+    description: the insverse kinematic code for this CS
+    rbv: $(pv_prefix):INV_KINEMATIC_RBV
+
 # No timeouts on the following parts because they take an arbitrary motor move
 # time to go
 - ca.parts.CADoublePart:

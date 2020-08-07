@@ -22,6 +22,8 @@ from malcolm.modules.pandablocks.util import PositionCapture
 from malcolm.testutil import ChildTestCase
 from malcolm.yamlutil import make_block_creator
 
+import socket
+import pytest
 from datetime import datetime
 
 
@@ -36,7 +38,7 @@ class PositionsPart(Part):
             # encoder in the geobrick layer
             scale=[1.0, -0.001, 0.001],
             offset=[0.0, 0.0, 0.0],
-            capture=[PositionCapture.NO] * 3,
+            capture=[PositionCapture.MIN_MAX_MEAN] * 3,
             datasetName=["I0", 'x', 'y'],
             datasetType=[AttributeDatasetType.MONITOR,
                          AttributeDatasetType.POSITION,
@@ -157,12 +159,12 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         # create some parts to mock the motion controller and 2 axes in a CS
         self.set_attributes(
             self.child_x, cs="CS1,A",
-            accelerationTime=x_velocity/x_acceleration, resolution=0.001,
+            accelerationTime=x_velocity / x_acceleration, resolution=0.001,
             offset=0.0, maxVelocity=x_velocity, readback=x_pos,
             velocitySettle=0.0, units=units)
         self.set_attributes(
             self.child_y, cs="CS1,B",
-            accelerationTime=y_velocity/y_acceleration, resolution=0.001,
+            accelerationTime=y_velocity / y_acceleration, resolution=0.001,
             offset=0.0, maxVelocity=y_velocity, readback=y_pos,
             velocitySettle=0.0, units=units)
 
@@ -241,10 +243,10 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         assert table.outa1 == [1, 1, 0, 1, 1, 0]  # Live
         assert table.outb1 == [0, 0, 1, 0, 0, 1]  # Dead
         assert table.outc1 == table.outd1 == table.oute1 == table.outf1 == \
-            [0, 0, 0, 0, 0, 0]
+               [0, 0, 0, 0, 0, 0]
         assert table.time2 == [hf, hf, 1250, hf, hf, 125000000]
         assert table.outa2 == table.outb2 == table.outc2 == table.outd2 == \
-            table.oute2 == table.outf2 == [0, 0, 0, 0, 0, 0]
+               table.oute2 == table.outf2 == [0, 0, 0, 0, 0, 0]
         # Check we didn't press the gate part
         self.gate_part.enable_set.assert_not_called()
         self.o.on_run(self.context)
@@ -290,10 +292,10 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         assert table.outa1 == [1, 0]  # Live
         assert table.outb1 == [0, 1]  # Dead
         assert table.outc1 == table.outd1 == table.oute1 == table.outf1 == \
-            [0, 0]
+               [0, 0]
         assert table.time2 == [hf, 125000000]
         assert table.outa2 == table.outb2 == table.outc2 == table.outd2 == \
-            table.oute2 == table.outf2 == [0, 0]
+               table.oute2 == table.outf2 == [0, 0]
         # Check we didn't press the gate part
         self.gate_part.enable_set.assert_not_called()
 
@@ -304,7 +306,7 @@ class TestPandaSeqTriggerPart(ChildTestCase):
 
         xs = LineGenerator("x", "mm", 0.0, 0.0, 5, alternate=True)
         ys = LineGenerator("y", "mm", 1.0, 1.0, 1)
-        generator = CompoundGenerator([ys,xs], [], [], 1.0)
+        generator = CompoundGenerator([ys, xs], [], [], 1.0)
         generator.prepare()
 
         steps_to_do = 5
@@ -314,7 +316,8 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         self.set_motor_attributes()
         axes_to_move = ["x", "y"]
 
-        self.o.on_configure(self.context, completed_steps, steps_to_do, {}, generator, axes_to_move)
+        self.o.on_configure(self.context, completed_steps, steps_to_do, {},
+                            generator, axes_to_move)
 
     def test_configure_pcomp_row_trigger_with_single_point_rows(self):
         x_steps, y_steps = 1, 5
@@ -412,6 +415,9 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         if 'diamond.ac.uk' not in socket.gethostname():
             pytest.skip("performance test only")
 
+        self.set_motor_attributes(0, 0, "mm", x_velocity=300,
+                                  y_velocity=300,
+                                  x_acceleration=30, y_acceleration=30)
         x_steps, y_steps = 4000, 1000
         xs = LineGenerator("x", "mm", 0.0, 10, x_steps, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 8, y_steps)
