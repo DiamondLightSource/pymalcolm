@@ -3,6 +3,7 @@ language: python
 python:
   - "3.6"
   - "3.7"
+  - "3.8"
 
 env:
     - EPICS_BASE=/usr/lib/epics EPICS_HOST_ARCH=linux-x86_64 CATOOLS_LIBCA_PATH=/usr/lib/epics/lib/linux-x86_64
