@@ -28,7 +28,7 @@ T = TypeVar("T")
 
 Field = Union[AttributeModel, MethodModel]
 FieldDict = Dict[object, List[Tuple[str, Field, Callable, bool]]]
-Info_co = TypeVar("Info_co", covariant=True)
+Info_co = TypeVar("Info_co", covariant=True, bound=Info)
 object_co = TypeVar("object_co", covariant=True)
 Callback = Callable[[object_co, Info_co], None]
 Hooked = Callable[..., T]

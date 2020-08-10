@@ -7,7 +7,7 @@ from .errors import BadValueError
 
 PartInfo = Mapping[str, Optional[Sequence]]
 
-T = TypeVar("T")
+T = TypeVar("T", bound="Info")
 
 
 class Info:
@@ -20,7 +20,7 @@ class Info:
         return "%s(%s)" % (self.__class__.__name__, args)
 
     @classmethod
-    def filter_parts(cls: Type["Info"], part_info: PartInfo) -> Dict[str, List[T]]:
+    def filter_parts(cls: Type[T], part_info: PartInfo) -> Dict[str, List[T]]:
         """Filter the part_info dict looking for instances of our class
 
         Args:
@@ -40,7 +40,7 @@ class Info:
         return filtered
 
     @classmethod
-    def filter_values(cls: Type["Info"], part_info: PartInfo) -> List[T]:
+    def filter_values(cls: Type[T], part_info: PartInfo) -> List[T]:
         """Filter the part_info dict list looking for instances of our class
 
         Args:
@@ -52,13 +52,14 @@ class Info:
         """
         filtered: List[T] = []
         info_list: Sequence
+        assert hasattr(cls, "filter_parts"), "Class has no filter parts method"
         for info_list in cls.filter_parts(part_info).values():
             filtered += info_list
         return filtered
 
     @classmethod
     def filter_single_value(
-        cls: Type["Info"], part_info: PartInfo, error_msg: str = None
+        cls: Type[T], part_info: PartInfo, error_msg: str = None
     ) -> T:
         """Filter the part_info dict list looking for a single instance of our
         class
@@ -72,6 +73,7 @@ class Info:
         Returns:
             info subclass of cls
         """
+        assert hasattr(cls, "filter_values"), "Class has no filter values method"
         filtered: List[T] = cls.filter_values(part_info)
         if len(filtered) != 1:
             if error_msg is None:
