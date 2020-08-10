@@ -122,7 +122,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
         try:
             super().on_init(context)
         except BadValueError:
-            self.log_exception(
+            self.log.exception(
                 f"Detector {self.name} was faulty at init and is not usable"
             )
             self.faulty = True

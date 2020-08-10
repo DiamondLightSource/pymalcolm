@@ -68,7 +68,7 @@ class BlockHandler(Handler):
         ), "%s.%s is not a Method so cannot do RPC" % tuple(path)
         add_wrapper = method_return_unpacked() in view.meta.tags
 
-        self.controller.log_debug(
+        self.controller.log.debug(
             f"{self.controller.mri}: RPC method {method} called with "
             f"params {parameters}"
         )
@@ -85,25 +85,25 @@ class BlockHandler(Handler):
                     ret = response.value
                 v = convert_dict_to_value(ret)
                 if ret:
-                    self.controller.log_debug(
+                    self.controller.log.debug(
                         f"{self.controller.mri}: RPC method {method} returned with "
                         f"value {ret}"
                     )
                 else:
-                    self.controller.log_debug(
+                    self.controller.log.debug(
                         f"{self.controller.mri}: RPC method {method} returned"
                     )
                 op.done(v)
             else:
                 if isinstance(response, Error):
                     message = stringify_error(response.message)
-                    self.controller.log_debug(
+                    self.controller.log.debug(
                         f"{self.controller.mri}: RPC method {method} resulted in "
                         f"error ({message})"
                     )
                 else:
                     message = "BadResponse: %s" % response.to_dict()
-                    self.controller.log_debug(
+                    self.controller.log.debug(
                         f"{self.controller.mri}: RPC method {method} got a bad "
                         f"response ({message})"
                     )
@@ -178,13 +178,13 @@ class BlockHandler(Handler):
                     # We got a delta, create or update value and notify
                     if self.value is None:
                         # Open it with the value
-                        self.controller.log_debug("About to open")
+                        self.controller.log.debug("About to open")
                         self._create_initial_value(response)
                     elif self.pv.isOpen():
                         # Update it with values
                         self._update_value(response)
                 except Exception:
-                    self.controller.log_debug(
+                    self.controller.log.debug(
                         f"Closing pv because of error in response {response}",
                         exc_info=True,
                     )
@@ -211,7 +211,7 @@ class BlockHandler(Handler):
             self.put_paths = {"value"}
         else:
             self.put_paths = set()
-        self.controller.log_debug(f"Opening with {list(self.value)}")
+        self.controller.log.debug(f"Opening with {list(self.value)}")
         assert self.pv, "No pv"
         self.pv.open(self.value)
 
@@ -294,7 +294,7 @@ class PvaServerComms(builtin.controllers.ServerComms):
         )
 
     def _make_channel(self, channel_name: str, src: str) -> SharedPV:
-        self.log_debug(f"Making PV {channel_name} for {src}")
+        self.log.debug(f"Making PV {channel_name} for {src}")
         if channel_name in self._published:
             # Someone is asking for a Block
             mri = channel_name

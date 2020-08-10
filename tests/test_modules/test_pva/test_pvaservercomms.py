@@ -68,7 +68,7 @@ class TestBlockHandler(unittest.TestCase):
             f"{self.controller_mock.mri}: RPC method {method} got a bad response "
             f"({bad_response_message})"
         )
-        self.controller_mock.log_debug.assert_has_calls([rpc_call, response_call])
+        self.controller_mock.log.debug.assert_has_calls([rpc_call, response_call])
 
     @patch("malcolm.modules.pva.controllers.pvaservercomms.convert_value_to_dict")
     @patch("malcolm.modules.pva.controllers.pvaservercomms.Put")

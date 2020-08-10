@@ -387,7 +387,7 @@ class ScanRunnerPart(ChildPart):
             outcome = ScanOutcome.MISCONFIGURED
         except Exception as e:
             outcome = ScanOutcome.MISCONFIGURED
-            self.log_error(
+            self.log.error(
                 f"Unhandled exception for scan {scan_number} in {set_name}: "
                 f"({type(e)}) {e}"
             )
@@ -407,7 +407,7 @@ class ScanRunnerPart(ChildPart):
                 outcome = ScanOutcome.FAIL
             except Exception as e:
                 outcome = ScanOutcome.OTHER
-                self.log_error(
+                self.log.error(
                     (
                         f"Unhandled exception for scan {scan_number} in {set_name}: "
                         f"({type(e)}) {e}"

@@ -106,7 +106,7 @@ class FileWritePart(Part):
             # Simulate waiting for an exposure and writing the data
             wait_time = end_of_exposure - time.time()
             context.sleep(wait_time)
-            self.log_debug(f"Writing data for point {i}")
+            self.log.debug(f"Writing data for point {i}")
             self._write_data(point, i)
             # Flush the datasets if it is time to
             if time.time() - last_flush > FLUSH_PERIOD:

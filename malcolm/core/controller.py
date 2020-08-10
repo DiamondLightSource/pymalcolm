@@ -149,7 +149,7 @@ class Controller(Hookable):
             try:
                 cb(response)
             except Exception:
-                self.log_exception(f"Exception notifying {response}")
+                self.log.exception(f"Exception notifying {response}")
                 raise
 
     def _handle_get(self, request: Get) -> CallbackResponses:
@@ -292,7 +292,7 @@ class Controller(Hookable):
         hooks = list(hooks)
         if not hooks:
             return Queue(), []
-        self.log_debug(f"{self.mri}: {hooks[0].name}: Starting hook")
+        self.log.debug(f"{self.mri}: {hooks[0].name}: Starting hook")
         assert self.process, "No process for starting hooks"
         for hook in hooks:
             hook.set_spawn(self.process.spawn)
@@ -310,6 +310,6 @@ class Controller(Hookable):
                 self.log, hook_queue, hook_spawned, DEFAULT_TIMEOUT
             )
         else:
-            self.log_debug(f"{self.mri}: No Parts hooked")
+            self.log.debug(f"{self.mri}: No Parts hooked")
             return_dict = {}
         return return_dict

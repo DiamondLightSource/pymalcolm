@@ -124,7 +124,7 @@ class Notifier(Loggable):
             try:
                 cb(response)
             except Exception:
-                self.log_exception(f"Exception notifying {response}")
+                self.log.exception(f"Exception notifying {response}")
                 raise
 
 

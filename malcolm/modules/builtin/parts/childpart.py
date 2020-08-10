@@ -207,14 +207,14 @@ class ChildPart(Part):
             try:
                 attr = getattr(child, k)
             except KeyError:
-                self.log_warning(f"Cannot restore non-existant attr {k}")
+                self.log.warning(f"Cannot restore non-existant attr {k}")
             else:
                 tag = get_config_tag(attr.meta.tags)
                 if tag:
                     iteration = int(tag.split(":")[1])
                     iterations.setdefault(iteration, {})[k] = (attr, v)
                 else:
-                    self.log_warning(f"Attr {k} is not config tagged, not restoring")
+                    self.log.warning(f"Attr {k} is not config tagged, not restoring")
         # Do this first so that any callbacks that happen in the put know
         # not to notify controller
         self.saved_structure = structure
@@ -263,7 +263,7 @@ class ChildPart(Part):
             # config_subscriptions
             new_fields = []
         else:
-            self.log_warning("Got unexpected response {response}")
+            self.log.warning("Got unexpected response {response}")
             return
 
         assert new_fields, "No new fields"
@@ -326,7 +326,7 @@ class ChildPart(Part):
             name = subscribe.path[-2]
             self.send_modified_info_if_not_equal(name, response.value)
         elif not isinstance(response, Return):
-            self.log_warning("Got unexpected response {response}")
+            self.log.warning("Got unexpected response {response}")
 
     def send_modified_info_if_not_equal(self, name, new_value):
         # If we did a save or load then we will have an original value,

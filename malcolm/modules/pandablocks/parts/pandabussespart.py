@@ -96,7 +96,7 @@ class PandABussesPart(Part):
                     try:
                         j = lookup[name]
                     except KeyError:
-                        self.log_warning(f"Ignoring table row with name {name}")
+                        self.log.warning(f"Ignoring table row with name {name}")
                     else:
                         if old[k][j] != new_value:
                             # row changed

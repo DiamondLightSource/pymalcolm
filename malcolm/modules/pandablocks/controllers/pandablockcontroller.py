@@ -115,7 +115,7 @@ class PandABlockController(builtin.controllers.BasicController):
                     try:
                         part = self.field_parts[k]
                     except KeyError:
-                        self.log_exception(f"Can't handle field {self.block_name}.{k}")
+                        self.log.exception(f"Can't handle field {self.block_name}.{k}")
                         part = None
                     if part is None:
                         continue

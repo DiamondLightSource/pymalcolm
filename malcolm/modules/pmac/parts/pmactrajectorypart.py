@@ -104,7 +104,7 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
         # make sure a matching trajectory program is installed on the pmac
         if child.trajectoryProgVersion.value != TRAJECTORY_PROGRAM_NUM:
             if child.trajectoryProgVersion.value >= FALLBACK_TRAJ_PROGRAM_NUM:
-                self.log_warning(
+                self.log.warning(
                     f"pmac trajectory program is version {FALLBACK_TRAJ_PROGRAM_NUM}"
                     " version {TRAJECTORY_PROGRAM_NUM} is recommended"
                 )

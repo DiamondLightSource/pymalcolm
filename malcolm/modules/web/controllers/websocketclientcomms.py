@@ -185,7 +185,7 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
                 for change in response.changes:
                     self._handle_change(block, change)
         except Exception:
-            self.log_exception(f"Error handling {response}")
+            self.log.exception(f"Error handling {response}")
             raise
         finally:
             done_queue.put(None)

@@ -368,7 +368,7 @@ class RunnableController(builtin.controllers.ManagerController):
                         tweak.parameter
                     ].validate(tweak.value)
                     setattr(params, tweak.parameter, deserialized)
-                    self.log_debug("Tweaking {tweak.parameter} to {deserialized}")
+                    self.log.debug("Tweaking {tweak.parameter} to {deserialized}")
             else:
                 # Consistent set, just return the params
                 return params
@@ -502,7 +502,7 @@ class RunnableController(builtin.controllers.ManagerController):
                     should_resume = self.resume_queue.get()
                     if should_resume:
                         # we need to resume
-                        self.log_debug("Resuming run")
+                        self.log.debug("Resuming run")
                     else:
                         # we don't need to resume, just drop out
                         raise
@@ -584,7 +584,7 @@ class RunnableController(builtin.controllers.ManagerController):
                 try:
                     self.abort_queue.get(timeout=DEFAULT_TIMEOUT)
                 except TimeoutError:
-                    self.log_warning("Timeout waiting while {start_state}")
+                    self.log.warning("Timeout waiting while {start_state}")
             with self._lock:
                 # Now we've waited for a while we can remove the error state
                 # for transition in case a hook triggered it rather than a
