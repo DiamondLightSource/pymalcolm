@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Type, Union, cast
+from typing import Any, Dict, List, Optional, Type, Union
 
 from malcolm.core import (
     Alarm,
@@ -265,7 +265,7 @@ class PandABussesPart(Part):
         # Update the tables
         if bit_column_changes and self.bits:
             new_value = make_updated_table(self.bits.value, bit_column_changes)
-            self.bits.set_value_alarm_ts(new_value, cast(Alarm, Alarm.ok), ts)
+            self.bits.set_value_alarm_ts(new_value, Alarm.ok, ts)
         if pos_column_changes and self.positions:
             new_value = make_updated_table(self.positions.value, pos_column_changes)
-            self.positions.set_value_alarm_ts(new_value, cast(Alarm, Alarm.ok), ts)
+            self.positions.set_value_alarm_ts(new_value, Alarm.ok, ts)

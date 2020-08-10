@@ -1,4 +1,4 @@
-from typing import Any, Callable, Optional, cast
+from typing import Any, Callable, Optional
 
 from annotypes import Anno
 
@@ -64,7 +64,7 @@ class PandAFieldPart(Part):
             if value == self.attr.value:
                 # Ignore this change
                 return
-        self.attr.set_value_alarm_ts(value, cast(Alarm, Alarm.ok), ts)
+        self.attr.set_value_alarm_ts(value, Alarm.ok, ts)
 
     def set_field(self, value):
         if isinstance(self.meta, BooleanMeta):

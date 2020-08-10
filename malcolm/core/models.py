@@ -334,7 +334,7 @@ class AttributeModel(Model):
         value = self.meta.validate(value)
         if set_alarm_ts:
             if alarm is None:
-                alarm = cast(Alarm, Alarm.ok)
+                alarm = Alarm.ok
             else:
                 alarm = cast(Alarm, deserialize_object(alarm, Alarm))
             if ts is None:
