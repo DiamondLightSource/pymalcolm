@@ -42,7 +42,7 @@ class TimeStamp(Serializable):
     def to_time(self) -> float:
         return self.secondsPastEpoch + 1e-9 * self.nanoseconds
 
-    zero: Union["TimeStamp", None] = None  # filled in below
+    zero: "TimeStamp"  # filled in below
 
 
 TimeStamp.zero = TimeStamp(zero32, zero32)

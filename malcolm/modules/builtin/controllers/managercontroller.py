@@ -2,7 +2,7 @@ import os
 import socket
 import subprocess
 from distutils.version import StrictVersion
-from typing import Dict, List, Set, Tuple, Union
+from typing import Dict, List, Set, Tuple
 
 from annotypes import Anno, add_call_types, deserialize_object, json_decode, json_encode
 
@@ -88,7 +88,7 @@ class ManagerController(StatefulController):
         self.initial_design = initial_design
         self.use_git = use_git
         self.template_designs = template_designs
-        self.git_config: Union[Tuple, Tuple[str, str, str, str]]
+        self.git_config: Tuple[str, ...]
         if use_git:
             if check_git_version("1.7.2"):
                 self.git_email = os.environ["USER"] + "@" + socket.gethostname()
@@ -246,7 +246,8 @@ class ManagerController(StatefulController):
 
     def update_modified(self, part: Part = None, info: PartModifiedInfo = None) -> None:
         with self.changes_squashed:
-            if part and info:
+            if part:
+                assert info, "No info to update part"
                 # Update the alarm for the given part
                 self.part_modified[part] = info
             # Find the modified alarms for each visible part
@@ -289,7 +290,8 @@ class ManagerController(StatefulController):
         self, part: Part = None, info: PartExportableInfo = None
     ) -> None:
         with self.changes_squashed:
-            if part and info:
+            if part:
+                assert info, "No info to update part"
                 self.part_exportable[part] = info.names
                 self.port_info[part.name] = info.port_infos
             # If we haven't saved visibility yet these have been called

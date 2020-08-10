@@ -298,5 +298,5 @@ class PandAManagerController(builtin.controllers.ManagerController):
         # Notify the Blocks that they need to handle these changes
         if bus_changes:
             self.busses.handle_changes(bus_changes, ts)
-        for block_name, changes in block_changes.items():
-            self._child_controllers[block_name].handle_changes(changes, ts)
+        for block_name, block_changes_values in block_changes.items():
+            self._child_controllers[block_name].handle_changes(block_changes_values, ts)

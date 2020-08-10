@@ -72,6 +72,4 @@ class PandARunnableController(
             )
             return controller, child_part
         else:
-            return super()._make_child_block(
-                block_name, block_data
-            )
+            return super()._make_child_block(block_name, block_data)

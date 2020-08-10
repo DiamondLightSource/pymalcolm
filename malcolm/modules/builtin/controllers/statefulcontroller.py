@@ -168,9 +168,7 @@ class StatefulController(BasicController):
             raise
 
     def add_block_field(self, name, child, writeable_func, needs_context):
-        super().add_block_field(
-            name, child, writeable_func, needs_context
-        )
+        super().add_block_field(name, child, writeable_func, needs_context)
         # If we don't have a writeable func it can never be writeable
         if writeable_func is None:
             return

@@ -457,13 +457,13 @@ class When:
                 satisfied = self.condition_satisfied(value)
             except Exception:
                 # Bad value, so unsubscribe
-                if self.context:
-                    self.context.unsubscribe(self.future)
+                assert self.context, "No context"
+                self.context.unsubscribe(self.future)
                 self.future = None
                 raise
             else:
                 if satisfied:
                     # All done, so unsubscribe
-                    if self.context:
-                        self.context.unsubscribe(self.future)
+                    assert self.context, "No context"
+                    self.context.unsubscribe(self.future)
                     self.future = None

@@ -76,7 +76,7 @@ class Alarm(Serializable):
     def __eq__(self, other):
         return not self != other
 
-    ok: 'Alarm'  # filled in below
+    ok: "Alarm"  # filled in below
 
 
 Alarm.ok = Alarm()

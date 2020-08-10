@@ -138,8 +138,8 @@ class Hook(Generic[T], WithCallTypes):
             demanded
         ), "Hook demanded arguments %s, but only supplied %s" % (demanded, supplied)
         kwargs = {k: self._kwargs[k] for k in demanded}
-        if self._spawn is not None:
-            self.spawned = self._spawn(self._run, func, kwargs)
+        assert self._spawn, "No spawned function"
+        self.spawned = self._spawn(self._run, func, kwargs)
 
     def _run(self, func: Callable[..., T], kwargs: Dict[str, Any]) -> None:
         result: Union[T, Exception]
@@ -154,8 +154,8 @@ class Hook(Generic[T], WithCallTypes):
                 "%s: %s(**%s) raised exception %s", self.child, func, kwargs, e
             )
             result = e
-        if self._queue:
-            self._queue.put((self, result))
+        assert self._queue, "No queue to put result"
+        self._queue.put((self, result))
 
     def stop(self) -> None:
         """Override this if we can stop"""
@@ -202,8 +202,8 @@ def wait_hooks(
         hook, ret = hook_queue.get()
         hook_spawned_set.remove(hook)
         # Wait for the process to terminate
-        if hook.spawned:
-            hook.spawned.wait(timeout)
+        assert hook.spawned, "No spawned process"
+        hook.spawned.wait(timeout)
         duration = time.time() - start
         if logger:
             if hook_spawned_set:
@@ -232,8 +232,8 @@ def wait_hooks(
                     h.stop()
             # Wait for them to finish
             for h in hook_spawned:
-                if h.spawned:
-                    h.spawned.wait(timeout)
+                assert h.spawned, "No spawned functions"
+                h.spawned.wait(timeout)
             raise ret
         else:
             return_dict[hook.child.name] = ret

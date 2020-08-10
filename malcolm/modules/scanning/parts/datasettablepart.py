@@ -41,8 +41,8 @@ class DatasetTablePart(Part):
             path.append(i.path)
             uid.append(i.uniqueid)
         datasets_table = DatasetTable(name, filename, typ, rank, path, uid)
-        if self.datasets:
-            self.datasets.set_value(datasets_table)
+        assert self.datasets, "No datasets"
+        self.datasets.set_value(datasets_table)
 
     def on_reset(self):
         self.datasets.set_value(None)

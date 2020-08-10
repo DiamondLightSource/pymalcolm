@@ -115,8 +115,8 @@ def update_configure_model(
                         if k in defaults:
                             rows += defaults[k].rows()
                         rows += info.defaults[k].rows()
-                        if meta.table_cls:
-                            defaults[k] = meta.table_cls.from_rows(rows)
+                        assert meta.table_cls, "No Meta table class"
+                        defaults[k] = meta.table_cls.from_rows(rows)
                     else:
                         defaults[k] = info.defaults[k]
 
@@ -280,7 +280,8 @@ class RunnableController(builtin.controllers.ManagerController):
         """Tell controller part needs different things passed to Configure"""
         with self.changes_squashed:
             # Update the dict
-            if part and info:
+            if part:
+                assert info, "No info for part"
                 self.part_configure_params[part] = info
 
             # No process yet, so don't do this yet
@@ -323,9 +324,9 @@ class RunnableController(builtin.controllers.ManagerController):
             params = self.configure_params
         for part, context in part_contexts.items():
             args = {}
-            if params:
-                for k in params.call_types:
-                    args[k] = getattr(params, k)
+            assert params, "No params"
+            for k in params.call_types:
+                args[k] = getattr(params, k)
             yield part, context, args
 
     # This will be serialized, so maintain camelCase for axesToMove
@@ -405,8 +406,8 @@ class RunnableController(builtin.controllers.ManagerController):
             self.do_configure(state, params)
             self.abortable_transition(ss.ARMED)
         except AbortedError:
-            if self.abort_queue:
-                self.abort_queue.put(None)
+            assert self.abort_queue, "No abort queue"
+            self.abort_queue.put(None)
             raise
         except Exception as e:
             self.go_to_error_state(e)
@@ -494,11 +495,11 @@ class RunnableController(builtin.controllers.ManagerController):
                     self.do_run(hook)
                     self.abortable_transition(next_state)
                 except AbortedError:
-                    if self.abort_queue:
-                        self.abort_queue.put(None)
+                    assert self.abort_queue, "No abort queue"
+                    self.abort_queue.put(None)
                     # Wait for a response on the resume_queue
-                    if self.resume_queue:
-                        should_resume = self.resume_queue.get()
+                    assert self.resume_queue, "No resume queue"
+                    should_resume = self.resume_queue.get()
                     if should_resume:
                         # we need to resume
                         self.log_debug("Resuming run")
@@ -543,10 +544,9 @@ class RunnableController(builtin.controllers.ManagerController):
     ) -> None:
         with self._lock:
             # Update
-            if self.progress_updates is not None:
-                self.progress_updates[part] = completed_steps.steps
-            if self.progress_updates:
-                min_completed_steps = min(self.progress_updates.values())
+            assert self.progress_updates is not None, "No progress updates"
+            self.progress_updates[part] = completed_steps.steps
+            min_completed_steps = min(self.progress_updates.values())
             if min_completed_steps > self.completed_steps.value:
                 self.completed_steps.set_value(min_completed_steps)
 
@@ -595,8 +595,8 @@ class RunnableController(builtin.controllers.ManagerController):
             func(*args)
             self.abortable_transition(end_state)
         except AbortedError:
-            if self.abort_queue:
-                self.abort_queue.put(None)
+            assert self.abort_queue, "No abort queue"
+            self.abort_queue.put(None)
             raise
         except Exception as e:  # pylint:disable=broad-except
             self.go_to_error_state(e)
@@ -657,8 +657,8 @@ class RunnableController(builtin.controllers.ManagerController):
         will return in Fault state.
         """
         self.transition(ss.RUNNING)
-        if self.resume_queue:
-            self.resume_queue.put(True)
+        assert self.resume_queue, "No resume queue"
+        self.resume_queue.put(True)
         # self.run will now take over
 
     def do_disable(self) -> None:

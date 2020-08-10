@@ -62,8 +62,8 @@ def get_ip_validator(ifname):
 # For some reason tornado doesn't make us implement all abstract methods
 # noinspection PyAbstractClass
 class MalcWebSocketHandler(WebSocketHandler):
-    _registrar: Optional[PartRegistrar] = None
-    _id_to_mri: Optional[Dict[int, str]] = None
+    _registrar: PartRegistrar
+    _id_to_mri: Dict[int, str]
     _validators = None
     _writeable = None
     _queue: Optional[Queue] = None
@@ -148,18 +148,17 @@ class MalcWebSocketHandler(WebSocketHandler):
                 # Websocket is dead so we can clear the subscription key.
                 # Subsequent updates may come in before the unsubscribe, but
                 # ignore them as we can't do anything about it
-                if self._id_to_mri:
-                    mri = self._id_to_mri.pop(response.id, None)
-                    if mri:
-                        log.info("WebSocket Error: unsubscribing from stale handle")
-                        unsubscribe = Unsubscribe(response.id)
-                        unsubscribe.set_callback(self.on_response)
-                        if self._registrar:
-                            self._registrar.report(
-                                builtin.infos.RequestInfo(unsubscribe, mri)
-                            )
-            if self._queue:
-                cothread.Callback(self._queue.put, None)
+                mri = self._id_to_mri.pop(response.id, None)
+                if mri:
+                    log.info("WebSocket Error: unsubscribing from stale handle")
+                    unsubscribe = Unsubscribe(response.id)
+                    unsubscribe.set_callback(self.on_response)
+                    if self._registrar:
+                        self._registrar.report(
+                            builtin.infos.RequestInfo(unsubscribe, mri)
+                        )
+            assert self._queue, "No queue"
+            cothread.Callback(self._queue.put, None)
 
     # http://stackoverflow.com/q/24851207
     # TODO: remove this when the web gui is hosted from the box

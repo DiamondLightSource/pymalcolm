@@ -23,9 +23,7 @@ class ControllerHook(Hook[T]):
 
     def __init__(self, part: APart, context: AContext, **kwargs: Any) -> None:
         # Pass a weak reference to our children
-        super().__init__(
-            part, context=weakref.proxy(context), **kwargs
-        )
+        super().__init__(part, context=weakref.proxy(context), **kwargs)
         # But hold a strong reference here to stop it disappearing
         self.context = context
 

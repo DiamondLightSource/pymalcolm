@@ -15,9 +15,7 @@ with Anno("Directory to write data to"):
 
 class AndorDriverPart(ADCore.parts.DetectorDriverPart):
     def __init__(self, name: APartName, mri: AMri) -> None:
-        super().__init__(
-            name, mri, soft_trigger_modes=["Internal", "Software"]
-        )
+        super().__init__(name, mri, soft_trigger_modes=["Internal", "Software"])
         self.exposure = scanning.util.exposure_attribute(min_exposure=0.0)
 
     def setup(self, registrar: PartRegistrar) -> None:

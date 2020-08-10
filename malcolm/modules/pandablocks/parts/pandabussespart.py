@@ -104,44 +104,44 @@ class PandABussesPart(Part):
         return column_changes
 
     def set_bits(self, value: BitsTable) -> None:
-        if self.bits:
-            column_changes = self.get_column_changes(self.bits.value, value)
-            if "capture" in column_changes:
-                # If capture changed, set PCAP bits
-                field_values = {}
-                for bit in value.name:
-                    capture = column_changes["capture"][self._bit_indexes[bit]]
-                    capture_field = self._bit_pcap_fields[bit]
-                    if capture:
-                        # If told to capture, this trumps anything it currently
-                        # holds
-                        field_values[capture_field] = "Value"
-                    else:
-                        # If not already set, set it to No
-                        field_values.setdefault(capture_field, "No")
-                self._client.set_fields(field_values)
-            if column_changes:
-                new_value = make_updated_table(self.bits.value, column_changes)
-                self.bits.set_value(new_value)
+        assert self.bits, "No bits"
+        column_changes = self.get_column_changes(self.bits.value, value)
+        if "capture" in column_changes:
+            # If capture changed, set PCAP bits
+            field_values = {}
+            for bit in value.name:
+                capture = column_changes["capture"][self._bit_indexes[bit]]
+                capture_field = self._bit_pcap_fields[bit]
+                if capture:
+                    # If told to capture, this trumps anything it currently
+                    # holds
+                    field_values[capture_field] = "Value"
+                else:
+                    # If not already set, set it to No
+                    field_values.setdefault(capture_field, "No")
+            self._client.set_fields(field_values)
+        assert column_changes, "No column changes"
+        new_value = make_updated_table(self.bits.value, column_changes)
+        self.bits.set_value(new_value)
 
     def set_positions(self, value: PositionsTable) -> None:
-        if self.positions:
-            column_changes = self.get_column_changes(self.positions.value, value)
-            for attr in ("capture", "scale", "offset", "units"):
-                if attr in column_changes:
-                    # If attribute changed, set field bits
-                    field_values = {}
-                    for i, name in enumerate(self.positions.value.name):
-                        field = "%s.%s" % (name, attr.upper())
-                        value = column_changes[attr][i]
-                        if attr == "capture":
-                            # Convert Enum to string value for capture string
-                            value = value.value
-                        field_values[field] = value
-                    self._client.set_fields(field_values)
-            if column_changes:
-                new_value = make_updated_table(self.positions.value, column_changes)
-                self.positions.set_value(new_value)
+        assert self.positions, "No positions"
+        column_changes = self.get_column_changes(self.positions.value, value)
+        for attr in ("capture", "scale", "offset", "units"):
+            if attr in column_changes:
+                # If attribute changed, set field bits
+                field_values = {}
+                for i, name in enumerate(self.positions.value.name):
+                    field = "%s.%s" % (name, attr.upper())
+                    value = column_changes[attr][i]
+                    if attr == "capture":
+                        # Convert Enum to string value for capture string
+                        value = value.value
+                    field_values[field] = value
+                self._client.set_fields(field_values)
+        assert column_changes, "No column changes"
+        new_value = make_updated_table(self.positions.value, column_changes)
+        self.positions.set_value(new_value)
 
     @staticmethod
     def _make_initial_bits_table(bit_names: List[str]) -> BitsTable:
@@ -182,11 +182,11 @@ class PandABussesPart(Part):
                     bit_names.append(bit)
                     self._bit_indexes[bit] = index
             self._pcap_bit_indexes[k] = indexes
-        if self.bits:
-            self.bits.set_value(self._make_initial_bits_table(bit_names))
+        assert self.bits, "No bits"
+        self.bits.set_value(self._make_initial_bits_table(bit_names))
         # Positions
-        if self.positions:
-            self.positions.set_value(self._make_initial_pos_table(pos_names))
+        assert self.positions, "No positions"
+        self.positions.set_value(self._make_initial_pos_table(pos_names))
         # Pos lookups
         self._pos_indexes = {k: i for i, k in enumerate(pos_names)}
         for i, k in enumerate(pos_names):
@@ -198,7 +198,8 @@ class PandABussesPart(Part):
         self, field_name: str, value: bool, column_changes: Dict[str, List[Any]]
     ) -> Optional[bool]:
         i = self._bit_indexes.get(field_name, None)
-        if i is not None and self.bits:
+        assert self.bits, "No bits"
+        if i is not None:
             # It's a bit, update the table changes
             update_column(column_changes, "value", self.bits.value)[i] = value
             return True
@@ -229,15 +230,15 @@ class PandABussesPart(Part):
                         i
                     ] = parsed_value
             # Grab scale and offset
-            if self.positions:
-                table_value = self.positions.value
-                scale = column_changes.get("scale", table_value.scale)[i]
-                offset = column_changes.get("offset", table_value.offset)[i]
+            assert self.positions, "No positions"
+            table_value = self.positions.value
+            scale = column_changes.get("scale", table_value.scale)[i]
+            offset = column_changes.get("offset", table_value.offset)[i]
 
-                # It's a pos, update the value column with what we know
-                update_column(column_changes, "value", self.positions.value)[i] = (
-                    self._pos_values[i] * scale + offset
-                )
+            # It's a pos, update the value column with what we know
+            update_column(column_changes, "value", self.positions.value)[i] = (
+                self._pos_values[i] * scale + offset
+            )
             return True
         return None
 
@@ -246,7 +247,8 @@ class PandABussesPart(Part):
     ) -> Optional[bool]:
         # This should be a pcap bits field...
         indexes = self._pcap_bit_indexes.get(field_name, None)
-        if indexes is not None and self.bits:
+        assert self.bits, "No bits"
+        if indexes is not None:
             capture = value != "No"
             for i in indexes:
                 update_column(column_changes, "capture", self.bits.value)[i] = capture
@@ -263,9 +265,11 @@ class PandABussesPart(Part):
                 or self._handle_pcap(k, v, bit_column_changes)
             ), ("Don't know how to handle %s" % k)
         # Update the tables
-        if bit_column_changes and self.bits:
+        assert self.bits, "No bits"
+        if bit_column_changes:
             new_value = make_updated_table(self.bits.value, bit_column_changes)
             self.bits.set_value_alarm_ts(new_value, Alarm.ok, ts)
-        if pos_column_changes and self.positions:
+        assert self.positions, "No positions"
+        if pos_column_changes:
             new_value = make_updated_table(self.positions.value, pos_column_changes)
             self.positions.set_value_alarm_ts(new_value, Alarm.ok, ts)

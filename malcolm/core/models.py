@@ -563,9 +563,7 @@ class ChoiceMeta(VMeta):
 
     @classmethod
     def from_annotype(cls, anno: Anno, writeable: bool, **kwargs: Any) -> VMeta:
-        return super().from_annotype(
-            anno, writeable, choices=list(anno.typ)
-        )
+        return super().from_annotype(anno, writeable, choices=list(anno.typ))
 
 
 with Anno("The lower bound of range within which the value must be set"):

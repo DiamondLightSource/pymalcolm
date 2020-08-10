@@ -122,17 +122,17 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         xml = '<?xml version="1.0" ?><pos_layout><dimensions>'
 
         # Make an index for every hdf index
-        if self.generator:
-            for i in range(len(self.generator.dimensions)):
-                xml += '<dimension name="d%d" />' % i
+        assert self.generator, "No generator"
+        for i in range(len(self.generator.dimensions)):
+            xml += '<dimension name="d%d" />' % i
 
         # Add the actual positions
         xml += "</dimensions><positions>"
 
         end_index = start_index + POSITIONS_PER_XML
-        if self.steps_up_to:
-            if end_index > self.steps_up_to:
-                end_index = self.steps_up_to
+        assert self.steps_up_to, "No steps up to"
+        if end_index > self.steps_up_to:
+            end_index = self.steps_up_to
 
         for i in range(start_index, end_index):
             point = self.generator.get_point(i)

@@ -231,9 +231,7 @@ def main():
     class UserContext(Context):
         def post(self, path, params=None, timeout=None, event_timeout=None):
             try:
-                return super().post(
-                    path, params, timeout, event_timeout
-                )
+                return super().post(path, params, timeout, event_timeout)
             except KeyboardInterrupt:
                 self.post([path[0], "abort"])
 
@@ -253,9 +251,7 @@ def main():
             )
 
         def handle_request(self, controller, request):
-            cothread.CallbackResult(
-                super().handle_request, controller, request
-            )
+            cothread.CallbackResult(super().handle_request, controller, request)
 
     self = UserContext(process)
 

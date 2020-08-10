@@ -129,8 +129,6 @@ class DatasetPositionsTable(pandablocks.util.PositionsTable):
         datasetName: UAttributeNames,
         datasetType: UAttributeTypes,
     ) -> None:
-        super().__init__(
-            name, value, units, scale, offset, capture
-        )
+        super().__init__(name, value, units, scale, offset, capture)
         self.datasetName = AAttributeNames(datasetName)
         self.datasetType = AAttributeTypes(datasetType)

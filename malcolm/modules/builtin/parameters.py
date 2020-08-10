@@ -2,7 +2,7 @@ from typing import Union
 
 from annotypes import Anno, add_call_types
 
-default_desc = "Default value for parameter. If not specified, parameter is " "required"
+default_desc = "Default value for parameter. If not specified, parameter is required"
 
 with Anno("Specify that this class will take a parameter name"):
     AName = str

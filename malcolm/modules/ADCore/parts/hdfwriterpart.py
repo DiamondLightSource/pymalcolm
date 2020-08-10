@@ -475,9 +475,9 @@ class HDFWriterPart(builtin.parts.ChildPart):
         futures += set_dimensions(child, generator)
         xml = make_layout_xml(generator, part_info, self.write_all_nd_attributes.value)
         self.layout_filename = make_xml_filename(file_dir, self.mri, suffix="layout")
-        if self.layout_filename:
-            with open(self.layout_filename, "w") as f:
-                f.write(xml)
+        assert self.layout_filename, "No layout filename"
+        with open(self.layout_filename, "w") as f:
+            f.write(xml)
         layout_filename_pv_value = self.layout_filename
         if self.runs_on_windows:
             layout_filename_pv_value = FilePathTranslatorInfo.translate_filepath(

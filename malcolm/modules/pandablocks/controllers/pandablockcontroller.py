@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict, Optional, Sequence, Tuple, Union, cast
+from typing import Any, Dict, Optional, Union, cast
 
 from annotypes import Anno
 
@@ -79,9 +79,7 @@ class PandABlockController(builtin.controllers.BasicController):
         block_data: ABlockData,
         doc_url_base: ADocUrlBase,
     ) -> None:
-        super().__init__(
-            mri="%s:%s" % (mri_prefix, block_name)
-        )
+        super().__init__(mri="%s:%s" % (mri_prefix, block_name))
         # Store
         self.client = client
         self.mri_prefix = mri_prefix
@@ -98,9 +96,7 @@ class PandABlockController(builtin.controllers.BasicController):
         for field_name, field_data in block_data.fields.items():
             self._make_parts_for(field_name, field_data)
 
-    def handle_changes(
-        self, changes: Union[Dict[str, Any], Sequence[Tuple[str, str]]], ts: TimeStamp
-    ) -> None:
+    def handle_changes(self, changes: Dict[str, Any], ts: TimeStamp) -> None:
         with self.changes_squashed:
             icon_needs_update = False
             if isinstance(changes, Dict):

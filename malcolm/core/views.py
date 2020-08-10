@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any
 
 from malcolm.compat import OrderedDict
 from malcolm.core.models import Model
@@ -13,10 +13,10 @@ if TYPE_CHECKING:
 class View:
     """View of a Model to allow Put, Get, Subscribe etc."""
 
-    _controller: Union["Controller", None] = None
-    _context: Union[Context, None] = None
-    _data: Union[Model, None] = None
-    typeid: Union[str, None] = None
+    _controller: "Controller"
+    _context: Context
+    _data: Model
+    typeid: str
 
     def __init__(self, controller: "Controller", context: Context, data: Model) -> None:
         object.__setattr__(self, "typeid", data.typeid)
@@ -151,9 +151,6 @@ class Block(View):
     def __getattr__(self, item: str) -> View:
         # Get the child of self._data. Needs to be done by the controller to
         # make sure lock is taken and we get consistent data
-        assert self._context, "No context for block"
-        assert self._controller, "No controller for block"
-        assert self._data, "No model for block"
         child = self._context.make_view(self._controller, self._data, item)
         return child
 

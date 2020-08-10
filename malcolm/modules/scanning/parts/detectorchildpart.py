@@ -154,11 +154,11 @@ class DetectorChildPart(builtin.parts.ChildPart):
         )
         ret = []
         tweak_detectors = False
-        if detectors:
-            if self.name not in detectors.name:
-                # There isn't a row for us, so add one in on validate, it will be
-                # disabled but that is truthful
-                tweak_detectors = True
+        assert detectors, "No detectors"
+        if self.name not in detectors.name:
+            # There isn't a row for us, so add one in on validate, it will be
+            # disabled but that is truthful
+            tweak_detectors = True
 
         child = context.block_view(self.mri)
         takes_exposure = "exposure" in child.validate.meta.takes.elements
@@ -230,14 +230,14 @@ class DetectorChildPart(builtin.parts.ChildPart):
             # Detector table changed, make a new onw
             det_row = [enable, self.name, self.mri, exposure, frames_per_step]
             rows = []
-            if detectors:
-                append_det_row = True
-                for row in detectors.rows():
-                    if row[1] == self.name:
-                        rows.append(det_row)
-                        append_det_row = False
-                    else:
-                        rows.append(row)
+            assert detectors, "No detectors"
+            append_det_row = True
+            for row in detectors.rows():
+                if row[1] == self.name:
+                    rows.append(det_row)
+                    append_det_row = False
+                else:
+                    rows.append(row)
             if append_det_row:
                 rows.append(det_row)
             new_detectors = DetectorTable.from_rows(rows)
@@ -253,19 +253,19 @@ class DetectorChildPart(builtin.parts.ChildPart):
         file_template: AFileTemplate = "%s.h5",
     ) -> Tuple[bool, int, Dict[str, Any]]:
         # Check the detector table to see what we need to do
-        if detectors:
-            for enable, name, mri, exposure, frames in detectors.rows():
-                if name == self.name and enable:
-                    # Found a row saying to take part
-                    assert mri == self.mri, "%s has mri %s, passed %s" % (
-                        name,
-                        self.mri,
-                        mri,
-                    )
-                    break
-            else:
-                # Didn't find a row or no frames, don't take part
-                return False, 0, {}
+        assert detectors, "No detectors"
+        for enable, name, mri, exposure, frames in detectors.rows():
+            if name == self.name and enable:
+                # Found a row saying to take part
+                assert mri == self.mri, "%s has mri %s, passed %s" % (
+                    name,
+                    self.mri,
+                    mri,
+                )
+                break
+        else:
+            # Didn't find a row or no frames, don't take part
+            return False, 0, {}
         # If we had more than one frame per point, multiply out
         if frames > 1:
             axis_name = name + "_frames_per_step"
@@ -355,7 +355,8 @@ class DetectorChildPart(builtin.parts.ChildPart):
         except BadValueError:
             # If child went into Fault state, raise the friendlier run_future
             # exception
-            if child.state.value == ss.FAULT and self.run_future:
+            if child.state.value == ss.FAULT:
+                assert self.run_future, "No run future"
                 raise self.run_future.exception()
             else:
                 raise

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Set, cast
+from typing import Any, Dict, List, Optional, Set
 
 from annotypes import add_call_types, stringify_error
 from cothread import cothread
@@ -212,24 +212,24 @@ class BlockHandler(Handler):
         else:
             self.put_paths = set()
         self.controller.log_debug(f"Opening with {list(self.value)}")
-        if self.pv:
-            self.pv.open(self.value)
+        assert self.pv, "No pv"
+        self.pv.open(self.value)
 
     def _update_value(self, delta: Delta) -> None:
         # Called with the lock taken
         self.value.unmark()
-        if delta.changes:
-            for change in delta.changes:
-                assert len(change) == 2, "Path %s deleted" % change[0]
-                assert (
-                    len(change[0]) > 0
-                ), "Can't handle root update %s after initial" % (change,)
-                # Path will have at least one element
-                path, update = change
-                update_path(self.value, path, update)
+        assert delta.changes, "No Delta changes"
+        for change in delta.changes:
+            assert len(change) == 2, "Path %s deleted" % change[0]
+            assert len(change[0]) > 0, "Can't handle root update %s after initial" % (
+                change,
+            )
+            # Path will have at least one element
+            path, update = change
+            update_path(self.value, path, update)
         # No type change, post the updated value
-        if self.pv:
-            self.pv.post(self.value)
+        assert self.pv, "No pv"
+        self.pv.post(self.value)
 
     # Need camelCase as called by p4p Server
     # noinspection PyPep8Naming
@@ -267,7 +267,7 @@ class PvaServerComms(builtin.controllers.ServerComms):
         self._pva_server = None
         self._provider = None
         self._published: Set[str] = set()
-        self._pvs: Dict[str, Dict[str, SharedPV]] = {}
+        self._pvs: Dict[str, Dict[Optional[str], SharedPV]] = {}
         # Hooks
         self.register_hooked(ProcessPublishHook, self.publish)
 
@@ -307,7 +307,7 @@ class PvaServerComms(builtin.controllers.ServerComms):
         with self._lock:
             pvs = self._pvs.setdefault(mri, {})
             try:
-                pv = pvs[cast(str, field)]
+                pv = pvs[field]
             except KeyError:
                 assert self.process, "No attached process"
                 controller = self.process.get_controller(mri)
@@ -318,7 +318,7 @@ class PvaServerComms(builtin.controllers.ServerComms):
                 # to tell p4p to send a slice instead
                 # https://github.com/mdavidsaver/pvDataCPP/blob/master/src/copy/pv/createRequest.h#L76
                 pv = SharedPV(handler=handler, options={"mapperMode": "Slice"})
-                pvs[cast(str, field)] = pv
+                pvs[field] = pv
             return pv
 
     def do_init(self):
