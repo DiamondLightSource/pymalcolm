@@ -86,7 +86,7 @@ with Anno("The shell command to run to get the value from"):
 def cmd_string(name: AName, cmd: ACmd) -> ADefine:
     """Define a string parameter coming from a shell command to be used within
     this YAML file. Trailing newlines will be stripped."""
-    value = subprocess.check_output(cmd, shell=True).rstrip(b"\n")
+    value = subprocess.check_output(cmd, shell=True).decode().rstrip("\n")
     return Define(name, value)
 
 
