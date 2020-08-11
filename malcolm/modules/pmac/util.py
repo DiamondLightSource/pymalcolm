@@ -105,6 +105,33 @@ def cs_axis_mapping(
     return axis_mapping
 
 
+def cs_axis_numbers(
+    context: Context, layout_table: builtin.util.LayoutTable, cs_port: str,
+) -> Dict[str, int]:
+    """Given the layout table of a PMAC, get the axis number for each name
+    in the table which is in the specified CS"""
+    axis_numbers = {}
+    for name, mri in zip(layout_table.name, layout_table.mri):
+        child = context.block_view(mri)
+        try:
+            axis_number = child.axisNumber.value
+        except (AttributeError, KeyError):
+            axis_number = None
+        try:
+            cs = child.cs.value
+        except (AttributeError, KeyError):
+            cs = None
+
+        if cs and axis_number:
+            child_cs_port = child.cs.value.split(",", 1)[0]
+            if cs_port == child_cs_port:
+                if name in axis_numbers:
+                    axis_numbers[name] = axis_number
+                else:
+                    axis_numbers[name] = axis_number
+    return axis_numbers
+
+
 def and_all_axes(axes: Dict[str, Array[bool]]) -> Array[bool]:
     result = None
     for axis in axes.values():

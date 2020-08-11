@@ -33,7 +33,7 @@ class PositionsPart(Part):
             # encoder in the geobrick layer
             scale=[1.0, -0.001, 0.001],
             offset=[0.0, 0.0, 0.0],
-            capture=[PositionCapture.NO] * 3,
+            capture=[PositionCapture.MIN_MAX_MEAN] * 3,
             datasetName=["I0", "x", "y"],
             datasetType=[
                 AttributeDatasetType.MONITOR,
@@ -516,6 +516,15 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         if "diamond.ac.uk" not in socket.gethostname():
             pytest.skip("performance test only")
 
+        self.set_motor_attributes(
+            0,
+            0,
+            "mm",
+            x_velocity=300,
+            y_velocity=300,
+            x_acceleration=30,
+            y_acceleration=30,
+        )
         x_steps, y_steps = 4000, 1000
         xs = LineGenerator("x", "mm", 0.0, 10, x_steps, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 8, y_steps)

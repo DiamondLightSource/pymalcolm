@@ -1,8 +1,9 @@
 from annotypes import Anno, add_call_types
 
 from malcolm.core import DEFAULT_TIMEOUT, PartRegistrar
-from malcolm.modules import builtin
+from malcolm.modules import builtin, scanning
 
+from ..infos import PmacCsKinematicsInfo
 from ..util import CS_AXIS_NAMES
 
 with Anno("Co-ordinate system number"):
@@ -25,6 +26,16 @@ class CSPart(builtin.parts.ChildPart):
         super().setup(registrar)
         # Add methods
         registrar.add_method_model(self.move, "moveCS%d" % self.cs, needs_context=True)
+        # Hooks
+        registrar.hook(scanning.hooks.ReportStatusHook, self.report_status)
+
+    @add_call_types
+    def report_status(self, context: scanning.hooks.AContext) -> scanning.hooks.UInfos:
+        child = context.block_view(self.mri)
+        info = PmacCsKinematicsInfo(
+            child.port, child.qVariables.value, child.forward.value, child.inverse.value
+        )
+        return info
 
     @add_call_types
     def on_init(self, context: builtin.hooks.AContext) -> None:

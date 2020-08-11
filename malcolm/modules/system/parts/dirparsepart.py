@@ -181,7 +181,6 @@ class DirParsePart(Part):
                 self.dependencies.set_value(dependency_table)
 
         else:
-            print("calling alarm.Alarm")
             status = alarm.Alarm(
                 message="reported IOC directory not found",
                 severity=alarm.AlarmSeverity.MINOR_ALARM,

@@ -1,4 +1,5 @@
 import os
+import time
 import unittest
 
 from mock import patch
@@ -9,6 +10,8 @@ from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.modules.system.parts import DirParsePart
 
 deps = ["TEST=/a/test\n", "DEP1=$(TEST)/some/dependency\n"]
+
+now = "%s" % time.time()
 
 
 class MockPv(str):
@@ -43,17 +46,21 @@ class TestDirParsePart(unittest.TestCase):
         self.p = Process("process1")
         self.context = Context(self.p)
         self.c1 = RunnableController(mri="SYS", config_dir="/tmp", use_git=False)
-        try:
-            os.mkdir("/tmp/configure")
-        except OSError:
-            pass
+        self.tmp_dir = "/tmp/%s-%s" % (now, os.getpid())
+        os.mkdir(self.tmp_dir)
+        os.mkdir(self.tmp_dir + "/configure")
 
     def tearDown(self):
         try:
             self.p.stop(timeout=1)
         except AssertionError:
             pass
-        os.rmdir("/tmp/configure")
+        try:
+            os.rmdir(self.tmp_dir + "/configure")
+            os.rmdir(self.tmp_dir)
+        except OSError:
+            # directory doesn't exist
+            pass
 
     # @patch("malcolm.modules.ca.util.CAAttribute")
     # def test_has_pvs(self, CAAttribute):
@@ -78,8 +85,8 @@ class TestDirParsePart(unittest.TestCase):
 
     def test_parses_dir(self):
         self.add_part_and_start()
-        self.part.dir = "/tmp"
-        with open("/tmp/configure/RELEASE", "w") as f:
+        self.part.dir = self.tmp_dir
+        with open(self.tmp_dir + "/configure/RELEASE", "w") as f:
             f.writelines(deps)
         self.part.parse_release()
         assert len(self.part.dependencies.value.module) == 2
@@ -89,7 +96,7 @@ class TestDirParsePart(unittest.TestCase):
         assert self.part.dependencies.value.path[0] == "/a/test"
         assert self.part.dependencies.value.path[1] == "/a/test/some/dependency"
 
-        os.remove("/tmp/configure/RELEASE")
+        os.remove(self.tmp_dir + "/configure/RELEASE")
 
     @patch("malcolm.core.alarm.Alarm")
     def test_sets_alarm_if_dir_doesnt_exist(self, alarm):
