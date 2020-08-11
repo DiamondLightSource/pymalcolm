@@ -29,6 +29,8 @@ from ..util import (
     make_xml_filename,
 )
 
+with Anno("Minimum required version for compatibility"):
+    AVersionRequirement = str
 with Anno("Is main detector dataset useful to publish in DatasetTable?"):
     AMainDatasetUseful = bool
 with Anno("List of trigger modes that do not use hardware triggers"):
@@ -57,6 +59,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         soft_trigger_modes: USoftTriggerModes = None,
         main_dataset_useful: AMainDatasetUseful = True,
         runs_on_windows: APartRunsOnWindows = False,
+        required_version: AVersionRequirement = None,
     ) -> None:
         super().__init__(name, mri)
         self.soft_trigger_modes = soft_trigger_modes
