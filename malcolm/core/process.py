@@ -1,4 +1,4 @@
-from typing import Any, Callable, List, Sequence, Set, TypeVar, Union, cast
+from typing import Any, Callable, List, Sequence, Set, TypeVar, Union
 
 from annotypes import Anno, Array
 
@@ -94,7 +94,7 @@ class Process(Loggable):
         info: UnpublishedInfo
         new_unpublished = set()
         for info in UnpublishedInfo.filter_values(infos):
-            new_unpublished.add(cast(UnpublishedInfo, info).mri)
+            new_unpublished.add(info.mri)
         self._unpublished |= new_unpublished
         if len(controller_list) > len(new_unpublished):
             return True
