@@ -1,6 +1,7 @@
 import os
 from typing import Any, List, Optional, Sequence, Union
 from xml.etree import cElementTree as ET
+from packaging.version import Version
 
 from annotypes import Anno, Array, add_call_types
 
@@ -9,6 +10,7 @@ from malcolm.core import (
     DEFAULT_TIMEOUT,
     APartName,
     BadValueError,
+    IncompatibleError,
     Context,
     Future,
     Info,
@@ -62,6 +64,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         required_version: AVersionRequirement = None,
     ) -> None:
         super().__init__(name, mri)
+        self.required_version = required_version
         self.soft_trigger_modes = soft_trigger_modes
         self.is_hardware_triggered = True
         self.main_dataset_useful = main_dataset_useful
@@ -265,6 +268,22 @@ class DetectorDriverPart(builtin.parts.ChildPart):
             need_keys.append("exposure")
         return need_keys
 
+    def check_driver_version(self, child):
+        if self.required_version is not None:
+            required_version = Version(self.required_version)
+            running_version = Version(child.driverVersion.value)
+            if required_version.major != running_version.major or running_version.minor < required_version.minor:
+                raise (
+                    IncompatibleError(
+                        "Detector driver v{} detected. "
+                        "Malcolm requires v{}".format(
+                            child.driverVersion.value, self.required_version
+                        )
+                    )
+                )
+
+            
+
     # Allow CamelCase as fileDir parameter will be serialized
     # noinspection PyPep8Naming
     @add_call_types
@@ -280,6 +299,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
     ) -> None:
         context.unsubscribe_all()
         child = context.block_view(self.mri)
+        self.check_driver_version(child)
         self.setup_detector(
             context,
             completed_steps,
