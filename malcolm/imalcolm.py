@@ -189,7 +189,6 @@ def try_prepare_locals(q, args):
 
 def main():
     print("Loading malcolm...")
-    # import queue
     from malcolm.profiler import Profiler
 
     args = parse_args()
