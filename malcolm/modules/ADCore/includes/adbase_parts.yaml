@@ -75,7 +75,7 @@
       description: height of the image in pixels
       rbv: $(prefix):ArraySizeY_RBV
 
-- ca.parts.castringpart.py:
+- ca.parts.CAStringPart:
     name: driverVersion
     description: Version of EPICS AD Driver
     rbv: $(prefix):DriverVersion_RBV
