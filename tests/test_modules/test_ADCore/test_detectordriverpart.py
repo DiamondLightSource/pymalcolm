@@ -1,3 +1,5 @@
+from xml.etree import ElementTree
+
 from mock import MagicMock, call
 from scanpointgenerator import CompoundGenerator, LineGenerator
 
@@ -121,7 +123,9 @@ class TestDetectorDriverPart(ChildTestCase):
         with open(expected_xml_filename) as f:
             actual_xml = f.read().replace(">", ">\n")
 
-        assert actual_xml.splitlines() == expected_xml.splitlines()
+        actual_tree = ElementTree.XML(actual_xml)
+        expected_tree = ElementTree.XML(expected_xml)
+        assert ElementTree.dump(actual_tree) == ElementTree.dump(expected_tree)
 
     def test_run(self):
         self.o.registrar = MagicMock()

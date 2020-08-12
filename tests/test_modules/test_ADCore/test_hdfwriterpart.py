@@ -1,4 +1,5 @@
 import os
+from xml.etree import ElementTree
 
 import cothread
 from mock import MagicMock, call
@@ -319,7 +320,10 @@ class TestHDFWriterPart(ChildTestCase):
         self.mock_xml_is_valid_check(self.o)
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         actual_xml = self.configure_and_check_output()
-        assert actual_xml.splitlines() == expected_xml.splitlines()
+
+        actual_tree = ElementTree.XML(actual_xml)
+        expected_tree = ElementTree.XML(expected_xml)
+        assert ElementTree.dump(actual_tree) == ElementTree.dump(expected_tree)
 
     def test_honours_write_all_attributes_flag(self):
         self.mock_when_value_matches(self.child)
@@ -329,7 +333,10 @@ class TestHDFWriterPart(ChildTestCase):
         self.mock_xml_is_valid_check(self.o)
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         actual_xml = self.configure_and_check_output()
-        assert actual_xml.splitlines() == expected_xml_limited_attr.splitlines()
+
+        actual_tree = ElementTree.XML(actual_xml)
+        expected_tree = ElementTree.XML(expected_xml)
+        assert ElementTree.dump(actual_tree) == ElementTree.dump(expected_tree)
 
     def test_configure_windows(self):
         self.mock_when_value_matches(self.child)
@@ -337,7 +344,10 @@ class TestHDFWriterPart(ChildTestCase):
         self.mock_xml_is_valid_check(self.o)
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         actual_xml = self.configure_and_check_output(on_windows=True)
-        assert actual_xml.splitlines() == expected_xml.splitlines()
+
+        actual_tree = ElementTree.XML(actual_xml)
+        expected_tree = ElementTree.XML(expected_xml)
+        assert ElementTree.dump(actual_tree) == ElementTree.dump(expected_tree)
 
     def test_run(self):
         self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
