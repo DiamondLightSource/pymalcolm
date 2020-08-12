@@ -1,3 +1,5 @@
+from xml.etree import ElementTree
+
 from mock import call
 
 from malcolm.core import Context, Process
@@ -56,7 +58,10 @@ class TestStatsPluginPart(ChildTestCase):
         )
         with open(expected_filename) as f:
             actual_xml = f.read().replace(">", ">\n")
-        assert actual_xml.splitlines() == expected_xml.splitlines()
+
+        actual_tree = ElementTree.XML(actual_xml)
+        expected_tree = ElementTree.XML(expected_xml)
+        assert ElementTree.dump(actual_tree) == ElementTree.dump(expected_tree)
 
     def test_configure_windows(self):
         self.o = StatsPluginPart(name="m", mri="BLOCK:STAT", runs_on_windows=True)
@@ -82,4 +87,7 @@ class TestStatsPluginPart(ChildTestCase):
         )
         with open(expected_filename_unix) as f:
             actual_xml = f.read().replace(">", ">\n")
-        assert actual_xml.splitlines() == expected_xml.splitlines()
+
+        actual_tree = ElementTree.XML(actual_xml)
+        expected_tree = ElementTree.XML(expected_xml)
+        assert ElementTree.dump(actual_tree) == ElementTree.dump(expected_tree)

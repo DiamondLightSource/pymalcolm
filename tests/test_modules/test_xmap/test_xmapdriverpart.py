@@ -1,3 +1,5 @@
+from xml.etree import ElementTree
+
 from mock import MagicMock, call
 
 from malcolm.core import Context, Process
@@ -88,4 +90,6 @@ class TestXmap3DetectorDriverPart(ChildTestCase):
         with open("/tmp/mri-attributes.xml") as f:
             actual_xml = f.read().replace(">", ">\n")
 
-        assert actual_xml.splitlines() == expected_xml.splitlines()
+        actual_tree = ElementTree.XML(actual_xml)
+        expected_tree = ElementTree.XML(expected_xml)
+        assert ElementTree.dump(actual_tree) == ElementTree.dump(expected_tree)
