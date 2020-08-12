@@ -1,7 +1,7 @@
 import os
+from packaging.version import Version
 from typing import Any, List, Optional, Sequence, Union
 from xml.etree import cElementTree as ET
-from packaging.version import Version
 
 from annotypes import Anno, Array, add_call_types
 
@@ -10,9 +10,9 @@ from malcolm.core import (
     DEFAULT_TIMEOUT,
     APartName,
     BadValueError,
-    IncompatibleError,
     Context,
     Future,
+    IncompatibleError,
     Info,
     PartRegistrar,
     TableMeta,
