@@ -1,7 +1,7 @@
 import collections
 import os
 from shutil import copyfile
-from typing import TYPE_CHECKING, Optional
+from typing import Dict, List, Optional
 
 import h5py
 import numpy as np
@@ -11,10 +11,7 @@ from malcolm.core import APartName, Info, PartRegistrar
 from malcolm.modules import builtin, pandablocks, pmac, scanning
 from malcolm.modules.builtin.util import LayoutTable
 
-if TYPE_CHECKING:
-    from typing import List, Dict
-
-    PartInfo = Dict[str, List[Info]]
+PartInfo = Dict[str, List[Info]]
 
 # Pull re-used annotypes into our namespace in case we are subclassed
 APartName = APartName

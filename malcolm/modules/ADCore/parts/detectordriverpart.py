@@ -1,9 +1,9 @@
 import os
-from packaging.version import Version
 from typing import Any, List, Optional, Sequence, Union
 from xml.etree import cElementTree as ET
 
 from annotypes import Anno, Array, add_call_types
+from packaging.version import Version
 
 from malcolm.compat import et_to_string
 from malcolm.core import (
@@ -281,7 +281,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
                             child.driverVersion.value, self.required_version
                         )
                     )
-                )            
+                )
 
     # Allow CamelCase as fileDir parameter will be serialized
     # noinspection PyPep8Naming
