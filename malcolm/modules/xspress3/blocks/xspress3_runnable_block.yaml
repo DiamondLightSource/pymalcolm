@@ -39,6 +39,7 @@
 - ADCore.parts.DetectorDriverPart:
     name: Xspress3A
     mri: $(mri_prefix):DRV
+    required_version: 3.0
 
 - scanning.parts.ExposureDeadtimePart:
     name: DEADTIME
