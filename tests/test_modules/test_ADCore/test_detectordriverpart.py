@@ -3,7 +3,7 @@ from xml.etree import ElementTree
 from mock import MagicMock, call
 from scanpointgenerator import CompoundGenerator, LineGenerator
 
-from malcolm.core import Context, Process
+from malcolm.core import Context, IncompatibleError, Process
 from malcolm.modules.ADCore.includes import adbase_parts
 from malcolm.modules.ADCore.infos import FilePathTranslatorInfo
 from malcolm.modules.ADCore.parts import DetectorDriverPart
@@ -126,6 +126,23 @@ class TestDetectorDriverPart(ChildTestCase):
         actual_tree = ElementTree.XML(actual_xml)
         expected_tree = ElementTree.XML(expected_xml)
         assert ElementTree.dump(actual_tree) == ElementTree.dump(expected_tree)
+
+    def test_version_check(self):
+        self.o.required_version = "2.2"
+        self.set_attributes(self.child, driverVersion="1.9")
+        self.assertRaises(IncompatibleError, self.o.check_driver_version, self.child)
+        
+        self.set_attributes(self.child, driverVersion="2.1")
+        self.assertRaises(IncompatibleError, self.o.check_driver_version, self.child)
+        
+        self.set_attributes(self.child, driverVersion="3.0")
+        self.assertRaises(IncompatibleError, self.o.check_driver_version, self.child)
+        
+        self.set_attributes(self.child, driverVersion="2.2")
+        self.o.check_driver_version(self.child)
+
+        self.set_attributes(self.child, driverVersion="2.2.3")
+        self.o.check_driver_version(self.child)
 
     def test_run(self):
         self.o.registrar = MagicMock()
