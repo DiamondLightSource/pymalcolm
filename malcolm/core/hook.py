@@ -1,5 +1,5 @@
-import logging
 import inspect
+import logging
 import time
 from typing import (
     Any,
