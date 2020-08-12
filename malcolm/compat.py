@@ -1,4 +1,3 @@
-import inspect
 import os
 import sys
 from xml.etree import cElementTree as ET
@@ -17,12 +16,6 @@ def get_profiler_dir():
 
 def get_stack_size():
     return int(os.environ.get("PYMALCOLM_STACK_SIZE", "0"))
-
-
-def getargspec(f):
-    # Need to use fullargspec in case there are annotations
-    args, varargs, keywords, defaults = inspect.getfullargspec(f)[:4]
-    return inspect.ArgSpec(args, varargs, keywords, defaults)
 
 
 def et_to_string(element: ET.Element) -> str:
