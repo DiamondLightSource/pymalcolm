@@ -1,3 +1,4 @@
+import numpy as np
 from annotypes import Anno, Any, Array, Mapping, TYPE_CHECKING, NO_DEFAULT, \
     Sequence, Union
 
@@ -25,7 +26,7 @@ with Anno("List of axes in inner dimension of generator that should be moved"):
     AAxesToMove = Array[str]
 UAxesToMove = Union[AAxesToMove, Sequence[str]]
 with Anno("List of points at which the run will return in Armed state"):
-    ABreakpoints = Array[int]
+    ABreakpoints = Array[np.int32]
 UBreakpoints = Union[ABreakpoints, Sequence[int]]
 with Anno("Parameters that need to be changed to make them compatible"):
     AParameterTweakInfos = Array[ParameterTweakInfo]
