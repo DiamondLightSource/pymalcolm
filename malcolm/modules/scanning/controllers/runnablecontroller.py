@@ -231,18 +231,16 @@ class RunnableController(builtin.controllers.ManagerController):
 
         last_breakpoint = sum(breakpoints)
         if len(breakpoints) > 0:
-            if last_breakpoint <= steps[0]:
-                self.use_breakpoints = True
-                if last_breakpoint < steps[0]:  # TODO Array has no append()
-                    # breakpoints.append(steps[0] - last_breakpoint)
-                    pass
-                steps = breakpoints
-                self.breakpoint_steps = [sum(steps[:i])
-                                         for i in range(1, len(steps) + 1)]
-            else:
-                # Inconsistent breakpoints
-                self.log.warning("Breakpoints past the last configured \
-                step: %s > %s", last_breakpoint, steps[0])
+            assert last_breakpoint <= steps[0], \
+                "Sum of breakpoints greater than steps in scan"
+            self.use_breakpoints = True
+            if last_breakpoint < steps[0]:  # TODO Array has no append()
+                # breakpoints.append(steps[0] - last_breakpoint)
+                pass
+            steps = breakpoints
+            self.breakpoint_steps = [
+                sum(steps[:i]) for i in range(1, len(steps) + 1)
+            ]
 
         return steps
 

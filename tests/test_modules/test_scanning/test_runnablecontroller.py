@@ -561,6 +561,20 @@ class TestRunnableControllerBreakpoints(unittest.TestCase):
         self.checkSteps(17, 17, 17)
         self.checkState(self.ss.FINISHED)
 
+    def test_breakpoints_sum_larger_than_total_steps_raises_AssertionError(self):
+        line1 = LineGenerator('x', 'mm', -10, -10, 5)
+        line2 = LineGenerator('x', 'mm', 0, 180, 10)
+        line3 = LineGenerator('x', 'mm', 190, 190, 2)
+        duration = 0.01
+        concat = ConcatGenerator([line1, line2, line3])
+
+        breakpoints = [2, 3, 100, 2]
+
+        self.assertRaises(
+            AssertionError,
+            self.b.configure,
+            generator=CompoundGenerator([concat], [], [], duration), axesToMove=['x'], breakpoints=breakpoints)
+
     def test_breakpoints_without_last(self):
         line1 = LineGenerator('x', 'mm', -10, -10, 5)
         line2 = LineGenerator('x', 'mm', 0, 180, 10)
