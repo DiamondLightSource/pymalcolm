@@ -522,44 +522,25 @@ class RunnableController(builtin.controllers.ManagerController):
         # type: (Type[ControllerHook]) -> None
         self.run_hooks(hook(p, c) for p, c in self.part_contexts.items())
         self.abortable_transition(ss.POSTRUN)
-        if self.use_breakpoints:
-            completed_steps = self.configured_steps.value
-            if completed_steps < self.total_steps.value:
+        completed_steps = self.configured_steps.value
+        if completed_steps < self.total_steps.value:
+            if self.use_breakpoints:
                 self.breakpoint_index += 1
-                print(self.breakpoint_index, completed_steps, self.total_steps.value)
-                steps_to_do = self.steps_per_run[self.breakpoint_index]
-                part_info = self.run_hooks(
-                    ReportStatusHook(p, c) for p, c in
-                    self.part_contexts.items())
-                self.completed_steps.set_value(completed_steps)
-                self.run_hooks(
-                    PostRunArmedHook(p, c, completed_steps, steps_to_do,
-                                     part_info, **kwargs)
-                    for p, c, kwargs in self._part_params())
-                self.configured_steps.set_value(completed_steps + steps_to_do)
-            else:
-                self.completed_steps.set_value(completed_steps)
-                self.run_hooks(
-                    PostRunReadyHook(p, c) for p, c in
-                    self.part_contexts.items())
+            steps_to_do = self.steps_per_run[self.breakpoint_index]
+            part_info = self.run_hooks(
+                ReportStatusHook(p, c) for p, c in
+                self.part_contexts.items())
+            self.completed_steps.set_value(completed_steps)
+            self.run_hooks(
+                PostRunArmedHook(p, c, completed_steps, steps_to_do,
+                                    part_info, **kwargs)
+                for p, c, kwargs in self._part_params())
+            self.configured_steps.set_value(completed_steps + steps_to_do)
         else:
-            completed_steps = self.configured_steps.value
-            if completed_steps < self.total_steps.value:
-                steps_to_do = self.steps_per_run[self.breakpoint_index]
-                part_info = self.run_hooks(
-                    ReportStatusHook(p, c) for p, c in
-                    self.part_contexts.items())
-                self.completed_steps.set_value(completed_steps)
-                self.run_hooks(
-                    PostRunArmedHook(p, c, completed_steps, steps_to_do,
-                                     part_info, **kwargs)
-                    for p, c, kwargs in self._part_params())
-                self.configured_steps.set_value(completed_steps + steps_to_do)
-            else:
-                self.completed_steps.set_value(completed_steps)
-                self.run_hooks(
-                    PostRunReadyHook(p, c) for p, c in
-                    self.part_contexts.items())
+            self.completed_steps.set_value(completed_steps)
+            self.run_hooks(
+                PostRunReadyHook(p, c) for p, c in
+                self.part_contexts.items())
 
     def update_completed_steps(self, part, completed_steps):
         # type: (object, RunProgressInfo) -> None
