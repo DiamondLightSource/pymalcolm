@@ -128,17 +128,18 @@ class TestDetectorDriverPart(ChildTestCase):
         assert ElementTree.dump(actual_tree) == ElementTree.dump(expected_tree)
 
     def test_version_check(self):
+        block = self.context.block_view("mri")
         self.o.required_version = "2.2"
         self.set_attributes(self.child, driverVersion="1.9")
-        self.assertRaises(IncompatibleError, self.o.check_driver_version, self.context.block_view("mri"))        
+        self.assertRaises(IncompatibleError, self.o.check_driver_version, block)        
         self.set_attributes(self.child, driverVersion="2.1")
-        self.assertRaises(IncompatibleError, self.o.check_driver_version, self.context.block_view("mri"))        
+        self.assertRaises(IncompatibleError, self.o.check_driver_version, block)        
         self.set_attributes(self.child, driverVersion="3.0")
-        self.assertRaises(IncompatibleError, self.o.check_driver_version, self.context.block_view("mri"))        
+        self.assertRaises(IncompatibleError, self.o.check_driver_version, block)        
         self.set_attributes(self.child, driverVersion="2.2")
-        self.o.check_driver_version(self.child)
+        self.o.check_driver_version(block)
         self.set_attributes(self.child, driverVersion="2.2.3")
-        self.o.check_driver_version(self.child)
+        self.o.check_driver_version(block)
 
     def test_run(self):
         self.o.registrar = MagicMock()
