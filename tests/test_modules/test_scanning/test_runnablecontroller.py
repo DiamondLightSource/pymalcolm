@@ -573,7 +573,9 @@ class TestRunnableControllerBreakpoints(unittest.TestCase):
         self.assertRaises(
             AssertionError,
             self.b.configure,
-            generator=CompoundGenerator([concat], [], [], duration), axesToMove=['x'], breakpoints=breakpoints)
+            generator=CompoundGenerator([concat], [], [], duration),
+            axesToMove=['x'],
+            breakpoints=breakpoints)
 
     def test_breakpoints_without_last(self):
         line1 = LineGenerator('x', 'mm', -10, -10, 5)
@@ -873,3 +875,165 @@ class TestRunnableControllerBreakpoints(unittest.TestCase):
         # Check the abort thread didn't raise
         abort_thread.Wait(1.0)
 
+    def test_breakpoints_tomo_with_outer_axis(self):
+        # Outer axis we don't move
+        outer_steps = 2
+        line_outer = LineGenerator('y', 'mm', 0, 1, outer_steps)
+
+        # ConcatGenerator we do move
+        line1 = LineGenerator('x', 'mm', -10, -10, 5)
+        line2 = LineGenerator('x', 'mm', 0, 180, 10)
+        line3 = LineGenerator('x', 'mm', 190, 190, 2)
+        concat = ConcatGenerator([line1, line2, line3])
+
+        compound = CompoundGenerator([line_outer, concat], [], [], duration=0.01)
+        breakpoints = [2, 3, 10, 2]
+        inner_steps = sum(breakpoints)
+        total_steps = inner_steps * outer_steps
+        
+        self.b.configure(generator=compound, axesToMove=['x'], breakpoints=breakpoints)
+        # Configured, completed, total
+        self.checkSteps(2, 0, total_steps)
+        self.checkState(self.ss.ARMED)
+
+        # Check we have the full configured steps
+        assert self.c.configure_params.generator.size == total_steps
+
+        # Check our breakpoints steps
+        expected_breakpoint_steps = [2, 5, 15, 17, 19, 22, 32, 34]
+        self.assertEqual(expected_breakpoint_steps, self.c.breakpoint_steps)
+
+        # Run our controller through all but last breakpoint
+        breakpoints = len(expected_breakpoint_steps)
+        for index in range(breakpoints - 1):
+            self.b.run()
+            self.checkSteps(expected_breakpoint_steps[index+1], expected_breakpoint_steps[index], total_steps)
+            self.checkState(self.ss.ARMED)
+
+        # Final breakpoint
+        self.b.run()
+        self.checkSteps(total_steps, total_steps, total_steps)
+        self.checkState(self.ss.FINISHED)
+
+    def test_breakpoints_tomo_with_two_outer_axes(self):
+        # Outer axes we don't move
+        outer_steps = 2
+        line_outer = LineGenerator('y', 'mm', 0, 1, outer_steps)
+        outer_outer_steps = 3
+        line_outer_outer = LineGenerator('z', 'mm', 0, 1, outer_outer_steps)
+
+        # ConcatGenerator we do move
+        line1 = LineGenerator('x', 'mm', -10, -10, 5)
+        line2 = LineGenerator('x', 'mm', 0, 180, 10)
+        concat = ConcatGenerator([line1, line2])
+
+        compound = CompoundGenerator(
+            [line_outer_outer, line_outer, concat], [], [], duration=0.01)
+        breakpoints = [2, 3, 10]
+        inner_steps = sum(breakpoints)
+        total_steps = inner_steps * outer_steps * outer_outer_steps
+        
+        self.b.configure(generator=compound, axesToMove=['x'], breakpoints=breakpoints)
+        # Configured, completed, total
+        self.checkSteps(2, 0, total_steps)
+        self.checkState(self.ss.ARMED)
+
+        # Check we have the full configured steps
+        assert self.c.configure_params.generator.size == total_steps
+
+        # Check our breakpoints steps
+        expected_breakpoint_steps = [2, 5, 15, 17, 20, 30, 32, 35, 45, 47, 50, 60, 62, 65, 75, 77, 80, 90]
+        self.assertEqual(expected_breakpoint_steps, self.c.breakpoint_steps)
+
+        # Run our controller through all but last breakpoint
+        breakpoints = len(expected_breakpoint_steps)
+        for index in range(breakpoints - 1):
+            self.b.run()
+            self.checkSteps(expected_breakpoint_steps[index+1], expected_breakpoint_steps[index], total_steps)
+            self.checkState(self.ss.ARMED)
+
+        # Final breakpoint
+        self.b.run()
+        self.checkSteps(total_steps, total_steps, total_steps)
+        self.checkState(self.ss.FINISHED)
+
+    def test_breakpoints_2d_inner_scan(self):
+        # Y-axis
+        outer_steps = 2
+        line_y = LineGenerator('y', 'mm', 0, 1, outer_steps)
+
+        # X-axis
+        line_x_1 = LineGenerator('x', 'mm', -10, -10, 5)
+        line_x_2 = LineGenerator('x', 'mm', 0, 180, 10)
+        line_x_3 = LineGenerator('x', 'mm', 190, 190, 2)
+        line_x = ConcatGenerator([line_x_1, line_x_2, line_x_3])
+
+        compound = CompoundGenerator([line_y, line_x], [], [], duration=0.01)
+        breakpoints = [2, 3, 10, 2, 17]
+        total_steps = sum(breakpoints)
+        
+        # Configure the scan
+        self.b.configure(generator=compound, axesToMove=['x', 'y'], breakpoints=breakpoints)
+        self.checkSteps(2, 0, total_steps)
+        self.checkState(self.ss.ARMED)
+
+        # Check we have the full amount of configured steps
+        assert self.c.configure_params.generator.size == total_steps
+
+        # Check our breakpoints steps
+        expected_breakpoint_steps = [2, 5, 15, 17, 34]
+        self.assertEqual(expected_breakpoint_steps, self.c.breakpoint_steps)
+
+        # Run our controller through all but last breakpoint
+        breakpoints = len(expected_breakpoint_steps)
+        for index in range(breakpoints - 1):
+            self.b.run()
+            self.checkSteps(expected_breakpoint_steps[index+1], expected_breakpoint_steps[index], total_steps)
+            self.checkState(self.ss.ARMED)
+
+        # Final breakpoint
+        self.b.run()
+        self.checkSteps(total_steps, total_steps, total_steps)
+        self.checkState(self.ss.FINISHED)
+
+    def test_breakpoints_2d_inner_scan_with_outer_axis(self):
+        # Outer axes we don't move
+        outer_steps = 2
+        line_outer = LineGenerator('z', 'mm', 0, 1, outer_steps)
+
+        # Y-axis
+        line_y = LineGenerator('y', 'mm', 0, 1, 2)
+
+        # X-axis
+        line_x_1 = LineGenerator('x', 'mm', -10, -10, 5)
+        line_x_2 = LineGenerator('x', 'mm', 0, 180, 10)
+        line_x_3 = LineGenerator('x', 'mm', 190, 190, 2)
+        line_x = ConcatGenerator([line_x_1, line_x_2, line_x_3])
+
+        compound = CompoundGenerator([line_outer, line_y, line_x], [], [], duration=0.01)
+        breakpoints = [2, 3, 10, 2, 17]
+        total_steps = sum(breakpoints) * outer_steps
+        
+        # Configure the scan
+        self.b.configure(generator=compound, axesToMove=['x', 'y'], breakpoints=breakpoints)
+        self.checkSteps(2, 0, total_steps)
+        self.checkState(self.ss.ARMED)
+
+        # Check we have the full amount of configured steps
+        assert self.c.configure_params.generator.size == total_steps
+
+        # Check our breakpoints steps
+        expected_breakpoint_steps = [2, 5, 15, 17, 34, 36, 39, 49, 51, 68]
+        self.assertEqual(expected_breakpoint_steps, self.c.breakpoint_steps)
+
+        # Run our controller through all but last breakpoint
+        breakpoints = len(expected_breakpoint_steps)
+        for index in range(breakpoints - 1):
+            self.b.run()
+            self.checkSteps(expected_breakpoint_steps[index+1], expected_breakpoint_steps[index], total_steps)
+            self.checkState(self.ss.ARMED)
+
+        # Final breakpoint
+        self.b.run()
+        self.checkSteps(total_steps, total_steps, total_steps)
+        self.checkState(self.ss.FINISHED)

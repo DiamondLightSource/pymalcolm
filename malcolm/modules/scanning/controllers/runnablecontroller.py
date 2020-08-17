@@ -1,6 +1,7 @@
-from annotypes import Anno, TYPE_CHECKING, add_call_types, Any, json_encode, \
+from annotypes import Anno, Array, to_array, TYPE_CHECKING, add_call_types, Any, json_encode, \
     deserialize_object
 from scanpointgenerator import CompoundGenerator
+import numpy as np
 
 from malcolm.core import AbortedError, Queue, Context, TimeoutError, AMri, \
     NumberMeta, Widget, Part, DEFAULT_TIMEOUT, Table
@@ -212,7 +213,7 @@ class RunnableController(builtin.controllers.ManagerController):
             ConfigureParamsInfo, self.update_configure_params)
 
     def get_steps_per_run(self, generator, axes_to_move, breakpoints):
-        # type: (CompoundGenerator, List[str], List[int]) -> (List[int], bool)
+        # type: (CompoundGenerator, List[str], List[int]) -> List[int]
         self.use_breakpoints = False
         steps = [1]
         axes_set = set(axes_to_move)
@@ -229,20 +230,43 @@ class RunnableController(builtin.controllers.ManagerController):
             # Now multiply by the dimensions to get the number of steps
             steps[0] *= dim.size
 
-        last_breakpoint = sum(breakpoints)
+        # If we have breakpoints we make a list of steps
         if len(breakpoints) > 0:
-            assert last_breakpoint <= steps[0], \
+            total_breakpoint_steps = sum(breakpoints)
+            assert total_breakpoint_steps <= steps[0], \
                 "Sum of breakpoints greater than steps in scan"
             self.use_breakpoints = True
-            if last_breakpoint < steps[0]:  # TODO Array has no append()
-                # breakpoints.append(steps[0] - last_breakpoint)
-                pass
-            steps = breakpoints
+
+            # Cast to list so we can append
+            breakpoints_list = list(breakpoints)
+
+            # Check if we need to add the final breakpoint to the inner scan
+            if total_breakpoint_steps < steps[0]:
+                last_breakpoint = steps[0] - total_breakpoint_steps
+                breakpoints_list += [last_breakpoint]
+
+            # Repeat the set of breakpoints for each outer step
+            breakpoints_list *= self._get_outer_steps(generator, axes_to_move)
+
+            steps = breakpoints_list
+
+            # List of steps completed at end of each run
             self.breakpoint_steps = [
                 sum(steps[:i]) for i in range(1, len(steps) + 1)
             ]
 
         return steps
+    
+    def _get_outer_steps(self, generator, axes_to_move):
+        outer_steps = 1
+        for dim in reversed(generator.dimensions):
+            outer_axis = True
+            for axis in dim.axes:
+                if axis in axes_to_move:
+                    outer_axis = False
+            if outer_axis:
+                outer_steps *= dim.size
+        return outer_steps
 
     def do_reset(self):
         super(RunnableController, self).do_reset()
@@ -502,11 +526,8 @@ class RunnableController(builtin.controllers.ManagerController):
             completed_steps = self.configured_steps.value
             if completed_steps < self.total_steps.value:
                 self.breakpoint_index += 1
-                if self.breakpoint_index < len(self.steps_per_run):
-                    steps_to_do = self.steps_per_run[self.breakpoint_index]
-                # handle a case when the endpoint is not provided
-                else:
-                    steps_to_do = self.total_steps.value - completed_steps
+                print(self.breakpoint_index, completed_steps, self.total_steps.value)
+                steps_to_do = self.steps_per_run[self.breakpoint_index]
                 part_info = self.run_hooks(
                     ReportStatusHook(p, c) for p, c in
                     self.part_contexts.items())
