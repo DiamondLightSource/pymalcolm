@@ -64,7 +64,7 @@
     mri: $(mri_prefix):DRV
     prefix: $(pv_prefix):$(drv_suffix)
 
-- ADCore.parts.DetectorDriverPart:
+- ADOdin.parts.OdinDriverPart:
     name: DRV
     mri: $(mri_prefix):DRV
     soft_trigger_modes:

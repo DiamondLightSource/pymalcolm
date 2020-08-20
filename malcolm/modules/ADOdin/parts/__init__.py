@@ -1,4 +1,5 @@
 from .odinwriterpart import OdinWriterPart, AMri, APartName
+from .odindriverpart import OdinDriverPart
 
 # Expose a nice namespace
 from malcolm.core import submodule_all
