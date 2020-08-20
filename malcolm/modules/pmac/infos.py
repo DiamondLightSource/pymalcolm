@@ -5,6 +5,39 @@ from malcolm.core import Info
 from .velocityprofile import VelocityProfile
 
 
+class PmacVariablesInfo(Info):
+    """List variable values for variables required in kinematics
+
+    Args:
+        i_variables: i variable list
+        p_variables: p variable list
+        m_variables: m variable list
+    """
+    def __init__(self, i_variables, p_variables, m_variables):
+        # type: (str, str, str) -> None
+        self.i_variables = i_variables
+        self.p_variables = p_variables
+        self.m_variables = m_variables
+        self.all_variables = " ".join([i_variables, p_variables, m_variables])
+
+
+class PmacCsKinematicsInfo(Info):
+    """Coordinate sys kinematics programs and Q variable values
+
+    Args:
+        cs_port: the port name for this coordinate system
+        q_variables: i variable list
+        forward: forward kinematic code
+        inverse: inverse kinematic code
+    """
+    def __init__(self, cs_port, q_variables, forward, inverse):
+        # type: (str, str, str, str) -> None
+        self.cs_port = cs_port
+        self.q_variables = q_variables
+        self.forward = forward
+        self.inverse = inverse
+
+
 class MotorInfo(Info):
     def __init__(self,
                  cs_axis,  # type: str

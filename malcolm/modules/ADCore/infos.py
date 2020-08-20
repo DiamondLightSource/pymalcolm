@@ -118,5 +118,3 @@ class NDAttributeDatasetInfo(Info):
             raise AttributeError("Bad dataset type %r, should be a %s" % (
                 type, AttributeDatasetType))
         return cls(name, dtype, attr)
-
-
