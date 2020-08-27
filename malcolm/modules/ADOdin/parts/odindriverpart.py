@@ -2,22 +2,24 @@ from malcolm.core import Context
 from malcolm.modules import builtin, scanning
 from malcolm.modules.ADCore.parts import DetectorDriverPart
 
+from annotypes import add_call_types, Any
+
 # We will set these attributes on the child block, so don't save them
 @builtin.util.no_save('arrayCounter', 'imageMode', 'numImages',
                       'arrayCallbacks', 'exposure', 'acquirePeriod')
 class OdinDriverPart(DetectorDriverPart):
-        def setup_detector(self,
-                       context,  # type: Context
-                       completed_steps,  # type: scanning.hooks.ACompletedSteps
-                       steps_to_do,  # type: scanning.hooks.AStepsToDo
-                       duration,  # type: float
-                       part_info,  # type: scanning.hooks.APartInfo
-                       **kwargs  # type: Any
-                       ):
+    def setup_detector(self,
+                   context,  # type: Context
+                   completed_steps,  # type: scanning.hooks.ACompletedSteps
+                   steps_to_do,  # type: scanning.hooks.AStepsToDo
+                   duration,  # type: float
+                   part_info,  # type: scanning.hooks.APartInfo
+                   **kwargs  # type: Any
+                   ):
         # type: (...) -> None
         super(OdinDriverPart, self).setup_detector(context, 0, steps_to_do, duration, part_info)
 
-        @add_call_types
+    @add_call_types
     def on_reset(self, context):
         # type: (scanning.hooks.AContext) -> None
         super(OdinDriverPart, self).on_reset(context)

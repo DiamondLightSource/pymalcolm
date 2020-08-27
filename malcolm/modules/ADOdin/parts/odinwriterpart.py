@@ -3,7 +3,7 @@ import os
 import h5py
 from annotypes import Anno, add_call_types, TYPE_CHECKING
 from vdsgen import InterleaveVDSGenerator, ReshapeVDSGenerator
-from scanpointgenerator import CompoundGenerator
+from scanpointgenerator import CompoundGenerator, SquashingExcluder
 
 from malcolm.core import APartName, Future, Info, PartRegistrar, BadValueError, errors
 from malcolm.modules import builtin, scanning
@@ -134,7 +134,7 @@ def create_vds(generator, raw_name, vds_path, child, uid_name, sum_name):
     # The first dimension alternating has no meaning. If any subsequent ones
     # alternate then it will radically slow down the VDS creation and reading.
     # We rely on a scanning.parts.UnrollingPart to
-    if any(dim.alternate for dim in generator.dimensions[1:]):
+    if any(dim.alternate for dim in generator.dimensions[1:]) and not any(isinstance(excl, SquashingExcluder) for excl in generator.excluders) :
         raise BadValueError(
             "Snake scans are not supported as the VDS is not performant. You "
             "can add a scanning.parts.UnrollingPart to the top level scan "
