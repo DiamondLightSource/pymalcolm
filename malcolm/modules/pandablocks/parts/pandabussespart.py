@@ -120,7 +120,6 @@ class PandABussesPart(Part):
                     # If not already set, set it to No
                     field_values.setdefault(capture_field, "No")
             self._client.set_fields(field_values)
-        assert column_changes, "No column changes"
         new_value = make_updated_table(self.bits.value, column_changes)
         self.bits.set_value(new_value)
 
@@ -139,7 +138,6 @@ class PandABussesPart(Part):
                         value = value.value
                     field_values[field] = value
                 self._client.set_fields(field_values)
-        assert column_changes, "No column changes"
         new_value = make_updated_table(self.positions.value, column_changes)
         self.positions.set_value(new_value)
 
