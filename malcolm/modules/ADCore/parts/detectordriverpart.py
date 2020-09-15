@@ -257,7 +257,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         return ret
 
     def configure_args_with_exposure(self, keys):
-        need_keys = self.on_configure.call_types.keys()
+        need_keys = list(self.on_configure.call_types)
         if "exposure" in keys:
             need_keys.append("exposure")
         return need_keys
