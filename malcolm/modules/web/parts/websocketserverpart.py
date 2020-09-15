@@ -158,6 +158,7 @@ class MalcWebSocketHandler(WebSocketHandler):
                             builtin.infos.RequestInfo(unsubscribe, mri)
                         )
             assert self._queue, "No queue"
+        finally:
             cothread.Callback(self._queue.put, None)
 
     # http://stackoverflow.com/q/24851207
