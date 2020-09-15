@@ -12,9 +12,9 @@ from .request import Post, Put, Request, Subscribe, Unsubscribe
 from .response import Error, Return, Update
 
 if TYPE_CHECKING:
-    from .process import Process
     from .controller import Controller
     from .models import Model
+    from .process import Process
 
 # Create a module level logger
 log = logging.getLogger(__name__)

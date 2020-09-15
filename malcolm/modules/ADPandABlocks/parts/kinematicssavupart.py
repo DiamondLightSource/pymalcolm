@@ -12,7 +12,7 @@ from malcolm.modules import builtin, pandablocks, pmac, scanning
 from malcolm.modules.builtin.util import LayoutTable
 
 if TYPE_CHECKING:
-    from typing import List, Dict
+    from typing import Dict, List
 
     PartInfo = Dict[str, List[Info]]
 
