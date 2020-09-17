@@ -29,11 +29,10 @@
         },
         "cothread": {
             "hashes": [
-                "sha256:69d225477e0037af05625ee16a5273fcdcee81689a6a7a189d477f40e0c40646",
-                "sha256:ad10b25bb584c8f7e6223af60199516b55263145803250af9a03ce8244cfaf23"
+                "sha256:50cf5b5a65e7fcfd113f06c2d6b1f363e37b0caee412c75ac7608377aa0bd10a"
             ],
             "index": "pypi",
-            "version": "==2.16+dls1"
+            "version": "==2.17"
         },
         "decorator": {
             "hashes": [
