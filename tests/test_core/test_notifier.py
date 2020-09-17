@@ -1,14 +1,14 @@
 import unittest
-from mock import Mock
 from threading import RLock
 
 from annotypes import serialize_object
+from mock import Mock
 
 # module imports
 from malcolm.compat import OrderedDict
 from malcolm.core.notifier import Notifier
 from malcolm.core.request import Return, Subscribe, Unsubscribe
-from malcolm.core.response import Update, Delta
+from malcolm.core.response import Delta, Update
 
 
 class Dummy(object):
@@ -29,7 +29,6 @@ class Dummy(object):
 
 
 class TestNotifier(unittest.TestCase):
-
     def setUp(self):
         self.lock = RLock()
         self.block = Dummy()
@@ -40,9 +39,9 @@ class TestNotifier(unittest.TestCase):
         request = Subscribe(path=["b", "attr", "value"], delta=False)
         request.set_callback(Mock())
         self.handle_subscribe(request)
-        assert (
-            self.o._tree.children["attr"].children["value"].update_requests) == (
-            [request])
+        assert (self.o._tree.children["attr"].children["value"].update_requests) == (
+            [request]
+        )
         self.assert_called_with(request.callback, Update(value=None))
         request.callback.reset_mock()
         # set data and check response
@@ -94,8 +93,9 @@ class TestNotifier(unittest.TestCase):
         r2 = Subscribe(path=["b"], delta=True)
         r2.set_callback(Mock())
         self.handle_subscribe(r2)
-        self.assert_called_with(r2.callback, Delta(
-            changes=[[[], dict(attr=dict(value=32))]]))
+        self.assert_called_with(
+            r2.callback, Delta(changes=[[[], dict(attr=dict(value=32))]])
+        )
         r2.callback.reset_mock()
         # set some data and check only second got called
         self.block["attr2"] = Dummy()
@@ -103,8 +103,9 @@ class TestNotifier(unittest.TestCase):
             self.block.attr2["value"] = "st"
             self.o.add_squashed_change(["b", "attr2"], self.block.attr2)
         r1.callback.assert_not_called()
-        self.assert_called_with(r2.callback, Delta(
-            changes=[[["attr2"], dict(value="st")]]))
+        self.assert_called_with(
+            r2.callback, Delta(changes=[[["attr2"], dict(value="st")]])
+        )
         r2.callback.reset_mock()
         # delete the first and check calls
         with self.o.changes_squashed:
@@ -112,8 +113,7 @@ class TestNotifier(unittest.TestCase):
             self.o.add_squashed_delete(["b", "attr"])
         self.assert_called_with(r1.callback, Update(value=None))
         r1.callback.reset_mock()
-        self.assert_called_with(r2.callback, Delta(
-            changes=[[["attr"]]]))
+        self.assert_called_with(r2.callback, Delta(changes=[[["attr"]]]))
         r2.callback.reset_mock()
         # add it again and check updates
         self.block["attr"] = Dummy()
@@ -121,8 +121,9 @@ class TestNotifier(unittest.TestCase):
             self.block.attr["value"] = 22
             self.o.add_squashed_change(["b", "attr"], self.block.attr)
         self.assert_called_with(r1.callback, Update(value=22))
-        self.assert_called_with(r2.callback, Delta(
-            changes=[[["attr"], dict(value=22)]]))
+        self.assert_called_with(
+            r2.callback, Delta(changes=[[["attr"], dict(value=22)]])
+        )
 
     def test_update_squashing(self):
         # set some data
@@ -152,9 +153,10 @@ class TestNotifier(unittest.TestCase):
             self.block.attr2["value"] = "tr"
             self.o.add_squashed_change(["b", "attr2", "value"], "tr")
             assert self.block.attr2.value == "tr"
-        self.assert_called_with(r1.callback, Delta(
-            changes=[[["attr", "value"], 33], [["attr2", "value"], "tr"]]))
+        self.assert_called_with(
+            r1.callback,
+            Delta(changes=[[["attr", "value"], 33], [["attr2", "value"], "tr"]]),
+        )
         expected["attr"]["value"] = 33
         expected["attr2"]["value"] = "tr"
         self.assert_called_with(r2.callback, Update(value=expected))
-

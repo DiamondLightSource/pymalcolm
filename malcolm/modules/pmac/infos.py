@@ -1,7 +1,5 @@
-# Treat all division as float division even in python2
-from __future__ import division
-
 from malcolm.core import Info
+
 from .velocityprofile import VelocityProfile
 
 
@@ -13,8 +11,8 @@ class PmacVariablesInfo(Info):
         p_variables: p variable list
         m_variables: m variable list
     """
-    def __init__(self, i_variables, p_variables, m_variables):
-        # type: (str, str, str) -> None
+
+    def __init__(self, i_variables: str, p_variables: str, m_variables: str) -> None:
         self.i_variables = i_variables
         self.p_variables = p_variables
         self.m_variables = m_variables
@@ -30,8 +28,10 @@ class PmacCsKinematicsInfo(Info):
         forward: forward kinematic code
         inverse: inverse kinematic code
     """
-    def __init__(self, cs_port, q_variables, forward, inverse):
-        # type: (str, str, str, str) -> None
+
+    def __init__(
+        self, cs_port: str, q_variables: str, forward: str, inverse: str
+    ) -> None:
         self.cs_port = cs_port
         self.q_variables = q_variables
         self.forward = forward
@@ -39,19 +39,19 @@ class PmacCsKinematicsInfo(Info):
 
 
 class MotorInfo(Info):
-    def __init__(self,
-                 cs_axis,  # type: str
-                 cs_port,  # type: str
-                 acceleration,  # type: float
-                 resolution,  # type: float
-                 offset,  # type: float
-                 max_velocity,  # type: float
-                 current_position,  # type: float
-                 scannable,  # type: str
-                 velocity_settle,  # type: float
-                 units  # type: str
-                 ):
-        # type: (...) -> None
+    def __init__(
+        self,
+        cs_axis: str,
+        cs_port: str,
+        acceleration: float,
+        resolution: float,
+        offset: float,
+        max_velocity: float,
+        current_position: float,
+        scannable: str,
+        velocity_settle: float,
+        units: str,
+    ) -> None:
         self.cs_axis = cs_axis
         self.cs_port = cs_port
         self.acceleration = acceleration
@@ -77,8 +77,7 @@ class MotorInfo(Info):
         ramp_distance = (v1 + v2) * ramp_time / 2
         return ramp_distance
 
-    def make_velocity_profile(
-            self, v1, v2, distance, min_time, min_interval=0.002):
+    def make_velocity_profile(self, v1, v2, distance, min_time, min_interval=0.002):
         """Calculate PVT points that will perform the move within motor params
 
         Args:
@@ -94,13 +93,19 @@ class MotorInfo(Info):
 
         # Create the time and velocity arrays
         p = VelocityProfile(
-            v1, v2, distance, min_time, self.acceleration, self.max_velocity,
-            self.velocity_settle, min_interval)
+            v1,
+            v2,
+            distance,
+            min_time,
+            self.acceleration,
+            self.max_velocity,
+            self.velocity_settle,
+            min_interval,
+        )
         p.get_profile()
         return p
 
-    def in_cts(self, position):
-        # type: (float) -> int
+    def in_cts(self, position: float) -> int:
         """Return the position (in EGUs) translated to counts"""
         cts = int(round((position - self.offset) / self.resolution))
         return cts

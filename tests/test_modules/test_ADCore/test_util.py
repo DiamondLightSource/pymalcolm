@@ -4,7 +4,6 @@ from malcolm.modules.ADCore.util import make_xml_filename
 
 
 class TestMakeXmlFilename(unittest.TestCase):
-
     def test_make_xml_filename_returns_path_for_default_suffix(self):
         file_dir = "/file/dir"
         mri = "TEST_MRI"

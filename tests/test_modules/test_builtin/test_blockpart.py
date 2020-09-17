@@ -5,7 +5,6 @@ from malcolm.modules.builtin.parts import BlockPart
 
 
 class TestBlockPart(unittest.TestCase):
-
     def setUp(self):
         self.o = BlockPart(name="panda", description="desc")
         self.c = Controller("mri")
@@ -17,7 +16,10 @@ class TestBlockPart(unittest.TestCase):
         assert self.o.attr.value == ""
         assert self.o.attr.meta.description == "desc"
         assert self.o.attr.meta.tags == [
-            "widget:textinput", "config:1", "sinkPort:block:"]
-        assert self.c.field_registry.fields[self.o] == [(
-            "panda", self.o.attr, self.o.attr.set_value, False
-        )]
+            "widget:textinput",
+            "config:1",
+            "sinkPort:block:",
+        ]
+        assert self.c.field_registry.fields[self.o] == [
+            ("panda", self.o.attr, self.o.attr.set_value, False)
+        ]

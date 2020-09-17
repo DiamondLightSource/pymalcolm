@@ -1,4 +1,4 @@
-from malcolm.yamlutil import make_block_creator, check_yaml_names
+from malcolm.yamlutil import check_yaml_names, make_block_creator
 
 shutter_block = make_block_creator(__file__, "shutter_block.yaml")
 scan_runner_block = make_block_creator(__file__, "scan_runner_block.yaml")

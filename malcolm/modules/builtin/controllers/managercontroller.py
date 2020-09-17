@@ -1,26 +1,40 @@
 import os
-import subprocess
 import socket
+import subprocess
 from distutils.version import StrictVersion
+from typing import Dict, List, Set, Tuple
 
-
-from annotypes import Anno, add_call_types, TYPE_CHECKING, deserialize_object, \
-    json_encode, json_decode
+from annotypes import Anno, add_call_types, deserialize_object, json_decode, json_encode
 
 from malcolm.compat import OrderedDict
-from malcolm.core import Unsubscribe, Subscribe, \
-    Delta, Context, AttributeModel, Alarm, AlarmSeverity, \
-    AlarmStatus, Part, BooleanMeta, get_config_tag, Widget, ChoiceArrayMeta, \
-    TableMeta, ChoiceMeta, config_tag, without_config_tags, \
-    CAMEL_RE, camel_to_title, StringMeta
-from malcolm.core.tags import without_group_tags, Port
+from malcolm.core import (
+    CAMEL_RE,
+    Alarm,
+    AlarmSeverity,
+    AlarmStatus,
+    AttributeModel,
+    BooleanMeta,
+    ChoiceArrayMeta,
+    ChoiceMeta,
+    Context,
+    Delta,
+    Part,
+    StringMeta,
+    Subscribe,
+    TableMeta,
+    Unsubscribe,
+    Widget,
+    camel_to_title,
+    config_tag,
+    get_config_tag,
+    without_config_tags,
+)
+from malcolm.core.tags import Port, without_group_tags
+
 from ..hooks import LayoutHook, LoadHook, SaveHook
 from ..infos import LayoutInfo, PartExportableInfo, PartModifiedInfo, PortInfo
-from ..util import LayoutTable, ExportTable, ManagerStates
-from .statefulcontroller import StatefulController, AMri, ADescription
-
-if TYPE_CHECKING:
-    from typing import Dict, List, Set
+from ..util import ExportTable, LayoutTable, ManagerStates
+from .statefulcontroller import ADescription, AMri, StatefulController
 
 ss = ManagerStates
 
@@ -33,9 +47,15 @@ with Anno("Use git to manage to saved config files"):
     AUseGit = bool
 with Anno("Name of design to save, if different from current design"):
     ASaveDesign = str
-with Anno("A directory of templates with which to initially populate designs "
-          "Attribute. These cannot be saved over."):
+with Anno(
+    "A directory of templates with which to initially populate designs "
+    "Attribute. These cannot be saved over."
+):
     ATemplateDesigns = str
+with Anno("Name of part"):
+    APartName = str
+with Anno("Name of attribute"):
+    AAttributeName = str
 
 # Pull re-used annotypes into our namespace in case we are subclassed
 AMri = AMri
@@ -44,38 +64,41 @@ ADescription = ADescription
 
 def check_git_version(required_version):
     output = subprocess.check_output(("git", "--version",))
-    version = output.decode('utf-8').replace("git version ", "").strip("\n")
+    version = output.decode("utf-8").replace("git version ", "").strip("\n")
     return StrictVersion(version) >= StrictVersion(required_version)
 
 
 class ManagerController(StatefulController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
+
     state_set = ss()
 
-    def __init__(self,
-                 mri,  # type: AMri
-                 config_dir,  # type: AConfigDir
-                 template_designs="",  # type: ATemplateDesigns
-                 initial_design="",  # type: AInitialDesign
-                 use_git=True,  # type: AUseGit
-                 description="",  # type: ADescription
-                 ):
-        # type: (...) -> None
-        super(ManagerController, self).__init__(
-            mri=mri,
-            description=description
-        )
+    def __init__(
+        self,
+        mri: AMri,
+        config_dir: AConfigDir,
+        template_designs: ATemplateDesigns = "",
+        initial_design: AInitialDesign = "",
+        use_git: AUseGit = True,
+        description: ADescription = "",
+    ) -> None:
+        super().__init__(mri=mri, description=description)
         assert os.path.isdir(config_dir), "%s is not a directory" % config_dir
         self.config_dir = config_dir
         self.initial_design = initial_design
         self.use_git = use_git
         self.template_designs = template_designs
+        self.git_config: Tuple[str, ...]
         if use_git:
             if check_git_version("1.7.2"):
                 self.git_email = os.environ["USER"] + "@" + socket.gethostname()
                 self.git_name = "Malcolm"
-                self.git_config = ("-c", "user.name=%s" % self.git_name,
-                                   "-c", 'user.email="%s"' % self.git_email)
+                self.git_config = (
+                    "-c",
+                    "user.name=%s" % self.git_name,
+                    "-c",
+                    'user.email="%s"' % self.git_email,
+                )
             else:
                 self.git_config = ()
         # last saved layout and exports
@@ -83,66 +106,64 @@ class ManagerController(StatefulController):
         self.saved_exports = None
         # ((name, AttributeModel/MethodModel, setter, needs_context))
         self._current_part_fields = ()
-        # [Subscribe]
-        self._subscriptions = []
-        # {part_name: [PortInfo]}
-        self.port_info = {}  # type: Dict[str, List[PortInfo]]
-        # {part: [attr_name]}
-        self.part_exportable = {}
+        self._subscriptions: List[Subscribe] = []
+        self.port_info: Dict[APartName, List[PortInfo]] = {}
+        self.part_exportable: Dict[Part, List[AAttributeName]] = {}
         # TODO: turn this into "exported attribute modified"
-        self.context_modified = {}  # type: Dict[Part, Set[str]]
-        self.part_modified = {}  # type: Dict[Part, PartModifiedInfo]
+        self.context_modified: Dict[Part, Set[str]] = {}
+        self.part_modified: Dict[Part, PartModifiedInfo] = {}
         # The attributes our part has published
-        self.our_config_attributes = {}  # type: Dict[str, AttributeModel]
+        self.our_config_attributes: Dict[str, AttributeModel] = {}
         # The reportable infos we are listening for
-        self.info_registry.add_reportable(
-            PartModifiedInfo, self.update_modified)
+        self.info_registry.add_reportable(PartModifiedInfo, self.update_modified)
         # Update queue of exportable fields
-        self.info_registry.add_reportable(
-            PartExportableInfo, self.update_exportable)
+        self.info_registry.add_reportable(PartExportableInfo, self.update_exportable)
         # Create a port for ourself
         self.field_registry.add_attribute_model(
             "mri",
             StringMeta(
                 "A port for giving our MRI to things that might use us",
-                tags=[Port.BLOCK.source_port_tag(self.mri)]
-            ).create_attribute_model(self.mri)
+                tags=[Port.BLOCK.source_port_tag(self.mri)],
+            ).create_attribute_model(self.mri),
         )
         # Create a layout table attribute for setting block positions
         self.layout = TableMeta.from_table(
-            LayoutTable, "Layout of child blocks", Widget.FLOWGRAPH,
-            writeable=["x", "y", "visible"]
+            LayoutTable,
+            "Layout of child blocks",
+            Widget.FLOWGRAPH,
+            writeable=["x", "y", "visible"],
         ).create_attribute_model()
         self.set_writeable_in(self.layout, ss.READY)
-        self.field_registry.add_attribute_model(
-            "layout", self.layout, self.set_layout)
+        self.field_registry.add_attribute_model("layout", self.layout, self.set_layout)
         # Create a design attribute for loading an existing layout
         self.design = ChoiceMeta(
             "Design name to load", tags=[config_tag(), Widget.COMBO.tag()]
         ).create_attribute_model()
-        self.field_registry.add_attribute_model(
-            "design", self.design, self.set_design)
+        self.field_registry.add_attribute_model("design", self.design, self.set_design)
         self.set_writeable_in(self.design, ss.READY)
         # Create an export table for mirroring exported fields
         self.exports = TableMeta.from_table(
-            ExportTable, "Exported fields of child blocks",
-            writeable=list(ExportTable.call_types)
+            ExportTable,
+            "Exported fields of child blocks",
+            writeable=list(ExportTable.call_types),
         ).create_attribute_model()
         # Overwrite the sources meta to be a ChoiceArrayMeta
         self.exports.meta.elements["source"] = ChoiceArrayMeta(
             "Name of the block.field to export",
-            writeable=True, tags=[Widget.COMBO.tag()])
+            writeable=True,
+            tags=[Widget.COMBO.tag()],
+        )
         self.set_writeable_in(self.exports, ss.READY)
         self.field_registry.add_attribute_model(
-            "exports", self.exports, self.set_exports)
+            "exports", self.exports, self.set_exports
+        )
         # Create read-only indicator for when things are modified
         self.modified = BooleanMeta(
             "Whether the design is modified", tags=[Widget.LED.tag()]
         ).create_attribute_model()
         self.field_registry.add_attribute_model("modified", self.modified)
         # Create the save method
-        self.set_writeable_in(
-            self.field_registry.add_method_model(self.save), ss.READY)
+        self.set_writeable_in(self.field_registry.add_method_model(self.save), ss.READY)
 
     def _run_git_cmd(self, *args, **kwargs):
         # Run git command, don't care if it fails, logging the output
@@ -150,7 +171,8 @@ class ManagerController(StatefulController):
         if self.use_git:
             try:
                 output = subprocess.check_output(
-                    ("git",) + self.git_config + args, cwd=cwd)
+                    ("git",) + self.git_config + args, cwd=cwd
+                )
             except subprocess.CalledProcessError as e:
                 self.log.warning("Git command failed: %s\n%s", e, e.output)
                 return None
@@ -159,7 +181,7 @@ class ManagerController(StatefulController):
                 return output
 
     def do_init(self):
-        super(ManagerController, self).do_init()
+        super().do_init()
         # Try and make it a git repo, don't care if it fails
         self._run_git_cmd("init")
         # List the config_dir and add to choices
@@ -182,7 +204,8 @@ class ManagerController(StatefulController):
         # from another thread and deadlock. Need RLock.is_owned() from update_*
         part_info = self.run_hooks(
             LayoutHook(p, c, self.port_info, value)
-            for p, c in self.create_part_contexts(only_visible=False).items())
+            for p, c in self.create_part_contexts(only_visible=False).items()
+        )
         with self.changes_squashed:
             layout_parts = LayoutInfo.filter_parts(part_info)
             name, mri, x, y, visible = [], [], [], [], []
@@ -194,8 +217,7 @@ class ManagerController(StatefulController):
                     y.append(layout_info.y)
                     visible.append(layout_info.visible)
             layout_table = LayoutTable(name, mri, x, y, visible)
-            visibility_changed = \
-                layout_table.visible != self.layout.value.visible
+            visibility_changed = layout_table.visible != self.layout.value.visible
             self.layout.set_value(layout_table)
             if self.saved_visibility is None:
                 # First write of table, set layout and exports saves
@@ -214,24 +236,26 @@ class ManagerController(StatefulController):
     def set_exports(self, value):
         # Validate
         for export_name in value.export:
-            assert CAMEL_RE.match(export_name), \
+            assert CAMEL_RE.match(export_name), (
                 "Field %r is not camelCase" % export_name
+            )
         with self.changes_squashed:
             self.exports.set_value(value)
             self.update_modified()
             self.update_block_endpoints()
 
-    def update_modified(self, part=None, info=None):
-        # type: (Part, PartModifiedInfo) -> None
+    def update_modified(self, part: Part = None, info: PartModifiedInfo = None) -> None:
         with self.changes_squashed:
             if part:
+                assert info, "No info to update part"
                 # Update the alarm for the given part
                 self.part_modified[part] = info
             # Find the modified alarms for each visible part
             message_list = []
             only_modified_by_us = True
             for part_name, visible in zip(
-                    self.layout.value.name, self.layout.value.visible):
+                self.layout.value.name, self.layout.value.visible
+            ):
                 part = self.parts[part_name]
                 info = self.part_modified.get(part, None)
                 if visible and info:
@@ -256,15 +280,18 @@ class ManagerController(StatefulController):
                 else:
                     severity = AlarmSeverity.MINOR_ALARM
                 alarm = Alarm(
-                    severity, AlarmStatus.CONF_STATUS, "\n".join(message_list))
+                    severity, AlarmStatus.CONF_STATUS, "\n".join(message_list)
+                )
                 self.modified.set_value(True, alarm=alarm)
             else:
                 self.modified.set_value(False)
 
-    def update_exportable(self, part=None, info=None):
-        # type: (Part, PartExportableInfo) -> None
+    def update_exportable(
+        self, part: Part = None, info: PartExportableInfo = None
+    ) -> None:
         with self.changes_squashed:
             if part:
+                assert info, "No info to update part"
                 self.part_exportable[part] = info.names
                 self.port_info[part.name] = info.port_infos
             # If we haven't saved visibility yet these have been called
@@ -278,9 +305,9 @@ class ManagerController(StatefulController):
                     for attr_name in fields:
                         names.append("%s.%s" % (part.name, attr_name))
                 changed_names = set(names).symmetric_difference(
-                    self.exports.meta.elements["source"].choices)
-                changed_exports = changed_names.intersection(
-                    self.exports.value.source)
+                    self.exports.meta.elements["source"].choices
+                )
+                changed_exports = changed_names.intersection(self.exports.value.source)
                 self.exports.meta.elements["source"].set_choices(names)
                 # Update the block endpoints if anything currently exported is
                 # added or deleted
@@ -294,13 +321,11 @@ class ManagerController(StatefulController):
                 for state, state_writeable in self._children_writeable.items():
                     state_writeable.pop(child, None)
         self._current_part_fields = tuple(self._get_current_part_fields())
-        for name, child, writeable_func, needs_context in \
-                self._current_part_fields:
+        for name, child, writeable_func, needs_context in self._current_part_fields:
             self.add_block_field(name, child, writeable_func, needs_context)
 
-    def add_part(self, part):
-        # type: (Part) -> None
-        super(ManagerController, self).add_part(part)
+    def add_part(self, part: Part) -> None:
+        super().add_part(part)
         # Strip out the config tags of what we just added, as we will be
         # saving them ourself
         for name, field, _, _ in self.field_registry.fields.get(part, []):
@@ -313,8 +338,9 @@ class ManagerController(StatefulController):
 
     def add_initial_part_fields(self):
         # Only add our own fields to start with, the rest will be added on load
-        for name, child, writeable_func, needs_context in \
-                self.field_registry.fields[None]:
+        for name, child, writeable_func, needs_context in self.field_registry.fields[
+            None
+        ]:
             self.add_block_field(name, child, writeable_func, needs_context)
 
     def _get_current_part_fields(self):
@@ -330,9 +356,8 @@ class ManagerController(StatefulController):
         mris = {}
         invisible = set()
         for part_name, mri, visible in zip(
-                self.layout.value.name,
-                self.layout.value.mri,
-                self.layout.value.visible):
+            self.layout.value.name, self.layout.value.mri, self.layout.value.visible
+        ):
             if visible:
                 mris[part_name] = mri
             else:
@@ -353,8 +378,7 @@ class ManagerController(StatefulController):
             if mri and attr_name in self.part_exportable.get(part, []):
                 if not export_name:
                     export_name = attr_name
-                export, setter = self._make_export_field(
-                    mri, attr_name, export_name)
+                export, setter = self._make_export_field(mri, attr_name, export_name)
                 yield export_name, export, setter, False
 
     def _make_export_field(self, mri, attr_name, export_name):
@@ -372,22 +396,29 @@ class ManagerController(StatefulController):
                 # First call, create the initial object
                 export = deserialize_object(response.changes[0][1])
                 if isinstance(export, AttributeModel):
+
                     def setter(v):
                         context = Context(self.process)
                         context.put(path, v)
+
                     # Strip out tags that we shouldn't export
                     # TODO: need to strip out port tags too...
                     export.meta.set_tags(
-                        without_config_tags(
-                            without_group_tags(export.meta.tags)))
+                        without_config_tags(without_group_tags(export.meta.tags))
+                    )
+
+                    ret["setter"] = setter
                 else:
-                    def setter(*args):
+
+                    def setter_star_args(*args):
                         context = Context(self.process)
                         context.post(path, *args)
+
+                    ret["setter"] = setter_star_args
+
                 # Regenerate label
                 export.meta.set_label(label)
                 ret["export"] = export
-                ret["setter"] = setter
             else:
                 # Subsequent calls, update it
                 with self.changes_squashed:
@@ -403,27 +434,27 @@ class ManagerController(StatefulController):
         return ret["export"], ret["setter"]
 
     def create_part_contexts(self, only_visible=True):
-        part_contexts = super(ManagerController, self).create_part_contexts()
+        part_contexts = super().create_part_contexts()
         if only_visible:
             for part_name, visible in zip(
-                    self.layout.value.name, self.layout.value.visible):
+                self.layout.value.name, self.layout.value.visible
+            ):
                 part = self.parts[part_name]
                 if not visible:
                     part_contexts.pop(part)
                 else:
                     part_contexts[part].set_notify_dispatch_request(
-                        part.notify_dispatch_request)
+                        part.notify_dispatch_request
+                    )
 
         return part_contexts
 
     # Allow CamelCase for arguments as they will be exposed in the Block Method
     # noinspection PyPep8Naming
     @add_call_types
-    def save(self, designName=""):
-        # type: (ASaveDesign) -> None
+    def save(self, designName: ASaveDesign = "") -> None:
         """Save the current design to file"""
-        self.try_stateful_function(
-            ss.SAVING, ss.READY, self.do_save, designName)
+        self.try_stateful_function(ss.SAVING, ss.READY, self.do_save, designName)
 
     def do_save(self, design=""):
         if not design:
@@ -450,7 +481,8 @@ class ManagerController(StatefulController):
         # Add any structure that a child part wants to save
         structure["children"] = self.run_hooks(
             SaveHook(p, c)
-            for p, c in self.create_part_contexts(only_visible=False).items())
+            for p, c in self.create_part_contexts(only_visible=False).items()
+        )
         text = json_encode(structure, indent=2)
         filename = self._validated_config_filename(design)
         if filename.startswith("/tmp"):
@@ -469,17 +501,17 @@ class ManagerController(StatefulController):
         names = [""]
         dir_name = self._make_config_dir()
         for f in os.listdir(dir_name):
-            if os.path.isfile(
-                    os.path.join(dir_name, f)) and f.endswith(".json"):
+            if os.path.isfile(os.path.join(dir_name, f)) and f.endswith(".json"):
                 names.append(f.split(".json")[0])
         if extra_name and str(extra_name) not in names:
             names.append(str(extra_name))
         names.sort()
         if os.path.isdir(self.template_designs):
             for f in sorted(os.listdir(self.template_designs)):
-                assert f.startswith("template_") and f.endswith(".json"), \
-                    "Template design %s/%s should start with 'template_' " \
+                assert f.startswith("template_") and f.endswith(".json"), (
+                    "Template design %s/%s should start with 'template_' "
                     "and end with .json" % (self.template_designs, f)
+                )
                 t_name = f.split(".json")[0]
                 if t_name not in names:
                     names.append(t_name)
@@ -515,11 +547,9 @@ class ManagerController(StatefulController):
 
     def set_design(self, value):
         value = self.design.meta.validate(value)
-        self.try_stateful_function(
-            ss.LOADING, ss.READY, self.do_load, value)
+        self.try_stateful_function(ss.LOADING, ss.READY, self.do_load, value)
 
-    def do_load(self, design, init=False):
-        # type: (str, bool) -> None
+    def do_load(self, design: str, init: bool = False) -> None:
         """Load a design name, running the child LoadHooks.
 
         Args:
@@ -553,14 +583,16 @@ class ManagerController(StatefulController):
             export.append(export_name)
         self.exports.set_value(ExportTable(source, export))
         # Set other attributes
-        our_values = {k: v for k, v in attributes.items()
-                      if k in self.our_config_attributes}
+        our_values = {
+            k: v for k, v in attributes.items() if k in self.our_config_attributes
+        }
         block = self.block_view()
         block.put_attribute_values(our_values)
         # Run the load hook to get parts to load their own structure
         self.run_hooks(
             LoadHook(p, c, children.get(p.name, {}), init)
-            for p, c in self.create_part_contexts(only_visible=False).items())
+            for p, c in self.create_part_contexts(only_visible=False).items()
+        )
         self._mark_clean(design, init)
 
     def _mark_clean(self, design, init=False):

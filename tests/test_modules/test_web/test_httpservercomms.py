@@ -4,7 +4,6 @@ from malcolm.modules.web.controllers import HTTPServerComms
 
 
 class TestHTTPServerComms(unittest.TestCase):
-
     def setUp(self):
         self.o = HTTPServerComms(mri="mri")
 

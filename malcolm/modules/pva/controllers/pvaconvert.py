@@ -1,56 +1,43 @@
-from annotypes import TYPE_CHECKING, Array
 from enum import Enum
-from p4p import Type, Value
-import numpy as np
+from typing import Any, Dict, List, Tuple, Union
 
-from malcolm.compat import str_, long_, OrderedDict
+import numpy as np
+from annotypes import Array
+from p4p import Type, Value
+
+from malcolm.compat import OrderedDict
 from malcolm.core import AlarmSeverity, AlarmStatus
 from malcolm.core.models import NTTable
-
-if TYPE_CHECKING:
-    from typing import Dict, Tuple, List, Any
 
 EMPTY = Value(Type([]))
 
 # https://mdavidsaver.github.io/p4p/values.html
 type_specifiers = {
-    np.bool_: '?',
-    np.int8: 'b',
-    np.uint8: 'B',
-    np.int16: 'h',
-    np.uint16: 'H',
-    np.int32: 'i',
-    np.uint32: 'I',
-    np.int64: 'l',
-    np.uint64: 'L',
-    np.float32: 'f',
-    np.float64: 'd',
-    str: 's',
+    np.bool_: "?",
+    np.int8: "b",
+    np.uint8: "B",
+    np.int16: "h",
+    np.uint16: "H",
+    np.int32: "i",
+    np.uint32: "I",
+    np.int64: "l",
+    np.uint64: "L",
+    np.float32: "f",
+    np.float64: "d",
+    str: "s",
 }
 
 # Make the reverse lookup
 specifier_types = {v: k for k, v in type_specifiers.items()}
 
 # Add some aliases
-type_specifiers.update({
-    bool: '?',
-    int: 'l',
-    long_: 'l',
-    float: 'd',
-})
+type_specifiers.update({bool: "?", int: "l", float: "d"})
 
 
-try:
-    # Python2
-    type_specifiers[unicode] = 's'
-except NameError:
-    # Python3
-    pass
-
-
-def convert_to_type_tuple_value(value):
-    # type: (Any) -> Tuple[Any, Any]
+def convert_to_type_tuple_value(value: Any) -> Tuple[Any, Any]:
     # cheaper than a subclass check
+    value_for_set: Any
+    spec: Union[str, Tuple[str, Any, List]]
     if value.__class__ is Array:
         if issubclass(value.typ, Enum):
             spec = "as"
@@ -60,12 +47,11 @@ def convert_to_type_tuple_value(value):
             spec = "av"
             value_for_set = [convert_dict_to_value(v) for v in value.seq]
         else:
-            spec = 'a' + type_specifiers[value.typ]
+            spec = "a" + type_specifiers[value.typ]
             value_for_set = value.seq
     elif isinstance(value, np.ndarray):
-        assert len(value.shape) == 1, \
-            "Expected 1d array, got {}".format(value.shape)
-        spec = 'a' + type_specifiers[value.dtype.type]
+        assert len(value.shape) == 1, "Expected 1d array, got {}".format(value.shape)
+        spec = "a" + type_specifiers[value.dtype.type]
         value_for_set = value
     elif isinstance(value, list):
         # List of objects
@@ -96,15 +82,15 @@ def convert_to_type_tuple_value(value):
                 t, v_set = convert_to_type_tuple_value(value[k])
                 fields.append((k, t))
                 value_for_set[k] = v_set
-        spec = ('S', typeid, fields)
+        spec = ("S", typeid, fields)
     elif isinstance(value, (AlarmSeverity, AlarmStatus)):
-        spec = 'i'
+        spec = "i"
         value_for_set = value.value
     elif isinstance(value, Enum):
-        spec = 's'
+        spec = "s"
         value_for_set = value.value
-    elif isinstance(value, str_):
-        spec = 's'
+    elif isinstance(value, str):
+        spec = "s"
         value_for_set = value
     else:
         spec = type_specifiers[type(value)]
@@ -112,15 +98,14 @@ def convert_to_type_tuple_value(value):
     return spec, value_for_set
 
 
-def convert_from_type_spec(spec, val):
-    # type: (str, Any) -> Any
+def convert_from_type_spec(spec: str, val: Any) -> Any:
     if isinstance(spec, Type):
         # Structure
         return convert_value_to_dict(val)
     elif spec == "av":
         # Variant list of objects
         return [convert_value_to_dict(v) for v in val]
-    #elif spec[0] == "a":
+    # elif spec[0] == "a":
     #    # Array of something with concrete type
     #    # This currently fails because Array[np.float64] != Array[float]
     #    typ = specifier_types[spec[1]]
@@ -130,8 +115,7 @@ def convert_from_type_spec(spec, val):
         return val
 
 
-def convert_dict_to_value(d):
-    # type: (Dict) -> Value
+def convert_dict_to_value(d: Dict) -> Value:
     if d is None:
         val = EMPTY
     else:
@@ -139,14 +123,12 @@ def convert_dict_to_value(d):
         try:
             typ = Type(fields, typeid)
         except RuntimeError as e:
-            raise RuntimeError(
-                "%s when doing Type(%s, %s)" % (e, fields, typeid))
+            raise RuntimeError("%s when doing Type(%s, %s)" % (e, fields, typeid))
         val = Value(typ, value_for_set)
     return val
 
 
-def convert_value_to_dict(v):
-    # type: (Value) -> Dict
+def convert_value_to_dict(v: Value) -> Dict:
     d = OrderedDict()
     # Fill in typeid if set
     typeid = v.getID()
@@ -161,8 +143,7 @@ def convert_value_to_dict(v):
     return d
 
 
-def update_path(value, path, update):
-    # type: (Value, List[str], Any) -> None
+def update_path(value: Value, path: List[str], update: Any) -> None:
     for p in path[:-1]:
         value = value[p]
     _, update = convert_to_type_tuple_value(update)

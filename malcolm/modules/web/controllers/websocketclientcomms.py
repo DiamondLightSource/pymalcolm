@@ -1,18 +1,33 @@
-from annotypes import Anno, TYPE_CHECKING, deserialize_object, json_decode, \
-    json_encode
+from typing import Callable, Dict, Optional, Tuple
+
+from annotypes import Anno, deserialize_object, json_decode, json_encode
 from cothread import cothread
 from tornado import gen
-from tornado.websocket import websocket_connect, WebSocketClientConnection
+from tornado.websocket import WebSocketClientConnection, websocket_connect
 
-from malcolm.core import Subscribe, Response, Error, Update, Return, Queue, \
-    Request, StringArrayMeta, Widget, ResponseError, DEFAULT_TIMEOUT, Delta, \
-    BlockModel, NTScalar, BlockMeta, Put, Post, TableMeta
+from malcolm.core import (
+    DEFAULT_TIMEOUT,
+    BlockMeta,
+    BlockModel,
+    Delta,
+    Error,
+    NTScalar,
+    Post,
+    Put,
+    Queue,
+    Request,
+    Response,
+    ResponseError,
+    Return,
+    Subscribe,
+    TableMeta,
+    Update,
+)
 from malcolm.modules import builtin
-from ..util import IOLoopHelper, BlockTable
 
-if TYPE_CHECKING:
-    from typing import Dict, Tuple, Callable
-    Key = Tuple[Callable[[Response], None], int]
+from ..util import BlockTable, IOLoopHelper
+
+Key = Tuple[Callable[[Response], None], int]
 
 with Anno("Hostname of malcolm websocket server"):
     AHostname = str
@@ -25,31 +40,30 @@ with Anno("Time to wait for connection"):
 class WebsocketClientComms(builtin.controllers.ClientComms):
     """A class for a client to communicate with the server"""
 
-    def __init__(self,
-                 mri,  # type: builtin.controllers.AMri
-                 hostname="localhost",  # type: AHostname
-                 port=8008,  # type: APort
-                 connect_timeout=DEFAULT_TIMEOUT  # type: AConnectTimeout
-                 ):
-        # type: (...) -> None
-        super(WebsocketClientComms, self).__init__(mri)
+    def __init__(
+        self,
+        mri: builtin.controllers.AMri,
+        hostname: AHostname = "localhost",
+        port: APort = 8008,
+        connect_timeout: AConnectTimeout = DEFAULT_TIMEOUT,
+    ) -> None:
+        super().__init__(mri)
         self.hostname = hostname
         self.port = port
         self.connect_timeout = connect_timeout
         self._connected_queue = Queue()
         # {new_id: request}
-        self._request_lookup = {}  # type: Dict[int, Request]
+        self._request_lookup: Dict[int, Request] = {}
         self._next_id = 1
-        self._conn = None  # type: WebSocketClientConnection
+        self._conn: Optional[WebSocketClientConnection] = None
         # Create read-only attribute for the remotely reachable blocks
         self.remote_blocks = TableMeta.from_table(
             BlockTable, "Remotely reachable blocks"
         ).create_attribute_model()
-        self.field_registry.add_attribute_model(
-            "remoteBlocks", self.remote_blocks)
+        self.field_registry.add_attribute_model("remoteBlocks", self.remote_blocks)
 
     def do_init(self):
-        super(WebsocketClientComms, self).do_init()
+        super().do_init()
         self._start_client()
 
     def _start_client(self):
@@ -66,7 +80,8 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
         # Called from tornado
         url = "ws://%s:%d/ws" % (self.hostname, self.port)
         self._conn = yield websocket_connect(
-            url, connect_timeout=self.connect_timeout - 0.5)
+            url, connect_timeout=self.connect_timeout - 0.5
+        )
         cothread.Callback(self._connected_queue.put, None)
         while True:
             message = yield self._conn.read_message()
@@ -109,8 +124,9 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
         self._connected_queue.put(None)
         for id in list(self._request_lookup):
             request = self._request_lookup.pop(id)
-            response = Error(id=request.id, message=ResponseError(
-                "Server disconnected"))
+            response = Error(
+                id=request.id, message=ResponseError("Server disconnected")
+            )
             try:
                 request.callback(response)
             except Exception:
@@ -129,11 +145,11 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
         cothread.Callback(self.remote_blocks.set_value, response.value)
 
     def do_disable(self):
-        super(WebsocketClientComms, self).do_disable()
+        super().do_disable()
         self._stop_client()
 
     def do_reset(self):
-        super(WebsocketClientComms, self).do_reset()
+        super().do_reset()
         self._start_client()
 
     def sync_proxy(self, mri, block):
@@ -155,21 +171,21 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
                 self.log.debug("Proxy got response %r", response)
                 done_queue.put(None)
             else:
-                cothread.Callback(
-                    self._handle_response, response, block, done_queue)
+                cothread.Callback(self._handle_response, response, block, done_queue)
 
         subscribe.set_callback(handle_response)
         IOLoopHelper.call(self._send_request, subscribe)
         done_queue.get(timeout=DEFAULT_TIMEOUT)
 
-    def _handle_response(self, response, block, done_queue):
-        # type: (Response, BlockModel, Queue) -> None
+    def _handle_response(
+        self, response: Response, block: BlockModel, done_queue: Queue
+    ) -> None:
         try:
             with self.changes_squashed:
                 for change in response.changes:
                     self._handle_change(block, change)
         except Exception:
-            self.log.exception("Error handling %s", response)
+            self.log.exception(f"Error handling {response}")
             raise
         finally:
             done_queue.put(None)
@@ -177,8 +193,9 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
     def _handle_change(self, block, change):
         path = change[0]
         if len(path) == 0:
-            assert len(change) == 2, \
-                "Can't delete root block with change %r" % (change,)
+            assert len(change) == 2, "Can't delete root block with change %r" % (
+                change,
+            )
             self._regenerate_block(block, change[1])
         elif len(path) == 1 and path[0] not in ("health", "meta"):
             if len(change) == 1:
@@ -197,14 +214,13 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
         for field, value in d.items():
             if field == "health":
                 # Update health attribute
-                value = deserialize_object(value)  # type: NTScalar
+                value: NTScalar = deserialize_object(value)
                 block.health.set_value(
-                    value=value.value,
-                    alarm=value.alarm,
-                    ts=value.timeStamp)
+                    value=value.value, alarm=value.alarm, ts=value.timeStamp
+                )
             elif field == "meta":
-                value = deserialize_object(value)  # type: BlockMeta
-                meta = block.meta  # type: BlockMeta
+                value: BlockMeta = deserialize_object(value)
+                meta: BlockMeta = block.meta
                 for k in meta.call_types:
                     meta.apply_change([k], value[k])
             elif field != "typeid":
@@ -220,9 +236,7 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
             value: The value to put
         """
         q = Queue()
-        request = Put(
-            path=[mri, attribute_name, "value"],
-            value=value)
+        request = Put(path=[mri, attribute_name, "value"], value=value)
         request.set_callback(q.put)
         IOLoopHelper.call(self._send_request, request)
         response = q.get()
@@ -243,9 +257,7 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
             The return results from the server
         """
         q = Queue()
-        request = Post(
-            path=[mri, method_name],
-            parameters=params)
+        request = Post(path=[mri, method_name], parameters=params)
         request.set_callback(q.put)
         IOLoopHelper.call(self._send_request, request)
         response = q.get()

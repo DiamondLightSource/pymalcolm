@@ -1,24 +1,24 @@
-from annotypes import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from malcolm.compat import OrderedDict
-from .context import Context
-from .models import BlockModel, MethodModel, AttributeModel
 from malcolm.core.models import Model
 
+from .context import Context
+from .models import AttributeModel, BlockModel, MethodModel
+
 if TYPE_CHECKING:
-    from typing import Any
     from .controller import Controller
 
 
-class View(object):
+class View:
     """View of a Model to allow Put, Get, Subscribe etc."""
-    _controller = None  # type: Controller
-    _context = None  # type: Context
-    _data = None  # type: Model
-    typeid = None  # type: str
 
-    def __init__(self, controller, context, data):
-        # type: (Controller, Context, Model) -> None
+    _controller: "Controller"
+    _context: Context
+    _data: Model
+    typeid: str
+
+    def __init__(self, controller: "Controller", context: Context, data: Model) -> None:
         object.__setattr__(self, "typeid", data.typeid)
         object.__setattr__(self, "_controller", controller)
         object.__setattr__(self, "_context", context)
@@ -84,8 +84,7 @@ class Attribute(View):
         return fs
 
     def subscribe_value(self, callback, *args):
-        return self._context.subscribe(
-            self._data.path + ["value"], callback, *args)
+        return self._context.subscribe(self._data.path + ["value"], callback, *args)
 
     @property
     def alarm(self):
@@ -96,8 +95,7 @@ class Attribute(View):
     # types
     @property
     def timeStamp(self):
-        return self._context.make_view(
-            self._controller, self._data, "timeStamp")
+        return self._context.make_view(self._controller, self._data, "timeStamp")
 
     def __repr__(self):
         return "<%s value=%r>" % (self.__class__.__name__, self.value)
@@ -109,8 +107,9 @@ class Method(View):
     def _add_positional_args(self, args, kwargs):
         # add any positional args into our kwargs dict
         for name, v in zip(self._data.meta.takes.elements, args):
-            assert name not in kwargs, \
-                "%s specified as positional and keyword args" % (name,)
+            assert name not in kwargs, "%s specified as positional and keyword args" % (
+                name,
+            )
             kwargs[name] = v
         return kwargs
 
@@ -141,15 +140,15 @@ class Method(View):
 
 class Block(View):
     """Object consisting of a number of Attributes and Methods"""
+
     def __init__(self, controller, context, data):
-        super(Block, self).__init__(controller, context, data)
+        super().__init__(controller, context, data)
         for endpoint in self._data:
             if isinstance(data[endpoint], MethodModel):
                 # Add _async versions of method
                 self._make_async_method(endpoint)
 
-    def __getattr__(self, item):
-        # type: (str) -> View
+    def __getattr__(self, item: str) -> View:
         # Get the child of self._data. Needs to be done by the controller to
         # make sure lock is taken and we get consistent data
         child = self._context.make_view(self._controller, self._data, item)
@@ -161,7 +160,7 @@ class Block(View):
 
     def _make_async_method(self, endpoint):
         def post_async(*args, **kwargs):
-            child = getattr(self, endpoint)  # type: Method
+            child: Method = getattr(self, endpoint)
             return child.post_async(*args, **kwargs)
 
         object.__setattr__(self, "%s_async" % endpoint, post_async)
@@ -175,23 +174,24 @@ class Block(View):
             # Assume we are already ordered
             items = params.items()
         for attr, value in items:
-            assert hasattr(self, attr), \
-                "Block does not have attribute %s" % attr
-            future = self._context.put_async(
-                self._data.path + [attr, "value"], value)
+            assert hasattr(self, attr), "Block does not have attribute %s" % attr
+            future = self._context.put_async(self._data.path + [attr, "value"], value)
             futures.append(future)
         return futures
 
     def put_attribute_values(self, params, timeout=None, event_timeout=None):
         futures = self.put_attribute_values_async(params)
         self._context.wait_all_futures(
-            futures, timeout=timeout, event_timeout=event_timeout)
+            futures, timeout=timeout, event_timeout=event_timeout
+        )
 
-    def when_value_matches(self, attr, good_value, bad_values=None,
-                           timeout=None, event_timeout=None):
+    def when_value_matches(
+        self, attr, good_value, bad_values=None, timeout=None, event_timeout=None
+    ):
         future = self.when_value_matches_async(attr, good_value, bad_values)
         self._context.wait_all_futures(
-            future, timeout=timeout, event_timeout=event_timeout)
+            future, timeout=timeout, event_timeout=event_timeout
+        )
 
     def when_value_matches_async(self, attr, good_value, bad_values=None):
         path = self._data.path + [attr, "value"]
@@ -199,8 +199,7 @@ class Block(View):
         return future
 
 
-def make_view(controller, context, data):
-    # type: (Controller, Context, Any) -> Any
+def make_view(controller: "Controller", context: Context, data: Any) -> Any:
     """Make a View subclass containing properties specific for given data
 
     Args:

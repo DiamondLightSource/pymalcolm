@@ -1,6 +1,6 @@
 import unittest
 
-from malcolm.core import Queue, Spawned, RLock, TimeoutError
+from malcolm.core import Queue, RLock, Spawned, TimeoutError
 
 
 def sleep(t):
@@ -12,7 +12,6 @@ def sleep(t):
 
 
 class TestLockCothread(unittest.TestCase):
-
     def setUp(self):
         self.v = None
 
@@ -20,7 +19,7 @@ class TestLockCothread(unittest.TestCase):
         return Spawned(func, args, kwargs)
 
     def test_spawn_unlocked(self):
-        l = RLock()
+        lock = RLock()
 
         def set_v1():
             self.v = 1
@@ -30,7 +29,7 @@ class TestLockCothread(unittest.TestCase):
         assert self.v == 1
 
         # now do a long running task works
-        with l:
+        with lock:
             self.v = 2
             assert self.v == 2
             self.do_spawn(set_v1).wait()
@@ -39,10 +38,10 @@ class TestLockCothread(unittest.TestCase):
         assert self.v == 1
 
     def test_spawn_locked(self):
-        l = RLock()
+        lock = RLock()
 
         def set_v1():
-            with l:
+            with lock:
                 self.v = 1
 
         # check our setter works in isolation
@@ -51,7 +50,7 @@ class TestLockCothread(unittest.TestCase):
         assert self.v == 1
 
         # now do a long running task works
-        with l:
+        with lock:
             self.v = 2
             assert self.v == 2
             # start our thing that will be blocked, then sleep to make sure
@@ -63,4 +62,3 @@ class TestLockCothread(unittest.TestCase):
         # now wait for the other to complete, and check it could
         s.wait()
         assert self.v == 1
-

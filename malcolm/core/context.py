@@ -1,101 +1,53 @@
-import weakref
-import time
-
-from annotypes import TYPE_CHECKING
 import logging
+import time
+import weakref
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Tuple, Union
+
 import cothread
 
-from .future import Future
-from .request import Put, Post, Subscribe, Unsubscribe
-from .response import Update, Return, Error
 from .concurrency import Queue
-from .errors import TimeoutError, AbortedError, BadValueError
+from .errors import AbortedError, BadValueError, TimeoutError
+from .future import Future
+from .request import Post, Put, Request, Subscribe, Unsubscribe
+from .response import Error, Return, Update
 
 if TYPE_CHECKING:
-    from typing import Callable, Any, List, Union
-    from .process import Process
-    from .views import Block
     from .controller import Controller
     from .models import Model
+    from .process import Process
 
 # Create a module level logger
 log = logging.getLogger(__name__)
 
 
-class When(object):
-    def __init__(self, good_value, bad_values):
-        # type: (Callable[[Any], bool]) -> None
-        if callable(good_value):
-            def condition_satisfied(value):
-                return good_value(value)
-        else:
-            def condition_satisfied(value):
-                if bad_values and value in bad_values:
-                    raise BadValueError(
-                        "Waiting for %r, got %r" % (good_value, value))
-                return value == good_value
-            condition_satisfied.__name__ = "equals_%s" % good_value
-        self.condition_satisfied = condition_satisfied
-        self.future = None  # type: Future
-        self.context = None  # type: Context
-        self.last = None
-
-    def set_future_context(self, future, context):
-        # type: (Future, Context) -> None
-        self.future = future
-        self.context = context
-
-    def __call__(self, value):
-        # type: (Any) -> None
-        # Need to check if we have a future as we might be called while the
-        # unsubscribe is taking place
-        if self.future:
-            self.last = value
-            try:
-                satisfied = self.condition_satisfied(value)
-            except Exception:
-                # Bad value, so unsubscribe
-                self.context.unsubscribe(self.future)
-                self.future = None
-                raise
-            else:
-                if satisfied:
-                    # All done, so unsubscribe
-                    self.context.unsubscribe(self.future)
-                    self.future = None
-
-
-class Context(object):
+class Context:
     """Helper allowing Future style access to Block Attributes and Methods"""
 
     STOP = object()
 
-    def __init__(self, process):
-        # type: (Process) -> None
+    def __init__(self, process: "Process") -> None:
         self._q = Queue()
         # Func to call just before requests are dispatched
         self._notify_dispatch_request = None
         self._notify_args = ()
         self._process = process
         self._next_id = 1
-        self._futures = {}  # dict {int id: Future)}
-        self._subscriptions = {}  # dict {int id: (func, args)}
-        self._requests = {}  # dict {Future: Request}
-        self._pending_unsubscribes = {}  # dict {Future: Subscribe}
+        self._futures: Dict[int, Future] = {}
+        self._subscriptions: Dict[int, Tuple[Callable, Any]] = {}
+        self._requests: Dict[Future, Request] = {}
+        self._pending_unsubscribes: Dict[Future, Subscribe] = {}
         # If not None, wait for this before listening to STOPs
         self._sentinel_stop = None
 
     @property
-    def mri_list(self):
-        # type: () -> List[str]
+    def mri_list(self) -> List[str]:
         return self._process.mri_list
 
     def get_controller(self, mri):
         controller = self._process.get_controller(mri)
         return controller
 
-    def block_view(self, mri):
-        # type: (str) -> Block
+    def block_view(self, mri: str) -> Any:
         """Get a view of a block
 
         Args:
@@ -108,8 +60,9 @@ class Context(object):
         block = controller.block_view(weakref.proxy(self))
         return block
 
-    def make_view(self, controller, data, child_name):
-        # type: (Controller, Model, str) -> Any
+    def make_view(
+        self, controller: "Controller", data: "Model", child_name: str
+    ) -> Any:
         return controller.make_view(self, data, child_name)
 
     def _get_next_id(self):
@@ -166,8 +119,7 @@ class Context(object):
             The value after the put completes
         """
         future = self.put_async(path, value)
-        self.wait_all_futures(
-            future, timeout=timeout, event_timeout=event_timeout)
+        self.wait_all_futures(future, timeout=timeout, event_timeout=event_timeout)
         return future.result()
 
     def put_async(self, path, value):
@@ -200,8 +152,7 @@ class Context(object):
             the result from 'method'
         """
         future = self.post_async(path, params)
-        self.wait_all_futures(
-            future, timeout=timeout, event_timeout=event_timeout)
+        self.wait_all_futures(future, timeout=timeout, event_timeout=event_timeout)
         return future.result()
 
     def post_async(self, path, params=None):
@@ -245,9 +196,9 @@ class Context(object):
         Args:
             future (Future): The future of the original subscription
         """
-        assert future not in self._pending_unsubscribes, \
-            "%r has already been unsubscribed from" % \
-            self._pending_unsubscribes[future]
+        assert future not in self._pending_unsubscribes, (
+            "%r has already been unsubscribed from" % self._pending_unsubscribes[future]
+        )
         subscribe = self._requests[future]
         self._pending_unsubscribes[future] = subscribe
         # Clear out the subscription
@@ -264,9 +215,11 @@ class Context(object):
 
     def unsubscribe_all(self, callback=False):
         """Send an unsubscribe for all active subscriptions"""
-        futures = ((f, r) for f, r in self._requests.items()
-                   if isinstance(r, Subscribe)
-                   and f not in self._pending_unsubscribes)
+        futures = (
+            (f, r)
+            for f, r in self._requests.items()
+            if isinstance(r, Subscribe) and f not in self._pending_unsubscribes
+        )
         if futures:
             for future, request in futures:
                 if callback:
@@ -279,8 +232,9 @@ class Context(object):
         # Unsubscribe from anything that is still active
         self.unsubscribe_all(callback=True)
 
-    def when_matches(self, path, good_value, bad_values=None, timeout=None,
-                     event_timeout=None):
+    def when_matches(
+        self, path, good_value, bad_values=None, timeout=None, event_timeout=None
+    ):
         """Resolve when an path value equals value
 
         Args:
@@ -293,8 +247,7 @@ class Context(object):
                 event, wait forever if None
         """
         future = self.when_matches_async(path, good_value, bad_values)
-        self.wait_all_futures(
-            future, timeout=timeout, event_timeout=event_timeout)
+        self.wait_all_futures(future, timeout=timeout, event_timeout=event_timeout)
 
     def when_matches_async(self, path, good_value, bad_values=None):
         """Wait for an attribute to become a given value
@@ -316,8 +269,12 @@ class Context(object):
         when.set_future_context(future, weakref.proxy(self))
         return future
 
-    def wait_all_futures(self, futures, timeout=None, event_timeout=None):
-        # type: (Union[List[Future], Future, None], float, float) -> None
+    def wait_all_futures(
+        self,
+        futures: Union[List[Future], Future, None],
+        timeout: float = None,
+        event_timeout: float = None,
+    ) -> None:
         """Services all futures until the list 'futures' are all done
         then returns. Calls relevant subscription callbacks as they
         come off the queue and raises an exception on abort
@@ -350,6 +307,7 @@ class Context(object):
             else:
                 filtered_futures.append(f)
 
+        until: Union[float, None]
         while filtered_futures:
             if event_timeout is not None:
                 until = time.time() + event_timeout
@@ -383,8 +341,10 @@ class Context(object):
                 path = ".".join(request.path)
                 func, _ = self._subscriptions.get(request.id, (None, None))
                 if isinstance(func, When):
-                    descriptions.append("When(%s, %s, last=%s)" % (
-                        path, func.condition_satisfied.__name__, func.last))
+                    descriptions.append(
+                        "When(%s, %s, last=%s)"
+                        % (path, func.condition_satisfied.__name__, func.last)
+                    )
                 elif func is None:
                     # We have already called unsubscribe, but haven't received
                     # the Return for it yet
@@ -420,14 +380,16 @@ class Context(object):
             response = self._q.get(timeout)
         except TimeoutError:
             raise TimeoutError(
-                "Timeout waiting for %s" % self._describe_futures(futures))
+                "Timeout waiting for %s" % self._describe_futures(futures)
+            )
         if response is self._sentinel_stop:
             self._sentinel_stop = None
         elif response is self.STOP:
             if self._sentinel_stop is None:
                 # This is a stop we should listen to...
                 raise AbortedError(
-                    "Aborted waiting for %s" % self._describe_futures(futures))
+                    "Aborted waiting for %s" % self._describe_futures(futures)
+                )
         elif isinstance(response, Update):
             # This is an update for a subscription
             if response.id in self._subscriptions:
@@ -460,3 +422,48 @@ class Context(object):
                 pass
             else:
                 raise response.message
+
+
+class When:
+    def __init__(self, good_value: Callable[[Any], bool], bad_values: Any) -> None:
+        if callable(good_value):
+
+            def condition_satisfied(value):
+                return good_value(value)
+
+        else:
+
+            def condition_satisfied(value):
+                if bad_values and value in bad_values:
+                    raise BadValueError("Waiting for %r, got %r" % (good_value, value))
+                return value == good_value
+
+            condition_satisfied.__name__ = "equals_%s" % good_value
+        self.condition_satisfied = condition_satisfied
+        self.future: Union[Future, None] = None
+        self.context: Union[Context, None] = None
+        self.last = None
+
+    def set_future_context(self, future: Future, context: Context) -> None:
+        self.future = future
+        self.context = context
+
+    def __call__(self, value: Any) -> None:
+        # Need to check if we have a future as we might be called while the
+        # unsubscribe is taking place
+        if self.future:
+            self.last = value
+            try:
+                satisfied = self.condition_satisfied(value)
+            except Exception:
+                # Bad value, so unsubscribe
+                assert self.context, "No context"
+                self.context.unsubscribe(self.future)
+                self.future = None
+                raise
+            else:
+                if satisfied:
+                    # All done, so unsubscribe
+                    assert self.context, "No context"
+                    self.context.unsubscribe(self.future)
+                    self.future = None

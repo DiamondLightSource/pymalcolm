@@ -1,11 +1,10 @@
 import unittest
 
-from malcolm.core import Part, PartRegistrar, StringMeta, Controller, Process
+from malcolm.core import Controller, Part, PartRegistrar, Process, StringMeta
 
 
 class BadPart(Part):
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         attr = StringMeta().create_attribute_model()
         registrar.add_attribute_model("bad_name", attr)
 

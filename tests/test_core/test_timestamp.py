@@ -5,7 +5,6 @@ from malcolm.core.timestamp import TimeStamp
 
 
 class TestAlarm(unittest.TestCase):
-
     def test_no_args(self):
         now = time.time()
         o = TimeStamp()
