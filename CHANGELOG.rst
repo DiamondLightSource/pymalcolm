@@ -6,7 +6,10 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 `4-3-1`_ - 2020-09-18
 ---------------------
 
+Added:
+
 - Converted module to Python 3
+
   - Converted type hint comments to Python 3 annotations
   - Now use setup.cfg
   - Converted code base style using Black
@@ -14,6 +17,14 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 - Created Pipfile for use with pipenv
 - Added mypy, Black and Flake8 checks to Travis
 - Added Gitlab CI script
+- Added check during configure for valid layout file for HDFWriterPart
+- Added KinematicsSavuPart
+- Added ADPcoWin support
+- Added ffmpeg viewer as block in ADCore
+
+Fixed:
+
+- Fix hang when calling unsubscribe in callback
 
 
 `4-2b8`_ - 2020-04-17
@@ -49,7 +60,6 @@ Fixed:
 
 - Updated docs for training course
 - Added BeamSelectorPart for DIAD
-
 
 `4-2b4`_ - 2019-12-04
 ---------------------
@@ -555,7 +565,9 @@ Added:
 - Initial release with hello world and websocket comms
 
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/4-2b5...HEAD
+.. _4-3-1: https://github.com/dls-controls/pymalcolm/compare/4-2b8...4-3-1
+.. _4-2b8: https://github.com/dls-controls/pymalcolm/compare/4-2b6...4-2b8
+.. _4-2b6: https://github.com/dls-controls/pymalcolm/compare/4-2b5...4-2b6
 .. _4-2b5: https://github.com/dls-controls/pymalcolm/compare/4-2b4...4-2b5
 .. _4-2b4: https://github.com/dls-controls/pymalcolm/compare/4-2b3...4-2b4
 .. _4-2b3: https://github.com/dls-controls/pymalcolm/compare/4-2b2...4-2b3
