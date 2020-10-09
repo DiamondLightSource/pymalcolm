@@ -134,7 +134,7 @@ def create_vds(generator, raw_name, vds_path, child, uid_name, sum_name):
     # The first dimension alternating has no meaning. If any subsequent ones
     # alternate then it will radically slow down the VDS creation and reading.
     # We rely on a scanning.parts.UnrollingPart to
-    if any(dim.alternate for dim in generator.dimensions[1:]) and not any(isinstance(excl, SquashingExcluder) for excl in generator.excluders) :
+    if any(dim.alternate for dim in generator.dimensions[1:]):
         raise BadValueError(
             "Snake scans are not supported as the VDS is not performant. You "
             "can add a scanning.parts.UnrollingPart to the top level scan "
@@ -366,15 +366,17 @@ class OdinWriterPart(builtin.parts.ChildPart):
             pass
         current_count = child.numCaptured.value
         self.unique_id_offset = self.done_when_reaches
-        self.frame_offset = (completed_steps - self.done_when_reaches) + 1  
+        # worked with vanilla detectordriverpart
+        # self.frame_offset = (completed_steps - self.done_when_reaches) + 1  
+        self.frame_offset = completed_steps
         
         child.uidOffset.put_value(self.unique_id_offset)        
         child.frameOffset.put_value(self.frame_offset)
-
-        self.done_when_reaches = steps_to_do + current_count - 1
+        
+        self.done_when_reaches = steps_to_do + current_count
         #drv = context.block_view(self.drv_mri)
         # Just reset the array counter_block
-        #drv.arrayCounter.put_value(0)
+        #drv.arrayCounter.put_value(0)        
         # Start a future waiting for the first array
         self.array_future = child.when_value_matches_async(
             "numCaptured", greater_than_zero)
