@@ -1,3 +1,2 @@
-from . import util, parts
-from .util import APartName, AMetaDescription, AWidget, AGroup, \
-    AConfig, ASinkPort
+from . import parts, util
+from .util import AConfig, AGroup, AMetaDescription, APartName, ASinkPort, AWidget

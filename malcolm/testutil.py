@@ -1,21 +1,29 @@
 import unittest
+from typing import Any, Callable, List, Optional, Sequence, Type, Union
 
-from annotypes import TYPE_CHECKING, Union, Sequence, add_call_types
-from mock import MagicMock as Mock, patch
+from annotypes import add_call_types
+from mock import MagicMock as Mock
+from mock import patch
 
-from malcolm.core import Hook, Part, Controller, Process, ProcessPublishHook, \
-    APublished, ProcessStartHook, UnpublishedInfo
+from malcolm.core import (
+    APublished,
+    Controller,
+    Hook,
+    Part,
+    Process,
+    ProcessPublishHook,
+    ProcessStartHook,
+    UnpublishedInfo,
+)
 from malcolm.modules import builtin
-
-if TYPE_CHECKING:
-    from typing import List, Any, Type, Callable, Optional
 
 
 class ChildTestCase(unittest.TestCase):
     @staticmethod
     @patch("malcolm.modules.ca.util.catools", Mock())
-    def create_child_block(child_block, process, **params):
-        # type: (Callable, Process, **Any) -> Controller
+    def create_child_block(
+        child_block: Callable, process: Process, **params: Any
+    ) -> Controller:
         """Creates an instance of child_block with CA calls mocked out.
 
         Args:
@@ -32,8 +40,7 @@ class ChildTestCase(unittest.TestCase):
         controllers = child_block(**params)
         for controller in controllers:
             process.add_controller(controller)
-            if not isinstance(controller,
-                              builtin.controllers.ManagerController):
+            if not isinstance(controller, builtin.controllers.ManagerController):
                 # We've already setup the CAParts and added to the block, so we
                 # can safely delete them so they don't try to connect
                 controller.parts = {}
@@ -50,8 +57,7 @@ class ChildTestCase(unittest.TestCase):
 
         def handle_post(request):
             method_name = request.path[1]
-            value = child.handled_requests.post(
-                method_name, **request.parameters)
+            value = child.handled_requests.post(method_name, **request.parameters)
             return [request.return_response(value)]
 
         child._handle_put = handle_put
@@ -62,8 +68,7 @@ class ChildTestCase(unittest.TestCase):
     def mock_when_value_matches(self, child):
         def handle_when_value_matches_async(attr, good_value, bad_values=None):
             # tell the mock we were called
-            child.handled_requests.when_value_matches(
-                attr, good_value, bad_values)
+            child.handled_requests.when_value_matches(attr, good_value, bad_values)
             # poke the value we are looking for into the attribute so
             # that old_when_matches will immediately succeed
             # If it's callable then rely on the test code to do this
@@ -76,9 +81,11 @@ class ChildTestCase(unittest.TestCase):
             self._context = context
             view = old(context)
             self.old_when_matches_async = object.__getattribute__(
-                view, "when_value_matches_async")
-            object.__setattr__(view, "when_value_matches_async",
-                               handle_when_value_matches_async)
+                view, "when_value_matches_async"
+            )
+            object.__setattr__(
+                view, "when_value_matches_async", handle_when_value_matches_async
+            )
             return view
 
         child.block_view = block_view
@@ -94,30 +101,31 @@ class ChildTestCase(unittest.TestCase):
                     attr.meta.set_choices(list(attr.meta.choices) + [v])
             attr.set_value(v)
 
-    def assert_hooked(self,
-                      part,  # type: Part
-                      hooks,  # type: Union[Type[Hook], Sequence[Type[Hook]]]
-                      func,  # type: Callable[..., Any]
-                      args_gen=None  # type: Optional[Callable[(), List[str]]]
-                      ):
+    def assert_hooked(
+        self,
+        part: Part,
+        hooks: Union[Type[Hook], Sequence[Type[Hook]]],
+        func: Callable[..., Any],
+        args_gen: Optional[Callable[[], List[str]]] = None,
+    ):
         if args_gen is None:
             args_gen = getattr(func, "call_types", {}).keys
         if not isinstance(hooks, Sequence):
             hooks = [hooks]
-        for hook in hooks:
-            assert part.hooked[hook] == (func, args_gen)
+        if part.hooked:
+            for hook in hooks:
+                assert part.hooked[hook] == (func, args_gen)
 
 
 class PublishController(Controller):
-    published = []
+    published: List[APublished] = []
 
     def on_hook(self, hook):
         if isinstance(hook, ProcessPublishHook):
             hook(self.do_publish)
 
     @add_call_types
-    def do_publish(self, published):
-        # type: (APublished) -> None
+    def do_publish(self, published: APublished) -> None:
         self.published = published
 
 

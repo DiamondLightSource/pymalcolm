@@ -6,10 +6,10 @@ import unittest
 
 import h5py
 from cothread import cothread
-from scanpointgenerator import LineGenerator, CompoundGenerator
+from scanpointgenerator import CompoundGenerator, LineGenerator
 
-from malcolm.modules.demo.blocks import detector_block
 from malcolm.core import Process
+from malcolm.modules.demo.blocks import detector_block
 from malcolm.modules.scanning.util import DatasetType
 
 
@@ -28,34 +28,70 @@ class TestDetectorBlock(unittest.TestCase):
 
     def test_init(self):
         assert list(self.b) == [
-            'meta', 'health', 'state', 'disable', 'reset', 'mri', 'layout',
-            'design', 'exports', 'modified', 'save', 'completedSteps',
-            'configuredSteps', 'totalSteps', 'validate', 'configure', 'run',
-            'abort', 'pause', 'resume', 'label', 'datasets', 'readoutTime',
-            'frequencyAccuracy', 'exposure']
+            "meta",
+            "health",
+            "state",
+            "disable",
+            "reset",
+            "mri",
+            "layout",
+            "design",
+            "exports",
+            "modified",
+            "save",
+            "completedSteps",
+            "configuredSteps",
+            "totalSteps",
+            "validate",
+            "configure",
+            "run",
+            "abort",
+            "pause",
+            "resume",
+            "label",
+            "datasets",
+            "readoutTime",
+            "frequencyAccuracy",
+            "exposure",
+        ]
         assert list(self.b.configure.meta.takes.elements) == [
-            'generator', 'fileDir', 'axesToMove', 'breakpoints', 'exposure',
-            'formatName', 'fileTemplate'
+            "generator",
+            "fileDir",
+            "axesToMove",
+            "breakpoints",
+            "exposure",
+            "formatName",
+            "fileTemplate",
         ]
         assert self.b.label.value == "DemoDetector"
 
     def make_generator(self):
-        linex = LineGenerator('stage_x', 'mm', 0, 2, 3, alternate=True)
-        liney = LineGenerator('stage_y', 'mm', 0, 2, 2)
+        linex = LineGenerator("stage_x", "mm", 0, 2, 3, alternate=True)
+        liney = LineGenerator("stage_y", "mm", 0, 2, 2)
         compound = CompoundGenerator([liney, linex], [], [], 0.5)
         return compound
 
     def test_scan(self):
         self.b.configure(self.make_generator(), self.tmpdir)
         assert list(self.b.datasets.value.rows()) == [
-            ['det.data', 'det.h5', DatasetType.PRIMARY,
-             4, '/entry/data', '/entry/uid'],
-            ['det.sum', 'det.h5', DatasetType.SECONDARY,
-             4, '/entry/sum', '/entry/uid'],
-            ['stage_y.value_set', 'det.h5', DatasetType.POSITION_SET, 1,
-             '/entry/stage_y_set', ''],
-            ['stage_x.value_set', 'det.h5', DatasetType.POSITION_SET, 1,
-             '/entry/stage_x_set', ''],
+            ["det.data", "det.h5", DatasetType.PRIMARY, 4, "/entry/data", "/entry/uid"],
+            ["det.sum", "det.h5", DatasetType.SECONDARY, 4, "/entry/sum", "/entry/uid"],
+            [
+                "stage_y.value_set",
+                "det.h5",
+                DatasetType.POSITION_SET,
+                1,
+                "/entry/stage_y_set",
+                "",
+            ],
+            [
+                "stage_x.value_set",
+                "det.h5",
+                DatasetType.POSITION_SET,
+                1,
+                "/entry/stage_x_set",
+                "",
+            ],
         ]
         filepath = os.path.join(self.tmpdir, "det.h5")
         with h5py.File(filepath, "r") as hdf:

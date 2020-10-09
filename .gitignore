@@ -2,7 +2,6 @@
 __pycache__/
 *.py[cod]
 *$py.class
-Pipfile*
 .pytest_cache
 
 # C extensions
@@ -46,6 +45,7 @@ nosetests.xml
 coverage.xml
 *,cover
 .hypothesis/
+.mypy_cache/
 
 # Translations
 *.mo

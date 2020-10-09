@@ -1,12 +1,11 @@
 import unittest
 
-from malcolm.core import Process, Queue, Subscribe, Put
+from malcolm.core import Process, Put, Queue, Subscribe
 from malcolm.modules.builtin.controllers import BasicController
 from malcolm.modules.builtin.parts import LabelPart
 
 
 class TestLabelPart(unittest.TestCase):
-
     def setUp(self):
         self.o = LabelPart(value="My label")
         self.p = Process("proc")
@@ -22,8 +21,7 @@ class TestLabelPart(unittest.TestCase):
     def test_init(self):
         assert self.o.name == "label"
         assert self.o.attr.value == "My label"
-        assert self.o.attr.meta.tags == [
-            "widget:textinput", "config:1"]
+        assert self.o.attr.meta.tags == ["widget:textinput", "config:1"]
         assert self.b.meta.label == "My label"
 
     def test_setter(self):
@@ -67,5 +65,4 @@ class TestLabelPart(unittest.TestCase):
         # Then the return
         r3 = q.get().to_dict()
         assert r3["id"] == 2
-        assert r3["value"] is "New"
-
+        assert r3["value"] == "New"

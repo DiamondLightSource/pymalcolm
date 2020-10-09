@@ -1,16 +1,13 @@
 import unittest
 
-from annotypes import add_call_types
 from mock import MagicMock
 
-from malcolm.core import Process, ProcessStartHook, ProcessPublishHook, \
-    APublished, UnpublishedInfo
+from malcolm.core import Process, ProcessStartHook
 from malcolm.core.controller import Controller
 from malcolm.testutil import PublishController, UnpublishableController
 
 
 class TestProcess(unittest.TestCase):
-
     def setUp(self):
         self.o = Process("proc")
         self.o.start()
@@ -36,7 +33,7 @@ class TestProcess(unittest.TestCase):
 
         c = InitController("mri")
         self.o.add_controller(c)
-        assert c.init == True
+        assert c.init is True
 
     def test_publish_controller(self):
         c = PublishController("mri")

@@ -1,6 +1,7 @@
-from threading import Thread
+import asyncio
 import atexit
-import sys
+from threading import Thread
+from typing import Optional, Union
 
 from annotypes import Anno, Array
 from tornado.ioloop import IOLoop
@@ -8,18 +9,14 @@ from tornado.ioloop import IOLoop
 from malcolm.core import Table
 
 
-class IOLoopHelper(object):
-    _loop = None  # type: IOLoop
-    _thread = None  # type: Thread
+class IOLoopHelper:
+    _loop: Optional[IOLoop] = None
+    _thread: Optional[Thread] = None
 
     @classmethod
     def loop(cls):
         if cls._loop is None:
-            if sys.version_info.major == 3:
-                # the event loop is not created automatically if we are not
-                # the main thread
-                import asyncio
-                asyncio.set_event_loop(asyncio.new_event_loop())
+            asyncio.set_event_loop(asyncio.new_event_loop())
             loop = IOLoop.current()
             cls._loop = loop
 
@@ -51,13 +48,12 @@ class IOLoopHelper(object):
 
 
 with Anno("The Malcolm Resource Identifier for the Block"):
-    AMris = Array[str]
+    AMris = Union[Array[str]]
 with Anno("A human readable label for the Block"):
-    ALabels = Array[str]
+    ALabels = Union[Array[str]]
 
 
 class BlockTable(Table):
-    def __init__(self, mri, label):
-        # type: (AMris, ALabels) -> None
+    def __init__(self, mri: AMris, label: ALabels) -> None:
         self.mri = mri
         self.label = label

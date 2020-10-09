@@ -5,25 +5,33 @@ rules are applied:
 - All types required to initialize info classes are in the infos namespace
 - util depends on hooks and infos (not vice versa)"""
 
-from annotypes import Anno, Array, Union, Sequence, Any, Serializable
-from scanpointgenerator import CompoundGenerator
-import numpy as np
+from typing import Any, Dict, Sequence, Union
 
-from malcolm.core import VMeta, NTUnion, Table, NumberMeta, Widget, \
-    Display, AttributeModel
+import numpy as np
+from annotypes import Anno, Array, Serializable
+from scanpointgenerator import CompoundGenerator
+
+from malcolm.core import (
+    AttributeModel,
+    Display,
+    NTUnion,
+    NumberMeta,
+    Table,
+    VMeta,
+    Widget,
+)
 from malcolm.modules import builtin
+
+from .hooks import AAxesToMove, ABreakpoints, AGenerator, UAxesToMove
 from .infos import DatasetType
 
-from .hooks import AGenerator, AAxesToMove, UAxesToMove, ABreakpoints, \
-    UBreakpoints
 
-
-def exposure_attribute(min_exposure):
-    # type: (float) -> AttributeModel
+def exposure_attribute(min_exposure: float) -> AttributeModel:
     meta = NumberMeta(
-        "float64", "The calculated exposure for this run",
+        "float64",
+        "The calculated exposure for this run",
         tags=[Widget.TEXTUPDATE.tag()],
-        display=Display(precision=6, units="s", limitLow=min_exposure)
+        display=Display(precision=6, units="s", limitLow=min_exposure),
     )
     return meta.create_attribute_model()
 
@@ -31,11 +39,16 @@ def exposure_attribute(min_exposure):
 class ConfigureParams(Serializable):
     # This will be serialized, so maintain camelCase for axesToMove
     # noinspection PyPep8Naming
-    def __init__(self, generator, axesToMove=None, breakpoints=None, **kwargs):
-        # type: (AGenerator, UAxesToMove, UBreakpoints, **Any) -> None
+    def __init__(
+        self,
+        generator: AGenerator,
+        axesToMove: UAxesToMove = None,
+        breakpoints: ABreakpoints = None,
+        **kwargs: Any
+    ) -> None:
         if kwargs:
             # Got some additional args to report
-            self.call_types = ConfigureParams.call_types.copy()
+            self.call_types: Dict[str, Anno] = ConfigureParams.call_types.copy()
             for k in kwargs:
                 # We don't use this apart from its presence,
                 # so no need to fill in description, typ, etc.
@@ -71,22 +84,21 @@ class PointGeneratorMeta(VMeta):
         elif isinstance(value, dict):
             return CompoundGenerator.from_dict(value)
         else:
-            raise TypeError(
-                "Value %s must be a Generator object or dictionary" % value)
+            raise TypeError("Value %s must be a Generator object or dictionary" % value)
 
 
 with Anno("Dataset names"):
-    ADatasetNames = Array[str]
+    ADatasetNames = Union[Array[str]]
 with Anno("Filenames of HDF files relative to fileDir"):
-    AFilenames = Array[str]
+    AFilenames = Union[Array[str]]
 with Anno("Types of dataset"):
-    ADatasetTypes = Array[DatasetType]
+    ADatasetTypes = Union[Array[DatasetType]]
 with Anno("Rank (number of dimensions) of the dataset"):
-    ARanks = Array[np.int32]
+    ARanks = Union[Array[np.int32]]
 with Anno("Dataset paths within HDF files"):
-    APaths = Array[str]
+    APaths = Union[Array[str]]
 with Anno("UniqueID array paths within HDF files"):
-    AUniqueIDs = Array[str]
+    AUniqueIDs = Union[Array[str]]
 UDatasetNames = Union[ADatasetNames, Sequence[str]]
 UFilenames = Union[AFilenames, Sequence[str]]
 UDatasetTypes = Union[ADatasetTypes, Sequence[DatasetType]]
@@ -98,15 +110,15 @@ UUniqueIDs = Union[AUniqueIDs, Sequence[str]]
 class DatasetTable(Table):
     # This will be serialized so we need type to be called type
     # noinspection PyShadowingBuiltins
-    def __init__(self,
-                 name,  # type: UDatasetNames
-                 filename,  # type: UFilenames
-                 type,  # type: UDatasetTypes
-                 rank,  # type: URanks
-                 path,  # type: UPaths
-                 uniqueid,  # type: UUniqueIDs
-                 ):
-        # type: (...) -> None
+    def __init__(
+        self,
+        name: UDatasetNames,
+        filename: UFilenames,
+        type: UDatasetTypes,
+        rank: URanks,
+        path: UPaths,
+        uniqueid: UUniqueIDs,
+    ) -> None:
         self.name = ADatasetNames(name)
         self.filename = AFilenames(filename)
         self.type = ADatasetTypes(type)
@@ -116,15 +128,15 @@ class DatasetTable(Table):
 
 
 with Anno("Whether the detectors are enabled or not"):
-    AEnable = Array[bool]
+    AEnable = Union[Array[bool]]
 with Anno("Detector names"):
-    ADetectorNames = Array[str]
+    ADetectorNames = Union[Array[str]]
 with Anno("Detector block mris"):
-    ADetectorMris = Array[str]
+    ADetectorMris = Union[Array[str]]
 with Anno("Exposure of each detector frame for the current scan"):
-    AExposures = Array[float]
+    AExposures = Union[Array[float]]
 with Anno("Number of detector frames for each generator point"):
-    AFramesPerStep = Array[np.int32]
+    AFramesPerStep = Union[Array[np.int32]]
 UEnable = Union[AEnable, Sequence[bool]]
 UDetectorNames = Union[ADetectorNames, Sequence[str]]
 UDetectorMris = Union[ADetectorMris, Sequence[str]]
@@ -135,14 +147,14 @@ UFramesPerStep = Union[AFramesPerStep, Sequence[np.int32]]
 class DetectorTable(Table):
     # Will be serialized so use camelCase
     # noinspection PyPep8Naming
-    def __init__(self,
-                 enable,  # type: UEnable
-                 name,  # type: UDetectorNames
-                 mri,  # type: UDetectorMris
-                 exposure,  # type: UExposures
-                 framesPerStep,  # type: UFramesPerStep
-                 ):
-        # type: (...) -> None
+    def __init__(
+        self,
+        enable: UEnable,
+        name: UDetectorNames,
+        mri: UDetectorMris,
+        exposure: UExposures,
+        framesPerStep: UFramesPerStep,
+    ) -> None:
         self.enable = AEnable(enable)
         self.name = ADetectorNames(name)
         self.mri = ADetectorMris(mri)
@@ -169,23 +181,28 @@ class RunnableStates(builtin.util.ManagerStates):
     ABORTED = "Aborted"
 
     def create_block_transitions(self):
-        super(RunnableStates, self).create_block_transitions()
+        super().create_block_transitions()
         # Set transitions for normal states
         self.set_allowed(self.READY, self.CONFIGURING)
         self.set_allowed(self.CONFIGURING, self.ARMED)
-        self.set_allowed(self.ARMED,
-                         self.RUNNING, self.SEEKING, self.RESETTING)
+        self.set_allowed(self.ARMED, self.RUNNING, self.SEEKING, self.RESETTING)
         self.set_allowed(self.RUNNING, self.POSTRUN, self.SEEKING)
         self.set_allowed(self.POSTRUN, self.FINISHED, self.ARMED, self.SEEKING)
-        self.set_allowed(self.FINISHED, self.SEEKING, self.RESETTING,
-                         self.CONFIGURING)
+        self.set_allowed(self.FINISHED, self.SEEKING, self.RESETTING, self.CONFIGURING)
         self.set_allowed(self.SEEKING, self.ARMED, self.PAUSED, self.FINISHED)
         self.set_allowed(self.PAUSED, self.SEEKING, self.RUNNING)
 
         # Add Abort to all normal states
         normal_states = [
-            self.READY, self.CONFIGURING, self.ARMED, self.RUNNING,
-            self.POSTRUN, self.PAUSED, self.SEEKING, self.FINISHED]
+            self.READY,
+            self.CONFIGURING,
+            self.ARMED,
+            self.RUNNING,
+            self.POSTRUN,
+            self.PAUSED,
+            self.SEEKING,
+            self.FINISHED,
+        ]
         for state in normal_states:
             self.set_allowed(state, self.ABORTING)
 

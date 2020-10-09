@@ -1,14 +1,16 @@
+from typing import Optional
+
 from annotypes import Anno, add_call_types
 from cothread import cothread
 from tornado.httpserver import HTTPServer
 from tornado.web import Application
 
-from malcolm.core import ProcessPublishHook, APublished, Part, TableMeta
+from malcolm.core import APublished, Part, ProcessPublishHook, TableMeta
 from malcolm.modules import builtin
-from ..infos import HandlerInfo
-from ..hooks import ReportHandlersHook
-from ..util import IOLoopHelper, BlockTable
 
+from ..hooks import ReportHandlersHook
+from ..infos import HandlerInfo
+from ..util import BlockTable, IOLoopHelper
 
 with Anno("TCP port number to run up under"):
     APort = int
@@ -17,13 +19,12 @@ with Anno("TCP port number to run up under"):
 class HTTPServerComms(builtin.controllers.ServerComms):
     """A class for communication between browser and server"""
 
-    def __init__(self, mri, port=8008):
-        # type: (builtin.controllers.AMri, APort) -> None
-        super(HTTPServerComms, self).__init__(mri)
+    def __init__(self, mri: builtin.controllers.AMri, port: APort = 8008) -> None:
+        super().__init__(mri)
         self.port = port
-        self._server = None  # type: HTTPServer
+        self._server: Optional[HTTPServer] = None
         self._server_started = False
-        self._application = None  # type: Application
+        self._application: Optional[Application] = None
         self.blocks = TableMeta.from_table(
             BlockTable, "List of local Blocks to serve up"
         ).create_attribute_model()
@@ -32,16 +33,16 @@ class HTTPServerComms(builtin.controllers.ServerComms):
         self.register_hooked(ProcessPublishHook, self.publish)
 
     def do_init(self):
-        super(HTTPServerComms, self).do_init()
+        super().do_init()
         part_info = self.run_hooks(
-            ReportHandlersHook(part)
-            for part in self.parts.values())
+            ReportHandlersHook(part) for part in self.parts.values()
+        )
         handler_infos = HandlerInfo.filter_values(part_info)
         handlers = []
         for handler_info in handler_infos:
-            handlers.append((
-                handler_info.regexp, handler_info.request_class,
-                handler_info.kwargs))
+            handlers.append(
+                (handler_info.regexp, handler_info.request_class, handler_info.kwargs)
+            )
         self._application = Application(handlers)
         self._server = HTTPServer(self._application)
         self._start_server()
@@ -57,17 +58,17 @@ class HTTPServerComms(builtin.controllers.ServerComms):
             self._server_started = False
 
     def do_disable(self):
-        super(HTTPServerComms, self).do_disable()
+        super().do_disable()
         self._stop_server()
 
     def do_reset(self):
-        super(HTTPServerComms, self).do_reset()
+        super().do_reset()
         self._start_server()
 
     @add_call_types
-    def publish(self, published):
-        # type: (APublished) -> None
+    def publish(self, published: APublished) -> None:
         rows = []
+        assert self.process, "No attached process"
         for mri in published:
             label = self.process.block_view(mri).meta.label
             if not label:
@@ -75,11 +76,13 @@ class HTTPServerComms(builtin.controllers.ServerComms):
             rows.append((mri, label))
         self.blocks.set_value(BlockTable.from_rows(rows))
 
-    def update_request_received(self, part, info):
-        # type: (Part, builtin.infos.RequestInfo) -> None
+    def update_request_received(
+        self, part: Part, info: builtin.infos.RequestInfo
+    ) -> None:
         if info.mri == ".":
             # This is for us
             controller = self
         else:
+            assert self.process, "No attached process"
             controller = self.process.get_controller(info.mri)
         cothread.Callback(controller.handle_request, info.request)

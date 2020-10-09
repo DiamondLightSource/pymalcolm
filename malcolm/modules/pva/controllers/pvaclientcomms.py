@@ -1,17 +1,14 @@
+from typing import Any, Dict, Set
+
 from p4p import Value
+from p4p.client.cothread import Context, Subscription
 from p4p.client.raw import Disconnected, RemoteError
 from p4p.nt import NTURI
-from p4p.client.cothread import Context, Subscription
-from annotypes import TYPE_CHECKING
 
+from malcolm.core import DEFAULT_TIMEOUT, Alarm, BlockMeta, BlockModel, Model, Queue
 from malcolm.modules import builtin
-from malcolm.core import Queue, Model, DEFAULT_TIMEOUT, BlockMeta, \
-    BlockModel, Alarm
-from .pvaconvert import convert_value_to_dict, convert_to_type_tuple_value, Type
 
-
-if TYPE_CHECKING:
-    from typing import Set, Dict
+from .pvaconvert import Type, convert_to_type_tuple_value, convert_value_to_dict
 
 
 class PvaClientComms(builtin.controllers.ClientComms):
@@ -19,23 +16,24 @@ class PvaClientComms(builtin.controllers.ClientComms):
 
     _monitors = None
     _ctxt = None
-    _queues = {}
+    _queues: Dict[str, Queue] = {}
 
     def do_init(self):
-        super(PvaClientComms, self).do_init()
+        super().do_init()
         self._ctxt = Context("pva", unwrap=False)
-        self._queues = {}  # type: Dict[str, Queue]
-        self._monitors = set()  # type: Set[Subscription]
+        self._queues: Dict[str, Queue] = {}
+        self._monitors: Set[Subscription] = set()
 
     def do_disable(self):
-        super(PvaClientComms, self).do_disable()
+        super().do_disable()
         # Unsubscribe to all the monitors
         for m in self._monitors:
             m.close()
         self._ctxt.close()
 
-    def _update_settable_fields(self, update_fields, dotted_path, ob):
-        # type: (Set[str], str, Any) -> None
+    def _update_settable_fields(
+        self, update_fields: Set[str], dotted_path: str, ob: Any
+    ) -> None:
         if isinstance(ob, dict):
             model_children = all([isinstance(ob[k], Model) for k in ob])
         else:
@@ -45,7 +43,8 @@ class PvaClientComms(builtin.controllers.ClientComms):
             # Recurse down
             for k in ob:
                 self._update_settable_fields(
-                    update_fields, "%s.%s" % (dotted_path, k), ob[k])
+                    update_fields, "%s.%s" % (dotted_path, k), ob[k]
+                )
         else:
             # This is a terminal field, add to the set
             update_fields.add(dotted_path)
@@ -70,7 +69,7 @@ class PvaClientComms(builtin.controllers.ClientComms):
                     update_fields.clear()
                     block.health.set_value(
                         value="pvAccess disconnected",
-                        alarm=Alarm.disconnected("pvAccess disconnected")
+                        alarm=Alarm.disconnected("pvAccess disconnected"),
                     )
             else:
                 with block.notifier.changes_squashed:
@@ -85,8 +84,9 @@ class PvaClientComms(builtin.controllers.ClientComms):
         self._monitors.add(m)
         done_queue.get(timeout=DEFAULT_TIMEOUT)
 
-    def _regenerate_block(self, block, value, update_fields):
-        # type: (BlockModel, Value, Set[str]) -> None
+    def _regenerate_block(
+        self, block: BlockModel, value: Value, update_fields: Set[str]
+    ) -> None:
         # This is an initial update, generate the list of all fields
         # TODO: very similar to websocketclientcomms
         for field in list(block):
@@ -98,10 +98,11 @@ class PvaClientComms(builtin.controllers.ClientComms):
                 block.health.set_value(
                     value=v["value"],
                     alarm=convert_value_to_dict(v["alarm"]),
-                    ts=convert_value_to_dict(v["timeStamp"]))
+                    ts=convert_value_to_dict(v["timeStamp"]),
+                )
             elif k == "meta":
                 # Update BlockMeta
-                meta = block.meta  # type: BlockMeta
+                meta: BlockMeta = block.meta
                 for n in meta.call_types:
                     meta.apply_change([n], v[n])
             else:
@@ -111,8 +112,9 @@ class PvaClientComms(builtin.controllers.ClientComms):
             # Update the list of fields
             self._update_settable_fields(update_fields, k, block[k])
 
-    def _update_block(self, block, value, update_fields):
-        # type: (BlockModel, Value, Set[str]) -> None
+    def _update_block(
+        self, block: BlockModel, value: Value, update_fields: Set[str]
+    ) -> None:
         # This is a subsequent update
         changed = value.changedSet(parents=True, expand=False)
         for k in changed.intersection(update_fields):
@@ -161,13 +163,6 @@ class PvaClientComms(builtin.controllers.ClientComms):
         typ, parameters = convert_to_type_tuple_value(params)
         uri = NTURI(typ[2])
 
-        uri = uri.wrap(
-            path="%s.%s" % (mri, method_name),
-            kws=parameters,
-            scheme="pva"
-        )
+        uri = uri.wrap(path="%s.%s" % (mri, method_name), kws=parameters, scheme="pva")
         value = self._ctxt.rpc(mri, uri, timeout=None)
         return convert_value_to_dict(value)
-
-
-

@@ -1,5 +1,6 @@
-from annotypes import Anno, Any, Serializable, FrozenOrderedDict, \
-    serialize_object
+from typing import Any
+
+from annotypes import Anno, FrozenOrderedDict, Serializable, serialize_object
 
 with Anno("ID that the Request was sent with"):
     AId = int
@@ -16,8 +17,7 @@ class Response(Serializable):
 
     __slots__ = ["id"]
 
-    def __init__(self, id=0):
-        # type: (AId) -> None
+    def __init__(self, id: AId = 0) -> None:
         self.id = id
 
 
@@ -27,9 +27,8 @@ class Return(Response):
 
     __slots__ = ["value"]
 
-    def __init__(self, id=0, value=None):
-        # type: (AId, AValue) -> None
-        super(Return, self).__init__(id)
+    def __init__(self, id: AId = 0, value: AValue = None) -> None:
+        super().__init__(id)
         self.value = value
 
 
@@ -39,9 +38,8 @@ class Error(Response):
 
     __slots__ = ["message"]
 
-    def __init__(self, id=0, message=""):
-        # type: (AId, AMessage) -> None
-        super(Error, self).__init__(id)
+    def __init__(self, id: AId = 0, message: AMessage = Exception("")) -> None:
+        super().__init__(id)
         self.message = message
 
 
@@ -51,9 +49,8 @@ class Update(Response):
 
     __slots__ = ["value"]
 
-    def __init__(self, id=0, value=None):
-        # type: (AId, AValue) -> None
-        super(Update, self).__init__(id)
+    def __init__(self, id: AId = 0, value: AValue = None) -> None:
+        super().__init__(id)
         self.value = value
 
 
@@ -63,13 +60,12 @@ class Delta(Response):
 
     __slots__ = ["changes"]
 
-    def __init__(self, id=0, changes=None):
-        # type: (AId, AChanges) -> None
-        super(Delta, self).__init__(id)
+    def __init__(self, id: AId = 0, changes: AChanges = None) -> None:
+        super().__init__(id)
         self.changes = changes
 
     def to_dict(self, dict_cls=FrozenOrderedDict):
-        d = super(Delta, self).to_dict(dict_cls)
+        d = super().to_dict(dict_cls)
         # Serialize doesn't know to recurse here as it's not typed, so do it
         # here
         for change in d["changes"]:

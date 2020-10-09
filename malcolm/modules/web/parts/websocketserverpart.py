@@ -1,41 +1,51 @@
-import logging
-import socket
 import fcntl
-import struct
+import logging
 import os
+import socket
+import struct
+from typing import Dict, Optional
+
 import cothread
+from annotypes import Anno, add_call_types, deserialize_object, json_decode, json_encode
+from tornado.websocket import WebSocketError, WebSocketHandler
 
-from annotypes import Anno, add_call_types, TYPE_CHECKING, deserialize_object, \
-    json_encode, json_decode
-from tornado.websocket import WebSocketHandler, WebSocketError
-
-from malcolm.core import Part, Request, Subscribe, Unsubscribe, Delta, \
-    Update, Error, Response, FieldError, PartRegistrar, Put, Post, Queue
+from malcolm.core import (
+    Delta,
+    Error,
+    FieldError,
+    Part,
+    PartRegistrar,
+    Post,
+    Put,
+    Queue,
+    Request,
+    Response,
+    Subscribe,
+    Unsubscribe,
+    Update,
+)
 from malcolm.modules import builtin
-from ..infos import HandlerInfo
+
 from ..hooks import ReportHandlersHook, UHandlerInfos
+from ..infos import HandlerInfo
 from ..util import IOLoopHelper
-
-
-if TYPE_CHECKING:
-    from typing import Dict
 
 # Create a module level logger
 log = logging.getLogger(__name__)
 
 # Signals we can send to get info
 SIOCGIFADDR = 0x8915
-SIOCGIFNETMASK = 0x891b
+SIOCGIFNETMASK = 0x891B
 
 # Where we get info about interfaces on Linux
-SYSNET = '/sys/class/net'
+SYSNET = "/sys/class/net"
 
 
 def get_if_info(s, sig, ifname):
     # Use an ioctl to get interface address or netmask
-    packed_ifname = struct.pack('256s', ifname[:15].encode())
+    packed_ifname = struct.pack("256s", ifname[:15].encode())
     info = fcntl.ioctl(s.fileno(), sig, packed_ifname)
-    return struct.unpack('!I', info[20:24])[0]
+    return struct.unpack("!I", info[20:24])[0]
 
 
 def get_ip_validator(ifname):
@@ -52,17 +62,17 @@ def get_ip_validator(ifname):
 # For some reason tornado doesn't make us implement all abstract methods
 # noinspection PyAbstractClass
 class MalcWebSocketHandler(WebSocketHandler):
-    _registrar = None
-    _id_to_mri = None
+    _registrar: PartRegistrar
+    _id_to_mri: Dict[int, str]
     _validators = None
     _writeable = None
-    _queue = None
+    _queue: Optional[Queue] = None
     _counter = None
 
     def initialize(self, registrar=None, validators=()):
-        self._registrar = registrar  # type: PartRegistrar
+        self._registrar = registrar
         # {id: mri}
-        self._id_to_mri = {}  # type: Dict[int, str]
+        self._id_to_mri = {}
         self._validators = validators
         self._queue = Queue()
         self._counter = 0
@@ -81,22 +91,25 @@ class MalcWebSocketHandler(WebSocketHandler):
                 self._writeable = max(v(remoteaddr) for v in self._validators)
             else:
                 self._writeable = True
-            log.info("Puts and Posts are %s from %s",
-                     "allowed" if self._writeable else "forbidden",
-                     self.request.remote_ip)
+            log.info(
+                "Puts and Posts are %s from %s",
+                "allowed" if self._writeable else "forbidden",
+                self.request.remote_ip,
+            )
 
         msg_id = -1
         try:
             d = json_decode(message)
             try:
-                msg_id = d['id']
+                msg_id = d["id"]
             except KeyError:
-                raise FieldError('id field not present in JSON message')
+                raise FieldError("id field not present in JSON message")
             request = deserialize_object(d, Request)
             request.set_callback(self.on_response)
             if isinstance(request, Subscribe):
-                assert msg_id not in self._id_to_mri, \
+                assert msg_id not in self._id_to_mri, (
                     "Duplicate subscription ID %d" % msg_id
+                )
                 self._id_to_mri[msg_id] = request.path[0]
             if isinstance(request, Unsubscribe):
                 mri = self._id_to_mri[msg_id]
@@ -104,7 +117,8 @@ class MalcWebSocketHandler(WebSocketHandler):
                 mri = request.path[0]
             if isinstance(request, (Put, Post)) and not self._writeable:
                 raise ValueError(
-                    "Put/Post is forbidden from %s" % self.request.remote_ip)
+                    "Put/Post is forbidden from %s" % self.request.remote_ip
+                )
             self._registrar.report(builtin.infos.RequestInfo(request, mri))
         except Exception as e:
             log.exception("Error handling message:\n%s", message)
@@ -117,12 +131,11 @@ class MalcWebSocketHandler(WebSocketHandler):
         IOLoopHelper.call(self._on_response, response)
         # Wait for completion once every 10 message
         self._counter += 1
-        if self. _counter % 10 == 0:
+        if self._counter % 10 == 0:
             for _ in range(10):
                 self._queue.get()
 
-    def _on_response(self, response):
-        # type: (Response) -> None
+    def _on_response(self, response: Response) -> None:
         # called from tornado thread
         message = json_encode(response)
         try:
@@ -137,13 +150,16 @@ class MalcWebSocketHandler(WebSocketHandler):
                 # ignore them as we can't do anything about it
                 mri = self._id_to_mri.pop(response.id, None)
                 if mri:
-                    log.info(
-                        'WebSocket Error: unsubscribing from stale handle')
+                    log.info("WebSocket Error: unsubscribing from stale handle")
                     unsubscribe = Unsubscribe(response.id)
                     unsubscribe.set_callback(self.on_response)
-                    self._registrar.report(
-                        builtin.infos.RequestInfo(unsubscribe, mri))
-        cothread.Callback(self._queue.put, None)
+                    if self._registrar:
+                        self._registrar.report(
+                            builtin.infos.RequestInfo(unsubscribe, mri)
+                        )
+        finally:
+            assert self._queue, "No queue"
+            cothread.Callback(self._queue.put, None)
 
     # http://stackoverflow.com/q/24851207
     # TODO: remove this when the web gui is hosted from the box
@@ -158,30 +174,32 @@ with Anno("If True, check any client is in the same subnet as the host"):
 
 
 class WebsocketServerPart(Part):
-    def __init__(self, name="ws", subnet_validation=True):
-        # type: (AName, ASubnetValidation) -> None
-        super(WebsocketServerPart, self).__init__(name)
+    def __init__(
+        self, name: AName = "ws", subnet_validation: ASubnetValidation = True
+    ) -> None:
+        super().__init__(name)
         self.subnet_validation = subnet_validation
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
-        super(WebsocketServerPart, self).setup(registrar)
+    def setup(self, registrar: PartRegistrar) -> None:
+        super().setup(registrar)
         # Hooks
         registrar.hook(ReportHandlersHook, self.on_report_handlers)
 
     @add_call_types
-    def on_report_handlers(self):
-        # type: () -> UHandlerInfos
+    def on_report_handlers(self) -> UHandlerInfos:
         validators = []
         if self.subnet_validation:
             # Create an ip validator for every interface that is up
             for ifname in os.listdir(SYSNET):
-                with open(os.path.join(SYSNET, ifname, 'operstate')) as f:
+                with open(os.path.join(SYSNET, ifname, "operstate")) as f:
                     state = str(f.read())
-                if state != 'down\n':
+                if state != "down\n":
                     # interface is up
                     validators.append(get_ip_validator(ifname))
         info = HandlerInfo(
-            r"/%s" % self.name, MalcWebSocketHandler,
-            registrar=self.registrar, validators=validators)
+            r"/%s" % self.name,
+            MalcWebSocketHandler,
+            registrar=self.registrar,
+            validators=validators,
+        )
         return info

@@ -1,26 +1,30 @@
 import unittest
+
 from mock import MagicMock, call
+
 from malcolm.core import PartRegistrar
-from malcolm.modules.ADCore.parts import FilepathTranslatorPart
 from malcolm.modules.ADCore.infos import FilePathTranslatorInfo
+from malcolm.modules.ADCore.parts import FilepathTranslatorPart
 
 
 class TestFilePathTranslatorPartLocal(unittest.TestCase):
-
     def setUp(self):
         self.o = FilepathTranslatorPart("winpath", "C")
 
     def test_setup(self):
         registrar = MagicMock(spec=PartRegistrar)
         self.o.setup(registrar)
-        
+
         assert registrar.add_attribute_model.mock_calls == [
-            call('windowsDriveLetter', self.o.windows_drive_letter, 
-                self.o.windows_drive_letter.set_value),
-            call('pathPrefix', self.o.path_prefix, 
-                self.o.path_prefix.set_value),
-            call('networkPrefix', self.o.network_prefix,
-                self.o.network_prefix.set_value)
+            call(
+                "windowsDriveLetter",
+                self.o.windows_drive_letter,
+                self.o.windows_drive_letter.set_value,
+            ),
+            call("pathPrefix", self.o.path_prefix, self.o.path_prefix.set_value),
+            call(
+                "networkPrefix", self.o.network_prefix, self.o.network_prefix.set_value
+            ),
         ]
 
         assert self.o.windows_drive_letter.value == "C"
@@ -36,7 +40,6 @@ class TestFilePathTranslatorPartLocal(unittest.TestCase):
 
 
 class TestFilePathTranslatorPartNetwork(unittest.TestCase):
-
     def setUp(self):
         self.o = FilepathTranslatorPart("winpath", "", "/dls", "//dc")
 

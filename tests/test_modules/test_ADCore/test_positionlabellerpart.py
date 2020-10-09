@@ -1,21 +1,19 @@
 from mock import MagicMock, call
+from scanpointgenerator import CompoundGenerator, LineGenerator
 
-from scanpointgenerator import LineGenerator, CompoundGenerator
-
-from malcolm.core import Context, Process, Future
+from malcolm.core import Context, Future, Process
 from malcolm.modules.ADCore.blocks import position_labeller_block
 from malcolm.modules.ADCore.parts import PositionLabellerPart
 from malcolm.testutil import ChildTestCase
 
 
 class TestPositionLabellerPart(ChildTestCase):
-
     def setUp(self):
         self.process = Process("Process")
         self.context = Context(self.process)
         self.child = self.create_child_block(
-            position_labeller_block, self.process,
-            mri="BLOCK-POS", prefix="prefix")
+            position_labeller_block, self.process, mri="BLOCK-POS", prefix="prefix"
+        )
         self.o = PositionLabellerPart(name="m", mri="BLOCK-POS")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
@@ -31,8 +29,7 @@ class TestPositionLabellerPart(ChildTestCase):
         completed_steps = 2
         steps_to_do = 4
         self.o.done_when_reaches = 30
-        self.o.on_configure(
-            self.context, completed_steps, steps_to_do, generator)
+        self.o.on_configure(self.context, completed_steps, steps_to_do, generator)
         expected_xml = """<?xml version="1.0" ?>
 <pos_layout>
 <dimensions>
@@ -45,16 +42,19 @@ class TestPositionLabellerPart(ChildTestCase):
 <position d0="1" d1="1" />
 <position d0="1" d1="0" />
 </positions>
-</pos_layout>""".replace("\n", "")
+</pos_layout>""".replace(
+            "\n", ""
+        )
         # Wait for the start_future so the post gets through to our child
         # even on non-cothread systems
         self.o.start_future.result(timeout=1)
         assert self.child.handled_requests.mock_calls == [
-            call.post('delete'),
-            call.put('enableCallbacks', True),
-            call.put('idStart', 31),
-            call.put('xml', expected_xml),
-            call.post('start')]
+            call.post("delete"),
+            call.put("enableCallbacks", True),
+            call.put("idStart", 31),
+            call.put("xml", expected_xml),
+            call.post("start"),
+        ]
         assert self.o.done_when_reaches == 34
 
     def test_run(self):
@@ -85,6 +85,8 @@ class TestPositionLabellerPart(ChildTestCase):
 <position d0="1" d1="1" />
 <position d0="1" d1="0" />
 </positions>
-</pos_layout>""".replace("\n", "")
+</pos_layout>""".replace(
+            "\n", ""
+        )
         assert child.mock_calls == [call.xml.put_value(expected_xml)]
         assert self.o.end_index == 6

@@ -1,32 +1,46 @@
+import os
 import shutil
 import tempfile
 import unittest
-import os
 
-from annotypes import add_call_types, Anno
-from scanpointgenerator import LineGenerator, CompoundGenerator, \
-    ConcatGenerator
+from annotypes import Anno, add_call_types
+from scanpointgenerator import CompoundGenerator, ConcatGenerator, LineGenerator
 
-from malcolm.core import Part, Process, Context, APartName, PartRegistrar, \
-    NumberMeta, AMri, BadValueError
-from malcolm.modules.scanning.infos import DetectorMutiframeInfo
-from malcolm.modules.scanning.parts import ExposureDeadtimePart
+from malcolm.core import (
+    AMri,
+    APartName,
+    BadValueError,
+    Context,
+    NumberMeta,
+    Part,
+    PartRegistrar,
+    Process,
+)
 from malcolm.modules.builtin.hooks import AContext, InitHook, ResetHook
-from malcolm.modules.builtin.util import set_tags, LayoutTable
-from malcolm.modules.scanning.parts import DetectorChildPart, DatasetTablePart
+from malcolm.modules.builtin.util import LayoutTable, set_tags
 from malcolm.modules.scanning.controllers import RunnableController
-from malcolm.modules.scanning.hooks import AFileDir, AFormatName, \
-    AFileTemplate, RunHook, ConfigureHook, ReportStatusHook
-from malcolm.modules.scanning.util import DetectorTable
-from malcolm.modules.scanning.util import RunnableStates
+from malcolm.modules.scanning.hooks import (
+    AFileDir,
+    AFileTemplate,
+    AFormatName,
+    ConfigureHook,
+    ReportStatusHook,
+    RunHook,
+)
+from malcolm.modules.scanning.infos import DetectorMutiframeInfo
+from malcolm.modules.scanning.parts import (
+    DatasetTablePart,
+    DetectorChildPart,
+    ExposureDeadtimePart,
+)
+from malcolm.modules.scanning.util import DetectorTable, RunnableStates
 
 with Anno("How long to wait"):
     AWait = float
 
 
 class WaitingPart(Part):
-    def __init__(self, name, wait=0.0):
-        # type: (APartName, AWait) -> None
+    def __init__(self, name: APartName, wait: AWait = 0.0) -> None:
         super(WaitingPart, self).__init__(name)
         meta = NumberMeta("float64", "How long to wait")
         set_tags(meta, writeable=True)
@@ -34,8 +48,7 @@ class WaitingPart(Part):
         self.register_hooked(RunHook, self.run)
         self.register_hooked(ConfigureHook, self.configure)
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         registrar.add_attribute_model(self.name, self.attr, self.attr.set_value)
         # Tell the controller to expose some extra configure parameters
         registrar.report(ConfigureHook.create_info(self.configure))
@@ -43,30 +56,27 @@ class WaitingPart(Part):
     # Allow CamelCase as these parameters will be serialized
     # noinspection PyPep8Naming
     @add_call_types
-    def configure(self,
-                  fileDir,  # type: AFileDir
-                  formatName="det",  # type: AFormatName
-                  fileTemplate="%s.h5",  # type: AFileTemplate
-                  ):
-        # type: (...) -> None
+    def configure(
+        self,
+        fileDir: AFileDir,
+        formatName: AFormatName = "det",
+        fileTemplate: AFileTemplate = "%s.h5",
+    ) -> None:
         # Don't do anything, just take the args so we look like a detector
         pass
 
     @add_call_types
-    def run(self, context):
-        # type: (AContext) -> None
+    def run(self, context: AContext) -> None:
         context.sleep(self.attr.value)
 
 
 class MaybeMultiPart(Part):
-    def __init__(self, mri):
-        # type: (AMri) -> None
+    def __init__(self, mri: AMri) -> None:
         super(MaybeMultiPart, self).__init__("MULTI" + mri)
         self.mri = mri
         self.active = False
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         registrar.hook(ReportStatusHook, self.on_report_status)
 
     @add_call_types
@@ -79,8 +89,7 @@ DESIGN_PATH = os.path.join(os.path.dirname(__file__), "designs")
 
 
 class FaultyPart(Part):
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         registrar.hook((InitHook, ResetHook), self.fail)
 
     def fail(self):
@@ -88,15 +97,14 @@ class FaultyPart(Part):
 
 
 class TestDetectorChildPart(unittest.TestCase):
-
     def setUp(self):
-        self.p = Process('process1')
+        self.p = Process("process1")
         self.context = Context(self.p)
 
         # Make a fast child, this will load the wait of 0.01 from saved file
         c1 = RunnableController(
-            mri="fast", config_dir=DESIGN_PATH, use_git=False,
-            initial_design="fast")
+            mri="fast", config_dir=DESIGN_PATH, use_git=False, initial_design="fast"
+        )
         c1.add_part(WaitingPart("wait"))
         c1.add_part(ExposureDeadtimePart("dt", 0.001))
         c1.add_part(DatasetTablePart("dset"))
@@ -104,15 +112,13 @@ class TestDetectorChildPart(unittest.TestCase):
 
         # And a slow one, this has the same saved files as fast, but doesn't
         # load at startup
-        c2 = RunnableController(
-            mri="slow", config_dir=DESIGN_PATH, use_git=False)
+        c2 = RunnableController(mri="slow", config_dir=DESIGN_PATH, use_git=False)
         c2.add_part(WaitingPart("wait", 0.123))
         c2.add_part(DatasetTablePart("dset"))
         self.p.add_controller(c2)
 
         # And a faulty one, this is hidden at startup by default
-        c3 = RunnableController(
-            mri="faulty", config_dir=DESIGN_PATH, use_git=False)
+        c3 = RunnableController(mri="faulty", config_dir=DESIGN_PATH, use_git=False)
         c3.add_part(FaultyPart("bad"))
         c3.add_part(DatasetTablePart("dset"))
         self.p.add_controller(c3)
@@ -120,17 +126,25 @@ class TestDetectorChildPart(unittest.TestCase):
         # And a top level one, this loads slow and fast designs for the
         # children on every configure (or load), but not at init
         self.ct = RunnableController(
-            mri="top", config_dir=DESIGN_PATH, use_git=False,
-            initial_design="default"
+            mri="top", config_dir=DESIGN_PATH, use_git=False, initial_design="default"
         )
         self.ct.add_part(
-            DetectorChildPart(name="FAST", mri="fast", initial_visibility=True))
+            DetectorChildPart(name="FAST", mri="fast", initial_visibility=True)
+        )
         self.ct.add_part(
-            DetectorChildPart(name="SLOW", mri="slow", initial_visibility=True))
+            DetectorChildPart(name="SLOW", mri="slow", initial_visibility=True)
+        )
         self.ct.add_part(
-            DetectorChildPart(name="BAD", mri="faulty", initial_visibility=False))
+            DetectorChildPart(name="BAD", mri="faulty", initial_visibility=False)
+        )
         self.ct.add_part(
-            DetectorChildPart(name="BAD2", mri="faulty", initial_visibility=False, initial_frames_per_step=0))
+            DetectorChildPart(
+                name="BAD2",
+                mri="faulty",
+                initial_visibility=False,
+                initial_frames_per_step=0,
+            )
+        )
         self.fast_multi = MaybeMultiPart("fast")
         self.slow_multi = MaybeMultiPart("slow")
         self.ct.add_part(self.fast_multi)
@@ -151,79 +165,78 @@ class TestDetectorChildPart(unittest.TestCase):
         shutil.rmtree(self.tmpdir)
 
     def make_generator(self):
-        line1 = LineGenerator('y', 'mm', 0, 2, 3)
-        line2 = LineGenerator('x', 'mm', 0, 2, 2)
+        line1 = LineGenerator("y", "mm", 0, 2, 3)
+        line2 = LineGenerator("x", "mm", 0, 2, 2)
         compound = CompoundGenerator([line1, line2], [], [], duration=1)
         return compound
 
     def test_init(self):
         assert list(self.b.configure.meta.defaults["detectors"].rows()) == [
             [True, "FAST", "fast", 0.0, 1],
-            [True, "SLOW", "slow", 0.0, 1]
+            [True, "SLOW", "slow", 0.0, 1],
         ]
 
     def test_validate_returns_exposures(self):
         ret = self.b.validate(
-            self.make_generator(), self.tmpdir,
-            detectors=DetectorTable.from_rows([
-                (True, "SLOW", "slow", 0.0, 1),
-                (True, "FAST", "fast", 0.0, 1)
-            ])
+            self.make_generator(),
+            self.tmpdir,
+            detectors=DetectorTable.from_rows(
+                [(True, "SLOW", "slow", 0.0, 1), (True, "FAST", "fast", 0.0, 1)]
+            ),
         )
         assert list(ret.detectors.rows()) == [
-            [True, 'SLOW', 'slow', 0.0, 1],
-            [True, 'FAST', 'fast', 0.99895, 1],
+            [True, "SLOW", "slow", 0.0, 1],
+            [True, "FAST", "fast", 0.99895, 1],
         ]
 
     def test_guessing_frames_1(self):
         ret = self.b.validate(
-            self.make_generator(), self.tmpdir,
-            detectors=DetectorTable.from_rows([
-                (True, "FAST", "fast", 0.5, 0),
-                (True, "SLOW", "slow", 0.0, 1),
-            ])
+            self.make_generator(),
+            self.tmpdir,
+            detectors=DetectorTable.from_rows(
+                [(True, "FAST", "fast", 0.5, 0), (True, "SLOW", "slow", 0.0, 1)]
+            ),
         )
         assert list(ret.detectors.rows()) == [
-            [True, 'FAST', 'fast', 0.5, 1],
-            [True, 'SLOW', 'slow', 0.0, 1]
+            [True, "FAST", "fast", 0.5, 1],
+            [True, "SLOW", "slow", 0.0, 1],
         ]
 
     def test_setting_exposure_on_no_exposure_det_fails(self):
         with self.assertRaises(BadValueError) as cm:
             self.b.validate(
-                self.make_generator(), self.tmpdir,
-                detectors=DetectorTable.from_rows([
-                    (True, "FAST", "fast", 0.0, 1),
-                    (True, "SLOW", "slow", 0.5, 1),
-                ])
+                self.make_generator(),
+                self.tmpdir,
+                detectors=DetectorTable.from_rows(
+                    [(True, "FAST", "fast", 0.0, 1), (True, "SLOW", "slow", 0.5, 1)]
+                ),
             )
         assert str(cm.exception) == "Detector SLOW doesn't take exposure"
 
     def test_guessing_frames_and_exposure(self):
         self.slow_multi.active = True
         ret = self.b.validate(
-            self.make_generator(), self.tmpdir,
-            detectors=DetectorTable.from_rows([
-                (True, "FAST", "fast", 0.0, 0),
-            ])
+            self.make_generator(),
+            self.tmpdir,
+            detectors=DetectorTable.from_rows([(True, "FAST", "fast", 0.0, 0)]),
         )
         assert list(ret.detectors.rows()) == [
-            [True, 'FAST', 'fast', 0.99895, 1],
-            [False, 'SLOW', 'slow', 0, 0]
+            [True, "FAST", "fast", 0.99895, 1],
+            [False, "SLOW", "slow", 0, 0],
         ]
 
     def test_guessing_frames_5(self):
         self.fast_multi.active = True
         ret = self.b.validate(
-            self.make_generator(), self.tmpdir,
-            detectors=DetectorTable.from_rows([
-                (True, "FAST", "fast", 0.198, 0),
-                (True, "SLOW", "slow", 0.0, 1),
-            ])
+            self.make_generator(),
+            self.tmpdir,
+            detectors=DetectorTable.from_rows(
+                [(True, "FAST", "fast", 0.198, 0), (True, "SLOW", "slow", 0.0, 1)]
+            ),
         )
         assert list(ret.detectors.rows()) == [
-            [True, 'FAST', 'fast', 0.198, 5],
-            [True, 'SLOW', 'slow', 0.0, 1]
+            [True, "FAST", "fast", 0.198, 5],
+            [True, "SLOW", "slow", 0.0, 1],
         ]
 
     def test_adding_faulty_fails(self):
@@ -236,12 +249,15 @@ class TestDetectorChildPart(unittest.TestCase):
         ]
         with self.assertRaises(BadValueError) as cm:
             self.b.configure(self.make_generator(), self.tmpdir)
-        assert str(cm.exception) == "Detector BAD was faulty at init and is unusable. If the detector is now working please restart Malcolm"
+        assert str(cm.exception) == (
+            "Detector BAD was faulty at init and is unusable. "
+            "If the detector is now working please restart Malcolm"
+        )
         self.b.configure(
-            self.make_generator(), self.tmpdir,
-            detectors=DetectorTable.from_rows([
-                (False, "BAD", "faulty", 0.0, 1)
-            ]))
+            self.make_generator(),
+            self.tmpdir,
+            detectors=DetectorTable.from_rows([(False, "BAD", "faulty", 0.0, 1)]),
+        )
         self.b.reset()
         t = LayoutTable.from_rows([["BAD", "faulty", 0, 0, False]])
         self.b.layout.put_value(t)
@@ -261,11 +277,11 @@ class TestDetectorChildPart(unittest.TestCase):
     def test_only_one_det(self):
         # Disable one detector
         self.b.configure(
-            self.make_generator(), self.tmpdir,
-            detectors=DetectorTable.from_rows([
-                (False, "SLOW", "slow", 0.0, 0),
-                [True, 'FAST', 'fast', 0.0, 1],
-            ])
+            self.make_generator(),
+            self.tmpdir,
+            detectors=DetectorTable.from_rows(
+                [(False, "SLOW", "slow", 0.0, 0), [True, "FAST", "fast", 0.0, 1]]
+            ),
         )
         assert self.b.state.value == "Armed"
         assert self.bs.state.value == "Ready"
@@ -290,22 +306,26 @@ class TestDetectorChildPart(unittest.TestCase):
     def test_multi_frame_no_infos_fails(self):
         with self.assertRaises(BadValueError) as cm:
             self.b.configure(
-                self.make_generator(), self.tmpdir,
-                detectors=DetectorTable.from_rows([
-                    (True, "SLOW", "slow", 0.0, 1),
-                    (True, "FAST", "fast", 0.0, 5)
-                ])
+                self.make_generator(),
+                self.tmpdir,
+                detectors=DetectorTable.from_rows(
+                    [(True, "SLOW", "slow", 0.0, 1), (True, "FAST", "fast", 0.0, 5)]
+                ),
             )
-        assert str(cm.exception) == "There are no trigger multipliers setup for Detector 'FAST' so framesPerStep can only be 0 or 1 for this row in the detectors table"
+        assert str(cm.exception) == (
+            "There are no trigger multipliers setup for Detector 'FAST' "
+            "so framesPerStep can only be 0 or 1 for this row in the detectors "
+            "table"
+        )
 
     def test_multi_frame_fast_det(self):
         self.fast_multi.active = True
         self.b.configure(
-            self.make_generator(), self.tmpdir,
-            detectors=DetectorTable.from_rows([
-                (True, "SLOW", "slow", 0.0, 1),
-                (True, "FAST", "fast", 0.0, 5)
-            ])
+            self.make_generator(),
+            self.tmpdir,
+            detectors=DetectorTable.from_rows(
+                [(True, "SLOW", "slow", 0.0, 1), (True, "FAST", "fast", 0.0, 5)]
+            ),
         )
         assert self.b.completedSteps.value == 0
         assert self.b.totalSteps.value == 6
@@ -321,21 +341,22 @@ class TestDetectorChildPart(unittest.TestCase):
         # Send mismatching rows
         with self.assertRaises(AssertionError) as cm:
             self.b.configure(
-                self.make_generator(), self.tmpdir, axesToMove=(),
-                detectors=DetectorTable.from_rows([
-                    (True, "SLOW", "fast", 0.0, 0)
-                ])
+                self.make_generator(),
+                self.tmpdir,
+                axesToMove=(),
+                detectors=DetectorTable.from_rows([(True, "SLOW", "fast", 0.0, 0)]),
             )
-        assert str(cm.exception) == 'SLOW has mri slow, passed fast'
+        assert str(cm.exception) == "SLOW has mri slow, passed fast"
 
     def test_not_paused_when_resume(self):
         # Set it up to do 6 steps
         self.b.configure(
-            self.make_generator(), self.tmpdir, axesToMove=(),
-            detectors=DetectorTable.from_rows([
-                (True, "FAST", "fast", 0, 1),
-                (True, "SLOW", "slow", 0, 1)
-            ])
+            self.make_generator(),
+            self.tmpdir,
+            axesToMove=(),
+            detectors=DetectorTable.from_rows(
+                [(True, "FAST", "fast", 0, 1), (True, "SLOW", "slow", 0, 1)]
+            ),
         )
         assert self.b.completedSteps.value == 0
         assert self.b.totalSteps.value == 6
@@ -374,8 +395,7 @@ class TestDetectorChildPart(unittest.TestCase):
         assert self.bf.design.value == "fast"
         assert self.b.design.value == "default"
         assert self.b.modified.value is True
-        assert self.b.modified.alarm.message == \
-            "SLOW.design.value = '' not 'slow'"
+        assert self.b.modified.alarm.message == "SLOW.design.value = '' not 'slow'"
         self.b.configure(self.make_generator(), self.tmpdir, axesToMove=())
         assert self.bs.wait.value == 1.0
         assert self.bs.design.value == "slow"
@@ -385,9 +405,9 @@ class TestDetectorChildPart(unittest.TestCase):
         assert self.b.modified.value is False
 
     def make_generator_breakpoints(self):
-        line1 = LineGenerator('x', 'mm', -10, -10, 5)
-        line2 = LineGenerator('x', 'mm', 0, 180, 10)
-        line3 = LineGenerator('x', 'mm', 190, 190, 2)
+        line1 = LineGenerator("x", "mm", -10, -10, 5)
+        line2 = LineGenerator("x", "mm", 0, 180, 10)
+        line3 = LineGenerator("x", "mm", 190, 190, 2)
         duration = 0.01
         concat = ConcatGenerator([line1, line2, line3])
 
@@ -404,14 +424,15 @@ class TestDetectorChildPart(unittest.TestCase):
     def test_breakpoints_tomo(self):
         breakpoints = [2, 3, 10, 2]
         # Configure RunnableController(mri='top')
-        self.b.configure(generator=self.make_generator_breakpoints(),
-                         fileDir=self.tmpdir,
-                         detectors=DetectorTable.from_rows([
-                         [False, 'SLOW', 'slow', 0.0, 1],
-                         [True, 'FAST', 'fast', 0.0, 1],
-                         ]),
-                         axesToMove=['x'],
-                         breakpoints=breakpoints)
+        self.b.configure(
+            generator=self.make_generator_breakpoints(),
+            fileDir=self.tmpdir,
+            detectors=DetectorTable.from_rows(
+                [[False, "SLOW", "slow", 0.0, 1], [True, "FAST", "fast", 0.0, 1],]
+            ),
+            axesToMove=["x"],
+            breakpoints=breakpoints,
+        )
 
         assert self.ct.configure_params.generator.size == 17
         self.checkSteps(self.b, 2, 0, 17)
@@ -448,14 +469,15 @@ class TestDetectorChildPart(unittest.TestCase):
 
     def test_breakpoints_with_pause(self):
         breakpoints = [2, 3, 10, 2]
-        self.b.configure(generator=self.make_generator_breakpoints(),
-                         fileDir=self.tmpdir,
-                         detectors=DetectorTable.from_rows([
-                             [False, 'SLOW', 'slow', 0.0, 1],
-                             [True, 'FAST', 'fast', 0.0, 1],
-                         ]),
-                         axesToMove=['x'],
-                         breakpoints=breakpoints)
+        self.b.configure(
+            generator=self.make_generator_breakpoints(),
+            fileDir=self.tmpdir,
+            detectors=DetectorTable.from_rows(
+                [[False, "SLOW", "slow", 0.0, 1], [True, "FAST", "fast", 0.0, 1],]
+            ),
+            axesToMove=["x"],
+            breakpoints=breakpoints,
+        )
 
         assert self.ct.configure_params.generator.size == 17
 

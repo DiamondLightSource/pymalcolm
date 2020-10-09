@@ -3,8 +3,9 @@ from tornado import gen
 from tornado.queues import Queue
 from tornado.web import RequestHandler
 
-from malcolm.core import Part, Get, Post, Return, Error, PartRegistrar
+from malcolm.core import Error, Get, Part, PartRegistrar, Post, Return
 from malcolm.modules import builtin
+
 from ..hooks import ReportHandlersHook, UHandlerInfos
 from ..infos import HandlerInfo
 from ..util import IOLoopHelper
@@ -17,7 +18,7 @@ class RestfulHandler(RequestHandler):
     _queue = None
 
     def initialize(self, registrar=None):
-        self._registrar = registrar  # type: PartRegistrar
+        self._registrar: PartRegistrar = registrar
         self._queue = Queue()
 
     @gen.coroutine
@@ -69,20 +70,16 @@ with Anno("Part name and subdomain name to respond to queries on"):
 
 
 class RestfulServerPart(Part):
-    def __init__(self, name="rest"):
-        # type: (AName) -> None
-        super(RestfulServerPart, self).__init__(name)
+    def __init__(self, name: AName = "rest") -> None:
+        super().__init__(name)
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
-        super(RestfulServerPart, self).setup(registrar)
+    def setup(self, registrar: PartRegistrar) -> None:
+        super().setup(registrar)
         # Hooks
         registrar.hook(ReportHandlersHook, self.on_report_handlers)
 
     @add_call_types
-    def on_report_handlers(self):
-        # type: () -> UHandlerInfos
+    def on_report_handlers(self) -> UHandlerInfos:
         regexp = r"/%s/(.*)" % self.name
         info = HandlerInfo(regexp, RestfulHandler, registrar=self.registrar)
         return info
-

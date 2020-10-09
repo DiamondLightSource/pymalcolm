@@ -1,11 +1,20 @@
 import unittest
 
-from mock import ANY
-
-from malcolm.core import Process, Post, Subscribe, Return, \
-    Update, Controller, Queue, TimeoutError, Put, Error, Delta, TimeStamp, \
-    AlarmSeverity, Alarm
-from malcolm.modules.demo.parts import HelloPart, CounterPart
+from malcolm.core import (
+    Alarm,
+    Controller,
+    Delta,
+    Error,
+    Post,
+    Process,
+    Put,
+    Queue,
+    Return,
+    Subscribe,
+    TimeoutError,
+    Update,
+)
+from malcolm.modules.demo.parts import CounterPart, HelloPart
 
 
 class TestHelloDemoSystem(unittest.TestCase):
@@ -21,8 +30,9 @@ class TestHelloDemoSystem(unittest.TestCase):
 
     def test_hello_good_input(self):
         q = Queue()
-        request = Post(id=44, path=["hello_block", "greet"],
-                       parameters=dict(name="thing"))
+        request = Post(
+            id=44, path=["hello_block", "greet"], parameters=dict(name="thing")
+        )
         request.set_callback(q.put)
         self.controller.handle_request(request)
         response = q.get(timeout=1.0)
@@ -38,11 +48,12 @@ class TestHelloDemoSystem(unittest.TestCase):
         # Get the initial subscribe value
         inital = q.get(timeout=0.1)
         self.assertIsInstance(inital, Delta)
-        assert inital.changes[0][1]["took"]["value"] == dict(sleep=0, name='')
-        assert inital.changes[0][1]["returned"]["value"] == {'return': ''}
+        assert inital.changes[0][1]["took"]["value"] == dict(sleep=0, name="")
+        assert inital.changes[0][1]["returned"]["value"] == {"return": ""}
         # Do a greet
-        request = Post(id=44, path=["hello_block", "greet"],
-                       parameters=dict(name="me", sleep=1))
+        request = Post(
+            id=44, path=["hello_block", "greet"], parameters=dict(name="me", sleep=1)
+        )
         request.set_callback(q.put)
         self.controller.handle_request(request)
         # Then an error
@@ -130,4 +141,3 @@ class TestCounterDemoSystem(unittest.TestCase):
         # And that there isn't anything else
         with self.assertRaises(TimeoutError):
             q.get(timeout=0.05)
-

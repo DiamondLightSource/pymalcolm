@@ -1,18 +1,15 @@
-# Treat all division as float division even in python2
-from __future__ import division
-
-from annotypes import add_call_types, Anno, TYPE_CHECKING
-from scanpointgenerator import Point
-
-from malcolm.core import APartName, Block, Attribute, Context, PartRegistrar
-from malcolm.modules import builtin, scanning, pmac
-from malcolm.modules.pmac.util import all_points_joined
-from ..util import SequencerTable, Trigger
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
+from annotypes import Anno, add_call_types
+from scanpointgenerator import Point
 
-if TYPE_CHECKING:
-    from typing import List, Tuple, Dict
+from malcolm.core import APartName, Attribute, Block, Context, PartRegistrar
+from malcolm.modules import builtin, pmac, scanning
+from malcolm.modules.pmac.util import all_points_joined
+from malcolm.modules.scanning.infos import MinTurnaroundInfo
+
+from ..util import SequencerTable, Trigger
 
 #: The SEQ.table attributes that should be present in PANDA.exports
 SEQ_TABLES = ("seqTableA", "seqTableB")
@@ -44,49 +41,72 @@ LAST_PULSE = 125000000  # ticks = 1s
 MAX_REPEATS = 4096
 
 
-def seq_row(repeats=1, trigger=Trigger.IMMEDIATE, position=0,
-            half_duration=MIN_PULSE, live=0, dead=0):
-    # type: (int, str, int, int, int, int) -> List
+def seq_row(
+    repeats: int = 1,
+    trigger: str = Trigger.IMMEDIATE,
+    position: int = 0,
+    half_duration: int = MIN_PULSE,
+    live: int = 0,
+    dead: int = 0,
+) -> List:
     """Create a 50% duty cycle pulse with phase1 having given live/dead values
     """
-    row = [repeats, trigger, position,
-           # Phase1
-           half_duration, live, dead, 0, 0, 0, 0,
-           # Phase2
-           half_duration, 0, 0, 0, 0, 0, 0]
+    row = [
+        repeats,
+        trigger,
+        position,
+        # Phase1
+        half_duration,
+        live,
+        dead,
+        0,
+        0,
+        0,
+        0,
+        # Phase2
+        half_duration,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+    ]
     return row
 
 
-def _get_blocks(context, panda_mri):
-    # type: (Context, str) -> List[Block]
+def _get_blocks(context: Context, panda_mri: str) -> List[Block]:
     """Get panda, seqA and seqB Blocks using the given context"""
     # {part_name: export_name}
     panda = context.block_view(panda_mri)
     seq_part_names = {}
     for source, export in panda.exports.value.rows():
         if export in SEQ_TABLES:
-            assert source.endswith(".table"), \
-                "Expected export %s to come from SEQx.table, got %s" % (
-                    export, source)
-            seq_part_names[source[:-len(".table")]] = export
-    assert tuple(sorted(seq_part_names.values())) == SEQ_TABLES, \
-        "Expected exported attributes %s, got %s" % (
-            SEQ_TABLES, panda.exports.value.export)
+            assert source.endswith(
+                ".table"
+            ), "Expected export %s to come from SEQx.table, got %s" % (export, source)
+            seq_part_names[source[: -len(".table")]] = export
+    assert tuple(sorted(seq_part_names.values())) == SEQ_TABLES, (
+        "Expected exported attributes %s, got %s"
+        % (SEQ_TABLES, panda.exports.value.export)
+    )
     # {export_name: mri}
     seq_mris = {}
     for name, mri, _, _, _ in panda.layout.value.rows():
         if name in seq_part_names:
             export = seq_part_names[name]
             seq_mris[export] = mri
-    assert sorted(seq_mris) == sorted(seq_part_names.values()), \
-        "Couldn't find MRI for some of %s" % (seq_part_names.values(),)
+    assert sorted(seq_mris) == sorted(
+        seq_part_names.values()
+    ), "Couldn't find MRI for some of %s" % (seq_part_names.values(),)
     blocks = [panda]
     blocks += [context.block_view(seq_mris[x]) for x in SEQ_TABLES]
     return blocks
 
 
-def _what_moves_most(point, axis_mapping):
-    # type: (Point, Dict[str, pmac.infos.MotorInfo]) -> Tuple[str, int, bool]
+def _what_moves_most(
+    point: Point, axis_mapping: Dict[str, pmac.infos.MotorInfo]
+) -> Tuple[str, int, bool]:
     """Work out which axis from the given axis mapping moves most for this
     point"""
     # TODO: should use new velocity calcs when Giles has finished
@@ -102,10 +122,10 @@ def _what_moves_most(point, axis_mapping):
             diffs[s] = abs(diff_cts)
             compare_increasing[s] = (compare_cts, diff_cts > 0)
 
-    assert diffs, \
-        "Can't work out a compare point for %s, maybe none of the axes " \
-        "connected to the PandA are moving during the scan point?" % \
-        point.positions
+    assert diffs, (
+        "Can't work out a compare point for %s, maybe none of the axes "
+        "connected to the PandA are moving during the scan point?" % point.positions
+    )
 
     # Sort on abs(diff), take the biggest
     axis_name = sorted(diffs, key=diffs.get)[-1]
@@ -113,8 +133,7 @@ def _what_moves_most(point, axis_mapping):
     return axis_name, compare_cts, increasing
 
 
-def doing_pcomp(row_trigger_value):
-    # type: (str) -> bool
+def doing_pcomp(row_trigger_value: str) -> bool:
     return row_trigger_value == "Position Compare"
 
 
@@ -128,10 +147,12 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
     - seqSetEnable: forceSet Method of an SRGATE that is used to gate both SEQs
     """
 
-    def __init__(self, name, mri, initial_visibility=None):
-        # type: (APartName, AMri, AInitialVisibility) -> None
-        super(PandASeqTriggerPart, self).__init__(
-            name, mri, initial_visibility=initial_visibility, stateful=False)
+    def __init__(
+        self, name: APartName, mri: AMri, initial_visibility: AInitialVisibility = True
+    ) -> None:
+        super().__init__(
+            name, mri, initial_visibility=initial_visibility, stateful=False
+        )
         # Stored generator for positions
         self.generator = None
         # The last index we have loaded
@@ -143,29 +164,34 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         # The last point we loaded
         self.last_point = None
         # What is the mapping of scannable name to MotorInfo
-        self.axis_mapping = {}
+        self.axis_mapping: Dict[str, pmac.infos.MotorInfo] = {}
         # The minimum turnaround time for non-joined points
-        self.min_turnaround = 0
+        self.min_turnaround = 0.0
         # The minimum time between turnaround points
-        self.min_interval = 0
+        self.min_interval = 0.0
         # {(scannable, increasing): trigger_enum}
-        self.trigger_enums = {}
+        self.trigger_enums: Dict[Tuple[str, bool], str] = {}
         # The panda Block we will be prodding
-        self.panda = None
+        self.panda: Optional[Any] = None
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
-        super(PandASeqTriggerPart, self).setup(registrar)
+    def setup(self, registrar: PartRegistrar) -> None:
+        super().setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
-        registrar.hook((scanning.hooks.ConfigureHook,
-                        scanning.hooks.SeekHook,
-                        scanning.hooks.PostRunArmedHook), self.on_configure)
+        registrar.hook(
+            (
+                scanning.hooks.ConfigureHook,
+                scanning.hooks.SeekHook,
+                scanning.hooks.PostRunArmedHook,
+            ),
+            self.on_configure,
+        )
         registrar.hook(scanning.hooks.RunHook, self.on_run)
 
     @add_call_types
-    def on_report_status(self, context):
-        # type: (scanning.hooks.AContext) -> scanning.hooks.UInfos
+    def on_report_status(
+        self, context: scanning.hooks.AContext
+    ) -> scanning.hooks.UInfos:
         child = context.block_view(self.mri)
         # Work out if we need the motor controller to send start of row triggers
         # or no triggers
@@ -178,21 +204,24 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         info = scanning.infos.MotionTriggerInfo(trigger)
         return info
 
-    def setup_pcomp_dicts(self, seqa, seqb, axis_mapping):
+    def setup_pcomp_dicts(
+        self, seqa: Block, seqb: Block, axis_mapping: Dict[str, pmac.infos.MotorInfo]
+    ) -> None:
         """Setup the axis_mapping and trigger_enum dicts for position compare"""
-        # type: (Block, Block, Dict[str, pmac.infos.MotorInfo]) -> None
         # Check that both sequencers are pointing to the same encoders
         seq_pos = {}
         for suff in "abc":
             # Something like INENC1.VAL or ZERO
             seqa_pos_inp = seqa["pos" + suff].value
             seqb_pos_inp = seqb["pos" + suff].value
-            assert seqa_pos_inp == seqb_pos_inp, \
-                "SeqA Pos%s = %s != SeqB Pos%s = %s" % (
-                    suff, seqa_pos_inp, suff, seqb_pos_inp)
+            assert seqa_pos_inp == seqb_pos_inp, (
+                "SeqA Pos%s = %s != SeqB Pos%s = %s"
+                % (suff, seqa_pos_inp, suff, seqb_pos_inp)
+            )
             seq_pos[seqa_pos_inp] = "POS%s" % suff.upper()
 
         # Fix the mres and offsets from the panda positions table
+        assert self.panda, "No PandA"
         positions_table = self.panda.positions.value
         for i, name in enumerate(positions_table.name):
             try:
@@ -211,29 +240,27 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
                     info.resolution = positions_table.scale[i]
                     info.offset = positions_table.offset[i]
                     self.axis_mapping[scannable] = info
-                    self.trigger_enums[(scannable, True)] = \
-                        "%s>=POSITION" % pos
-                    self.trigger_enums[(scannable, False)] = \
-                        "%s<=POSITION" % pos
+                    self.trigger_enums[(scannable, True)] = "%s>=POSITION" % pos
+                    self.trigger_enums[(scannable, False)] = "%s<=POSITION" % pos
         # Check we have at least one entry
-        assert self.axis_mapping, \
-            "None of the seq inputs %s can be mapped to scannable names " \
-            "in %s. Did you define datasetName entries for these rows in " \
-            "the PandA positions table?" % (
-                sorted(seq_pos), sorted(axis_mapping))
+        assert self.axis_mapping, (
+            "None of the seq inputs %s can be mapped to scannable names "
+            "in %s. Did you define datasetName entries for these rows in "
+            "the PandA positions table?" % (sorted(seq_pos), sorted(axis_mapping))
+        )
 
     # Allow CamelCase as these parameters will be serialized
     # noinspection PyPep8Naming
     @add_call_types
-    def on_configure(self,
-                     context,  # type: scanning.hooks.AContext
-                     completed_steps,  # type: scanning.hooks.ACompletedSteps
-                     steps_to_do,  # type: scanning.hooks.AStepsToDo
-                     part_info,  # type: scanning.hooks.APartInfo
-                     generator,  # type: scanning.hooks.AGenerator
-                     axesToMove  # type: scanning.hooks.AAxesToMove
-                     ):
-        # type: (...) -> None
+    def on_configure(
+        self,
+        context: scanning.hooks.AContext,
+        completed_steps: scanning.hooks.ACompletedSteps,
+        steps_to_do: scanning.hooks.AStepsToDo,
+        part_info: scanning.hooks.APartInfo,
+        generator: scanning.hooks.AGenerator,
+        axesToMove: scanning.hooks.AAxesToMove,
+    ) -> None:
         self.generator = generator
         self.loaded_up_to = completed_steps
         self.scan_up_to = completed_steps + steps_to_do
@@ -247,10 +274,11 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         row_trigger = child.rowTrigger.value
 
         # See if there is a minimum turnaround
-        infos = scanning.infos.MinTurnaroundInfo.filter_values(part_info)
+        infos: List[MinTurnaroundInfo] = MinTurnaroundInfo.filter_values(part_info)
         if infos:
-            assert len(infos) == 1, \
-                "Expected 0 or 1 MinTurnaroundInfos, got %d" % len(infos)
+            assert len(infos) == 1, "Expected 0 or 1 MinTurnaroundInfos, got %d" % len(
+                infos
+            )
             self.min_turnaround = max(pmac.util.MIN_TIME, infos[0].gap)
             self.min_interval = infos[0].interval
         else:
@@ -268,15 +296,17 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         if motion_axes:
             # Need to fill in the axis mapping
             axis_mapping = pmac.util.cs_axis_mapping(
-                context, context.block_view(pmac_mri).layout.value, motion_axes)
+                context, context.block_view(pmac_mri).layout.value, motion_axes
+            )
             if doing_pcomp(row_trigger):
                 # We need to do position compare, so only place the infos into
                 # axis_mapping that our sequencer can see
                 self.setup_pcomp_dicts(seqa, seqb, axis_mapping)
             else:
                 # We rely on the inputs coming into SEQ bitA
-                assert seqa["bita"].value == seqb["bita"].value != "ZERO", \
-                    "SEQ.bita inputs need to point to the same non-zero input"
+                assert (
+                    seqa["bita"].value == seqb["bita"].value != "ZERO"
+                ), "SEQ.bita inputs need to point to the same non-zero input"
                 self.axis_mapping = axis_mapping
 
         # TODO:
@@ -288,15 +318,16 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         # load up the first SEQ
         self._fill_sequencer(self.panda[SEQ_TABLES[0]])
 
-    def _how_long_moving_wrong_way(self, axis_name, point, increasing):
-        # type: (str, Point, bool) -> float
+    def _how_long_moving_wrong_way(
+        self, axis_name: str, point: Point, increasing: bool
+    ) -> float:
         """Work out the turnaround for the axis with the given MotorInfo, and
         how long it is moving in the opposite direction from where we want it to
         be going for point"""
         min_turnaround = max(self.min_turnaround, point.delay_after)
         time_arrays, velocity_arrays = pmac.util.profile_between_points(
-            self.axis_mapping, self.last_point, point, min_turnaround,
-            self.min_interval)
+            self.axis_mapping, self.last_point, point, min_turnaround, self.min_interval
+        )
         info = self.axis_mapping[axis_name]
         time_array = time_arrays[info.scannable]
         velocity_array = velocity_arrays[info.scannable]
@@ -310,14 +341,15 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
             if (increasing and v <= 0) or (not increasing and v >= 0):
                 # The axis is stationary or going the wrong way at this
                 # point, so we should be blind before then
-                assert i < len(velocity_array) - 1, \
+                assert i < len(velocity_array) - 1, (
                     "Last point of %s is wrong direction" % velocity_array
+                )
                 break
         blind = time_array[i]
         return blind
 
     @staticmethod
-    def _get_row_indices(points):
+    def _get_row_indices(points) -> Tuple[np.array, np.array]:
         """Generate list of start and end indices for separate rows
 
         This excludes the initial row, which is handled separately.
@@ -359,15 +391,14 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
             complete_rows = count // MAX_REPEATS
             remaining = count % MAX_REPEATS
 
-            rows = [seq_row(repeats=MAX_REPEATS, half_duration=half_frame,
-                            live=1)] * complete_rows
-            rows.append(seq_row(repeats=remaining, half_duration=half_frame,
-                                live=1))
+            rows = [
+                seq_row(repeats=MAX_REPEATS, half_duration=half_frame, live=1)
+            ] * complete_rows
+            rows.append(seq_row(repeats=remaining, half_duration=half_frame, live=1))
 
         return rows
 
-    def _generate_triggered_rows(self, points, start_index, end_index,
-                                 add_blind):
+    def _generate_triggered_rows(self, points, start_index, end_index, add_blind):
         """Generate sequencer rows corresponding to a triggered points row"""
         rows = []
         initial_point = points[start_index]
@@ -378,37 +409,47 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
             # First row, or rows not joined
             # Work out which axis moves most during this point
             axis_name, compare_cts, increasing = _what_moves_most(
-                initial_point, self.axis_mapping)
+                initial_point, self.axis_mapping
+            )
 
             if add_blind:
                 # How long to be blind for during the turnaround
                 blind = self._how_long_moving_wrong_way(
-                    axis_name, initial_point, increasing)
+                    axis_name, initial_point, increasing
+                )
                 half_blind = int(round(blind / TICK / 2))
                 rows.append(seq_row(half_duration=half_blind, dead=1))
 
             # Create a compare point for the next row
-            rows.append(seq_row(
-                trigger=self.trigger_enums[(axis_name, increasing)],
-                position=compare_cts, half_duration=half_frame, live=1))
+            rows.append(
+                seq_row(
+                    trigger=self.trigger_enums[(axis_name, increasing)],
+                    position=compare_cts,
+                    half_duration=half_frame,
+                    live=1,
+                )
+            )
         else:
             # Row trigger coming in on BITA
 
             if add_blind:
                 # Produce dead pulse as soon as row has finished
-                rows.append(seq_row(
-                    half_duration=MIN_PULSE, dead=1, trigger=Trigger.BITA_0))
+                rows.append(
+                    seq_row(half_duration=MIN_PULSE, dead=1, trigger=Trigger.BITA_0)
+                )
 
-            rows.append(seq_row(
-                trigger=Trigger.BITA_1, half_duration=half_frame, live=1))
+            rows.append(
+                seq_row(trigger=Trigger.BITA_1, half_duration=half_frame, live=1)
+            )
 
-        rows.extend(self._generate_immediate_rows(
-                points.duration[start_index+1:end_index]))
+        rows.extend(
+            self._generate_immediate_rows(points.duration[start_index + 1 : end_index])
+        )
 
         return rows
 
-    def _fill_sequencer(self, seq_table):
-        # type: (Attribute) -> None
+    def _fill_sequencer(self, seq_table: Attribute) -> None:
+        assert self.generator, "No generator"
         points = self.generator.get_points(self.loaded_up_to, self.scan_up_to)
 
         if points is None or len(points) == 0:
@@ -420,15 +461,17 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
 
         if not self.axis_mapping:
             # No position compare or row triggering required
-            rows.extend(
-                self._generate_immediate_rows(points.duration))
+            rows.extend(self._generate_immediate_rows(points.duration))
 
             # one last dead frame signal
             rows.append(seq_row(half_duration=LAST_PULSE, dead=1))
 
             if len(rows) > SEQ_TABLE_ROWS:
-                raise Exception("Seq table: {} rows with {} maximum".format(
-                    len(rows), SEQ_TABLE_ROWS))
+                raise Exception(
+                    "Seq table: {} rows with {} maximum".format(
+                        len(rows), SEQ_TABLE_ROWS
+                    )
+                )
 
             table = SequencerTable.from_rows(rows)
             seq_table.put_value(table)
@@ -449,7 +492,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
 
         for start, end in zip(start_indices, end_indices):
             # First row handled outside of loop
-            self.last_point = points[start-1]
+            self.last_point = points[start - 1]
 
             rows.extend(self._generate_triggered_rows(points, start, end, True))
 
@@ -457,14 +500,15 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         rows.append(seq_row(half_duration=LAST_PULSE, dead=1))
 
         if len(rows) > SEQ_TABLE_ROWS:
-            raise Exception("Seq table: {} rows with {} maximum".format(
-                len(rows), SEQ_TABLE_ROWS))
+            raise Exception(
+                "Seq table: {} rows with {} maximum".format(len(rows), SEQ_TABLE_ROWS)
+            )
 
         table = SequencerTable.from_rows(rows)
         seq_table.put_value(table)
 
     @add_call_types
-    def on_run(self, context):
-        # type: (scanning.hooks.AContext) -> None
+    def on_run(self, context: scanning.hooks.AContext) -> None:
         # Call sequence table enable
+        assert self.panda, "No PandA"
         self.panda.seqSetEnable()

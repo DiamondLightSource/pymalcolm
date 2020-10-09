@@ -30,6 +30,3 @@ def snake_to_camel(name):
     ret = "".join(x.title() for x in name.split("_"))
     ret = ret[0].lower() + ret[1:]
     return ret
-
-
-

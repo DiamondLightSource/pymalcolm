@@ -1,12 +1,8 @@
 import re
-
 from enum import Enum
-from annotypes import TYPE_CHECKING
+from typing import List, Sequence, Tuple, Union
 
 from .. import __version__
-
-if TYPE_CHECKING:
-    from typing import Sequence, Union, Tuple, List
 
 
 def version_tag():
@@ -16,6 +12,7 @@ def version_tag():
 
 class Widget(Enum):
     """Enum with all the known widget tags to appear on Attribute Metas"""
+
     NONE = ""  #: Force no widget
     TEXTINPUT = "textinput"  #: Editable text input box
     TEXTUPDATE = "textupdate"  #: Read only text update
@@ -49,6 +46,7 @@ port_tag_re = re.compile(r"(source|sink)Port:(.*):(.*)")
 class Port(Enum):
     """Enum with all the known flowgraph port tags to appear on Attribute
     Metas"""
+
     BOOL = "bool"  #: Boolean value. Typically used in PandA
     INT32 = "int32"  #: 32-bit signed integer. Typically used in PandA
     NDARRAY = "NDArray"  #: areaDetector NDArray port
@@ -81,8 +79,9 @@ class Port(Enum):
         return new_tags
 
     @classmethod
-    def port_tag_details(cls, tags):
-        # type: (Sequence[str]) -> Union[Tuple[bool, Port, str], None]
+    def port_tag_details(
+        cls, tags: Sequence[str]
+    ) -> Union[Tuple[bool, "Port", str], None]:
         """Search tags for port info, returning it
 
         Args:
@@ -98,38 +97,35 @@ class Port(Enum):
                 source_sink, port, extra = match.groups()
                 return source_sink == "source", cls(port), extra
 
+        return None
 
-def group_tag(group_name):
-    # type: (str) -> str
+
+def group_tag(group_name: str) -> str:
     """Marks this field as belonging to a group"""
     tag = "group:%s" % group_name
     return tag
 
 
-def without_group_tags(tags):
-    # type: (Sequence[str]) -> List[str]
+def without_group_tags(tags: Sequence[str]) -> List[str]:
     """Return a new list of tags without any group tags"""
     new_tags = [x for x in tags if not x.startswith("group:")]
     return new_tags
 
 
-def linked_value_tag(mri, attribute_name):
-    # type: (str, str) -> str
+def linked_value_tag(mri: str, attribute_name: str) -> str:
     """Marks this field as having another attribute in another Block that
     should be displayed below it as a linked value"""
     tag = "linkedvalue:%s:%s" % (attribute_name, mri)
     return tag
 
 
-def without_linked_value_tags(tags):
-    # type: (Sequence[str]) -> List[str]
+def without_linked_value_tags(tags: Sequence[str]) -> List[str]:
     """Return a new list of tags without any group tags"""
     new_tags = [x for x in tags if not x.startswith("linkedvalue:")]
     return new_tags
 
 
-def badge_value_tag(mri, attribute_name, display="plus"):
-    # type: (str, str, str) -> str
+def badge_value_tag(mri: str, attribute_name: str, display: str = "plus") -> str:
     """Marks this Port as having another attribute in another Block that
     should be displayed as its badge.
 
@@ -144,8 +140,7 @@ def badge_value_tag(mri, attribute_name, display="plus"):
     return tag
 
 
-def config_tag(iteration=1):
-    # type: (int) -> str
+def config_tag(iteration: int = 1) -> str:
     """Marks this field as a value that should be saved and loaded at config
 
     Args:
@@ -156,12 +151,13 @@ def config_tag(iteration=1):
     return tag
 
 
-def get_config_tag(tags):
-    # type: (Sequence[str]) -> Union[str, None]
+def get_config_tag(tags: Sequence[str]) -> Union[str, None]:
     """Get the config_tag from tags or return None"""
     for tag in tags:
         if tag.startswith("config:"):
             return tag
+
+    return None
 
 
 def without_config_tags(tags):
@@ -179,6 +175,7 @@ def method_return_unpacked():
     """
     tag = "method:return:unpacked"
     return tag
+
 
 def method_hidden():
     """Hide this method on the GUI"""
