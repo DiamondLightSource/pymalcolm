@@ -428,7 +428,7 @@ class TestDetectorChildPart(unittest.TestCase):
             generator=self.make_generator_breakpoints(),
             fileDir=self.tmpdir,
             detectors=DetectorTable.from_rows(
-                [[False, "SLOW", "slow", 0.0, 1], [True, "FAST", "fast", 0.0, 1],]
+                [[False, "SLOW", "slow", 0.0, 1], [True, "FAST", "fast", 0.0, 1]]
             ),
             axesToMove=["x"],
             breakpoints=breakpoints,
@@ -473,7 +473,7 @@ class TestDetectorChildPart(unittest.TestCase):
             generator=self.make_generator_breakpoints(),
             fileDir=self.tmpdir,
             detectors=DetectorTable.from_rows(
-                [[False, "SLOW", "slow", 0.0, 1], [True, "FAST", "fast", 0.0, 1],]
+                [[False, "SLOW", "slow", 0.0, 1], [True, "FAST", "fast", 0.0, 1]]
             ),
             axesToMove=["x"],
             breakpoints=breakpoints,
