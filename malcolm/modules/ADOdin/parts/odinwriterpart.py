@@ -3,7 +3,7 @@ import os
 import h5py
 from annotypes import Anno, add_call_types, TYPE_CHECKING
 from vdsgen import InterleaveVDSGenerator, ReshapeVDSGenerator
-from scanpointgenerator import CompoundGenerator, SquashingExcluder
+from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import APartName, Future, Info, PartRegistrar, BadValueError, errors
 from malcolm.modules import builtin, scanning
@@ -251,13 +251,10 @@ class OdinWriterPart(builtin.parts.ChildPart):
                  uid_name="uid",  # type: AUidName
                  sum_name="sum",  # type: ASumName
                  secondary_set="sum",  # type: ASecondaryDataset
-                 driver_mri=None  # type: AMri
                  ):
-        # type: (...) -> None
         self.uid_name = uid_name
         self.sum_name = sum_name
         self.secondary_set = secondary_set
-        self.drv_mri = driver_mri
         super(OdinWriterPart, self).__init__(name, mri, initial_visibility)
 
     @add_call_types
@@ -358,26 +355,23 @@ class OdinWriterPart(builtin.parts.ChildPart):
         
         child = context.block_view(self.mri)
         # Wait until Odin stops receiving frames
-        try:
-            child.when_value_matches(
-                "numCaptured", self.done_when_reaches,
-                event_timeout=self.exposure_time + 5)
-        except errors.TimeoutError:
-            pass
-        current_count = child.numCaptured.value
+        # try:
+        #    child.when_value_matches(
+        #        "numCaptured", self.done_when_reaches,
+        #        event_timeout=self.exposure_time + 5)
+        # except errors.TimeoutError:
+        #    pass
+        #current_count = child.numCaptured.value
+
         self.unique_id_offset = self.done_when_reaches
-        # worked with vanilla detectordriverpart
-        # self.frame_offset = (completed_steps - self.done_when_reaches) + 1  
         self.frame_offset = completed_steps
         
         child.uidOffset.put_value(self.unique_id_offset)        
         child.frameOffset.put_value(self.frame_offset)
         
-        self.done_when_reaches = steps_to_do + current_count
-        #drv = context.block_view(self.drv_mri)
-        # Just reset the array counter_block
-        #drv.arrayCounter.put_value(0)        
-        # Start a future waiting for the first array
+        # TODO: point this to check written UID instead
+        # self.done_when_reaches = steps_to_do + current_count
+       
         self.array_future = child.when_value_matches_async(
             "numCaptured", greater_than_zero)
 

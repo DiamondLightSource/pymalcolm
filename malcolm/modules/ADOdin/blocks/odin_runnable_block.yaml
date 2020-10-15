@@ -82,7 +82,6 @@
 - ADOdin.parts.OdinWriterPart:
     name: WRITER
     mri: $(mri_prefix):$(writer_suffix)
-    driver_mri: $(mri_prefix):DRV
     sum_name: $(sum_name)
     uid_name: $(uid_name)
     secondary_set: $(secondary_set)
