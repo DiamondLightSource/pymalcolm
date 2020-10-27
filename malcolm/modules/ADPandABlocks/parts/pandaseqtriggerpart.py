@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 from annotypes import Anno, add_call_types
 from scanpointgenerator import Point
+from operator import itemgetter
 
 from malcolm.core import APartName, Attribute, Block, Context, PartRegistrar
 from malcolm.modules import builtin, pmac, scanning
@@ -127,8 +128,8 @@ def _what_moves_most(
         "connected to the PandA are moving during the scan point?" % point.positions
     )
 
-    # Sort on abs(diff), take the biggest
-    axis_name = sorted(diffs, key=diffs.get)[-1]
+    # Get the axis with the biggest movement
+    axis_name = max(diffs.items(), key=itemgetter(1))[0]
     compare_cts, increasing = compare_increasing[axis_name]
     return axis_name, compare_cts, increasing
 
