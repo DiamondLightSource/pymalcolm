@@ -1,9 +1,9 @@
+from operator import itemgetter
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 from annotypes import Anno, add_call_types
 from scanpointgenerator import Point
-from operator import itemgetter
 
 from malcolm.core import APartName, Attribute, Block, Context, PartRegistrar
 from malcolm.modules import builtin, pmac, scanning
