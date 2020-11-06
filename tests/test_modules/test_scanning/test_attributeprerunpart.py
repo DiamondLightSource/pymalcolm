@@ -32,21 +32,21 @@ class TestAttributePreRunPartConstructor(unittest.TestCase):
 class TestAttributePreRunPartSetupHooks(unittest.TestCase):
     def setUp(self):
         self.name = "ShutterPart"
-        self.description = "This is a ShutterPart"
+        self.mri = "ML-SHUTTER-01"
         self.pre_run_value = "Open"
         self.reset_value = "Closed"
 
     def test_setup_sets_correct_hooks(self):
-        self.part = AttributePreRunPart(
-            self.name, self.description, self.pre_run_value, self.reset_value
+        part = AttributePreRunPart(
+            self.name, self.mri, self.pre_run_value, self.reset_value
         )
         registrar_mock = Mock()
-        self.part.setup(registrar_mock)
+        part.setup(registrar_mock)
 
         # Check calls
         calls = [
-            call(PreRunHook, self.part.on_pre_run),
-            call((PauseHook, AbortHook, PostRunReadyHook), self.part.on_reset),
+            call(PreRunHook, part.on_pre_run),
+            call((PauseHook, AbortHook, PostRunReadyHook), part.on_reset),
         ]
         registrar_mock.hook.assert_has_calls(calls)
 
