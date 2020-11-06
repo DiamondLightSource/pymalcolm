@@ -1,0 +1,28 @@
+- builtin.parameters.string:
+    name: manager_pv
+    description: PV root for the directoryMonitor Manager
+
+- builtin.parameters.string:
+    name: mri
+    description: MRI of the controller
+
+- builtin.controllers.StatefulController:
+    mri: $(mri)
+    description: Controller for checking directory monitor
+
+- ca.parts.CAActionPart:
+    name: managerCheck
+    description: Run the directory check
+    pv: $(manager_pv):POLL.PROC
+    status_pv: $(manager_pv):ALL_VALID
+    good_status: Yes
+
+- ca.parts.CABooleanPart:
+    name: managerStatus
+    description: Directory status
+    rbv: $(manager_pv):ALL_VALID
+
+- ca.parts.CAStringPart:
+    name: managerHostname
+    description: Server hostname
+    rbv: $(manager_pv):HOSTNAME
