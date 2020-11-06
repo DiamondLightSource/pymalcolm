@@ -128,7 +128,7 @@ def _what_moves_most(
         "connected to the PandA are moving during the scan point?" % point.positions
     )
 
-    # Get the axis with the biggest movement
+    # Sort on abs(diff), take the biggest
     axis_name = max(diffs.items(), key=itemgetter(1))[0]
     compare_cts, increasing = compare_increasing[axis_name]
     return axis_name, compare_cts, increasing

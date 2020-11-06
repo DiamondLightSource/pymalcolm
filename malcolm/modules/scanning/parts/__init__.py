@@ -4,6 +4,7 @@ from malcolm.core import submodule_all
 from .attributeprerunpart import AttributePreRunPart
 from .datasettablepart import DatasetTablePart
 from .detectorchildpart import AInitialVisibility, AMri, APartName, DetectorChildPart
+from .directorymonitorpart import DirectoryMonitorPart
 from .exposuredeadtimepart import (
     AInitialAccuracy,
     AInitialReadoutTime,
