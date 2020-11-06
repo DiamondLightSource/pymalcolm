@@ -27,10 +27,9 @@ class DirectoryMonitorPart(ChildPart):
     @add_call_types
     def check_directories(self, context: AContext) -> None:
         child = context.block_view(self.mri)
-        child.managerCheck()
-
-        status = child.managerStatus.value
-        if not status:
+        try:
+            child.managerCheck()
+        except AssertionError:
             hostname = child.managerHostname.value
             bad_status_string = (
                 f"{self.mri}: bad directory monitor status for server {hostname}"

@@ -14,6 +14,8 @@
     name: managerCheck
     description: Run the directory check
     pv: $(manager_pv):POLL.PROC
+    status_pv: $(manager_pv):ALL_VALID
+    good_status: Yes
 
 - ca.parts.CABooleanPart:
     name: managerStatus

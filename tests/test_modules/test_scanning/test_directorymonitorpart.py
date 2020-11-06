@@ -55,15 +55,19 @@ class TestDirectoryMonitorPartCheckManagerMethod(unittest.TestCase):
         self.child.managerCheck.assert_called_once
         self.child.managerStatus.value.assert_called_once
 
-    def test_method_raises_ValueErorr_and_logs_for_bad_status_with_error_on_fail(self):
-        self.child.managerStatus.value = False
+    def test_method_raises_ValueErorr_for_bad_managerCheck_status(self):
+        self.child.managerCheck = Mock(
+            name="managerCheck", side_effect=AssertionError()
+        )
         self.part.log = Mock(name="logger")
 
         self.assertRaises(ValueError, self.part.check_directories, self.context)
         self.part.log.error.assert_called_once_with(self.expected_bad_status_string)
 
-    def test_method_logs_error_for_bad_status_with_no_error_on_fail(self):
-        self.child.managerStatus.value = False
+    def test_method_logs_error_for_bad_managerCheck_status(self):
+        self.child.managerCheck = Mock(
+            name="managerCheck", side_effect=AssertionError()
+        )
         self.part.error_on_fail = False
         self.part.log = Mock(name="logger")
 
