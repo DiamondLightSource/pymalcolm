@@ -1,3 +1,4 @@
+from operator import itemgetter
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
@@ -128,7 +129,7 @@ def _what_moves_most(
     )
 
     # Sort on abs(diff), take the biggest
-    axis_name = sorted(diffs, key=diffs.get)[-1]
+    axis_name = max(diffs.items(), key=itemgetter(1))[0]
     compare_cts, increasing = compare_increasing[axis_name]
     return axis_name, compare_cts, increasing
 
