@@ -22,7 +22,10 @@
     name: TetrAMM
     mri: $(mri_prefix):DRV
 
+- scanning.parts.ExposureDeadtimePart:
+    name: DEADTIME
+    initial_readout_time: 1e-3
+
 - ADCore.includes.filewriting_collection:
     pv_prefix: $(pv_prefix)
     mri_prefix: $(mri_prefix)
-

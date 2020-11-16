@@ -35,3 +35,21 @@
     pv: $(pv_prefix):TriggerMode
     rbv_suffix: _RBV
 
+- ca.parts.CADoublePart:
+    name: exposure
+    description: Exposure time for each frame
+    pv: $(pv_prefix):AveragingTime
+    rbv_suffix: _RBV
+
+- builtin.parts.Float64Part:
+    name: acquirePeriod
+    description: Duration of each frame including readout
+    writeable: True
+    precision: 6
+    units: s
+
+- ca.parts.CALongPart:
+    name: valuesPerRead
+    description: Number of samples in which the averaging is computed
+    pv: $(pv_prefix):ValuesPerRead
+    rbv_suffix: _RBV
