@@ -5,7 +5,6 @@ from malcolm.modules.demo.blocks import counter_block
 
 
 class TestCounterBlock(unittest.TestCase):
-
     def setUp(self):
         self.p = Process("proc")
         for c in counter_block("mri"):

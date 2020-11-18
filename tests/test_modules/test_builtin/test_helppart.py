@@ -5,7 +5,6 @@ from malcolm.modules.builtin.parts import HelpPart
 
 
 class TestHelpPart(unittest.TestCase):
-
     def setUp(self):
         self.o = HelpPart(help_url="/BLOCK.html")
         self.c = Controller("mri")
@@ -16,6 +15,6 @@ class TestHelpPart(unittest.TestCase):
         assert self.o.name == "help"
         assert self.o.attr.value == "/BLOCK.html"
         assert self.o.attr.meta.tags == ["widget:help"]
-        assert self.c.field_registry.fields[self.o] == [(
-            "help", self.o.attr, None, False
-        )]
+        assert self.c.field_registry.fields[self.o] == [
+            ("help", self.o.attr, None, False)
+        ]

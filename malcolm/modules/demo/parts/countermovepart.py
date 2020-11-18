@@ -23,21 +23,18 @@ UPDATE_TICK = 0.1
 class CounterMovePart(builtin.parts.ChildPart):
     """Provides control of a `counter_block` within a `ManagerController`"""
 
-    def __init__(self, name, mri):
-        # type: (APartName, AMri) -> None
-        super(CounterMovePart, self).__init__(
-            name, mri, stateful=False, initial_visibility=True)
+    def __init__(self, name: APartName, mri: AMri) -> None:
+        super().__init__(name, mri, stateful=False, initial_visibility=True)
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
-        super(CounterMovePart, self).setup(registrar)
+    def setup(self, registrar: PartRegistrar) -> None:
+        super().setup(registrar)
         # Method
-        registrar.add_method_model(
-            self.move, self.name + "Move", needs_context=True)
+        registrar.add_method_model(self.move, self.name + "Move", needs_context=True)
 
     @add_call_types
-    def move(self, context, demand, duration=0):
-        # type: (builtin.hooks.AContext, ADemand, ADuration) -> None
+    def move(
+        self, context: builtin.hooks.AContext, demand: ADemand, duration: ADuration = 0
+    ) -> None:
         """Move the counter to the demand value, taking duration seconds like
         a motor would do"""
         start = time.time()

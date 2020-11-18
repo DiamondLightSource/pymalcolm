@@ -2,7 +2,6 @@
 __pycache__/
 *.py[cod]
 *$py.class
-Pipfile*
 .pytest_cache
 
 # C extensions
@@ -24,6 +23,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+venv27/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -45,6 +45,7 @@ nosetests.xml
 coverage.xml
 *,cover
 .hypothesis/
+.mypy_cache/
 
 # Translations
 *.mo
@@ -71,3 +72,6 @@ target/
 # VS Code
 .vscode
 .history/
+# Eclipse
+.project
+.pydevproject

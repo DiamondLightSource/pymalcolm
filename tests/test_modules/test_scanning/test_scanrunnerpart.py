@@ -1,26 +1,25 @@
-import unittest
-from mock import Mock, patch, call, mock_open
 import sys
-import os
+import unittest
 from datetime import datetime
+
+from mock import Mock, call, mock_open, patch
 from ruamel.yaml import YAMLError
+from scanpointgenerator import CompoundGenerator, LineGenerator
 
-from malcolm.modules.scanning.parts.scanrunnerpart import \
-    ScanRunnerPart, RunnerStates, ScanOutcome
+from malcolm.core import AbortedError, NotWriteableError, TimeoutError
+from malcolm.modules.scanning.parts.scanrunnerpart import (
+    RunnerStates,
+    ScanOutcome,
+    ScanRunnerPart,
+)
 from malcolm.modules.scanning.util import RunnableStates
-from malcolm.core import TimeoutError, NotWriteableError, \
-    AbortedError
-
-from scanpointgenerator import LineGenerator, CompoundGenerator
 
 
 class TestScanRunnerPart(unittest.TestCase):
-
     def setUp(self):
         self.name = "ScanRunner"
         self.mri = "ML-SCAN-RUNNER-01"
-        self.single_scan_yaml = \
-            """
+        self.single_scan_yaml = """
             - scan:
                 name: coarse_2d
                 repeats: 11
@@ -45,8 +44,7 @@ class TestScanRunnerPart(unittest.TestCase):
                     delay_after: 0
             """
 
-        self.two_scan_yaml = \
-            """
+        self.two_scan_yaml = """
             - scan:
                 name: coarse_2d
                 repeats: 11
@@ -93,8 +91,7 @@ class TestScanRunnerPart(unittest.TestCase):
                     delay_after: 0
             """
 
-        self.invalid_yaml = \
-            """
+        self.invalid_yaml = """
             features: [
               {
                 name: lorem ipsum,
@@ -110,8 +107,7 @@ class TestScanRunnerPart(unittest.TestCase):
             ]
             """
 
-        self.unidentified_yaml = \
-            """
+        self.unidentified_yaml = """
             - unidentified:
                 name: coarse_2d
                 repeats: 11
@@ -125,46 +121,29 @@ class TestScanRunnerPart(unittest.TestCase):
 
     def test_get_kwargs_from_dict_returns_single_kwarg(self):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
-        input_dict = {
-            'cat': 21,
-            'dog': 15,
-            'bird': 7
-        }
+        input_dict = {"cat": 21, "dog": 15, "bird": 7}
 
-        expected_dict = {
-            'cat': 21
-        }
+        expected_dict = {"cat": 21}
 
-        kwargs = scan_runner_part.get_kwargs_from_dict(input_dict, 'cat')
+        kwargs = scan_runner_part.get_kwargs_from_dict(input_dict, "cat")
         self.assertEqual(expected_dict, kwargs)
 
     def test_get_kwargs_from_dict_returns_two_kwargs(self):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
-        input_dict = {
-            'cat': 21,
-            'dog': 15,
-            'bird': 7
-        }
+        input_dict = {"cat": 21, "dog": 15, "bird": 7}
 
-        expected_dict = {
-            'dog': 15,
-            'bird': 7
-        }
+        expected_dict = {"dog": 15, "bird": 7}
 
-        kwargs = scan_runner_part.get_kwargs_from_dict(input_dict, ['dog', 'bird'])
+        kwargs = scan_runner_part.get_kwargs_from_dict(input_dict, ["dog", "bird"])
         self.assertEqual(expected_dict, kwargs)
 
     def test_get_kwargs_from_dict_returns_empty_kwargs(self):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
-        input_dict = {
-            'cat': 21,
-            'dog': 15,
-            'bird': 7
-        }
+        input_dict = {"cat": 21, "dog": 15, "bird": 7}
 
         expected_dict = {}
 
-        kwargs = scan_runner_part.get_kwargs_from_dict(input_dict, 'moose')
+        kwargs = scan_runner_part.get_kwargs_from_dict(input_dict, "moose")
         self.assertEqual(expected_dict, kwargs)
 
     def compare_compound_generator(self, expected_gen, actual_gen):
@@ -174,8 +153,8 @@ class TestScanRunnerPart(unittest.TestCase):
 
         for generator in range(len(actual_gen.generators)):
             self.compare_line_generator(
-                expected_gen.generators[generator],
-                actual_gen.generators[generator])
+                expected_gen.generators[generator], actual_gen.generators[generator]
+            )
 
     def compare_line_generator(self, expected_gen, actual_gen):
         self.assertEqual(expected_gen.axes, actual_gen.axes)
@@ -206,50 +185,49 @@ class TestScanRunnerPart(unittest.TestCase):
         units = "mm"
 
         line_x = {
-            'axes': line_x_axes,
-            'units': units,
-            'start': line_x_start,
-            'stop': line_x_stop,
-            'size': line_x_size,
-            'alternate': line_x_alternate
+            "axes": line_x_axes,
+            "units": units,
+            "start": line_x_start,
+            "stop": line_x_stop,
+            "size": line_x_size,
+            "alternate": line_x_alternate,
         }
         line_y = {
-            'axes': line_y_axes,
-            'units': units,
-            'start': line_y_start,
-            'stop': line_y_stop,
-            'size': line_y_size,
+            "axes": line_y_axes,
+            "units": units,
+            "start": line_y_start,
+            "stop": line_y_stop,
+            "size": line_y_size,
         }
 
         compound_generator_dict = {
-            'duration': duration,
-            'continuous': continuous,
-            'delay_after': delay_after,
-            'generators': [
-                {
-                    'line': line_x
-                },
-                {
-                    'line': line_y
-                }
-            ]
+            "duration": duration,
+            "continuous": continuous,
+            "delay_after": delay_after,
+            "generators": [{"line": line_x}, {"line": line_y}],
         }
 
         expected_line_generators = [
             LineGenerator(
-                line_x_axes, units, line_x_start, line_x_stop, line_x_size,
-                alternate=line_x_alternate),
-            LineGenerator(
-                line_y_axes, units, line_y_start, line_y_stop, line_y_size),
+                line_x_axes,
+                units,
+                line_x_start,
+                line_x_stop,
+                line_x_size,
+                alternate=line_x_alternate,
+            ),
+            LineGenerator(line_y_axes, units, line_y_start, line_y_stop, line_y_size),
         ]
         expected_compound_generator = CompoundGenerator(
             expected_line_generators,
             duration=duration,
             continuous=continuous,
-            delay_after=delay_after)
+            delay_after=delay_after,
+        )
 
         compound_generator = scan_runner_part.parse_compound_generator(
-            compound_generator_dict)
+            compound_generator_dict
+        )
 
         self.compare_compound_generator(expected_compound_generator, compound_generator)
 
@@ -270,46 +248,44 @@ class TestScanRunnerPart(unittest.TestCase):
         units = "mm"
 
         line_x = {
-            'axes': line_x_axes,
-            'units': units,
-            'start': line_x_start,
-            'stop': line_x_stop,
-            'size': line_x_size,
-            'alternate': line_x_alternate
+            "axes": line_x_axes,
+            "units": units,
+            "start": line_x_start,
+            "stop": line_x_stop,
+            "size": line_x_size,
+            "alternate": line_x_alternate,
         }
         line_y = {
-            'axes': line_y_axes,
-            'units': units,
-            'start': line_y_start,
-            'stop': line_y_stop,
-            'size': line_y_size,
+            "axes": line_y_axes,
+            "units": units,
+            "start": line_y_start,
+            "stop": line_y_stop,
+            "size": line_y_size,
         }
 
         compound_generator_dict = {
-            'duration': duration,
-            'generators': [
-                {
-                    'line': line_x
-                },
-                {
-                    'line': line_y
-                }
-            ]
+            "duration": duration,
+            "generators": [{"line": line_x}, {"line": line_y}],
         }
 
         expected_line_generators = [
             LineGenerator(
-                line_x_axes, units, line_x_start, line_x_stop, line_x_size,
-                alternate=line_x_alternate),
-            LineGenerator(
-                line_y_axes, units, line_y_start, line_y_stop, line_y_size),
+                line_x_axes,
+                units,
+                line_x_start,
+                line_x_stop,
+                line_x_size,
+                alternate=line_x_alternate,
+            ),
+            LineGenerator(line_y_axes, units, line_y_start, line_y_stop, line_y_size),
         ]
         expected_compound_generator = CompoundGenerator(
-            expected_line_generators,
-            duration=duration)
+            expected_line_generators, duration=duration
+        )
 
         compound_generator = scan_runner_part.parse_compound_generator(
-            compound_generator_dict)
+            compound_generator_dict
+        )
 
         self.compare_compound_generator(expected_compound_generator, compound_generator)
 
@@ -329,43 +305,40 @@ class TestScanRunnerPart(unittest.TestCase):
         units = "mm"
 
         line_x = {
-            'axes': line_x_axes,
-            'units': units,
-            'start': line_x_start,
-            'stop': line_x_stop,
-            'size': line_x_size,
-            'alternate': line_x_alternate
+            "axes": line_x_axes,
+            "units": units,
+            "start": line_x_start,
+            "stop": line_x_stop,
+            "size": line_x_size,
+            "alternate": line_x_alternate,
         }
         line_y = {
-            'axes': line_y_axes,
-            'units': units,
-            'start': line_y_start,
-            'stop': line_y_stop,
-            'size': line_y_size,
+            "axes": line_y_axes,
+            "units": units,
+            "start": line_y_start,
+            "stop": line_y_stop,
+            "size": line_y_size,
         }
 
-        compound_generator_dict = {
-            'generators': [
-                {
-                    'line': line_x
-                },
-                {
-                    'line': line_y
-                }
-            ]
-        }
+        compound_generator_dict = {"generators": [{"line": line_x}, {"line": line_y}]}
 
-        self.assertRaises(ValueError, scan_runner_part.parse_compound_generator, compound_generator_dict)
+        self.assertRaises(
+            ValueError,
+            scan_runner_part.parse_compound_generator,
+            compound_generator_dict,
+        )
 
     def test_parse_compound_generator_raises_KeyError_without_generators(self):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
         duration = 1.4
 
         compound_generator_dict = {
-            'duration': duration,
+            "duration": duration,
         }
 
-        self.assertRaises(KeyError, scan_runner_part.parse_compound_generator, compound_generator_dict)
+        self.assertRaises(
+            KeyError, scan_runner_part.parse_compound_generator, compound_generator_dict
+        )
 
     def test_parse_scan_parses_with_repeats(self):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
@@ -390,53 +363,47 @@ class TestScanRunnerPart(unittest.TestCase):
         units = "mm"
 
         line_x = {
-            'axes': line_x_axes,
-            'units': units,
-            'start': line_x_start,
-            'stop': line_x_stop,
-            'size': line_x_size,
-            'alternate': line_x_alternate
+            "axes": line_x_axes,
+            "units": units,
+            "start": line_x_start,
+            "stop": line_x_stop,
+            "size": line_x_size,
+            "alternate": line_x_alternate,
         }
         line_y = {
-            'axes': line_y_axes,
-            'units': units,
-            'start': line_y_start,
-            'stop': line_y_stop,
-            'size': line_y_size,
+            "axes": line_y_axes,
+            "units": units,
+            "start": line_y_start,
+            "stop": line_y_stop,
+            "size": line_y_size,
         }
 
         compound_generator = {
-            'duration': duration,
-            'continuous': continuous,
-            'delay_after': delay_after,
-            'generators': [
-                {
-                    'line': line_x
-                },
-                {
-                    'line': line_y
-                }
-            ]
+            "duration": duration,
+            "continuous": continuous,
+            "delay_after": delay_after,
+            "generators": [{"line": line_x}, {"line": line_y}],
         }
 
-        scan_dict = {
-            'name': name,
-            'repeats': repeats,
-            'generator': compound_generator
-        }
+        scan_dict = {"name": name, "repeats": repeats, "generator": compound_generator}
 
         expected_line_generators = [
             LineGenerator(
-                line_x_axes, units, line_x_start, line_x_stop, line_x_size,
-                alternate=line_x_alternate),
-            LineGenerator(
-                line_y_axes, units, line_y_start, line_y_stop, line_y_size),
+                line_x_axes,
+                units,
+                line_x_start,
+                line_x_stop,
+                line_x_size,
+                alternate=line_x_alternate,
+            ),
+            LineGenerator(line_y_axes, units, line_y_start, line_y_stop, line_y_size),
         ]
         expected_compound_generator = CompoundGenerator(
             expected_line_generators,
             duration=duration,
             continuous=continuous,
-            delay_after=delay_after)
+            delay_after=delay_after,
+        )
 
         scan_runner_part.parse_scan(scan_dict)
 
@@ -466,52 +433,47 @@ class TestScanRunnerPart(unittest.TestCase):
         units = "mm"
 
         line_x = {
-            'axes': line_x_axes,
-            'units': units,
-            'start': line_x_start,
-            'stop': line_x_stop,
-            'size': line_x_size,
-            'alternate': line_x_alternate
+            "axes": line_x_axes,
+            "units": units,
+            "start": line_x_start,
+            "stop": line_x_stop,
+            "size": line_x_size,
+            "alternate": line_x_alternate,
         }
         line_y = {
-            'axes': line_y_axes,
-            'units': units,
-            'start': line_y_start,
-            'stop': line_y_stop,
-            'size': line_y_size,
+            "axes": line_y_axes,
+            "units": units,
+            "start": line_y_start,
+            "stop": line_y_stop,
+            "size": line_y_size,
         }
 
         compound_generator = {
-            'duration': duration,
-            'continuous': continuous,
-            'delay_after': delay_after,
-            'generators': [
-                {
-                    'line': line_x
-                },
-                {
-                    'line': line_y
-                }
-            ]
+            "duration": duration,
+            "continuous": continuous,
+            "delay_after": delay_after,
+            "generators": [{"line": line_x}, {"line": line_y}],
         }
 
-        scan_dict = {
-            'name': name,
-            'generator': compound_generator
-        }
+        scan_dict = {"name": name, "generator": compound_generator}
 
         expected_line_generators = [
             LineGenerator(
-                line_x_axes, units, line_x_start, line_x_stop, line_x_size,
-                alternate=line_x_alternate),
-            LineGenerator(
-                line_y_axes, units, line_y_start, line_y_stop, line_y_size),
+                line_x_axes,
+                units,
+                line_x_start,
+                line_x_stop,
+                line_x_size,
+                alternate=line_x_alternate,
+            ),
+            LineGenerator(line_y_axes, units, line_y_start, line_y_stop, line_y_size),
         ]
         expected_compound_generator = CompoundGenerator(
             expected_line_generators,
             duration=duration,
             continuous=continuous,
-            delay_after=delay_after)
+            delay_after=delay_after,
+        )
 
         scan_runner_part.parse_scan(scan_dict)
 
@@ -541,38 +503,29 @@ class TestScanRunnerPart(unittest.TestCase):
         units = "mm"
 
         line_x = {
-            'axes': line_x_axes,
-            'units': units,
-            'start': line_x_start,
-            'stop': line_x_stop,
-            'size': line_x_size,
-            'alternate': line_x_alternate
+            "axes": line_x_axes,
+            "units": units,
+            "start": line_x_start,
+            "stop": line_x_stop,
+            "size": line_x_size,
+            "alternate": line_x_alternate,
         }
         line_y = {
-            'axes': line_y_axes,
-            'units': units,
-            'start': line_y_start,
-            'stop': line_y_stop,
-            'size': line_y_size,
+            "axes": line_y_axes,
+            "units": units,
+            "start": line_y_start,
+            "stop": line_y_stop,
+            "size": line_y_size,
         }
 
         compound_generator = {
-            'duration': duration,
-            'continuous': continuous,
-            'delay_after': delay_after,
-            'generators': [
-                {
-                    'line': line_x
-                },
-                {
-                    'line': line_y
-                }
-            ]
+            "duration": duration,
+            "continuous": continuous,
+            "delay_after": delay_after,
+            "generators": [{"line": line_x}, {"line": line_y}],
         }
 
-        scan_dict = {
-            'generator': compound_generator
-        }
+        scan_dict = {"generator": compound_generator}
 
         self.assertRaises(KeyError, scan_runner_part.parse_scan, scan_dict)
 
@@ -580,9 +533,7 @@ class TestScanRunnerPart(unittest.TestCase):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
         name = "Fine_2D"
 
-        scan_dict = {
-            'name': name
-        }
+        scan_dict = {"name": name}
 
         self.assertRaises(KeyError, scan_runner_part.parse_scan, scan_dict)
 
@@ -607,7 +558,10 @@ class TestScanRunnerPart(unittest.TestCase):
 
         # Check that we are configured
         self.assertEqual(11, scan_runner_part.scans_configured.value)
-        self.assertEqual(ScanRunnerPart.get_enum_label(RunnerStates.CONFIGURED), scan_runner_part.runner_state.value)
+        self.assertEqual(
+            ScanRunnerPart.get_enum_label(RunnerStates.CONFIGURED),
+            scan_runner_part.runner_state.value,
+        )
         self.assertEqual("Load complete", scan_runner_part.runner_status_message.value)
 
     def test_loadFile_parses_for_two_scans(self):
@@ -636,10 +590,13 @@ class TestScanRunnerPart(unittest.TestCase):
 
         # Check that we are configured
         self.assertEqual(14, scan_runner_part.scans_configured.value)
-        self.assertEqual(ScanRunnerPart.get_enum_label(RunnerStates.CONFIGURED), scan_runner_part.runner_state.value)
+        self.assertEqual(
+            ScanRunnerPart.get_enum_label(RunnerStates.CONFIGURED),
+            scan_runner_part.runner_state.value,
+        )
         self.assertEqual("Load complete", scan_runner_part.runner_status_message.value)
 
-    @patch('__main__.open')
+    @patch("__main__.open")
     def test_loadFile_throws_IOError_for_bad_filepath(self, mock_open):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
 
@@ -651,8 +608,13 @@ class TestScanRunnerPart(unittest.TestCase):
 
         # Call loadFile which should throw our IOError
         self.assertRaises(IOError, scan_runner_part.loadFile)
-        self.assertEqual(ScanRunnerPart.get_enum_label(RunnerStates.FAULT), scan_runner_part.runner_state.value)
-        self.assertEqual("Could not read scan file", scan_runner_part.runner_status_message.value)
+        self.assertEqual(
+            ScanRunnerPart.get_enum_label(RunnerStates.FAULT),
+            scan_runner_part.runner_state.value,
+        )
+        self.assertEqual(
+            "Could not read scan file", scan_runner_part.runner_status_message.value
+        )
 
     def test_loadFile_throws_YAMLError_for_invalid_YAML(self):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
@@ -666,8 +628,13 @@ class TestScanRunnerPart(unittest.TestCase):
 
         # Call loadFile to parse our mocked string
         self.assertRaises(YAMLError, scan_runner_part.loadFile)
-        self.assertEqual(ScanRunnerPart.get_enum_label(RunnerStates.FAULT), scan_runner_part.runner_state.value)
-        self.assertEqual("Could not parse scan file", scan_runner_part.runner_status_message.value)
+        self.assertEqual(
+            ScanRunnerPart.get_enum_label(RunnerStates.FAULT),
+            scan_runner_part.runner_state.value,
+        )
+        self.assertEqual(
+            "Could not parse scan file", scan_runner_part.runner_status_message.value
+        )
 
     def test_loadFile_throws_ValueError_for_unknown_key_in_YAML(self):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
@@ -681,8 +648,13 @@ class TestScanRunnerPart(unittest.TestCase):
 
         # Call loadFile to parse our mocked string
         self.assertRaises(ValueError, scan_runner_part.loadFile)
-        self.assertEqual(ScanRunnerPart.get_enum_label(RunnerStates.FAULT), scan_runner_part.runner_state.value)
-        self.assertEqual("Unidentified key in YAML", scan_runner_part.runner_status_message.value)
+        self.assertEqual(
+            ScanRunnerPart.get_enum_label(RunnerStates.FAULT),
+            scan_runner_part.runner_state.value,
+        )
+        self.assertEqual(
+            "Unidentified key in YAML", scan_runner_part.runner_status_message.value
+        )
 
     def test_parse_yaml_parses_valid_YAML(self):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
@@ -695,13 +667,20 @@ class TestScanRunnerPart(unittest.TestCase):
         scan_runner_part.setup(Mock())
 
         self.assertRaises(YAMLError, scan_runner_part.parse_yaml, self.invalid_yaml)
-        self.assertEqual(ScanRunnerPart.get_enum_label(RunnerStates.FAULT), scan_runner_part.runner_state.value)
-        self.assertEqual("Could not parse scan file", scan_runner_part.runner_status_message.value)
+        self.assertEqual(
+            ScanRunnerPart.get_enum_label(RunnerStates.FAULT),
+            scan_runner_part.runner_state.value,
+        )
+        self.assertEqual(
+            "Could not parse scan file", scan_runner_part.runner_status_message.value
+        )
 
     def test_get_enum_label_capitalises_state(self):
         expected_label = "Configured"
 
-        self.assertEqual(expected_label, ScanRunnerPart.get_enum_label(RunnerStates.CONFIGURED))
+        self.assertEqual(
+            expected_label, ScanRunnerPart.get_enum_label(RunnerStates.CONFIGURED)
+        )
 
     def test_increment_scan_successes(self):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
@@ -757,7 +736,9 @@ class TestScanRunnerPart(unittest.TestCase):
         scan_runner_part.runner_status_message = runner_status_message_mock
 
         self.assertRaises(ValueError, scan_runner_part.run, Mock())
-        runner_status_message_mock.set_value.assert_called_once_with("No scan file loaded")
+        runner_status_message_mock.set_value.assert_called_once_with(
+            "No scan file loaded"
+        )
 
     def test_run_completes_when_single_scan_set_is_loaded(self):
         # Create some mock objects
@@ -775,8 +756,12 @@ class TestScanRunnerPart(unittest.TestCase):
         # Mock the create_and_get_sub_directory and run_scan_set methods
         sub_directory = "/test/sub/directory"
 
-        create_and_get_sub_directory_mock = Mock(name="create_and_get_sub_directory_mock")
-        scan_runner_part.create_and_get_sub_directory = create_and_get_sub_directory_mock
+        create_and_get_sub_directory_mock = Mock(
+            name="create_and_get_sub_directory_mock"
+        )
+        scan_runner_part.create_and_get_sub_directory = (
+            create_and_get_sub_directory_mock
+        )
         scan_runner_part.create_and_get_sub_directory.return_value = sub_directory
 
         run_scan_set_mock = Mock(name="run_scan_set_mock")
@@ -798,7 +783,9 @@ class TestScanRunnerPart(unittest.TestCase):
                     scan_runner_part.scan_sets[key],
                     scan_block_mock,
                     sub_directory,
-                    sub_directory + "/report.txt"))
+                    sub_directory + "/report.txt",
+                )
+            )
         run_scan_set_mock.assert_has_calls(calls)
 
     def test_run_completes_when_two_scan_sets_are_loaded(self):
@@ -817,8 +804,12 @@ class TestScanRunnerPart(unittest.TestCase):
         # Mock the create_and_get_sub_directory and run_scan_set methods
         sub_directory = "/test/sub/directory"
 
-        create_and_get_sub_directory_mock = Mock(name="create_and_get_sub_directory_mock")
-        scan_runner_part.create_and_get_sub_directory = create_and_get_sub_directory_mock
+        create_and_get_sub_directory_mock = Mock(
+            name="create_and_get_sub_directory_mock"
+        )
+        scan_runner_part.create_and_get_sub_directory = (
+            create_and_get_sub_directory_mock
+        )
         scan_runner_part.create_and_get_sub_directory.return_value = sub_directory
 
         run_scan_set_mock = Mock(name="run_scan_set_mock")
@@ -840,7 +831,9 @@ class TestScanRunnerPart(unittest.TestCase):
                     scan_runner_part.scan_sets[key],
                     scan_block_mock,
                     sub_directory,
-                    sub_directory + "/report.txt"))
+                    sub_directory + "/report.txt",
+                )
+            )
         run_scan_set_mock.assert_has_calls(calls)
 
     def test_run_scan_set(self):
@@ -871,7 +864,9 @@ class TestScanRunnerPart(unittest.TestCase):
 
         # Mock the create_and_get_set_directory method
         set_directory = "/test/set/directory"
-        create_and_set_directory_mock = Mock(name="mock_create_and_get_set_directory_method")
+        create_and_set_directory_mock = Mock(
+            name="mock_create_and_get_set_directory_method"
+        )
         scan_runner_part.create_and_get_set_directory = create_and_set_directory_mock
         scan_runner_part.create_and_get_set_directory.return_value = set_directory
 
@@ -879,15 +874,18 @@ class TestScanRunnerPart(unittest.TestCase):
         sub_directory = "/test/sub/directory"
         report_filepath = sub_directory + "/report.txt"
         scan_runner_part.run_scan_set(
-            scan_set_mock, scan_block_mock, sub_directory, report_filepath)
+            scan_set_mock, scan_block_mock, sub_directory, report_filepath
+        )
 
         # Check the create_and_get_set_directory_method was called
-        create_and_set_directory_mock.assert_called_once_with(sub_directory, scan_set_name)
+        create_and_set_directory_mock.assert_called_once_with(
+            sub_directory, scan_set_name
+        )
 
         # Check that our mock run_scan method was called the correct number of times
         self.assertEqual(scan_set_mock.repeats, run_scan_mock.call_count)
         calls = []
-        for scan_number in range(1, scan_set_mock.repeats+1):
+        for scan_number in range(1, scan_set_mock.repeats + 1):
             calls.append(
                 call(
                     scan_set_name,
@@ -895,8 +893,9 @@ class TestScanRunnerPart(unittest.TestCase):
                     set_directory,
                     scan_number,
                     report_filepath,
-                    generator_mock
-                ))
+                    generator_mock,
+                )
+            )
         run_scan_mock.assert_has_calls(calls)
 
     def test_abort_calls_context_abort(self):
@@ -916,7 +915,9 @@ class TestScanRunnerPart(unittest.TestCase):
         scan_runner_part.set_runner_state.assert_called_once_with(RunnerStates.ABORTED)
         passed_context_mock.block_view.assert_called_once_with(self.mri)
         scan_block_mock.abort.assert_called_once()
-        scan_runner_part.runner_status_message.set_value.assert_called_once_with("Aborted scans")
+        scan_runner_part.runner_status_message.set_value.assert_called_once_with(
+            "Aborted scans"
+        )
 
     def test_abort_with_no_context_does_not_raise_Error(self):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
@@ -926,7 +927,7 @@ class TestScanRunnerPart(unittest.TestCase):
         # Call abort
         scan_runner_part.abort(Mock(name="passed_context_mock"))
 
-    @patch('malcolm.modules.scanning.parts.scanrunnerpart.datetime')
+    @patch("malcolm.modules.scanning.parts.scanrunnerpart.datetime")
     def test_get_current_datetime(self, datetime_mock):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
         # Mock the datetime.now() method
@@ -937,7 +938,7 @@ class TestScanRunnerPart(unittest.TestCase):
 
         self.assertEqual(expected_string, actual_string)
 
-    @patch('malcolm.modules.scanning.parts.scanrunnerpart.datetime')
+    @patch("malcolm.modules.scanning.parts.scanrunnerpart.datetime")
     def test_get_current_datetime_with_separator(self, datetime_mock):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
         # Mock the datetime.now() method
@@ -993,18 +994,18 @@ class TestScanRunnerPart(unittest.TestCase):
         end_time = "2020-01-06-16:04:10"
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
 
-        expected_report_string = "{set:<30}{no:<10}{outcome:<14}{start:<20}{end}".format(
+        expected_string = "{set:<30}{no:<10}{outcome:<14}{start:<20}{end}".format(
             set=set_name,
             no=scan_number,
             outcome=scan_runner_part.get_enum_label(outcome),
             start=start_time,
-            end=end_time
+            end=end_time,
+        )
+        actual_string = scan_runner_part.get_report_string(
+            set_name, scan_number, outcome, start_time, end_time
         )
 
-        actual_report_string = scan_runner_part.get_report_string(
-            set_name, scan_number, outcome, start_time, end_time)
-
-        self.assertEqual(expected_report_string, actual_report_string)
+        self.assertEqual(expected_string, actual_string)
 
     def test_add_report_line_writes_line(self):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
@@ -1040,13 +1041,25 @@ class TestScanRunnerPart(unittest.TestCase):
 
         if sys.version_info[0] < 3:
             with patch("__builtin__.open", mocked_open):
-                self.assertRaises(IOError, scan_runner_part.add_report_line, report_filepath, report_string)
+                self.assertRaises(
+                    IOError,
+                    scan_runner_part.add_report_line,
+                    report_filepath,
+                    report_string,
+                )
         else:
             with patch("builtins.open", mocked_open):
-                self.assertRaises(IOError, scan_runner_part.add_report_line, report_filepath, report_string)
+                self.assertRaises(
+                    IOError,
+                    scan_runner_part.add_report_line,
+                    report_filepath,
+                    report_string,
+                )
 
         scan_runner_part.set_runner_state.assert_called_once_with(RunnerStates.FAULT)
-        scan_runner_part.runner_status_message.set_value.assert_called_once_with("Error writing report file")
+        scan_runner_part.runner_status_message.set_value.assert_called_once_with(
+            "Error writing report file"
+        )
 
     def test_get_root_directory_gets_directory(self):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
@@ -1076,7 +1089,6 @@ class TestScanRunnerPart(unittest.TestCase):
 
 
 class TestScanRunnerPartCreateDirectoryMethods(unittest.TestCase):
-
     def setUp(self):
         name = "ScanRunner"
         self.mri = "ML-SCAN-RUNNER-01"
@@ -1091,7 +1103,7 @@ class TestScanRunnerPartCreateDirectoryMethods(unittest.TestCase):
         create_directory_mock = Mock(name="create_directory_mock")
         self.scan_runner_part.create_directory = create_directory_mock
 
-    @patch('os.mkdir')
+    @patch("os.mkdir")
     def test_create_directory(self, mock_mkdir):
         test_directory = "test/directory"
 
@@ -1099,16 +1111,22 @@ class TestScanRunnerPartCreateDirectoryMethods(unittest.TestCase):
 
         mock_mkdir.assert_called_once_with(test_directory)
 
-    @patch('os.mkdir')
+    @patch("os.mkdir")
     def test_create_directory_throws_IOError_for_mkdir_OSError(self, mock_mkdir):
         self.scan_runner_part.runner_status_message = Mock(name="runner_status_mock")
         self.scan_runner_part.set_runner_state = Mock(name="set_runner_state_mock")
         test_directory = "test/directory"
         mock_mkdir.side_effect = OSError
 
-        self.assertRaises(IOError, self.scan_runner_part.create_directory, test_directory)
-        self.scan_runner_part.set_runner_state.assert_called_once_with(RunnerStates.FAULT)
-        self.scan_runner_part.runner_status_message.set_value.assert_called_once_with("Could not create directory")
+        self.assertRaises(
+            IOError, self.scan_runner_part.create_directory, test_directory
+        )
+        self.scan_runner_part.set_runner_state.assert_called_once_with(
+            RunnerStates.FAULT
+        )
+        self.scan_runner_part.runner_status_message.set_value.assert_called_once_with(
+            "Could not create directory"
+        )
 
     def test_create_and_get_sub_directory_returns_sub_directory(self):
         root_directory = "root/directory"
@@ -1119,10 +1137,14 @@ class TestScanRunnerPartCreateDirectoryMethods(unittest.TestCase):
         self.mock_datetime(mock_date)
         self.mock_create_directory()
 
-        actual_sub_directory = self.scan_runner_part.create_and_get_sub_directory(root_directory)
+        actual_sub_directory = self.scan_runner_part.create_and_get_sub_directory(
+            root_directory
+        )
 
         self.assertEqual(expected_sub_directory, actual_sub_directory)
-        self.scan_runner_part.create_directory.assert_called_once_with(expected_sub_directory)
+        self.scan_runner_part.create_directory.assert_called_once_with(
+            expected_sub_directory
+        )
 
     def test_create_and_get_set_directory_returns_set_directory(self):
         sub_directory = "root/sub/directory"
@@ -1133,10 +1155,13 @@ class TestScanRunnerPartCreateDirectoryMethods(unittest.TestCase):
         self.mock_create_directory()
 
         actual_set_directory = self.scan_runner_part.create_and_get_set_directory(
-            sub_directory, set_name)
+            sub_directory, set_name
+        )
 
         self.assertEqual(expected_set_directory, actual_set_directory)
-        self.scan_runner_part.create_directory.assert_called_once_with(expected_set_directory)
+        self.scan_runner_part.create_directory.assert_called_once_with(
+            expected_set_directory
+        )
 
     def test_create_and_get_scan_directory_returns_scan_directory(self):
         set_directory = "root/set/directory"
@@ -1147,20 +1172,21 @@ class TestScanRunnerPartCreateDirectoryMethods(unittest.TestCase):
         self.mock_create_directory()
 
         actual_scan_directory = self.scan_runner_part.create_and_get_scan_directory(
-            set_directory, scan_number)
+            set_directory, scan_number
+        )
 
         self.assertEqual(expected_scan_directory, actual_scan_directory)
-        self.scan_runner_part.create_directory.assert_called_once_with(expected_scan_directory)
+        self.scan_runner_part.create_directory.assert_called_once_with(
+            expected_scan_directory
+        )
 
 
 class TestScanRunnerPartRunScanMethod(unittest.TestCase):
-
     def setUp(self):
         name = "ScanRunner"
         mri = "ML-SCAN-RUNNER-01"
 
-        single_scan_yaml = \
-            """
+        single_scan_yaml = """
             - scan:
                 name: coarse_2d
                 repeats: 11
@@ -1193,9 +1219,13 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
 
         # Mock the create_and_get_scan_directory method
         self.scan_directory = "/test/scan/directory"
-        self.create_and_get_scan_directory_mock = Mock(name="create_and_get_scan_directory_mock")
+        self.create_and_get_scan_directory_mock = Mock(
+            name="create_and_get_scan_directory_mock"
+        )
         self.create_and_get_scan_directory_mock.return_value = self.scan_directory
-        self.scan_runner_part.create_and_get_scan_directory = self.create_and_get_scan_directory_mock
+        self.scan_runner_part.create_and_get_scan_directory = (
+            self.create_and_get_scan_directory_mock
+        )
 
         # Mock generator
         self.generator_mock = Mock(name="generator_mock")
@@ -1216,11 +1246,15 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
 
         # Mock the increment_scan_successes method
         self.increment_scan_successes_mock = Mock(name="increment_scan_successes_mock")
-        self.scan_runner_part.increment_scan_successes = self.increment_scan_successes_mock
+        self.scan_runner_part.increment_scan_successes = (
+            self.increment_scan_successes_mock
+        )
 
         # Mock the increment_scan_failures method
         self.increment_scan_failures_mock = Mock(name="increment_scan_failures_mock")
-        self.scan_runner_part.increment_scan_failures = self.increment_scan_failures_mock
+        self.scan_runner_part.increment_scan_failures = (
+            self.increment_scan_failures_mock
+        )
 
         # Mock the logger
         self.logger_mock = Mock(name="logger_mock")
@@ -1238,7 +1272,8 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
             self.scan_number,
             scan_outcome,
             self.start_time,
-            self.start_time)
+            self.start_time,
+        )
 
         return report_string
 
@@ -1246,6 +1281,9 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
         # Our mocked scan block will return nicely for a success
         self.scan_block_mock.run.return_value = None
 
+        # Mock context
+        self.scan_runner_part.context = Mock(name="context_mock")
+
         # Call the run_scan method
         self.scan_runner_part.run_scan(
             self.set_name,
@@ -1253,23 +1291,34 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
             self.set_directory,
             self.scan_number,
             self.report_filepath,
-            self.generator_mock)
+            self.generator_mock,
+        )
 
         # Check the standard method calls
-        self.create_and_get_scan_directory_mock.assert_called_once_with(self.set_directory, self.scan_number)
-        self.scan_block_mock.configure.assert_called_once_with(self.generator_mock, fileDir=self.scan_directory)
+        self.create_and_get_scan_directory_mock.assert_called_once_with(
+            self.set_directory, self.scan_number
+        )
+        self.scan_block_mock.configure.assert_called_once_with(
+            self.generator_mock, fileDir=self.scan_directory
+        )
         self.scan_block_mock.run.assert_called_once()
 
         # Check the reporting was called
         self.add_report_line_mock.assert_called_once_with(
-            self.report_filepath, self.get_expected_report_string(ScanOutcome.SUCCESS))
+            self.report_filepath, self.get_expected_report_string(ScanOutcome.SUCCESS)
+        )
 
         # Check the outcome calls
         self.increment_scan_successes_mock.assert_called_once()
 
-    def test_run_scan_is_misconfigured_when_scan_block_configure_throws_AssertionError(self):
+    def test_run_scan_is_misconfigured_when_scan_block_configure_throws_AssertionError(
+        self,
+    ):
         # Our mocked scan block will throw an AssertionError
         self.scan_block_mock.configure.side_effect = AssertionError()
+
+        # Mock context
+        self.scan_runner_part.context = Mock(name="context_mock")
 
         # Call the run_scan method
         self.scan_runner_part.run_scan(
@@ -1278,22 +1327,34 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
             self.set_directory,
             self.scan_number,
             self.report_filepath,
-            self.generator_mock)
+            self.generator_mock,
+        )
 
         # Check the standard method calls
-        self.create_and_get_scan_directory_mock.assert_called_once_with(self.set_directory, self.scan_number)
-        self.scan_block_mock.configure.assert_called_once_with(self.generator_mock, fileDir=self.scan_directory)
+        self.create_and_get_scan_directory_mock.assert_called_once_with(
+            self.set_directory, self.scan_number
+        )
+        self.scan_block_mock.configure.assert_called_once_with(
+            self.generator_mock, fileDir=self.scan_directory
+        )
 
         # Check the reporting was called
         self.add_report_line_mock.assert_called_once_with(
-            self.report_filepath, self.get_expected_report_string(ScanOutcome.MISCONFIGURED))
+            self.report_filepath,
+            self.get_expected_report_string(ScanOutcome.MISCONFIGURED),
+        )
 
         # Check the outcome calls
         self.increment_scan_failures_mock.assert_called_once()
 
-    def test_run_scan_is_misconfigured_when_scan_block_configure_throws_other_exception(self):
+    def test_run_scan_is_misconfigured_when_scan_block_configure_throws_other_exception(
+        self,
+    ):
         # Our mocked scan block will throw an exception
         self.scan_block_mock.configure.side_effect = ValueError("Invalid value")
+
+        # Mock context
+        self.scan_runner_part.context = Mock(name="context_mock")
 
         # Call the run_scan method
         self.scan_runner_part.run_scan(
@@ -1302,24 +1363,29 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
             self.set_directory,
             self.scan_number,
             self.report_filepath,
-            self.generator_mock)
+            self.generator_mock,
+        )
 
         # Check the standard method calls
-        self.create_and_get_scan_directory_mock.assert_called_once_with(self.set_directory, self.scan_number)
-        self.scan_block_mock.configure.assert_called_once_with(self.generator_mock, fileDir=self.scan_directory)
+        self.create_and_get_scan_directory_mock.assert_called_once_with(
+            self.set_directory, self.scan_number
+        )
+        self.scan_block_mock.configure.assert_called_once_with(
+            self.generator_mock, fileDir=self.scan_directory
+        )
 
         # Check the reporting was called
         self.add_report_line_mock.assert_called_once_with(
-            self.report_filepath, self.get_expected_report_string(ScanOutcome.MISCONFIGURED))
+            self.report_filepath,
+            self.get_expected_report_string(ScanOutcome.MISCONFIGURED),
+        )
 
         # Check that we logged the unidentified exception
         self.logger_mock.error.assert_called_once_with(
             "Unhandled exception for scan {no} in {set}: ({type_e}) {e}".format(
-                type_e=ValueError,
-                no=21,
-                set=self.set_name,
-                e="Invalid value"
-            ))
+                type_e=ValueError, no=21, set=self.set_name, e="Invalid value"
+            )
+        )
 
         # Check the outcome calls
         self.increment_scan_failures_mock.assert_called_once()
@@ -1328,6 +1394,9 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
         # Our mocked scan block will raise a TimeoutError when called
         self.scan_block_mock.run.side_effect = TimeoutError()
 
+        # Mock context
+        self.scan_runner_part.context = Mock(name="context_mock")
+
         # Call the run_scan method
         self.scan_runner_part.run_scan(
             self.set_name,
@@ -1335,16 +1404,22 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
             self.set_directory,
             self.scan_number,
             self.report_filepath,
-            self.generator_mock)
+            self.generator_mock,
+        )
 
         # Check the standard method calls
-        self.create_and_get_scan_directory_mock.assert_called_once_with(self.set_directory, self.scan_number)
-        self.scan_block_mock.configure.assert_called_once_with(self.generator_mock, fileDir=self.scan_directory)
+        self.create_and_get_scan_directory_mock.assert_called_once_with(
+            self.set_directory, self.scan_number
+        )
+        self.scan_block_mock.configure.assert_called_once_with(
+            self.generator_mock, fileDir=self.scan_directory
+        )
         self.scan_block_mock.run.assert_called_once()
 
         # Check the reporting was called
         self.add_report_line_mock.assert_called_once_with(
-            self.report_filepath, self.get_expected_report_string(ScanOutcome.TIMEOUT))
+            self.report_filepath, self.get_expected_report_string(ScanOutcome.TIMEOUT)
+        )
 
         # Check the outcome calls
         self.increment_scan_failures_mock.assert_called_once()
@@ -1353,6 +1428,9 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
         # Our mocked scan block will raise a NotWriteableError when called
         self.scan_block_mock.run.side_effect = NotWriteableError()
 
+        # Mock context
+        self.scan_runner_part.context = Mock(name="context_mock")
+
         # Call the run_scan method
         self.scan_runner_part.run_scan(
             self.set_name,
@@ -1360,16 +1438,23 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
             self.set_directory,
             self.scan_number,
             self.report_filepath,
-            self.generator_mock)
+            self.generator_mock,
+        )
 
         # Check the standard method calls
-        self.create_and_get_scan_directory_mock.assert_called_once_with(self.set_directory, self.scan_number)
-        self.scan_block_mock.configure.assert_called_once_with(self.generator_mock, fileDir=self.scan_directory)
+        self.create_and_get_scan_directory_mock.assert_called_once_with(
+            self.set_directory, self.scan_number
+        )
+        self.scan_block_mock.configure.assert_called_once_with(
+            self.generator_mock, fileDir=self.scan_directory
+        )
         self.scan_block_mock.run.assert_called_once()
 
         # Check the reporting was called
         self.add_report_line_mock.assert_called_once_with(
-            self.report_filepath, self.get_expected_report_string(ScanOutcome.NOTWRITEABLE))
+            self.report_filepath,
+            self.get_expected_report_string(ScanOutcome.NOTWRITEABLE),
+        )
 
         # Check the outcome calls
         self.increment_scan_failures_mock.assert_called_once()
@@ -1378,6 +1463,9 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
         # Our mocked scan block will raise an AbortedError when called
         self.scan_block_mock.run.side_effect = AbortedError()
 
+        # Mock context
+        self.scan_runner_part.context = Mock(name="context_mock")
+
         # Call the run_scan method
         self.scan_runner_part.run_scan(
             self.set_name,
@@ -1385,16 +1473,22 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
             self.set_directory,
             self.scan_number,
             self.report_filepath,
-            self.generator_mock)
+            self.generator_mock,
+        )
 
         # Check the standard method calls
-        self.create_and_get_scan_directory_mock.assert_called_once_with(self.set_directory, self.scan_number)
-        self.scan_block_mock.configure.assert_called_once_with(self.generator_mock, fileDir=self.scan_directory)
+        self.create_and_get_scan_directory_mock.assert_called_once_with(
+            self.set_directory, self.scan_number
+        )
+        self.scan_block_mock.configure.assert_called_once_with(
+            self.generator_mock, fileDir=self.scan_directory
+        )
         self.scan_block_mock.run.assert_called_once()
 
         # Check the reporting was called
         self.add_report_line_mock.assert_called_once_with(
-            self.report_filepath, self.get_expected_report_string(ScanOutcome.ABORTED))
+            self.report_filepath, self.get_expected_report_string(ScanOutcome.ABORTED)
+        )
 
         # Check the outcome calls
         self.increment_scan_failures_mock.assert_called_once()
@@ -1403,6 +1497,9 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
         # Our mocked scan block will raise a NotWriteableError when called
         self.scan_block_mock.run.side_effect = AssertionError()
 
+        # Mock context
+        self.scan_runner_part.context = Mock(name="context_mock")
+
         # Call the run_scan method
         self.scan_runner_part.run_scan(
             self.set_name,
@@ -1410,16 +1507,22 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
             self.set_directory,
             self.scan_number,
             self.report_filepath,
-            self.generator_mock)
+            self.generator_mock,
+        )
 
         # Check the standard method calls
-        self.create_and_get_scan_directory_mock.assert_called_once_with(self.set_directory, self.scan_number)
-        self.scan_block_mock.configure.assert_called_once_with(self.generator_mock, fileDir=self.scan_directory)
+        self.create_and_get_scan_directory_mock.assert_called_once_with(
+            self.set_directory, self.scan_number
+        )
+        self.scan_block_mock.configure.assert_called_once_with(
+            self.generator_mock, fileDir=self.scan_directory
+        )
         self.scan_block_mock.run.assert_called_once()
 
         # Check the reporting was called
         self.add_report_line_mock.assert_called_once_with(
-            self.report_filepath, self.get_expected_report_string(ScanOutcome.FAIL))
+            self.report_filepath, self.get_expected_report_string(ScanOutcome.FAIL)
+        )
 
         # Check the outcome calls
         self.increment_scan_failures_mock.assert_called_once()
@@ -1433,6 +1536,9 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
         logger_mock = Mock(name="logger_mock")
         self.scan_runner_part.log = logger_mock
 
+        # Mock context
+        self.scan_runner_part.context = Mock(name="context_mock")
+
         # Call the run_scan method
         self.scan_runner_part.run_scan(
             self.set_name,
@@ -1440,11 +1546,16 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
             self.set_directory,
             self.scan_number,
             self.report_filepath,
-            self.generator_mock)
+            self.generator_mock,
+        )
 
         # Check the standard method calls
-        self.create_and_get_scan_directory_mock.assert_called_once_with(self.set_directory, self.scan_number)
-        self.scan_block_mock.configure.assert_called_once_with(self.generator_mock, fileDir=self.scan_directory)
+        self.create_and_get_scan_directory_mock.assert_called_once_with(
+            self.set_directory, self.scan_number
+        )
+        self.scan_block_mock.configure.assert_called_once_with(
+            self.generator_mock, fileDir=self.scan_directory
+        )
         self.scan_block_mock.run.assert_called_once()
 
         # Check that we logged the unidentified exception
@@ -1453,12 +1564,14 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
                 type_e=Exception,
                 no=self.scan_number,
                 set=self.set_name,
-                e=exception_text
-            ))
+                e=exception_text,
+            )
+        )
 
         # Check the reporting was called
         self.add_report_line_mock.assert_called_once_with(
-            self.report_filepath, self.get_expected_report_string(ScanOutcome.OTHER))
+            self.report_filepath, self.get_expected_report_string(ScanOutcome.OTHER)
+        )
 
         # Check the outcome calls
         self.increment_scan_failures_mock.assert_called_once()
@@ -1473,10 +1586,7 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
 
         # Mock the scan_is_aborting method
         is_aborting_mock = Mock(name="is_aborting_mock")
-        is_aborting_mock.side_effect = [
-            True,
-            False
-        ]
+        is_aborting_mock.side_effect = [True, False]
         self.scan_runner_part.scan_is_aborting = is_aborting_mock
 
         # Call the run_scan method
@@ -1486,19 +1596,25 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
             self.set_directory,
             self.scan_number,
             self.report_filepath,
-            self.generator_mock)
+            self.generator_mock,
+        )
 
         # Check we slept
         context_mock.sleep.assert_called_once_with(0.1)
 
         # Check the standard method calls
-        self.create_and_get_scan_directory_mock.assert_called_once_with(self.set_directory, self.scan_number)
-        self.scan_block_mock.configure.assert_called_once_with(self.generator_mock, fileDir=self.scan_directory)
+        self.create_and_get_scan_directory_mock.assert_called_once_with(
+            self.set_directory, self.scan_number
+        )
+        self.scan_block_mock.configure.assert_called_once_with(
+            self.generator_mock, fileDir=self.scan_directory
+        )
         self.scan_block_mock.run.assert_called_once()
 
         # Check the reporting was called
         self.add_report_line_mock.assert_called_once_with(
-            self.report_filepath, self.get_expected_report_string(ScanOutcome.SUCCESS))
+            self.report_filepath, self.get_expected_report_string(ScanOutcome.SUCCESS)
+        )
 
         # Check the outcome calls
         self.increment_scan_successes_mock.assert_called_once()
@@ -1516,6 +1632,9 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
         mock_report_string.return_value = report_string
         self.scan_runner_part.get_report_string = mock_report_string
 
+        # Mock context
+        self.scan_runner_part.context = Mock(name="context_mock")
+
         # Call the run_scan method
         self.scan_runner_part.run_scan(
             self.set_name,
@@ -1523,19 +1642,25 @@ class TestScanRunnerPartRunScanMethod(unittest.TestCase):
             self.set_directory,
             self.scan_number,
             self.report_filepath,
-            self.generator_mock)
+            self.generator_mock,
+        )
 
         # Check reset was called
         self.scan_block_mock.reset.assert_called_once()
 
         # Check the standard method calls
-        self.create_and_get_scan_directory_mock.assert_called_once_with(self.set_directory, self.scan_number)
-        self.scan_block_mock.configure.assert_called_once_with(self.generator_mock, fileDir=self.scan_directory)
+        self.create_and_get_scan_directory_mock.assert_called_once_with(
+            self.set_directory, self.scan_number
+        )
+        self.scan_block_mock.configure.assert_called_once_with(
+            self.generator_mock, fileDir=self.scan_directory
+        )
         self.scan_block_mock.run.assert_called_once()
 
         # Check the reporting was called
         self.add_report_line_mock.assert_called_once_with(
-            self.report_filepath, report_string)
+            self.report_filepath, report_string
+        )
 
         # Check the outcome calls
         self.increment_scan_successes_mock.assert_called_once()

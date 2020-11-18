@@ -1,17 +1,21 @@
 import os
 import sys
-
-from annotypes import Anno, add_call_types, Any
-
-sys.path.append(os.path.dirname(__file__))
-
 import unittest
-from mock import Mock, ANY, patch, mock_open
+
+from annotypes import Anno, Any, add_call_types
+from mock import ANY, Mock, mock_open, patch
 
 from malcolm.modules.builtin.controllers import BasicController
 from malcolm.modules.builtin.parts import StringPart
-from malcolm.yamlutil import make_block_creator, Section, check_yaml_names, \
-    make_include_creator
+from malcolm.yamlutil import (
+    Section,
+    check_yaml_names,
+    make_block_creator,
+    make_include_creator,
+)
+
+sys.path.append(os.path.dirname(__file__))
+
 
 include_yaml = """
 - builtin.parameters.string:
@@ -32,7 +36,7 @@ block_yaml = """
 
 - builtin.controllers.BasicController:
     mri: some_mri
-    
+
 - builtin.parts.StringPart:
     name: scannable
     description: Scannable name for motor
@@ -46,19 +50,19 @@ with Anno("Thing"):
 
 
 class TestYamlUtil(unittest.TestCase):
-
     def test_existing_yaml(self):
         from malcolm.modules.demo.blocks import hello_block
+
         controllers = hello_block(mri="h")
         assert len(controllers) == 1
         assert isinstance(controllers[0], BasicController)
         assert len(controllers[0].parts) == 1
 
     def test_make_include(self):
-        with patch("malcolm.yamlutil.open",
-                   mock_open(read_data=include_yaml), create=True) as m:
-            include_creator = make_include_creator(
-                "/tmp/__init__.py", "include.yaml")
+        with patch(
+            "malcolm.yamlutil.open", mock_open(read_data=include_yaml), create=True
+        ) as m:
+            include_creator = make_include_creator("/tmp/__init__.py", "include.yaml")
         assert include_creator.__name__ == "include"
         m.assert_called_once_with("/tmp/include.yaml")
         controllers, parts = include_creator()
@@ -70,10 +74,10 @@ class TestYamlUtil(unittest.TestCase):
         assert part.attr.value == "nothing"
 
     def test_make_block(self):
-        with patch("malcolm.yamlutil.open",
-                   mock_open(read_data=block_yaml), create=True) as m:
-            block_creator = make_block_creator(
-                "/tmp/__init__.py", "block.yaml")
+        with patch(
+            "malcolm.yamlutil.open", mock_open(read_data=block_yaml), create=True
+        ) as m:
+            block_creator = make_block_creator("/tmp/__init__.py", "block.yaml")
         assert block_creator.__name__ == "block"
         m.assert_called_once_with("/tmp/block.yaml")
         controllers = block_creator(something="blah")
@@ -87,24 +91,24 @@ class TestYamlUtil(unittest.TestCase):
         d = dict(
             thinga=Mock(yamlname="thinga"),
             thingb=Mock(yamlname="thingb"),
-            hidden=Mock(spec=dict))
+            hidden=Mock(spec=dict),
+        )
         a = check_yaml_names(d)
         assert a == ["thinga", "thingb"]
 
     def test_check_names_mismatch(self):
-        d = dict(
-            thinga=Mock(yamlname="thinga"),
-            thingb=Mock(yamlname="thingc"))
+        d = dict(thinga=Mock(yamlname="thinga"), thingb=Mock(yamlname="thingc"))
         with self.assertRaises(AssertionError) as cm:
             check_yaml_names(d)
-        assert str(cm.exception) == \
-            "'thingb' should be called 'thingc' as it comes from 'thingc.yaml'"
+        assert (
+            str(cm.exception)
+            == "'thingb' should be called 'thingc' as it comes from 'thingc.yaml'"
+        )
 
     @patch("importlib.import_module")
     def test_instantiate(self, mock_import):
         @add_call_types
-        def f(desc, foo="thing"):
-            # type: (ADesc, AThing) -> Any
+        def f(desc: ADesc, foo: AThing = "thing") -> Any:
             return 2, desc, foo
 
         mock_import.return_value = Mock(MyPart=f)
@@ -117,7 +121,8 @@ class TestYamlUtil(unittest.TestCase):
     def test_split_into_sections(self):
         filename = "/tmp/yamltest.yaml"
         with open(filename, "w") as f:
-            f.write("""
+            f.write(
+                """
 - builtin.parameters.string:
     name: something
 
@@ -126,7 +131,8 @@ class TestYamlUtil(unittest.TestCase):
 
 - builtin.defines.docstring:
     value: My special docstring
-""")
+"""
+            )
         sections = Section.from_yaml(filename)
         assert sections == ([ANY, ANY, ANY], "yamltest", "My special docstring")
         assert sections[0][0].name == "builtin.parameters.string"
@@ -134,13 +140,12 @@ class TestYamlUtil(unittest.TestCase):
         assert sections[0][1].name == "builtin.controllers.ManagerController"
         assert sections[0][1].param_dict == dict(mri="m")
         assert sections[0][2].name == "builtin.defines.docstring"
-        assert sections[0][2].param_dict == dict(
-            value="My special docstring")
+        assert sections[0][2].param_dict == dict(value="My special docstring")
 
     def test_substitute_params(self):
         section = Section(
-            "f", 1, "module.parts.name", {
-                "name": "$(name):pos", "exposure": 1.0})
+            "f", 1, "module.parts.name", {"name": "$(name):pos", "exposure": 1.0}
+        )
         params = {"name": "me"}
         param_dict = section.substitute_params(params)
         expected = {"name": "me:pos", "exposure": 1.0}

@@ -1,2 +1,2 @@
-from . import parts, infos, util
+from . import infos, parts, util
 from .velocityprofile import VelocityProfile

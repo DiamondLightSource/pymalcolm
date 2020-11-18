@@ -5,7 +5,6 @@ from malcolm.modules.builtin.parts import IconPart
 
 
 class TestIconPart(unittest.TestCase):
-
     def setUp(self):
         svg_name = "/tmp/test_icon.svg"
         self.svg_text = '<svg><rect width="300" height="100"/></svg>'
@@ -21,6 +20,6 @@ class TestIconPart(unittest.TestCase):
         assert self.o.attr.value == self.svg_text
         assert self.o.attr.meta.description == "SVG icon for the Block"
         assert self.o.attr.meta.tags == ["widget:icon"]
-        assert self.c.field_registry.fields[self.o] == [(
-            "icon", self.o.attr, None, False
-        )]
+        assert self.c.field_registry.fields[self.o] == [
+            ("icon", self.o.attr, None, False)
+        ]

@@ -1,11 +1,12 @@
-class Future(object):
+class Future:
     """Represents the result of an asynchronous computation.
     This class has a similar API to concurrent.futures.Future but this
     simpler version is not thread safe"""
+
     # Possible future states (for internal use).
-    RUNNING = 'RUNNING'
+    RUNNING = "RUNNING"
     #  Task has set the return or exception and this future is filled
-    FINISHED = 'FINISHED'
+    FINISHED = "FINISHED"
 
     def __init__(self, context):
         """
@@ -82,7 +83,6 @@ class Future(object):
 
         Should only be used by Task and unit tests.
         """
-        assert isinstance(exception, Exception), \
-            "%r should be an Exception" % exception
+        assert isinstance(exception, Exception), "%r should be an Exception" % exception
         self._exception = exception
         self._state = self.FINISHED

@@ -4,24 +4,6 @@
 import os
 import sys
 
-
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-try:
-    from pkg_resources import require
-except ImportError:
-    pass
-else:
-    require("mock")
-    require("numpy")
-    require("ruamel.yaml")
-    require("annotypes")
-    require("cothread")
-    require("enum34")
-    require("sphinx_rtd_theme")
-
-
 from mock import MagicMock
 from enum import Enum
 

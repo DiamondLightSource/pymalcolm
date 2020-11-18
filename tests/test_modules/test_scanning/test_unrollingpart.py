@@ -1,8 +1,6 @@
 import unittest
 
-import pytest
-from scanpointgenerator import LineGenerator, CompoundGenerator, \
-    SquashingExcluder
+from scanpointgenerator import CompoundGenerator, LineGenerator, SquashingExcluder
 
 from malcolm.core import Process
 from malcolm.modules.scanning.controllers import RunnableController
@@ -10,9 +8,9 @@ from malcolm.modules.scanning.parts import UnrollingPart
 
 
 def make_generator(squashed=False, include_z=False):
-    line0 = LineGenerator('z', 'mm', 0, 2, 4)
-    line1 = LineGenerator('y', 'mm', 0, 2, 3)
-    line2 = LineGenerator('x', 'mm', 0, 2, 2, alternate=True)
+    line0 = LineGenerator("z", "mm", 0, 2, 4)
+    line1 = LineGenerator("y", "mm", 0, 2, 3)
+    line2 = LineGenerator("x", "mm", 0, 2, 2, alternate=True)
     if squashed:
         excluders = [SquashingExcluder(axes=("x", "y"))]
     else:
@@ -26,7 +24,6 @@ def make_generator(squashed=False, include_z=False):
 
 
 class TestUnrollingPart(unittest.TestCase):
-
     def setUp(self):
         self.o = UnrollingPart(name="Unroll")
         self.process = Process("proc")
@@ -41,8 +38,7 @@ class TestUnrollingPart(unittest.TestCase):
         generator = make_generator()
         generator.prepare()
         assert len(generator.dimensions) == 2
-        assert [dim.alternate for dim in generator.dimensions] == [
-            False, True]
+        assert [dim.alternate for dim in generator.dimensions] == [False, True]
 
     def test_2d_no_changes_needed_as_squashed(self):
         generator = make_generator(squashed=True)
@@ -70,8 +66,7 @@ class TestUnrollingPart(unittest.TestCase):
         generator = make_generator(include_z=True)
         generator.prepare()
         assert len(generator.dimensions) == 3
-        assert [dim.alternate for dim in generator.dimensions] == [
-            False, False, True]
+        assert [dim.alternate for dim in generator.dimensions] == [False, False, True]
 
     def test_3d_no_changes_needed_as_squashed(self):
         generator = make_generator(squashed=True, include_z=True)
@@ -79,16 +74,11 @@ class TestUnrollingPart(unittest.TestCase):
         assert results["generator"] == generator
         generator.prepare()
         assert len(generator.dimensions) == 2
-        assert [dim.alternate for dim in generator.dimensions] == [
-            False, False]
+        assert [dim.alternate for dim in generator.dimensions] == [False, False]
 
     def test_3d_changes_needed(self):
         results = self.b.validate(make_generator(include_z=True), ["x", "y"])
         generator = results["generator"]
         generator.prepare()
         assert len(generator.dimensions) == 2
-        assert [dim.alternate for dim in generator.dimensions] == [
-            False, False]
-
-
-
+        assert [dim.alternate for dim in generator.dimensions] == [False, False]

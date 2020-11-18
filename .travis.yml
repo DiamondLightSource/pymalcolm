@@ -1,9 +1,9 @@
 dist: xenial # required for python 3.7
 language: python
 python:
-  - "2.7"
   - "3.6"
   - "3.7"
+  - "3.8"
 
 env:
     - EPICS_BASE=/usr/lib/epics EPICS_HOST_ARCH=linux-x86_64 CATOOLS_LIBCA_PATH=/usr/lib/epics/lib/linux-x86_64
@@ -36,22 +36,20 @@ install:
   - ifconfig
   - ls -al ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages
   - ls -al ${VIRTUAL_ENV}/bin
-  - pip install epicscorelibs
-  # attempt to clear issue with numpy requiring cache clearing
-  - pip uninstall --yes numpy
-  - pip uninstall --yes numpy
-  - pip install .[test]
-  - pip install codecov
+  # Skip lock as it contains hashes from the subset installed on DLS PyPI
+  - pipenv install --skip-lock --dev
   - ls -al ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages
   - ls -al ${VIRTUAL_ENV}/bin
-  - python setup.py bdist_egg
+  - python setup.py bdist_wheel
 
 before_script:
   - ulimit -c unlimited -S       # enable core dumps
 
-# command to run tests
 script:
-  - python -m pytest --cov=malcolm --log-format='%(asctime)s.%(msecs)03d %(filename)-25s %(lineno)4d %(levelname)-8s %(message)s' --log-date-format='%Y-%m-%d %H:%M:%S' tests
+  - pipenv run tests
+  # pytest hangs when run alongside flake8 - keep separate
+  - pipenv run flake8
+  - pipenv run docs
 
 # submit coverage
 after_script:

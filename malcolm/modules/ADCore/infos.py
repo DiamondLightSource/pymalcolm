@@ -1,4 +1,4 @@
-from malcolm.core import Info, PART_NAME_RE
+from malcolm.core import PART_NAME_RE, Info
 from malcolm.modules import scanning
 
 from .util import AttributeDatasetType
@@ -10,25 +10,40 @@ class FilePathTranslatorInfo(Info):
     Args:
         windows_drive_letter: The drive letter assigned to the windows mount
         path_prefix: The location of the mount in linux (i.e. /dls or /dls_sw)
+        network_drive: The network drive prefix on Windows (e.g. //dc). If the
+        windows drive letter is an empty string, the network drive is prepended.
     """
 
-    def __init__(self, windows_drive_letter, path_prefix):
+    def __init__(self, windows_drive_letter, path_prefix, network_prefix):
         self.windows_drive_letter = windows_drive_letter
         self.path_prefix = path_prefix
+        self.network_prefix = network_prefix
 
     @classmethod
     def translate_filepath(cls, part_info, filepath):
         translator = cls.filter_single_value(
             part_info,
             "No or multiple FilePathTranslatorPart found: must have exactly "
-            "1 if any part in the AD chain is running on Windows")
-        assert filepath.startswith(translator.path_prefix), \
-            "filepath %s does not start with expected prefix %s" % (
-                filepath, translator.path_prefix)
-        return filepath.replace(
-            translator.path_prefix,
-            translator.windows_drive_letter + ":"
-        ).replace("/", "\\")
+            "1 if any part in the AD chain is running on Windows",
+        )
+        assert filepath.startswith(translator.path_prefix), (
+            "filepath %s does not start with expected prefix %s"
+            % (filepath, translator.path_prefix)
+        )
+        assert (
+            filepath.find(":") == -1
+        ), "filepath %s has unexpected colon (incompatible on Windows)" % (filepath)
+
+        if translator.network_prefix != "":
+            win_path = filepath.replace(
+                translator.path_prefix,
+                translator.network_prefix + translator.path_prefix,
+            ).replace("/", "\\")
+        else:
+            win_path = filepath.replace(
+                translator.path_prefix, translator.windows_drive_letter + ":"
+            ).replace("/", "\\")
+        return win_path
 
 
 class NDArrayDatasetInfo(Info):
@@ -39,8 +54,7 @@ class NDArrayDatasetInfo(Info):
         rank: The rank of the dataset, e.g. 2 for a 2D detector
     """
 
-    def __init__(self, rank):
-        # type: (int) -> None
+    def __init__(self, rank: int) -> None:
         self.rank = rank
 
 
@@ -53,8 +67,7 @@ class CalculatedNDAttributeDatasetInfo(Info):
         attr: NDAttribute name to get data from
     """
 
-    def __init__(self, name, attr):
-        # type: (str, str) -> None
+    def __init__(self, name: str, attr: str) -> None:
         self.name = name
         self.attr = attr
 
@@ -69,15 +82,15 @@ class NDAttributeDatasetInfo(Info):
         attr: NDAttribute name to get data from, e.g. "COUNTER1.Diff"
     """
 
-    def __init__(self, name, type, attr):
-        # type: (str, scanning.infos.DatasetType, str) -> None
+    def __init__(self, name: str, type: scanning.infos.DatasetType, attr: str) -> None:
         self.name = name
         self.type = type
         self.attr = attr
 
     @classmethod
-    def from_attribute_type(cls, name, type, attr):
-        # type: (str, AttributeDatasetType, str) -> NDAttributeDatasetInfo
+    def from_attribute_type(
+        cls, name: str, type: AttributeDatasetType, attr: str
+    ) -> "NDAttributeDatasetInfo":
         """Make an Info from the AttributeDatasetType
 
         Args:
@@ -85,9 +98,10 @@ class NDAttributeDatasetInfo(Info):
             type: What type it is, e.g. AttributeDatasetType.DETECTOR
             attr: NDAttribute name to get data from, e.g. "COUNTER1.Diff
         """
-        assert PART_NAME_RE.match(name), \
-            "Expected Alphanumeric dataset name (dash and underscore allowed)" \
+        assert PART_NAME_RE.match(name), (
+            "Expected Alphanumeric dataset name (dash and underscore allowed)"
             + " got %r" % name
+        )
         if type is AttributeDatasetType.DETECTOR:
             # Something like I0
             name = "%s.data" % name
@@ -101,8 +115,7 @@ class NDAttributeDatasetInfo(Info):
             name = "%s.value" % name
             dtype = scanning.util.DatasetType.POSITION_VALUE
         else:
-            raise AttributeError("Bad dataset type %r, should be a %s" % (
-                type, AttributeDatasetType))
+            raise AttributeError(
+                "Bad dataset type %r, should be a %s" % (type, AttributeDatasetType)
+            )
         return cls(name, dtype, attr)
-
-

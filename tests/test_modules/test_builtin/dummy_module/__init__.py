@@ -1,1 +1,1 @@
-from . import parts, blocks
+from . import blocks, parts  # noqa

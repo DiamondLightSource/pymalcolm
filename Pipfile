@@ -1,0 +1,48 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+flake8-isort = "*"
+sphinx = ">=1.4.9"
+sphinx-rtd-theme = "*"
+doc8 = "*"
+mock = "*"
+nose = "*"
+coverage = "*"
+# Pinning black stops us having to allow pre-releases globally
+black = "==19.10b0"
+pytest = "*"
+pytest-cov = "*"
+pytest-black = "*"
+pytest-flake8 = "*"
+pytest-mypy = "*"
+pytest-timeout = "*"
+pylint = "*"
+codecov = "*"
+typing = "*"
+# Without these lines lockfile isn't usable on multiple Python versions and platforms
+mypy = "*"
+atomicwrites = "*"
+
+[packages]
+enum34 = "*"
+tornado = "*"
+numpy = "*"
+ruamel-yaml = "*"
+h5py = "==2.9.0"
+p4p = "*"
+pygelf = "*"
+plop = "*"
+annotypes = "*"
+cothread = "*"
+scanpointgenerator = "*"
+vdsgen = "*"
+ipython = "*"
+
+[scripts]
+# Put coverage here so we don't interfere with debugging in the IDE
+tests = "python -m pytest --cov=malcolm --cov-fail-under=90 --cov-report term --log-format='%(asctime)s.%(msecs)03d %(filename)-25s %(lineno)4d %(levelname)-8s %(message)s' --log-date-format='%Y-%m-%d %H:%M:%S' tests"
+docs = "sphinx-build -b html docs docs/html"
+flake8 = "flake8 malcolm tests --benchmark"

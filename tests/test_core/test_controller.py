@@ -1,11 +1,24 @@
 import unittest
 
-from annotypes import add_call_types, Anno
+from annotypes import Anno, add_call_types
 
-from malcolm.core import Controller, Part, PartRegistrar, StringMeta, \
-    Process, Queue, Get, Return, Put, Error, Post, Subscribe, Update, \
-    Unsubscribe
 from malcolm import __version__
+from malcolm.core import (
+    Controller,
+    Error,
+    Get,
+    Part,
+    PartRegistrar,
+    Post,
+    Process,
+    Put,
+    Queue,
+    Return,
+    StringMeta,
+    Subscribe,
+    Unsubscribe,
+    Update,
+)
 
 with Anno("The return value"):
     AWorld = str
@@ -17,17 +30,16 @@ class MyPart(Part):
     context = None
 
     @add_call_types
-    def method(self):
-        # type: () -> AWorld
-        return 'world'
+    def method(self) -> AWorld:
+        return "world"
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
-        self.my_attribute = StringMeta(
-            description="MyString"
-        ).create_attribute_model('hello_block')
+    def setup(self, registrar: PartRegistrar) -> None:
+        self.my_attribute = StringMeta(description="MyString").create_attribute_model(
+            "hello_block"
+        )
         registrar.add_attribute_model(
-            "myAttribute", self.my_attribute, self.my_attribute.set_value)
+            "myAttribute", self.my_attribute, self.my_attribute.set_value
+        )
         registrar.add_method_model(self.method)
 
 
@@ -53,8 +65,10 @@ class TestController(unittest.TestCase):
         p2 = MyPart("another_part")
         with self.assertRaises(AssertionError) as cm:
             self.o.add_part(p2)
-        assert str(cm.exception) == \
-               "Field 'myAttribute' published by MyPart(name='another_part') would overwrite one made by MyPart(name='test_part')"
+        assert str(cm.exception) == (
+            "Field 'myAttribute' published by MyPart(name='another_part') "
+            "would overwrite one made by MyPart(name='test_part')"
+        )
 
     def test_make_view(self):
         b = self.process.block_view("mri")
@@ -62,9 +76,9 @@ class TestController(unittest.TestCase):
         attribute_view = b.myAttribute
         dict_view = b.method.meta.returns.elements
         list_view = b.method.meta.returns.required
-        assert method_view() == 'world'
+        assert method_view() == "world"
         assert attribute_view.value == "hello_block"
-        assert dict_view['return'].description == "The return value"
+        assert dict_view["return"].description == "The return value"
         assert list_view[0] == "return"
         assert b.meta.tags == ["version:pymalcolm:%s" % __version__]
 
@@ -74,22 +88,23 @@ class TestController(unittest.TestCase):
         request = Get(id=41, path=["mri", "myAttribute"])
         request.set_callback(q.put)
         self.o.handle_request(request)
-        response = q.get(timeout=.1)
+        response = q.get(timeout=0.1)
         self.assertIsInstance(response, Return)
         assert response.id == 41
         assert response.value["value"] == "hello_block"
         self.part.my_attribute.meta.writeable = False
         request = Put(
-            id=42, path=["mri", "myAttribute"], value='hello_block2', get=True)
+            id=42, path=["mri", "myAttribute"], value="hello_block2", get=True
+        )
         request.set_callback(q.put)
         self.o.handle_request(request)
-        response = q.get(timeout=.1)
+        response = q.get(timeout=0.1)
         self.assertIsInstance(response, Error)  # not writeable
         assert response.id == 42
 
         self.part.my_attribute.meta.writeable = True
         self.o.handle_request(request)
-        response = q.get(timeout=.1)
+        response = q.get(timeout=0.1)
         self.assertIsInstance(response, Return)
         assert response.id == 42
         assert response.value == "hello_block2"
@@ -97,25 +112,27 @@ class TestController(unittest.TestCase):
         request = Post(id=43, path=["mri", "method"])
         request.set_callback(q.put)
         self.o.handle_request(request)
-        response = q.get(timeout=.1)
+        response = q.get(timeout=0.1)
         self.assertIsInstance(response, Return)
         assert response.id == 43
         assert response.value == "world"
 
         # cover the controller._handle_post path for parameters
-        request = Post(id=43, path=["mri", "method"], parameters={'dummy': 1})
+        request = Post(id=43, path=["mri", "method"], parameters={"dummy": 1})
         request.set_callback(q.put)
         self.o.handle_request(request)
-        response = q.get(timeout=.1)
+        response = q.get(timeout=0.1)
         self.assertIsInstance(response, Error)
         assert response.id == 43
-        assert str(response.message) == \
-            "Given keys ['dummy'], some of which aren't in allowed keys []"
+        assert (
+            str(response.message)
+            == "Given keys ['dummy'], some of which aren't in allowed keys []"
+        )
 
         request = Subscribe(id=44, path=["mri", "myAttribute"], delta=False)
         request.set_callback(q.put)
         self.o.handle_request(request)
-        response = q.get(timeout=.1)
+        response = q.get(timeout=0.1)
         self.assertIsInstance(response, Update)
         assert response.id == 44
         assert response.value["typeid"] == "epics:nt/NTScalar:1.0"
@@ -124,6 +141,6 @@ class TestController(unittest.TestCase):
         request = Unsubscribe(id=44)
         request.set_callback(q.put)
         self.o.handle_request(request)
-        response = q.get(timeout=.1)
+        response = q.get(timeout=0.1)
         self.assertIsInstance(response, Return)
         assert response.id == 44

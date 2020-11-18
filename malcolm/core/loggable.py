@@ -1,9 +1,10 @@
 import logging
 
 
-class Loggable(object):
+class Loggable:
     """Utility class that provides a named logger for a class instance"""
-    log = None  # type: logging.Logger
+
+    log: logging.Logger
 
     def set_logger(self, **fields):
         """Change the name of the logger that log.* should call

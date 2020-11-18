@@ -5,7 +5,6 @@ from malcolm.modules.builtin.parts import StringPart
 
 
 class TestStringPart(unittest.TestCase):
-
     def setUp(self):
         self.o = StringPart(name="sp", description="desc")
         self.c = Controller("mri")
@@ -17,6 +16,6 @@ class TestStringPart(unittest.TestCase):
         assert self.o.attr.value == ""
         assert self.o.attr.meta.description == "desc"
         assert self.o.attr.meta.tags == ["widget:textupdate"]
-        assert self.c.field_registry.fields[self.o] == [(
-            "sp", self.o.attr, None, False
-        )]
+        assert self.c.field_registry.fields[self.o] == [
+            ("sp", self.o.attr, None, False)
+        ]
