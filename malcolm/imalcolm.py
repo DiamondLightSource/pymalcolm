@@ -64,9 +64,9 @@ def make_logging_config(args):
             "extended": {
                 "format": "%(asctime)s - %(levelname)6s - %(name)s\n" "    %(message)s"
             },
-            #"syslog": {
-            #    "format": "%(name)s: %(message)s\n##%(extra)s##"
-            #},
+            # "syslog": {
+            #     "format": "%(name)s: %(message)s\n##%(extra)s##"
+            # },
         },
         "handlers": {
             "console": {
@@ -76,23 +76,23 @@ def make_logging_config(args):
                 "stream": "ext://sys.stdout",
             },
 
-            #"local_file_handler": {
-            #    "class": "logging.handlers.RotatingFileHandler",
-            #    "level": "DEBUG",
-            #    "formatter": "extended",
-            #    "filename": "/tmp/malcolm-debug.log",
-            #    "maxBytes": 100048576,
-            #    "backupCount": 4,
-            #    "encoding": "utf8"
-            #},
+            # "local_file_handler": {
+            #     "class": "logging.handlers.RotatingFileHandler",
+            #     "level": "DEBUG",
+            #     "formatter": "extended",
+            #     "filename": "/tmp/malcolm-debug.log",
+            #     "maxBytes": 100048576,
+            #     "backupCount": 4,
+            #     "encoding": "utf8"
+            # },
 
-            #"syslog_graylog": {
-            #    "class": "malcolm.syslogger.JsonSysLogHandler",
-            #    "formatter": "syslog",
-            #    "address": "/dev/log",
-            #    "facility": "local0"
-            #},
-          
+            # "syslog_graylog": {
+            #     "class": "malcolm.syslogger.JsonSysLogHandler",
+            #     "formatter": "syslog",
+            #     "address": "/dev/log",
+            #     "facility": "local0"
+            # },
+
             "graylog_gelf": {
                 "class": "pygelf.GelfTcpHandler",
                 # Obviously a DLS-specific configuration: the graylog server
@@ -124,7 +124,7 @@ def make_logging_config(args):
         # },
         "root": {
             "level": "DEBUG",
-            "handlers": ["graylog_gelf", "console"]#, "syslog_graylog"],
+            "handlers": ["graylog_gelf", "console"]  # , "syslog_graylog"],
         }
     }
 
