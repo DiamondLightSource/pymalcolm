@@ -36,7 +36,6 @@ with Anno("List of trigger modes that do not use hardware triggers"):
 USoftTriggerModes = Union[ASoftTriggerModes, Sequence[str]]
 
 # Pull re-used annotypes into our namespace in case we are subclassed
-APartName = APartName
 AMri = builtin.parts.AMri
 
 
