@@ -1,0 +1,68 @@
+- builtin.parameters.string:
+    name: mri_prefix
+    description: Malcolm resource id of the Block and prefix for children
+
+- builtin.parameters.string:
+    name: pv_prefix
+    description: PV prefix for driver and all plugins
+
+- builtin.parameters.string:
+    name: config_dir
+    description: Where to store saved configs
+
+- builtin.parameters.string:
+    name: label
+    description: Beamline specific label for the detector
+    default: EtherCAT
+
+- builtin.parameters.string:
+    name: reframe_pv_suffix
+    description: PV suffix for reframe plugin
+    default: REFR
+
+- builtin.defines.docstring:
+    value: |
+      Device block corresponding to ADEthercat + stat + pos + hdf writer.
+
+      - Camera driver should have pv prefix $(pv_prefix):CAT
+      - Pos should have pv prefix $(pv_prefix):POS
+      - Stat should have pv prefix $(pv_prefix):STAT
+      - HDF should have pv prefix $(pv_prefix):HDF5
+
+- scanning.controllers.RunnableController:
+    mri: $(mri_prefix)
+    config_dir: $(config_dir)
+    description: |
+      ADEthercat is the AreaDetector driver for ethercat modules
+
+- builtin.parts.LabelPart:
+    value: $(label)
+
+- ADEthercat.blocks.ethercat_driver_block:
+    mri: $(mri_prefix):DRV
+    prefix: $(pv_prefix):CAT
+
+- ADEthercat.parts.EthercatDriverPart:
+    name: DRV
+    mri: $(mri_prefix):DRV
+
+- ADCore.blocks.stats_plugin_block:
+    mri: $(mri_prefix):STAT
+    prefix: $(pv_prefix):STAT
+
+- ADCore.parts.StatsPluginPart:
+    name: STAT
+    mri: $(mri_prefix):STAT
+
+- ADCore.includes.filewriting_collection:
+    pv_prefix: $(pv_prefix)
+    mri_prefix: $(mri_prefix)
+
+- ADCore.blocks.reframe_plugin_block:
+    mri: $(mri_prefix):REFRAME
+    prefix: $(pv_prefix)
+    suffix: $(reframe_pv_suffix)
+
+- ADCore.parts.ReframePluginPart:
+    name: REFRAME
+    mri: $(mri_prefix):REFRAME
