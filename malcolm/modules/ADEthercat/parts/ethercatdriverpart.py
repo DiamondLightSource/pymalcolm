@@ -10,6 +10,7 @@ from malcolm.modules.scanning.hooks import AContext, PostRunReadyHook, PreRunHoo
 APartName = builtin.parts.APartName
 AMri = builtin.parts.AMri
 
+
 @builtin.util.no_save("numberOfSamples", "triggerMode")
 class EthercatDriverPart(ADCore.parts.DetectorDriverPart):
     def __init__(self, name: APartName, mri: AMri) -> None:

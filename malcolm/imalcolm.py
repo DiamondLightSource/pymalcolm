@@ -75,7 +75,6 @@ def make_logging_config(args):
                 "formatter": "simple",
                 "stream": "ext://sys.stdout",
             },
-
             # "local_file_handler": {
             #     "class": "logging.handlers.RotatingFileHandler",
             #     "level": "DEBUG",
@@ -85,14 +84,12 @@ def make_logging_config(args):
             #     "backupCount": 4,
             #     "encoding": "utf8"
             # },
-
             # "syslog_graylog": {
             #     "class": "malcolm.syslogger.JsonSysLogHandler",
             #     "formatter": "syslog",
             #     "address": "/dev/log",
             #     "facility": "local0"
             # },
-
             "graylog_gelf": {
                 "class": "pygelf.GelfTcpHandler",
                 # Obviously a DLS-specific configuration: the graylog server
@@ -124,8 +121,8 @@ def make_logging_config(args):
         # },
         "root": {
             "level": "DEBUG",
-            "handlers": ["graylog_gelf", "console"]  # , "syslog_graylog"],
-        }
+            "handlers": ["graylog_gelf", "console"],  # , "syslog_graylog"],
+        },
     }
 
     if args.logcfg:

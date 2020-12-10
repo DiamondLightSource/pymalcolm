@@ -1,8 +1,8 @@
 from annotypes import add_call_types
 
 from malcolm.core import DEFAULT_TIMEOUT, PartRegistrar
-from malcolm.modules import builtin
-from malcolm.modules import scanning
+from malcolm.modules import builtin, scanning
+
 
 # We will set these attributes on the child block, so don't save them
 @builtin.util.no_save(
@@ -20,7 +20,7 @@ class ReframePluginPart(builtin.parts.ChildPart):
                 scanning.hooks.PostRunArmedHook,
                 scanning.hooks.SeekHook,
             ),
-            self.on_configure
+            self.on_configure,
         )
         registrar.hook(scanning.hooks.AbortHook, self.on_abort)
 
@@ -39,7 +39,8 @@ class ReframePluginPart(builtin.parts.ChildPart):
                 arrayCounter=0,
                 enableCallbacks=True,
                 triggerMode="Continuous",
-                averageSamples="Yes")
+                averageSamples="Yes",
+            )
         )
         context.wait_all_futures(fs)
         self.start_future = child.start_async()
