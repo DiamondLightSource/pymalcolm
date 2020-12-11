@@ -10,7 +10,7 @@ from .blockpart import (
     AWriteable,
     BlockPart,
 )
-from .childpart import AInitialVisibility, AMri, APartName, ChildPart
+from .childpart import AInitialVisibility, AMri, APartName, AStateful, ChildPart
 from .choicepart import (
     AConfig,
     AGroup,
