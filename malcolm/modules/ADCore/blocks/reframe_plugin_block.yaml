@@ -30,7 +30,7 @@
     description: Start acquisition
     pv: $(prefix):$(suffix):Capture
     status_pv: $(prefix):$(suffix):Mode_RBV
-    good_status: Armed
+    good_status: Idle
 
 - ca.parts.CAActionPart:
     name: stop
@@ -47,8 +47,18 @@
 
 - ca.parts.CAChoicePart:
     name: triggerMode
-    description: Acquisition mode readback
+    description: Trigger mode
     pv: $(prefix):$(suffix):TriggerMode
+
+- ca.parts.CALongPart:
+    name: triggerCount
+    description: Number of triggers
+    pv: $(prefix):$(suffix):TriggerCount
+
+- ca.parts.CALongPart:
+    name: triggerCountReadback
+    description: Number of output triggers
+    rbv: $(prefix):$(suffix):OutputCount_RBV
 
 - ca.parts.CAChoicePart:
     name: averageSamples
