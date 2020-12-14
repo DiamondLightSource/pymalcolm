@@ -34,7 +34,7 @@ class EthercatDriverPart(ADCore.parts.DetectorDriverPart):
         child = context.block_view(self.mri)
         child.imageMode.put_value("Continuous")
         child.triggerMode.put_value("Internal")
-        child.numberOfSamples.put_value("1000")
+        child.numberOfSamples.put_value(1000)
         child.put_attribute_values(kwargs)
 
     @add_call_types
