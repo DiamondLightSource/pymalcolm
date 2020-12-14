@@ -300,11 +300,26 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         context.unsubscribe_all()
         child = context.block_view(self.mri)
         self.check_driver_version(child)
+        # Calculate how long to wait before marking this scan as stalled
+        self.frame_timeout = FRAME_TIMEOUT
+        if generator.duration > 0:
+            self.frame_timeout += generator.duration
+        else:
+            # Double it to be safe
+            self.frame_timeout += FRAME_TIMEOUT
+
         # If detector can be soft triggered, then we might need to defer
         # starting it until run. Check triggerMode to find out
         if self.soft_trigger_modes:
             mode = child.triggerMode.value
             self.is_hardware_triggered = mode not in self.soft_trigger_modes
+
+        # If detector is hardware triggered we can configure the detector for all frames
+        # now, rather than configuring and arming for each inner scan, and send the
+        # triggers for one inner scan in each run
+        if self.is_hardware_triggered:
+            steps_to_do = generator.size
+
         # Set up the detector
         self.setup_detector(
             context,
@@ -314,16 +329,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
             part_info,
             **kwargs,
         )
-        # Calculate how long to wait before marking this scan as stalled
-        self.frame_timeout = FRAME_TIMEOUT
-        if generator.duration > 0:
-            self.frame_timeout += generator.duration
-        else:
-            # Double it to be safe
-            self.frame_timeout += FRAME_TIMEOUT
-        if self.is_hardware_triggered:
-            # Start now if we are hardware triggered
-            self.arm_detector(context)
+
         # Tell detector to store NDAttributes if table given
         if len(self.extra_attributes.value.sourceId) > 0:
             attribute_xml = self.build_attribute_xml()
@@ -340,6 +346,10 @@ class DetectorDriverPart(builtin.parts.ChildPart):
                     part_info, self.attributes_filename
                 )
             child.attributesFile.put_value(attributes_filename)
+
+        # Start now if we are hardware triggered
+        if self.is_hardware_triggered:
+            self.arm_detector(context)
 
     @add_call_types
     def on_run(self, context: scanning.hooks.AContext) -> None:
