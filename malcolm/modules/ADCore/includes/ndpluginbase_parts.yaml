@@ -30,3 +30,8 @@
     description: Enable plugin to run when we get a new frame
     pv: $(prefix):EnableCallbacks
     rbv_suffix: _RBV
+
+- ca.parts.CALongPart:
+    name: queueUse
+    description: Number of frames in plugin queue
+    rbv: $(prefix):QueueUse
