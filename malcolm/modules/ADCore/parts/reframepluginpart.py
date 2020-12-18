@@ -60,9 +60,7 @@ class ReframePluginPart(ChildPart):
         context: scanning.hooks.AContext,
         completed_steps: scanning.hooks.ACompletedSteps,
         steps_to_do: scanning.hooks.AStepsToDo,
-        part_info: scanning.hooks.APartInfo,
         generator: scanning.hooks.AGenerator,
-        fileDir: scanning.hooks.AFileDir,
     ) -> None:
         child = context.block_view(self.mri)
 
@@ -82,7 +80,7 @@ class ReframePluginPart(ChildPart):
             # This is rewinding or setting up for another batch,
             # skip to a uniqueID that has not been produced yet
             array_counter = self.done_when_reaches
-            self.done_when_reaches += steps_to_do
+            self.done_when_reaches = steps_to_do  # Steps reset to 0
         self.uniqueid_offset = completed_steps - array_counter
 
         # Setup attributes
@@ -104,18 +102,19 @@ class ReframePluginPart(ChildPart):
         assert self.registrar, "No assigned registrar"
         self.wait_for_plugin(context, self.registrar, event_timeout=self.frame_timeout)
 
-    @add_call_types
-    def on_abort(self, context: scanning.hooks.AContext,) -> None:
+    def stop_plugin(self, context: scanning.hooks.AContext) -> None:
         child = context.block_view(self.mri)
         child.stop()
         child.when_value_matches("acquireMode", "Idle", timeout=DEFAULT_TIMEOUT)
 
     @add_call_types
+    def on_abort(self, context: scanning.hooks.AContext,) -> None:
+        self.stop_plugin(context)
+
+    @add_call_types
     def on_reset(self, context: scanning.hooks.AContext) -> None:
         super().on_reset(context)
-        child = context.block_view(self.mri)
-        child.stop()
-        child.when_value_matches("acquireMode", "Idle", timeout=DEFAULT_TIMEOUT)
+        self.stop_plugin(context)
 
     def update_completed_steps(self, value: int, registrar: PartRegistrar) -> None:
         completed_steps = value + self.uniqueid_offset
