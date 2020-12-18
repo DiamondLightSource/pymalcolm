@@ -1,10 +1,7 @@
-from xml.etree import ElementTree
-
 from mock import Mock, call, patch
 
 from malcolm.core import DEFAULT_TIMEOUT, Context, Process
 from malcolm.modules.ADCore.blocks import reframe_plugin_block
-from malcolm.modules.ADCore.infos import FilePathTranslatorInfo
 from malcolm.modules.ADCore.parts import ReframePluginPart
 from malcolm.modules.ADCore.util import FRAME_TIMEOUT
 from malcolm.testutil import ChildTestCase
