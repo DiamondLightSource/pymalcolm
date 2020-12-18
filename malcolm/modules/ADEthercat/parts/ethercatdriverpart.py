@@ -4,7 +4,12 @@ from annotypes import add_call_types
 
 from malcolm.core import Context, PartRegistrar
 from malcolm.modules import ADCore, builtin, scanning
-from malcolm.modules.scanning.hooks import AContext, PostRunReadyHook, PreRunHook
+from malcolm.modules.scanning.hooks import (
+    AContext,
+    PostRunArmedHook,
+    PostRunReadyHook,
+    PreRunHook,
+)
 
 # Pull re-used annotypes into our namespace in case we are subclassed
 APartName = builtin.parts.APartName
@@ -45,7 +50,7 @@ class EthercatDriverPart(ADCore.parts.DetectorDriverPart):
         super().setup(registrar)
         # Arm in PreRun so we don't get too much pre-scan data
         registrar.hook(PreRunHook, self.start_acquisition)
-        registrar.hook(PostRunReadyHook, self.on_abort)
+        registrar.hook((PostRunArmedHook, PostRunReadyHook), self.on_abort)
 
     @add_call_types
     def on_run(self, context: scanning.hooks.AContext) -> None:

@@ -36,11 +36,13 @@ class TestReframePluginPart(ChildTestCase):
         self.context.wait_all_futures = wait_all_futures_mock
         self.context.block_view.return_value = self.child_mock
 
-    def _check_configure_set_attributes(self, infos, frame_timeout, steps_to_do):
+    def _check_configure_set_attributes(
+        self, infos, frame_timeout, done_when_reaches, uniqueid_offset
+    ):
         assert infos is None
         assert self.o.frame_timeout == frame_timeout
-        assert self.o.done_when_reaches == steps_to_do
-        assert self.o.uniqueid_offset == 0
+        assert self.o.done_when_reaches == done_when_reaches
+        assert self.o.uniqueid_offset == uniqueid_offset
         assert self.o.start_future == self.start_future_mock
 
     def _check_configure_calls(self, steps_to_do, array_counter=0):
@@ -76,7 +78,9 @@ class TestReframePluginPart(ChildTestCase):
 
         # Check attributes
         expected_timeout = 2 * FRAME_TIMEOUT
-        self._check_configure_set_attributes(infos, expected_timeout, steps_to_do)
+        self._check_configure_set_attributes(
+            infos, expected_timeout, steps_to_do, completed_steps
+        )
 
         # Check calls
         self._check_configure_calls(steps_to_do)
@@ -100,7 +104,9 @@ class TestReframePluginPart(ChildTestCase):
 
         # Check attributes
         expected_timeout = FRAME_TIMEOUT + generator.duration
-        self._check_configure_set_attributes(infos, expected_timeout, steps_to_do)
+        self._check_configure_set_attributes(
+            infos, expected_timeout, steps_to_do, completed_steps
+        )
 
         # Check calls
         self._check_configure_calls(steps_to_do)
@@ -126,7 +132,9 @@ class TestReframePluginPart(ChildTestCase):
 
         # Check attributes
         expected_timeout = FRAME_TIMEOUT + generator.duration
-        self._check_configure_set_attributes(infos, expected_timeout, steps_to_do)
+        self._check_configure_set_attributes(
+            infos, expected_timeout, steps_to_do + completed_steps, -completed_steps
+        )
 
         # Check calls
         self._check_configure_calls(steps_to_do, array_counter=completed_steps)
@@ -152,7 +160,9 @@ class TestReframePluginPart(ChildTestCase):
 
         # Check attributes
         expected_timeout = 2 * FRAME_TIMEOUT
-        self._check_configure_set_attributes(infos, expected_timeout, steps_to_do)
+        self._check_configure_set_attributes(
+            infos, expected_timeout, steps_to_do + completed_steps, -completed_steps
+        )
 
         # Check calls
         self._check_configure_calls(steps_to_do, array_counter=completed_steps)

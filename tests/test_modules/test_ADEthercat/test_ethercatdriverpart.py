@@ -4,7 +4,11 @@ from scanpointgenerator import CompoundGenerator, LineGenerator
 from malcolm.core import Context, Process
 from malcolm.modules.ADEthercat.blocks import ethercat_driver_block
 from malcolm.modules.ADEthercat.parts import EthercatDriverPart
-from malcolm.modules.scanning.hooks import PostRunReadyHook, PreRunHook
+from malcolm.modules.scanning.hooks import (
+    PostRunArmedHook,
+    PostRunReadyHook,
+    PreRunHook,
+)
 from malcolm.testutil import ChildTestCase
 
 
@@ -80,7 +84,9 @@ class TestEthercatDriverPart(ChildTestCase):
 
         assert mock_registrar.hook.mock_calls == [
             call(PreRunHook, self.ethercat_driver_part.start_acquisition),
-            call(PostRunReadyHook, self.ethercat_driver_part.on_abort),
+            call(
+                (PostRunArmedHook, PostRunReadyHook), self.ethercat_driver_part.on_abort
+            ),
         ]
 
     def test_on_run(self):

@@ -80,8 +80,8 @@ class ReframePluginPart(ChildPart):
             # This is rewinding or setting up for another batch,
             # skip to a uniqueID that has not been produced yet
             array_counter = self.done_when_reaches
-            self.done_when_reaches = steps_to_do  # Steps reset to 0
-        self.uniqueid_offset = completed_steps - array_counter
+            self.done_when_reaches += steps_to_do
+        self.uniqueid_offset = -completed_steps
 
         # Setup attributes
         fs = child.put_attribute_values_async(
@@ -117,7 +117,7 @@ class ReframePluginPart(ChildPart):
         self.stop_plugin(context)
 
     def update_completed_steps(self, value: int, registrar: PartRegistrar) -> None:
-        completed_steps = value + self.uniqueid_offset
+        completed_steps = value
         registrar.report(scanning.infos.RunProgressInfo(completed_steps))
 
     def wait_for_plugin(
@@ -136,5 +136,7 @@ class ReframePluginPart(ChildPart):
         # it 5 seconds to timeout just in case there are any stray frames that
         # haven't made it through yet
         child.when_value_matches(
-            "triggerCountReadback", self.done_when_reaches, timeout=DEFAULT_TIMEOUT
+            "triggerCountReadback",
+            self.done_when_reaches + self.uniqueid_offset,
+            timeout=DEFAULT_TIMEOUT,
         )
