@@ -700,33 +700,18 @@ class RunnableController(builtin.controllers.ManagerController):
         elif lastGoodStep >= total_steps:
             lastGoodStep = total_steps - 1
 
-        # TODO
-        if self.use_breakpoints:
-            if self.state.value in [ss.ARMED, ss.FINISHED]:
-                # We don't have a run process, free to go anywhere we want
-                next_state = ss.ARMED
-            else:
-                # Need to pause within the bounds of the current run
-                if lastGoodStep == self.configured_steps.value:
-                    lastGoodStep -= 1
-                next_state = ss.PAUSED
-
-            self.try_aborting_function(
-                ss.SEEKING, next_state, self.do_pause, lastGoodStep
-            )
+        if self.state.value in [ss.ARMED, ss.FINISHED]:
+            # We don't have a run process, free to go anywhere we want
+            next_state = ss.ARMED
         else:
-            if self.state.value in [ss.ARMED, ss.FINISHED]:
-                # We don't have a run process, free to go anywhere we want
-                next_state = ss.ARMED
-            else:
-                # Need to pause within the bounds of the current run
-                if lastGoodStep == self.configured_steps.value:
-                    lastGoodStep -= 1
-                next_state = ss.PAUSED
+            # Need to pause within the bounds of the current run
+            if lastGoodStep == self.configured_steps.value:
+                lastGoodStep -= 1
+            next_state = ss.PAUSED
 
-            self.try_aborting_function(
-                ss.SEEKING, next_state, self.do_pause, lastGoodStep
-            )
+        self.try_aborting_function(
+            ss.SEEKING, next_state, self.do_pause, lastGoodStep
+        )
 
     def do_pause(self, completed_steps: int) -> None:
         """Recalculates the number of configured steps
