@@ -40,6 +40,7 @@ install:
   - pipenv install --skip-lock --dev
   - ls -al ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages
   - ls -al ${VIRTUAL_ENV}/bin
+  - pipenv graph
   - python setup.py bdist_wheel
 
 before_script:
