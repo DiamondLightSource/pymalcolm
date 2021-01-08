@@ -145,9 +145,11 @@ class PmacChildPart(builtin.parts.ChildPart):
         # Check that we can move all the requested axes
         available = set(child.layout.value.name)
         motion_axes = get_motion_axes(generator, axesToMove)
-        assert available.issuperset(motion_axes), (
-            "Some of the requested axes %s are not on the motor list %s"
-            % (list(axesToMove), sorted(available))
+        assert available.issuperset(
+            motion_axes
+        ), "Some of the requested axes %s are not on the motor list %s" % (
+            list(axesToMove),
+            sorted(available),
         )
         # If GPIO not demanded for every point we don't need to align to the
         # servo cycle
@@ -288,7 +290,11 @@ class PmacChildPart(builtin.parts.ChildPart):
         self.steps_up_to = completed_steps + steps_to_do
         self.completed_steps_lookup = []
         # Reset the profiles that still need to be sent
-        self.profile = dict(timeArray=[], velocityMode=[], userPrograms=[],)
+        self.profile = dict(
+            timeArray=[],
+            velocityMode=[],
+            userPrograms=[],
+        )
         self.time_since_last_pvt = 0
         for info in self.axis_mapping.values():
             self.profile[info.cs_axis.lower()] = []

@@ -58,9 +58,11 @@ class StatefulController(BasicController):
         # Field has defined when it should be writeable, just check that
         # this is valid for this state_set
         for state in states:
-            assert state in self.state_set.possible_states, (
-                "State %s is not one of the valid states %s"
-                % (state, self.state_set.possible_states)
+            assert (
+                state in self.state_set.possible_states
+            ), "State %s is not one of the valid states %s" % (
+                state,
+                self.state_set.possible_states,
             )
         for state in self.state_set.possible_states:
             state_writeable = self._children_writeable.setdefault(state, {})

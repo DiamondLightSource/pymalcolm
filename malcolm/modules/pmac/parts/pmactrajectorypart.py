@@ -56,7 +56,11 @@ def _zeros_or_right_length(array, num_points):
 @builtin.util.no_save("use%s" % x for x in CS_AXIS_NAMES)
 @builtin.util.no_save("positions%s" % x for x in CS_AXIS_NAMES)
 class PmacTrajectoryPart(builtin.parts.ChildPart):
-    def __init__(self, name: APartName, mri: AMri,) -> None:
+    def __init__(
+        self,
+        name: APartName,
+        mri: AMri,
+    ) -> None:
         super().__init__(name, mri, initial_visibility=True)
         # The total number of points we have written
         self.total_points = 0

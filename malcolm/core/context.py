@@ -105,7 +105,7 @@ class Context:
         self._q.put(self.STOP)
 
     def put(self, path, value, timeout=None, event_timeout=None):
-        """"Puts a value to a path and returns when it completes
+        """ "Puts a value to a path and returns when it completes
 
         Args:
             path (list): The path to put to
@@ -123,7 +123,7 @@ class Context:
         return future.result()
 
     def put_async(self, path, value):
-        """"Puts a value to a path and returns immediately
+        """ "Puts a value to a path and returns immediately
 
         Args:
             path (list): The path to put to
@@ -367,8 +367,8 @@ class Context:
 
     def _service_futures(self, futures, until=None):
         """Args:
-            futures (list): The futures to service
-            until (float): Timestamp to wait until
+        futures (list): The futures to service
+        until (float): Timestamp to wait until
         """
         if until is None:
             timeout = None

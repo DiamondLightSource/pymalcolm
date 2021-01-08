@@ -16,8 +16,7 @@ APart = builtin.hooks.APart
 
 
 class ReportHandlersHook(Hook):
-    """Called at init() to get all the handlers that should make the application
-    """
+    """Called at init() to get all the handlers that should make the application"""
 
     def __init__(self, part: APart) -> None:
         super().__init__(part)

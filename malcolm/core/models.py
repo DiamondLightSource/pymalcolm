@@ -317,9 +317,11 @@ class AttributeModel(Model):
         meta = deserialize_object(meta)
         # Check that the meta attribute_class is ourself
         assert isinstance(meta, VMeta), "Expected meta object, got %s" % type(meta)
-        assert isinstance(self, meta.attribute_class), (
-            "Meta object needs to be attached to %s, we are a %s"
-            % (meta.attribute_class, type(self))
+        assert isinstance(
+            self, meta.attribute_class
+        ), "Meta object needs to be attached to %s, we are a %s" % (
+            meta.attribute_class,
+            type(self),
         )
         return self.set_endpoint_data("meta", meta)
 
@@ -738,8 +740,7 @@ class StringMeta(VMeta):
 
 
 class VArrayMeta(VMeta):
-    """Intermediate abstract class so `TableMeta` can say "only arrays"
-    """
+    """Intermediate abstract class so `TableMeta` can say "only arrays" """
 
     attribute_class = NTScalarArray
     __slots__: List[str] = []
@@ -936,9 +937,11 @@ class TableMeta(VMeta):
         value.validate_column_lengths()
         # Check the table class give Array elements
         for k in args:
-            assert value[k].__class__ is Array, (
-                "Table Class %s doesn't wrap attr '%s' with an Array"
-                % (self.table_cls, k)
+            assert (
+                value[k].__class__ is Array
+            ), "Table Class %s doesn't wrap attr '%s' with an Array" % (
+                self.table_cls,
+                k,
             )
         return value
 
@@ -966,7 +969,7 @@ class TableMeta(VMeta):
             writeable: A list of the writeable field names. If there are any
                 writeable fields then the whole Meta is writeable
             extra_tags: A list of tags to be added to the table meta
-            """
+        """
         elements = OrderedDict()
         for k, ct in table_cls.call_types.items():
             subclass = cls.lookup_annotype_converter(ct)
@@ -1298,7 +1301,9 @@ class BlockModel(Model):
         self.meta = self.set_endpoint_data("meta", BlockMeta())
 
     def set_endpoint_data(
-        self, name: str, value: Union[AttributeModel, MethodModel, BlockMeta],
+        self,
+        name: str,
+        value: Union[AttributeModel, MethodModel, BlockMeta],
     ) -> Any:
         name = deserialize_object(name, str)
         if name == "meta":

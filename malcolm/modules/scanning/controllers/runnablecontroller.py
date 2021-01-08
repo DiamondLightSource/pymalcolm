@@ -709,9 +709,7 @@ class RunnableController(builtin.controllers.ManagerController):
                 lastGoodStep -= 1
             next_state = ss.PAUSED
 
-        self.try_aborting_function(
-            ss.SEEKING, next_state, self.do_pause, lastGoodStep
-        )
+        self.try_aborting_function(ss.SEEKING, next_state, self.do_pause, lastGoodStep)
 
     def do_pause(self, completed_steps: int) -> None:
         """Recalculates the number of configured steps
