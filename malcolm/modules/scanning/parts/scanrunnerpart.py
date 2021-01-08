@@ -320,7 +320,11 @@ class ScanRunnerPart(ChildPart):
         return set_directory
 
     def run_scan_set(
-        self, scan_set: Scan, scan_block: Any, sub_directory: str, report_filepath: str,
+        self,
+        scan_set: Scan,
+        scan_block: Any,
+        sub_directory: str,
+        report_filepath: str,
     ) -> None:
         # Update scan set
         self.current_scan_set.set_value(scan_set.name)

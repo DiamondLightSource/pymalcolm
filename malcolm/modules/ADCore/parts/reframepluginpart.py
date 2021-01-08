@@ -108,7 +108,10 @@ class ReframePluginPart(ChildPart):
         child.when_value_matches("acquireMode", "Idle", timeout=DEFAULT_TIMEOUT)
 
     @add_call_types
-    def on_abort(self, context: scanning.hooks.AContext,) -> None:
+    def on_abort(
+        self,
+        context: scanning.hooks.AContext,
+    ) -> None:
         self.stop_plugin(context)
 
     @add_call_types

@@ -214,7 +214,7 @@ set_data = ["/data", "/sum", "/uid"]
 
 
 def add_nexus_nodes(generator, vds_file_path):
-    """ Add in the additional information to make this into a standard nexus
+    """Add in the additional information to make this into a standard nexus
     format file:-
     (a) create the standard structure under the 'entry' group with a
     subgroup for each dataset. 'set_bases' lists the data sets we make here.

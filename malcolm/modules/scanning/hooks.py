@@ -158,8 +158,7 @@ class ConfigureHook(ControllerHook[UInfos]):
         return ConfigureParamsInfo(metas, required, defaults)
 
     def validate_return(self, ret: UInfos) -> AInfos:
-        """Check that all parts return Info objects for storing as attributes
-        """
+        """Check that all parts return Info objects for storing as attributes"""
         return check_array_info(AInfos, ret)
 
 

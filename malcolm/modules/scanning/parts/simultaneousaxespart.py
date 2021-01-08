@@ -32,9 +32,11 @@ class SimultaneousAxesPart(Part):
     # noinspection PyPep8Naming
     @add_call_types
     def on_validate(self, axesToMove: AAxesToMove) -> None:
-        assert not set(axesToMove) - set(self.attr.value), (
-            "Can only move %s simultaneously, requested %s"
-            % (list(self.attr.value), axesToMove)
+        assert not set(axesToMove) - set(
+            self.attr.value
+        ), "Can only move %s simultaneously, requested %s" % (
+            list(self.attr.value),
+            axesToMove,
         )
 
     def setup(self, registrar: PartRegistrar) -> None:
