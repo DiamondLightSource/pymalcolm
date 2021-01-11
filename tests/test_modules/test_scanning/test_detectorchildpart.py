@@ -2,8 +2,8 @@ import os
 import shutil
 import tempfile
 import unittest
+from typing import List, Union
 from unittest.mock import Mock, patch
-from typing import Union, List
 
 from annotypes import Anno, add_call_types
 from scanpointgenerator import CompoundGenerator, ConcatGenerator, LineGenerator
