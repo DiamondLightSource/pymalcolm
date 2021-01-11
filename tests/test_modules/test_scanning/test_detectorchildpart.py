@@ -2,6 +2,8 @@ import os
 import shutil
 import tempfile
 import unittest
+from unittest.mock import Mock, patch
+from typing import Union, List
 
 from annotypes import Anno, add_call_types
 from scanpointgenerator import CompoundGenerator, ConcatGenerator, LineGenerator
@@ -37,6 +39,25 @@ from malcolm.modules.scanning.util import DetectorTable, RunnableStates
 
 with Anno("How long to wait"):
     AWait = float
+
+
+class MockChildState:
+    """Mock child state by iterating through a list of values"""
+
+    def __init__(self, values: Union[RunnableStates, List[RunnableStates]]):
+        self.values = values
+        self.index = 0
+
+    def __getattr__(self, attr):
+        if attr == "value":
+            if isinstance(self.values, List):
+                self.index += 1
+                return self.values[self.index - 1]
+            else:
+                return self.values
+        raise AttributeError(
+            f"{self.__class__.__name__} object has no attribute {attr}"
+        )
 
 
 class WaitingPart(Part):
@@ -94,6 +115,86 @@ class FaultyPart(Part):
 
     def fail(self):
         raise ValueError("I'm bad")
+
+
+class TestDetectorChildPartMethods(unittest.TestCase):
+    def setUp(self):
+        self.detector_part = DetectorChildPart(
+            name="CHILDPART", mri="child", initial_visibility=True
+        )
+
+    @patch("malcolm.modules.builtin.parts.ChildPart.on_init")
+    def test_part_does_not_become_faulty_with_value_on_init(self, mock_on_init):
+        mock_context = Mock(name="context_mock")
+
+        self.detector_part.on_init(mock_context)
+
+        mock_on_init.assert_called_once_with(mock_context)
+        self.assertEqual(False, self.detector_part.faulty)
+
+    @patch("malcolm.modules.builtin.parts.ChildPart.on_init")
+    def test_part_becomes_faulty_with_BadValueError_on_init(self, mock_on_init):
+        mock_context = Mock(name="context_mock")
+        mock_on_init.side_effect = BadValueError()
+
+        self.detector_part.on_init(mock_context)
+
+        mock_on_init.assert_called_once_with(mock_context)
+        self.assertEqual(True, self.detector_part.faulty)
+
+    def test_on_run_has_future_when_child_is_armed(self):
+        mock_context = Mock(name="context_mock")
+        mock_child = Mock(name="child_mock")
+        mock_child.state.value = RunnableStates.ARMED
+        mock_child.run_async.return_value = "run_async_return_value"
+        mock_child.when_value_matches_async.return_value = (
+            "when_value_matches_return_value"
+        )
+        mock_context.block_view.return_value = mock_child
+
+        self.detector_part.on_run(mock_context)
+
+        assert self.detector_part.run_future == "run_async_return_value"
+        mock_context.wait_all_futures.assert_called_once_with(
+            "when_value_matches_return_value"
+        )
+
+    def test_on_run_resumes_when_child_is_not_armed(self):
+        mock_context = Mock(name="context_mock")
+        mock_child = Mock(name="child_mock")
+        mock_child.state.value = RunnableStates.PAUSED
+        mock_child.when_value_matches_async.return_value = (
+            "when_value_matches_return_value"
+        )
+        mock_context.block_view.return_value = mock_child
+
+        self.detector_part.on_run(mock_context)
+
+        mock_child.resume.assert_called_once()
+        mock_context.wait_all_futures.assert_called_once_with(
+            "when_value_matches_return_value"
+        )
+
+    def test_on_run_raises_run_future_exception_when_child_is_in_fault(self):
+        mock_context = Mock(name="context_mock")
+        mock_child = Mock(name="child_mock")
+        mock_run_future = Mock(name="run_future_mock")
+        mock_run_future.exception.return_value = TimeoutError()
+        mock_child.state = MockChildState([RunnableStates.ARMED, RunnableStates.FAULT])
+        mock_child.run_async.return_value = mock_run_future
+        mock_context.block_view.return_value = mock_child
+        mock_context.wait_all_futures.side_effect = BadValueError()
+
+        self.assertRaises(TimeoutError, self.detector_part.on_run, mock_context)
+
+    def test_on_run_re_raises_BadValueError_when_child_is_not_in_fault(self):
+        mock_context = Mock(name="context_mock")
+        mock_child = Mock(name="child_mock")
+        mock_child.state = MockChildState(RunnableStates.ARMED)
+        mock_context.block_view.return_value = mock_child
+        mock_context.wait_all_futures.side_effect = BadValueError
+
+        self.assertRaises(BadValueError, self.detector_part.on_run, mock_context)
 
 
 class TestDetectorChildPart(unittest.TestCase):
