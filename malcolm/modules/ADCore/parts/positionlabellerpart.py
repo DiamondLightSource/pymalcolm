@@ -37,12 +37,7 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         super().setup(registrar)
         # Hooks
         registrar.hook(
-            (
-                scanning.hooks.ConfigureHook,
-                scanning.hooks.PostRunArmedHook,
-                scanning.hooks.SeekHook,
-            ),
-            self.on_configure,
+            (scanning.hooks.ConfigureHook, scanning.hooks.SeekHook,), self.on_configure,
         )
         registrar.hook(scanning.hooks.RunHook, self.on_run)
         registrar.hook(
@@ -97,7 +92,6 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         self.loading = False
         child = context.block_view(self.mri)
         child.qty.subscribe_value(self.load_more_positions, child)
-        context.wait_all_futures(self.start_future)
 
     @add_call_types
     def on_abort(self, context: scanning.hooks.AContext) -> None:

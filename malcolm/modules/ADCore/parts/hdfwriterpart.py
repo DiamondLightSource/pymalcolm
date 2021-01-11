@@ -516,7 +516,6 @@ class HDFWriterPart(builtin.parts.ChildPart):
     @add_call_types
     def on_seek(
         self,
-        context: scanning.hooks.AContext,
         completed_steps: scanning.hooks.ACompletedSteps,
         steps_to_do: scanning.hooks.AStepsToDo,
     ) -> None:
@@ -524,13 +523,6 @@ class HDFWriterPart(builtin.parts.ChildPart):
         # will skip to a uniqueID that has not been produced yet
         self.uniqueid_offset = completed_steps - self.done_when_reaches
         self.done_when_reaches += steps_to_do
-        child = context.block_view(self.mri)
-        # Just reset the array counter_block
-        child.arrayCounter.put_value(0)
-        # Start a future waiting for the first array
-        self.array_future = child.when_value_matches_async(
-            "arrayCounterReadback", greater_than_zero
-        )
 
     @add_call_types
     def on_run(self, context: scanning.hooks.AContext) -> None:

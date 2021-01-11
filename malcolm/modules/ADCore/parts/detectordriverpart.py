@@ -97,6 +97,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         context: Context,
         completed_steps: scanning.hooks.ACompletedSteps,
         steps_to_do: scanning.hooks.AStepsToDo,
+        num_images: int,
         duration: float,
         part_info: scanning.hooks.APartInfo,
         **kwargs: Any,
@@ -115,7 +116,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         for k, v in dict(
             arrayCounter=array_counter,
             imageMode="Multiple",
-            numImages=steps_to_do,
+            numImages=num_images,
             arrayCallbacks=True,
         ).items():
             if k not in kwargs and k in child:
@@ -149,13 +150,14 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         child.arrayCounterReadback.subscribe_value(
             self.update_completed_steps, registrar
         )
-        # If no new frames produced in event_timeout seconds, consider scan dead
-        context.wait_all_futures(self.start_future, event_timeout=event_timeout)
+
         # Now wait to make sure any update_completed_steps come in. Give
         # it 5 seconds to timeout just in case there are any stray frames that
         # haven't made it through yet
         child.when_value_matches(
-            "arrayCounterReadback", self.done_when_reaches, timeout=DEFAULT_TIMEOUT
+            "arrayCounterReadback",
+            self.done_when_reaches,
+            event_timeout=event_timeout,
         )
 
     def abort_detector(self, context: Context) -> None:
@@ -219,15 +221,12 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         # Hooks
         registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
         registrar.hook(
-            (
-                scanning.hooks.ConfigureHook,
-                scanning.hooks.PostRunArmedHook,
-                scanning.hooks.SeekHook,
-            ),
+            (scanning.hooks.ConfigureHook, scanning.hooks.SeekHook),
             self.on_configure,
             self.configure_args_with_exposure,
         )
         registrar.hook(scanning.hooks.RunHook, self.on_run)
+        registrar.hook(scanning.hooks.PostRunArmedHook, self.on_post_run_armed)
         registrar.hook(
             (scanning.hooks.PauseHook, scanning.hooks.AbortHook), self.on_abort
         )
@@ -300,6 +299,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         context.unsubscribe_all()
         child = context.block_view(self.mri)
         self.check_driver_version(child)
+
         # Calculate how long to wait before marking this scan as stalled
         self.frame_timeout = FRAME_TIMEOUT
         if generator.duration > 0:
@@ -318,13 +318,16 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         # now, rather than configuring and arming for each inner scan, and send the
         # triggers for one inner scan in each run
         if self.is_hardware_triggered:
-            steps_to_do = generator.size
+            num_images = generator.size - completed_steps
+        else:
+            num_images = steps_to_do
 
         # Set up the detector
         self.setup_detector(
             context,
             completed_steps,
             steps_to_do,
+            num_images,
             generator.duration,
             part_info,
             **kwargs,
@@ -357,9 +360,16 @@ class DetectorDriverPart(builtin.parts.ChildPart):
             # Start now if we are software triggered
             self.arm_detector(context)
         assert self.registrar, "No assigned registrar"
+
+        self.log.debug("Done when reaches: %d", self.done_when_reaches)
         self.wait_for_detector(
             context, self.registrar, event_timeout=self.frame_timeout
         )
+
+    @add_call_types
+    def on_post_run_armed(self, steps_to_do: scanning.hooks.AStepsToDo) -> None:
+        if self.is_hardware_triggered:
+            self.done_when_reaches += steps_to_do
 
     @add_call_types
     def on_abort(self, context: scanning.hooks.AContext) -> None:
