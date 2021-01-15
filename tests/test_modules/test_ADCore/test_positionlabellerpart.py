@@ -56,6 +56,7 @@ class TestPositionLabellerPart(ChildTestCase):
             call.post("start"),
         ]
         assert self.o.done_when_reaches == 34
+        assert self.o.steps_up_to == generator.size
 
     def test_run(self):
         # Say that we've returned from start
