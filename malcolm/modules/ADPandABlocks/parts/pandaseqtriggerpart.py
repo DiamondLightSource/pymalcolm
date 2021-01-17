@@ -334,6 +334,8 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
                         scanning.hooks.SeekHook,
                         scanning.hooks.PostRunArmedHook), self.on_configure)
         registrar.hook(scanning.hooks.RunHook, self.on_run)
+        registrar.hook(scanning.hooks.AbortHook, self.on_abort)
+        registrar.hook(builtin.hooks.ResetHook, self.on_reset)
 
     @add_call_types
     def on_report_status(self, context):
@@ -406,6 +408,8 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
                      axesToMove  # type: scanning.hooks.AAxesToMove
                      ):
         # type: (...) -> None
+        context.unsubscribe_all()
+
         self.generator = generator
         self.loaded_up_to = completed_steps
         self.scan_up_to = completed_steps + steps_to_do
@@ -462,26 +466,26 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
 
         rows_gen = seq_triggers.get_rows(self.loaded_up_to, self.scan_up_to)
 
-        self.db_seq_table = DoubleBuffer(self.panda[SEQ_TABLES[0]],
-                                         self.panda[SEQ_TABLES[1]])
+        self.db_seq_table = DoubleBuffer(context, seqa, seqb)
 
         self.db_seq_table.configure(rows_gen)
 
     @add_call_types
     def on_run(self, context):
         # type: (scanning.hooks.AContext) -> None
-        # self.double_buf_seq.run()
         # Call sequence table enable
         self.panda.seqSetEnable()
-        self.db_seq_table.run()
+        futures = self.db_seq_table.run()
+        context.wait_all_futures(futures)
 
-    # @add_call_types
-    # def on_reset(self, context):
-    #     # type: (builtin.hooks.AContext) -> None
-    #     super(PandASeqTriggerPart, self).on_reset(context)
-    #     self.on_abort(context)
+    @add_call_types
+    def on_reset(self, context):
+        # type: (builtin.hooks.AContext) -> None
+        super(PandASeqTriggerPart, self).on_reset(context)
+        self.on_abort(context)
 
-    # @add_call_types
-    # def on_abort(self, context):
-    #     # type: (builtin.hooks.AContext) -> None
-    #     self.double_buf_seq.abort()
+    @add_call_types
+    def on_abort(self, context):
+        # type: (builtin.hooks.AContext) -> None
+        if self.db_seq_table is not None:
+            self.db_seq_table.abort()

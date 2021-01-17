@@ -31,7 +31,7 @@ SEQ_TABLE_SWITCH_DELAY = 6
 
 # Default minimum table duration. This is the minimum time (in seconds) for a
 # table used by the double-buffering system.
-MIN_TABLE_DURATION = 30000.0
+MIN_TABLE_DURATION = 15.0
 
 
 class SequencerRows:
@@ -142,30 +142,25 @@ class SequencerRows:
 
 
 class DoubleBuffer:
-    """Dummy class that represents a double-buffering system for two sequencers.
+    def __init__(self, context, seq_a, seq_b):
+        self._context = context
+        self._table_map = {"seqA": seq_a, "seqB": seq_b}
+        self._seq_status = None
+        self._futures = []
+        self._finished = True
+        self._table_gen = None
 
-    This is a cut-down stub class that lets us incrementally test the system.
-
-    TODO: Full functionality will be provided at a later time.
-    """
-
-    def __init__(self, seq_a, seq_b):
-        self._seq_a = seq_a
-        self._seq_b = seq_b
-        # self.current_table = None
-        self._table_map = {"seqA": self._seq_a, "seqB": self._seq_b}
-
-    def _fill_table(self, table, value):
+    def _fill_table(self, table, gen):
         seq_table = self._table_map[table]
-        seq_table.put_value(value)
+        seq_table.table.put_value(next(gen))
 
     @staticmethod
-    def _get_tables(rows_gen, minimum_duration=MIN_TABLE_DURATION):
+    def _get_tables(rows_gen):
         rows = SequencerRows()
         for rs in rows_gen:
             rows.extend(rs)
 
-            if rows.duration > minimum_duration or len(rows) > SEQ_TABLE_ROWS:
+            if rows.duration > MIN_TABLE_DURATION or len(rows) > SEQ_TABLE_ROWS:
                 while True:
                     remainder = rows.split(SEQ_TABLE_ROWS)
                     yield rows.get_table()
@@ -173,17 +168,58 @@ class DoubleBuffer:
 
                     if len(rows) <= SEQ_TABLE_ROWS:
                         break
+        if len(rows):
+            yield rows.get_table()
 
-        yield rows.get_table()
+    def configure(self, rows_generator):
+        self._clean_up()
 
-    def configure(self, rows_gen):
-        tables = list(self._get_tables(rows_gen))
+        for table in self._table_map.values():
+            table.repeats.put_value(1)
 
-        # TODO Remove this check when double buffer is fully implemented.
-        if len(tables) > 1:
-            raise Exception("Seq table: Too many rows")
+        self._table_gen = self._get_tables(rows_generator)
 
-        self._fill_table("seqA", tables[0])
+        try:
+            self._fill_table("seqA", self._table_gen)
+            self._fill_table("seqB", self._table_gen)
+        except StopIteration:
+            self._finished = True
+        else:
+            self._finished = False
+
+    def _seq_active_handler(self, value, table="seqA"):
+        prev = self._seq_status[table]
+        if prev is not None and prev and not value:
+            # We only care when the seq is deactivated
+            try:
+                self._fill_table(table, self._table_gen)
+            except StopIteration:
+                self._clean_up()
+                return
+
+        self._seq_status[table] = value
+
+    def _setup_subscriptions(self):
+        for table in self._table_map:
+            self._futures += [self._table_map[table].active.subscribe_value(
+                self._seq_active_handler, table)]
 
     def run(self):
-        pass
+        if not self._finished:
+            self._setup_subscriptions()
+
+        return self._futures
+
+    def _remove_subscriptions(self):
+        for future in self._futures:
+            self._context.unsubscribe(future)
+
+        self._futures = []
+
+    def _clean_up(self):
+        self._remove_subscriptions()
+        self._seq_status = {"seqA": None, "seqB": None}
+        self._finished = True
+
+    def abort(self):
+        self._clean_up()

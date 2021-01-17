@@ -8,14 +8,15 @@ from scanpointgenerator import LineGenerator, CompoundGenerator, \
     StaticPointGenerator
 
 from malcolm.core import Context, Process, Part, TableMeta, PartRegistrar, \
-    StringMeta
+    StringMeta, BooleanMeta
 from malcolm.modules.ADCore.util import AttributeDatasetType
 from malcolm.modules.ADPandABlocks.blocks import panda_seq_trigger_block
 from malcolm.modules.ADPandABlocks.parts import PandASeqTriggerPart
 from malcolm.modules.ADPandABlocks.util import SequencerTable, Trigger, \
     DatasetPositionsTable
 from malcolm.modules.ADPandABlocks.doublebuffer import SequencerRows, \
-    DoubleBuffer, MIN_PULSE, TICK, SEQ_TABLE_SWITCH_DELAY, MAX_REPEATS
+    DoubleBuffer, MIN_PULSE, TICK, SEQ_TABLE_SWITCH_DELAY, MAX_REPEATS, \
+    MIN_TABLE_DURATION
 from malcolm.modules.builtin.controllers import ManagerController, \
     BasicController
 from malcolm.modules.builtin.parts import ChildPart
@@ -70,6 +71,9 @@ class SequencerPart(Part):
             registrar.add_attribute_model("pos%s" % suff, attr)
         attr = StringMeta("Input").create_attribute_model("ZERO")
         registrar.add_attribute_model("bita", attr)
+
+        attr = BooleanMeta("Active", (), True).create_attribute_model(False)
+        registrar.add_attribute_model("active", attr, attr.set_value)
 
 
 class GatePart(Part):
@@ -172,8 +176,9 @@ class TestPandaSeqTriggerPart(ChildTestCase):
     @patch(
         'malcolm.modules.ADPandABlocks.parts.pandaseqtriggerpart.DoubleBuffer',
         autospec=True)
-    def test_configure_prepares_components(self, buffer_class):
+    def test_configure_and_run_prepare_components(self, buffer_class):
         buffer_instance = buffer_class.return_value
+        buffer_instance.run.return_value = []
 
         xs = LineGenerator("x", "mm", 0.0, 0.3, 4, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
@@ -441,45 +446,152 @@ class TestDoubleBuffer(ChildTestCase):
             controller.add_part(self.seq_parts[i])
             self.process.add_controller(controller)
 
-        # # Now start the process off
+        # Now start the process off
         self.process.start()
+
+        self.seq1_block = self.context.block_view("TEST:SEQ1")
+        self.seq2_block = self.context.block_view("TEST:SEQ2")
+        self.db = DoubleBuffer(self.context, self.seq1_block, self.seq2_block)
 
     def tearDown(self):
         self.process.stop(timeout=2)
 
     @staticmethod
-    def rows_generator():
-        triggers = (Trigger.BITA_0, Trigger.IMMEDIATE, Trigger.POSB_GT)
+    def assert_rows_equal_table(rows, table):
+        """Compare sequencer table output to SequencerRows object.
 
-        for i in range(1, 4):
-            rows = SequencerRows()
-            rows.add_seq_entry(count=i, trigger=triggers[i % 3], position=10*i,
-                               half_duration=1000*i, live=i % 2, dead=(i+1) % 2,
-                               trim=100*i)
+        This converts a sequencer table to the same format as produced by the
+        SequencerRows.as_tuple() method.
+        """
+        t = table
+        table_params = [t.repeats, t.trigger, t.position, t.time1, t.outa1,
+                        t.outb1, t.outc1, t.outd1, t.oute1, t.outf1, t.time2,
+                        t.outa2, t.outb2, t.outc2, t.outd2, t.oute2, t.outf2]
+
+        # Transpose and convert to tuples
+        table_tuple = tuple(zip(*table_params))
+        assert table_tuple == rows.as_tuple()
+
+    @staticmethod
+    def rows_generator(rows_arr):
+        for rows in rows_arr:
             yield rows
 
-    def test_table_rows_are_set_correctly_on_configure(self):
-        seq1_block = self.context.block_view("TEST:SEQ1")
-        seq2_block = self.context.block_view("TEST:SEQ2")
-        db = DoubleBuffer(seq1_block.table, seq2_block.table)
+    def test_tables_are_set_correctly_on_configure(self):
+        min_ticks = int(MIN_TABLE_DURATION / TICK)
 
-        db.configure(self.rows_generator())
+        rows1 = SequencerRows()  # Just over half min duration
+        rows1.add_seq_entry(count=2, half_duration=min_ticks // 8 + 1000)
+
+        rows2 = SequencerRows()  # Just over minimum duration
+        rows2.add_seq_entry(count=1, half_duration=min_ticks // 8 + 1000)
+        rows2.add_seq_entry(count=3, half_duration=min_ticks // 8 + 1000)
+
+        extra = SequencerRows()  # Extra tables are ignored for configure()
+        extra.add_seq_entry(count=2, half_duration=min_ticks // 8 + 1000)
+        extra.add_seq_entry(count=2, half_duration=min_ticks // 8 + 1000)
+        self.db.configure(self.rows_generator([rows1, rows1, rows2, extra]))
+
+        self.seq_parts[1].table_set.assert_called_once()
+        table1 = self.seq_parts[1].table_set.call_args[0][0]
+        expected1 = SequencerRows()
+        expected1.add_seq_entry(count=2, half_duration=min_ticks // 8 + 1000)
+        expected1.add_seq_entry(count=1, half_duration=min_ticks // 8 + 1000)
+        expected1.add_seq_entry(count=1, half_duration=min_ticks // 8 + 1000,
+                                trim=SEQ_TABLE_SWITCH_DELAY)
+        self.assert_rows_equal_table(expected1, table1)
+
+        self.seq_parts[2].table_set.assert_called_once()
+        table2 = self.seq_parts[2].table_set.call_args[0][0]
+        expected2 = SequencerRows()
+        expected2.add_seq_entry(count=1, half_duration=min_ticks // 8 + 1000)
+        expected2.add_seq_entry(count=2, half_duration=min_ticks // 8 + 1000)
+        expected2.add_seq_entry(count=1, half_duration=min_ticks // 8 + 1000,
+                                trim=SEQ_TABLE_SWITCH_DELAY)
+        self.assert_rows_equal_table(expected2, table2)
+
+    @staticmethod
+    def get_sequencer_rows(position=0):
+        min_ticks = int(MIN_TABLE_DURATION / TICK)
+
+        rows = SequencerRows()
+        rows.add_seq_entry(count=2, half_duration=min_ticks // 4 + 100,
+                           position=position)
+
+        expected = SequencerRows()
+        expected.add_seq_entry(count=1, half_duration=min_ticks // 4 + 100,
+                               position=position)
+        expected.add_seq_entry(count=1, half_duration=min_ticks // 4 + 100,
+                               position=position, trim=SEQ_TABLE_SWITCH_DELAY)
+        return rows, expected
+
+    def test_tables_update_correctly_on_active_status(self):
+        rows_list = []
+        exp_list = []
+        for i in range(5):  # Generate list of identifiable tables
+            generated, expected = self.get_sequencer_rows(i)
+            rows_list.append(generated)
+            exp_list.append(expected)
+
+        self.db.configure(self.rows_generator(rows_list))
 
         self.seq_parts[1].table_set.assert_called_once()
         table = self.seq_parts[1].table_set.call_args[0][0]
+        self.assert_rows_equal_table(exp_list[0], table)
 
-        assert table.repeats == [1, 2, 3]
-        assert table.trigger == [Trigger.IMMEDIATE, Trigger.POSB_GT,
-                                 Trigger.BITA_0]
-        assert table.position == [10, 20, 30]
-        assert table.time1 == [1000, 2000, 3000]
-        assert table.outa1 == [1, 0, 1]  # Live
-        assert table.outb1 == [0, 1, 0]  # Dead
-        assert table.outc1 == table.outd1 == table.oute1 == table.outf1 == \
-            [0, 0, 0]
-        assert table.time2 == [900, 1800, 2700]
-        assert table.outa2 == table.outb2 == table.outc2 == table.outd2 == \
-            table.oute2 == table.outf2 == [0, 0, 0]
+        self.seq_parts[2].table_set.assert_called_once()
+        table2 = self.seq_parts[2].table_set.call_args[0][0]
+        self.assert_rows_equal_table(exp_list[1], table2)
+
+        self.seq_parts[1].table_set.reset_mock()
+        self.seq_parts[2].table_set.reset_mock()
+
+        futures = self.db.run()
+
+        self.seq_parts[1].table_set.assert_not_called()
+        self.seq_parts[2].table_set.assert_not_called()
+
+        self.seq1_block.active.put_value_async(True)
+        self.context.sleep(0)
+        self.seq_parts[1].table_set.assert_not_called()
+        self.seq_parts[2].table_set.assert_not_called()
+
+        self.seq2_block.active.put_value_async(True)
+        self.seq1_block.active.put_value_async(False)
+        self.context.sleep(0)
+        self.seq_parts[1].table_set.assert_called_once()
+        table = self.seq_parts[1].table_set.call_args[0][0]
+        self.assert_rows_equal_table(exp_list[2], table)
+        self.seq_parts[2].table_set.assert_not_called()
+        self.seq_parts[1].table_set.reset_mock()
+
+        self.seq2_block.active.put_value_async(False)
+        self.seq1_block.active.put_value_async(True)
+        self.context.sleep(0)
+        self.seq_parts[1].table_set.assert_not_called()
+        self.seq_parts[2].table_set.assert_called_once()
+        table2 = self.seq_parts[2].table_set.call_args[0][0]
+        self.assert_rows_equal_table(exp_list[3], table2)
+        self.seq_parts[2].table_set.reset_mock()
+
+        self.seq2_block.active.put_value_async(True)
+        self.seq1_block.active.put_value_async(False)
+        self.context.sleep(0)
+        self.seq_parts[1].table_set.assert_called_once()
+        table = self.seq_parts[1].table_set.call_args[0][0]
+        self.assert_rows_equal_table(exp_list[4], table)
+        self.seq_parts[2].table_set.assert_not_called()
+        self.seq_parts[1].table_set.reset_mock()
+
+        self.seq2_block.active.put_value_async(False)
+        self.seq1_block.active.put_value_async(True)
+        self.context.sleep(0)
+        self.seq_parts[1].table_set.assert_not_called()
+        self.seq_parts[2].table_set.assert_not_called()
+
+        with pytest.raises(Exception):
+            for future in futures:
+                self.context.unsubscribe(future)
 
 
 class TestSequencerRows(ChildTestCase):
