@@ -173,10 +173,6 @@ class DoubleBuffer:
 
     def configure(self, rows_generator):
         self._clean_up()
-
-        for table in self._table_map.values():
-            table.repeats.put_value(1)
-
         self._table_gen = self._get_tables(rows_generator)
 
         try:

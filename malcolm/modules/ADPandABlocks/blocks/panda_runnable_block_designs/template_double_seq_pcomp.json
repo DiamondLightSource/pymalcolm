@@ -255,7 +255,7 @@
       },
       "prescale": 0.0, 
       "prescaleUnits": "s", 
-      "repeats": 0, 
+      "repeats": 1,
       "outputs": "expanded", 
       "readbacks": "expanded"
     }, 
@@ -296,7 +296,7 @@
       }, 
       "prescale": 0.0, 
       "prescaleUnits": "s", 
-      "repeats": 0, 
+      "repeats": 1,
       "outputs": "expanded", 
       "readbacks": "expanded"
     }, 
