@@ -720,33 +720,23 @@ class RunnableController(builtin.controllers.ManagerController):
 
         if self.use_breakpoints:
             self.breakpoint_index -= 1
-            # offset = sum(self.steps_per_run[0:self.iBreakpoint])
-            # assert offset < completed_steps
             in_run_steps = (
                 completed_steps % self.breakpoint_steps[self.breakpoint_index]
             )
             steps_to_do = self.breakpoint_steps[self.breakpoint_index] - in_run_steps
-            part_info = self.run_hooks(
-                ReportStatusHook(p, c) for p, c in self.part_contexts.items()
-            )
-            self.completed_steps.set_value(completed_steps)
-            self.run_hooks(
-                SeekHook(p, c, completed_steps, steps_to_do, part_info, **kwargs)
-                for p, c, kwargs in self._part_params()
-            )
-            self.configured_steps.set_value(completed_steps + steps_to_do)
         else:
             in_run_steps = completed_steps % self.steps_per_run[self.breakpoint_index]
             steps_to_do = self.steps_per_run[self.breakpoint_index] - in_run_steps
-            part_info = self.run_hooks(
-                ReportStatusHook(p, c) for p, c in self.part_contexts.items()
-            )
-            self.completed_steps.set_value(completed_steps)
-            self.run_hooks(
-                SeekHook(p, c, completed_steps, steps_to_do, part_info, **kwargs)
-                for p, c, kwargs in self._part_params()
-            )
-            self.configured_steps.set_value(completed_steps + steps_to_do)
+
+        part_info = self.run_hooks(
+            ReportStatusHook(p, c) for p, c in self.part_contexts.items()
+        )
+        self.completed_steps.set_value(completed_steps)
+        self.run_hooks(
+            SeekHook(p, c, completed_steps, steps_to_do, part_info, **kwargs)
+            for p, c, kwargs in self._part_params()
+        )
+        self.configured_steps.set_value(completed_steps + steps_to_do)
 
     @add_call_types
     def resume(self) -> None:
