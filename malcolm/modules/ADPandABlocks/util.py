@@ -1,15 +1,15 @@
-from annotypes import Anno, Array
 import numpy as np
+from annotypes import Anno, Array
 
 from malcolm.core import Table
-from malcolm.modules import ADCore
-from malcolm.modules import pandablocks
+from malcolm.modules import ADCore, pandablocks
 
 
 class Trigger(object):
     """Convenience Enum for setting sequencer tables, will be translated into
     integer values by the TablePart. The strings must match what comes from the
     PandA"""
+
     IMMEDIATE = "Immediate"
     BITA_0 = "BITA=0"
     BITA_1 = "BITA=1"
@@ -57,25 +57,27 @@ UPositionCaptures = pandablocks.util.UPositionCaptures
 
 class SequencerTable(Table):
     """Convenience Table object for building sequencer tables"""
-    def __init__(self,
-                 repeats: ALineRepeatsArray,
-                 trigger: ATriggerArray,
-                 position: APositionArray,
-                 time1: ATimeArray,
-                 outa1: AOutArray,
-                 outb1: AOutArray,
-                 outc1: AOutArray,
-                 outd1: AOutArray,
-                 oute1: AOutArray,
-                 outf1: AOutArray,
-                 time2: ATimeArray,
-                 outa2: AOutArray,
-                 outb2: AOutArray,
-                 outc2: AOutArray,
-                 outd2: AOutArray,
-                 oute2: AOutArray,
-                 outf2: AOutArray,
-                 ) -> None:
+
+    def __init__(
+        self,
+        repeats: ALineRepeatsArray,
+        trigger: ATriggerArray,
+        position: APositionArray,
+        time1: ATimeArray,
+        outa1: AOutArray,
+        outb1: AOutArray,
+        outc1: AOutArray,
+        outd1: AOutArray,
+        oute1: AOutArray,
+        outf1: AOutArray,
+        time2: ATimeArray,
+        outa2: AOutArray,
+        outb2: AOutArray,
+        outc2: AOutArray,
+        outd2: AOutArray,
+        oute2: AOutArray,
+        outf2: AOutArray,
+    ) -> None:
         self.repeats = ALineRepeatsArray(repeats)
         self.trigger = ATriggerArray(trigger)
         self.position = APositionArray(position)
@@ -98,13 +100,14 @@ class SequencerTable(Table):
 class DatasetBitsTable(pandablocks.util.BitsTable):
     # Allow CamelCase as arguments will be serialized
     # noinspection PyPep8Naming
-    def __init__(self,
-                 name: UBitNames,
-                 value: UBitValues,
-                 capture: UBitCaptures,
-                 datasetName: UAttributeNames,
-                 datasetType: UAttributeTypes
-                 ) -> None:
+    def __init__(
+        self,
+        name: UBitNames,
+        value: UBitValues,
+        capture: UBitCaptures,
+        datasetName: UAttributeNames,
+        datasetType: UAttributeTypes,
+    ) -> None:
         super(DatasetBitsTable, self).__init__(name, value, capture)
         self.datasetName = AAttributeNames(datasetName)
         self.datasetType = AAttributeTypes(datasetType)
@@ -113,17 +116,19 @@ class DatasetBitsTable(pandablocks.util.BitsTable):
 class DatasetPositionsTable(pandablocks.util.PositionsTable):
     # Allow CamelCase as arguments will be serialized
     # noinspection PyPep8Naming
-    def __init__(self,
-                 name: UPositionNames,
-                 value: UPositionValues,
-                 units: UPositionUnits,
-                 scale: UPositionScales,
-                 offset: UPositionOffsets,
-                 capture: UPositionCaptures,
-                 datasetName: UAttributeNames,
-                 datasetType: UAttributeTypes
-                 ) -> None:
+    def __init__(
+        self,
+        name: UPositionNames,
+        value: UPositionValues,
+        units: UPositionUnits,
+        scale: UPositionScales,
+        offset: UPositionOffsets,
+        capture: UPositionCaptures,
+        datasetName: UAttributeNames,
+        datasetType: UAttributeTypes,
+    ) -> None:
         super(DatasetPositionsTable, self).__init__(
-            name, value, units, scale, offset, capture)
+            name, value, units, scale, offset, capture
+        )
         self.datasetName = AAttributeNames(datasetName)
         self.datasetType = AAttributeTypes(datasetType)

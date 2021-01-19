@@ -43,16 +43,26 @@ class SequencerRows:
             self._rows = []
             self._duration = 0
 
-    def add_seq_entry(self, count=1, trigger=Trigger.IMMEDIATE, position=0,
-                      half_duration=MIN_PULSE, live=0, dead=0, trim=0):
+    def add_seq_entry(
+        self,
+        count=1,
+        trigger=Trigger.IMMEDIATE,
+        position=0,
+        half_duration=MIN_PULSE,
+        live=0,
+        dead=0,
+        trim=0,
+    ):
         complete_rows = count // MAX_REPEATS
         remaining = count % MAX_REPEATS
 
-        row = self._seq_row(MAX_REPEATS, trigger, position, half_duration, live,
-                            dead, trim)
+        row = self._seq_row(
+            MAX_REPEATS, trigger, position, half_duration, live, dead, trim
+        )
         self._rows.extend([row] * complete_rows)
-        self._rows.append(self._seq_row(remaining, trigger, position,
-                                        half_duration, live, dead, trim))
+        self._rows.append(
+            self._seq_row(remaining, trigger, position, half_duration, live, dead, trim)
+        )
         self._duration += count * (2 * half_duration - trim)
 
     def split(self, count):
@@ -63,7 +73,7 @@ class SequencerRows:
         assert len(self._rows) > 0, "Zero length seq rows should never be split"
 
         if len(self._rows) >= count:
-            final_row = self._rows[count-1]
+            final_row = self._rows[count - 1]
             if final_row[0] == 0:  # Row in continuous loop
                 assert len(self._rows) == count  # Continuous loop always at end
                 return SequencerRows()
@@ -78,7 +88,7 @@ class SequencerRows:
                 remainder = SequencerRows([tuple(final_row)])
                 remainder.extend(SequencerRows(self._rows[count:]))
                 final_row[0] = 1
-                self._rows = self._rows[:count-1]
+                self._rows = self._rows[: count - 1]
                 self._rows.append(tuple(final_row))
         else:
             remainder = SequencerRows()
@@ -119,17 +129,40 @@ class SequencerRows:
         return len(self._rows)
 
     @staticmethod
-    def _seq_row(repeats: int = 1, trigger: str = Trigger.IMMEDIATE, position: int = 0,
-                 half_duration: int = MIN_PULSE, live: int = 0, dead: int = 0, trim: int = 0) -> List:
+    def _seq_row(
+        repeats: int = 1,
+        trigger: str = Trigger.IMMEDIATE,
+        position: int = 0,
+        half_duration: int = MIN_PULSE,
+        live: int = 0,
+        dead: int = 0,
+        trim: int = 0,
+    ) -> List:
         """Create a pulse with phase1 having given live/dead values
 
         If trim=0, there is a 50% duty cycle. Trim reduces the total duration
         """
-        return (repeats, trigger, position,
-                # Phase1
-                half_duration, live, dead, 0, 0, 0, 0,
-                # Phase2
-                half_duration - trim, 0, 0, 0, 0, 0, 0)
+        return (
+            repeats,
+            trigger,
+            position,
+            # Phase1
+            half_duration,
+            live,
+            dead,
+            0,
+            0,
+            0,
+            0,
+            # Phase2
+            half_duration - trim,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+        )
 
     @staticmethod
     def _calculate_duration(rows):
@@ -196,8 +229,11 @@ class DoubleBuffer:
 
     def _setup_subscriptions(self):
         for table in self._table_map:
-            self._futures += [self._table_map[table].active.subscribe_value(
-                self._seq_active_handler, table)]
+            self._futures += [
+                self._table_map[table].active.subscribe_value(
+                    self._seq_active_handler, table
+                )
+            ]
 
     def run(self):
         if not self._finished:

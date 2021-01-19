@@ -1,32 +1,44 @@
 import os
-
 import socket
+from datetime import datetime
+
 import pytest
 from mock import MagicMock, patch
+from numpy import isclose
+from scanpointgenerator import CompoundGenerator, LineGenerator, StaticPointGenerator
 
-from scanpointgenerator import LineGenerator, CompoundGenerator, \
-    StaticPointGenerator
-
-from malcolm.core import Context, Process, Part, TableMeta, PartRegistrar, \
-    StringMeta, BooleanMeta
+from malcolm.core import (
+    BooleanMeta,
+    Context,
+    Part,
+    PartRegistrar,
+    Process,
+    StringMeta,
+    TableMeta,
+)
 from malcolm.modules.ADCore.util import AttributeDatasetType
 from malcolm.modules.ADPandABlocks.blocks import panda_seq_trigger_block
+from malcolm.modules.ADPandABlocks.doublebuffer import (
+    MAX_REPEATS,
+    MIN_PULSE,
+    MIN_TABLE_DURATION,
+    SEQ_TABLE_SWITCH_DELAY,
+    TICK,
+    DoubleBuffer,
+    SequencerRows,
+)
 from malcolm.modules.ADPandABlocks.parts import PandASeqTriggerPart
-from malcolm.modules.ADPandABlocks.util import SequencerTable, Trigger, \
-    DatasetPositionsTable
-from malcolm.modules.ADPandABlocks.doublebuffer import SequencerRows, \
-    DoubleBuffer, MIN_PULSE, TICK, SEQ_TABLE_SWITCH_DELAY, MAX_REPEATS, \
-    MIN_TABLE_DURATION
-from malcolm.modules.builtin.controllers import ManagerController, \
-    BasicController
+from malcolm.modules.ADPandABlocks.util import (
+    DatasetPositionsTable,
+    SequencerTable,
+    Trigger,
+)
+from malcolm.modules.builtin.controllers import BasicController, ManagerController
 from malcolm.modules.builtin.parts import ChildPart
 from malcolm.modules.builtin.util import ExportTable
 from malcolm.modules.pandablocks.util import PositionCapture
 from malcolm.testutil import ChildTestCase
 from malcolm.yamlutil import make_block_creator
-
-from datetime import datetime
-from numpy import isclose
 
 
 class PositionsPart(Part):
@@ -40,14 +52,17 @@ class PositionsPart(Part):
             scale=[1.0, -0.001, 0.001],
             offset=[0.0, 0.0, 0.0],
             capture=[PositionCapture.NO] * 3,
-            datasetName=["I0", 'x', 'y'],
-            datasetType=[AttributeDatasetType.MONITOR,
-                         AttributeDatasetType.POSITION,
-                         AttributeDatasetType.POSITION]
+            datasetName=["I0", "x", "y"],
+            datasetType=[
+                AttributeDatasetType.MONITOR,
+                AttributeDatasetType.POSITION,
+                AttributeDatasetType.POSITION,
+            ],
         )
         attr = TableMeta.from_table(
-            DatasetPositionsTable, "Sequencer Table",
-            writeable=list(SequencerTable.call_types)
+            DatasetPositionsTable,
+            "Sequencer Table",
+            writeable=list(SequencerTable.call_types),
         ).create_attribute_model(pos_table)
         registrar.add_attribute_model("positions", attr)
 
@@ -57,14 +72,11 @@ class SequencerPart(Part):
 
     def setup(self, registrar: PartRegistrar) -> None:
         attr = TableMeta.from_table(
-            SequencerTable, "Sequencer Table",
-            writeable=list(SequencerTable.call_types)
+            SequencerTable, "Sequencer Table", writeable=list(SequencerTable.call_types)
         ).create_attribute_model()
         self.table_set = MagicMock(side_effect=attr.set_value)
         registrar.add_attribute_model("table", attr, self.table_set)
-        for suff, val in (("a", "INENC1.VAL"),
-                          ("b", "INENC2.VAL"),
-                          ("c", "ZERO")):
+        for suff, val in (("a", "INENC1.VAL"), ("b", "INENC2.VAL"), ("c", "ZERO")):
             attr = StringMeta("Input").create_attribute_model(val)
             registrar.add_attribute_model("pos%s" % suff, attr)
         attr = StringMeta("Input").create_attribute_model("ZERO")
@@ -86,7 +98,6 @@ class GatePart(Part):
 
 
 class TestPandaSeqTriggerPart(ChildTestCase):
-
     def setUp(self):
         self.process = Process("Process")
         self.context = Context(self.process)
@@ -104,8 +115,13 @@ class TestPandaSeqTriggerPart(ChildTestCase):
             controller.add_part(self.seq_parts[i])
             self.process.add_controller(controller)
             self.panda.add_part(
-                ChildPart("SEQ%d" % i, "PANDA:SEQ%d" % i,
-                          initial_visibility=True, stateful=False))
+                ChildPart(
+                    "SEQ%d" % i,
+                    "PANDA:SEQ%d" % i,
+                    initial_visibility=True,
+                    stateful=False,
+                )
+            )
         self.child_seq1 = self.process.get_controller("PANDA:SEQ1")
         self.child_seq2 = self.process.get_controller("PANDA:SEQ2")
 
@@ -115,17 +131,20 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         controller.add_part(self.gate_part)
         self.process.add_controller(controller)
         self.panda.add_part(
-            ChildPart("SRGATE1", "PANDA:SRGATE1",
-                      initial_visibility=True, stateful=False))
+            ChildPart(
+                "SRGATE1", "PANDA:SRGATE1", initial_visibility=True, stateful=False
+            )
+        )
         self.process.add_controller(self.panda)
 
         # And the PMAC
         pmac_block = make_block_creator(
             os.path.join(os.path.dirname(__file__), "..", "test_pmac", "blah"),
-            "test_pmac_manager_block.yaml")
+            "test_pmac_manager_block.yaml",
+        )
         self.pmac = self.create_child_block(
-            pmac_block, self.process, mri_prefix="PMAC",
-            config_dir="/tmp")
+            pmac_block, self.process, mri_prefix="PMAC", config_dir="/tmp"
+        )
         # These are the motors we are interested in
         self.child_x = self.process.get_controller("BL45P-ML-STAGE-01:X")
         self.child_y = self.process.get_controller("BL45P-ML-STAGE-01:Y")
@@ -135,8 +154,12 @@ class TestPandaSeqTriggerPart(ChildTestCase):
 
         # Make the child block holding panda and pmac mri
         self.child = self.create_child_block(
-            panda_seq_trigger_block, self.process,
-            mri="SCAN:PCOMP", panda="PANDA", pmac="PMAC")
+            panda_seq_trigger_block,
+            self.process,
+            mri="SCAN:PCOMP",
+            panda="PANDA",
+            pmac="PMAC",
+        )
 
         # And our part under test
         self.o = PandASeqTriggerPart("pcomp", "SCAN:PCOMP")
@@ -144,35 +167,56 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         # Now start the process off and tell the panda which sequencer tables
         # to use
         self.process.start()
-        exports = ExportTable.from_rows([
-            ('SEQ1.table', 'seqTableA'),
-            ('SEQ2.table', 'seqTableB'),
-            ('SRGATE1.forceSet', 'seqSetEnable')
-        ])
+        exports = ExportTable.from_rows(
+            [
+                ("SEQ1.table", "seqTableA"),
+                ("SEQ2.table", "seqTableB"),
+                ("SRGATE1.forceSet", "seqSetEnable"),
+            ]
+        )
         self.panda.set_exports(exports)
 
     def tearDown(self):
         self.process.stop(timeout=2)
 
     def set_motor_attributes(
-            self, x_pos=0.5, y_pos=0.0, units="mm",
-            x_acceleration=2.5, y_acceleration=2.5,
-            x_velocity=1.0, y_velocity=1.0):
+        self,
+        x_pos=0.5,
+        y_pos=0.0,
+        units="mm",
+        x_acceleration=2.5,
+        y_acceleration=2.5,
+        x_velocity=1.0,
+        y_velocity=1.0,
+    ):
         # create some parts to mock the motion controller and 2 axes in a CS
         self.set_attributes(
-            self.child_x, cs="CS1,A",
-            accelerationTime=x_velocity/x_acceleration, resolution=0.001,
-            offset=0.0, maxVelocity=x_velocity, readback=x_pos,
-            velocitySettle=0.0, units=units)
+            self.child_x,
+            cs="CS1,A",
+            accelerationTime=x_velocity / x_acceleration,
+            resolution=0.001,
+            offset=0.0,
+            maxVelocity=x_velocity,
+            readback=x_pos,
+            velocitySettle=0.0,
+            units=units,
+        )
         self.set_attributes(
-            self.child_y, cs="CS1,B",
-            accelerationTime=y_velocity/y_acceleration, resolution=0.001,
-            offset=0.0, maxVelocity=y_velocity, readback=y_pos,
-            velocitySettle=0.0, units=units)
+            self.child_y,
+            cs="CS1,B",
+            accelerationTime=y_velocity / y_acceleration,
+            resolution=0.001,
+            offset=0.0,
+            maxVelocity=y_velocity,
+            readback=y_pos,
+            velocitySettle=0.0,
+            units=units,
+        )
 
     @patch(
-        'malcolm.modules.ADPandABlocks.parts.pandaseqtriggerpart.DoubleBuffer',
-        autospec=True)
+        "malcolm.modules.ADPandABlocks.parts.pandaseqtriggerpart.DoubleBuffer",
+        autospec=True,
+    )
     def test_configure_and_run_prepare_components(self, buffer_class):
         buffer_instance = buffer_class.return_value
         buffer_instance.run.return_value = []
@@ -186,8 +230,9 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         self.set_motor_attributes()
         axes_to_move = ["x", "y"]
 
-        self.o.on_configure(self.context, completed_steps, steps_to_do, {},
-                            generator, axes_to_move)
+        self.o.on_configure(
+            self.context, completed_steps, steps_to_do, {}, generator, axes_to_move
+        )
 
         assert self.o.generator is generator
         assert self.o.loaded_up_to == completed_steps
@@ -204,8 +249,9 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         buffer_instance.run.assert_called_once()
 
     @patch(
-        'malcolm.modules.ADPandABlocks.parts.pandaseqtriggerpart.DoubleBuffer',
-        autospec=True)
+        "malcolm.modules.ADPandABlocks.parts.pandaseqtriggerpart.DoubleBuffer",
+        autospec=True,
+    )
     def get_sequencer_rows(self, generator, axes_to_move, buffer_class):
         """Helper method for comparing table values."""
 
@@ -214,8 +260,9 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         completed_steps = 0
         steps_to_do = generator.size
 
-        self.o.on_configure(self.context, completed_steps, steps_to_do, {},
-                            generator, axes_to_move)
+        self.o.on_configure(
+            self.context, completed_steps, steps_to_do, {}, generator, axes_to_move
+        )
 
         rows_gen = buffer_instance.configure.call_args[0][0]
         rows = SequencerRows()
@@ -234,21 +281,22 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         seq_rows = self.get_sequencer_rows(generator, axes_to_move)
         # Triggers
         GT = Trigger.POSA_GT
-        I = Trigger.IMMEDIATE
+        IT = Trigger.IMMEDIATE
         LT = Trigger.POSA_LT
         # Half a frame
         hf = 62500000
         # Half how long to be blind for
         hb = 22500000
         expected = SequencerRows()
-        expected.add_seq_entry(count=1, trigger=LT, position=50,
-                               half_duration=hf, live=1, dead=0)
-        expected.add_seq_entry(3, I, 0, hf, 1, 0)
-        expected.add_seq_entry(1, I, 0, hb, 0, 1)
+        expected.add_seq_entry(
+            count=1, trigger=LT, position=50, half_duration=hf, live=1, dead=0
+        )
+        expected.add_seq_entry(3, IT, 0, hf, 1, 0)
+        expected.add_seq_entry(1, IT, 0, hb, 0, 1)
         expected.add_seq_entry(1, GT, -350, hf, 1, 0)
-        expected.add_seq_entry(3, I, 0, hf, 1, 0)
-        expected.add_seq_entry(1, I, 0, 125000000, 0, 1)
-        expected.add_seq_entry(0, I, 0, MIN_PULSE, 0, 0)
+        expected.add_seq_entry(3, IT, 0, hf, 1, 0)
+        expected.add_seq_entry(1, IT, 0, 125000000, 0, 1)
+        expected.add_seq_entry(0, IT, 0, MIN_PULSE, 0, 0)
 
         assert seq_rows.as_tuple() == expected.as_tuple()
 
@@ -266,18 +314,19 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         # Triggers
         B0 = Trigger.BITA_0
         B1 = Trigger.BITA_1
-        I = Trigger.IMMEDIATE
+        IT = Trigger.IMMEDIATE
         # Half a frame
         hf = 62500000
         expected = SequencerRows()
-        expected.add_seq_entry(count=1, trigger=B1, position=0,
-                               half_duration=hf, live=1, dead=0)
-        expected.add_seq_entry(3, I, 0, hf, 1, 0)
+        expected.add_seq_entry(
+            count=1, trigger=B1, position=0, half_duration=hf, live=1, dead=0
+        )
+        expected.add_seq_entry(3, IT, 0, hf, 1, 0)
         expected.add_seq_entry(1, B0, 0, 1250, 0, 1)
         expected.add_seq_entry(1, B1, 0, hf, 1, 0)
-        expected.add_seq_entry(3, I, 0, hf, 1, 0)
-        expected.add_seq_entry(1, I, 0, 125000000, 0, 1)
-        expected.add_seq_entry(0, I, 0, MIN_PULSE, 0, 0)
+        expected.add_seq_entry(3, IT, 0, hf, 1, 0)
+        expected.add_seq_entry(1, IT, 0, 125000000, 0, 1)
+        expected.add_seq_entry(0, IT, 0, MIN_PULSE, 0, 0)
 
         assert seq_rows.as_tuple() == expected.as_tuple()
 
@@ -292,24 +341,25 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         axes_to_move = ["x", "y"]
 
         with self.assertRaises(AssertionError):
-            self.o.on_configure(self.context, completed_steps, steps_to_do, {},
-                                generator, axes_to_move)
+            self.o.on_configure(
+                self.context, completed_steps, steps_to_do, {}, generator, axes_to_move
+            )
 
     def test_acquire_scan(self):
-        generator = CompoundGenerator(
-            [StaticPointGenerator(size=5)], [], [], 1.0)
+        generator = CompoundGenerator([StaticPointGenerator(size=5)], [], [], 1.0)
         generator.prepare()
 
         seq_rows = self.get_sequencer_rows(generator, [])
         # Triggers
-        I = Trigger.IMMEDIATE
+        IT = Trigger.IMMEDIATE
         # Half a frame
         hf = 62500000
         expected = SequencerRows()
-        expected.add_seq_entry(count=5, trigger=I, position=0,
-                               half_duration=hf, live=1, dead=0)
-        expected.add_seq_entry(1, I, 0, 125000000, 0, 1)
-        expected.add_seq_entry(0, I, 0, MIN_PULSE, 0, 0)
+        expected.add_seq_entry(
+            count=5, trigger=IT, position=0, half_duration=hf, live=1, dead=0
+        )
+        expected.add_seq_entry(1, IT, 0, 125000000, 0, 1)
+        expected.add_seq_entry(0, IT, 0, MIN_PULSE, 0, 0)
 
         assert seq_rows.as_tuple() == expected.as_tuple()
 
@@ -332,8 +382,9 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         self.set_motor_attributes()
         axes_to_move = ["x", "y"]
 
-        self.o.on_configure(self.context, completed_steps, steps_to_do, {},
-                            generator, axes_to_move)
+        self.o.on_configure(
+            self.context, completed_steps, steps_to_do, {}, generator, axes_to_move
+        )
 
     def test_configure_pcomp_row_trigger_with_single_point_rows(self):
         x_steps, y_steps = 1, 5
@@ -347,24 +398,25 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         # Triggers
         GT = Trigger.POSA_GT
         LT = Trigger.POSA_LT
-        I = Trigger.IMMEDIATE
+        IT = Trigger.IMMEDIATE
         # Half a frame
         hf = 62500000
         # Half blind
         hb = 75000000
         expected = SequencerRows()
-        expected.add_seq_entry(count=1, trigger=LT, position=0,
-                               half_duration=hf, live=1, dead=0)
-        expected.add_seq_entry(1, I, 0, hb, 0, 1)
+        expected.add_seq_entry(
+            count=1, trigger=LT, position=0, half_duration=hf, live=1, dead=0
+        )
+        expected.add_seq_entry(1, IT, 0, hb, 0, 1)
         expected.add_seq_entry(1, GT, -500, hf, 1, 0)
-        expected.add_seq_entry(1, I, 0, hb, 0, 1)
+        expected.add_seq_entry(1, IT, 0, hb, 0, 1)
         expected.add_seq_entry(1, LT, 0, hf, 1, 0)
-        expected.add_seq_entry(1, I, 0, hb, 0, 1)
+        expected.add_seq_entry(1, IT, 0, hb, 0, 1)
         expected.add_seq_entry(1, GT, -500, hf, 1, 0)
-        expected.add_seq_entry(1, I, 0, hb, 0, 1)
+        expected.add_seq_entry(1, IT, 0, hb, 0, 1)
         expected.add_seq_entry(1, LT, 0, hf, 1, 0)
-        expected.add_seq_entry(1, I, 0, 125000000, 0, 1)
-        expected.add_seq_entry(0, I, 0, MIN_PULSE, 0, 0)
+        expected.add_seq_entry(1, IT, 0, 125000000, 0, 1)
+        expected.add_seq_entry(0, IT, 0, MIN_PULSE, 0, 0)
 
         assert seq_rows.as_tuple() == expected.as_tuple()
 
@@ -381,7 +433,7 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         seq_rows = self.get_sequencer_rows(generator, axes_to_move)
         # Triggers
         GT = Trigger.POSA_GT
-        I = Trigger.IMMEDIATE
+        IT = Trigger.IMMEDIATE
         LT = Trigger.POSA_LT
         # Half a frame
         hf = 62500000
@@ -390,32 +442,33 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         # Half how long to be blind for end of row
         hrb = 56500000
         expected = SequencerRows()
-        expected.add_seq_entry(count=1, trigger=LT, position=125,
-                               half_duration=hf, live=1, dead=0)
-        expected.add_seq_entry(1, I, 0, hfb, 0, 1)
+        expected.add_seq_entry(
+            count=1, trigger=LT, position=125, half_duration=hf, live=1, dead=0
+        )
+        expected.add_seq_entry(1, IT, 0, hfb, 0, 1)
         expected.add_seq_entry(1, LT, -125, hf, 1, 0)
-        expected.add_seq_entry(1, I, 0, hfb, 0, 1)
+        expected.add_seq_entry(1, IT, 0, hfb, 0, 1)
         expected.add_seq_entry(1, LT, -375, hf, 1, 0)
-        expected.add_seq_entry(1, I, 0, hrb, 0, 1)
+        expected.add_seq_entry(1, IT, 0, hrb, 0, 1)
         expected.add_seq_entry(1, GT, -625, hf, 1, 0)
-        expected.add_seq_entry(1, I, 0, hfb, 0, 1)
+        expected.add_seq_entry(1, IT, 0, hfb, 0, 1)
         expected.add_seq_entry(1, GT, -375, hf, 1, 0)
-        expected.add_seq_entry(1, I, 0, hfb, 0, 1)
+        expected.add_seq_entry(1, IT, 0, hfb, 0, 1)
         expected.add_seq_entry(1, GT, -125, hf, 1, 0)
-        expected.add_seq_entry(1, I, 0, 125000000, 0, 1)
-        expected.add_seq_entry(0, I, 0, MIN_PULSE, 0, 0)
+        expected.add_seq_entry(1, IT, 0, 125000000, 0, 1)
+        expected.add_seq_entry(0, IT, 0, MIN_PULSE, 0, 0)
 
         assert seq_rows.as_tuple() == expected.as_tuple()
 
     def test_configure_long_pcomp_row_trigger(self):
         # Test that the configure() time is reasonable
-        if 'diamond.ac.uk' not in socket.gethostname():
+        if "diamond.ac.uk" not in socket.gethostname():
             pytest.skip("performance test only")
 
         x_steps, y_steps = 4000, 1000
         xs = LineGenerator("x", "mm", 0.0, 10, x_steps, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 8, y_steps)
-        generator = CompoundGenerator([ys, xs], [], [], .005)
+        generator = CompoundGenerator([ys, xs], [], [], 0.005)
         generator.prepare()
         completed_steps = 0
         steps_to_do = x_steps * y_steps
@@ -423,14 +476,14 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         axes_to_move = ["x", "y"]
 
         start = datetime.now()
-        self.o.on_configure(self.context, completed_steps, steps_to_do, {},
-                            generator, axes_to_move)
+        self.o.on_configure(
+            self.context, completed_steps, steps_to_do, {}, generator, axes_to_move
+        )
         elapsed = datetime.now() - start
         assert elapsed.total_seconds() < 3.0
 
 
 class TestDoubleBuffer(ChildTestCase):
-
     def setUp(self):
         self.process = Process("Process")
         self.context = Context(self.process)
@@ -461,9 +514,25 @@ class TestDoubleBuffer(ChildTestCase):
         SequencerRows.as_tuple() method.
         """
         t = table
-        table_params = [t.repeats, t.trigger, t.position, t.time1, t.outa1,
-                        t.outb1, t.outc1, t.outd1, t.oute1, t.outf1, t.time2,
-                        t.outa2, t.outb2, t.outc2, t.outd2, t.oute2, t.outf2]
+        table_params = [
+            t.repeats,
+            t.trigger,
+            t.position,
+            t.time1,
+            t.outa1,
+            t.outb1,
+            t.outc1,
+            t.outd1,
+            t.oute1,
+            t.outf1,
+            t.time2,
+            t.outa2,
+            t.outb2,
+            t.outc2,
+            t.outd2,
+            t.oute2,
+            t.outf2,
+        ]
 
         # Transpose and convert to tuples
         table_tuple = tuple(zip(*table_params))
@@ -494,8 +563,9 @@ class TestDoubleBuffer(ChildTestCase):
         expected1 = SequencerRows()
         expected1.add_seq_entry(count=2, half_duration=min_ticks // 8 + 1000)
         expected1.add_seq_entry(count=1, half_duration=min_ticks // 8 + 1000)
-        expected1.add_seq_entry(count=1, half_duration=min_ticks // 8 + 1000,
-                                trim=SEQ_TABLE_SWITCH_DELAY)
+        expected1.add_seq_entry(
+            count=1, half_duration=min_ticks // 8 + 1000, trim=SEQ_TABLE_SWITCH_DELAY
+        )
         self.assert_rows_equal_table(expected1, table1)
 
         self.seq_parts[2].table_set.assert_called_once()
@@ -503,8 +573,9 @@ class TestDoubleBuffer(ChildTestCase):
         expected2 = SequencerRows()
         expected2.add_seq_entry(count=1, half_duration=min_ticks // 8 + 1000)
         expected2.add_seq_entry(count=2, half_duration=min_ticks // 8 + 1000)
-        expected2.add_seq_entry(count=1, half_duration=min_ticks // 8 + 1000,
-                                trim=SEQ_TABLE_SWITCH_DELAY)
+        expected2.add_seq_entry(
+            count=1, half_duration=min_ticks // 8 + 1000, trim=SEQ_TABLE_SWITCH_DELAY
+        )
         self.assert_rows_equal_table(expected2, table2)
 
     @staticmethod
@@ -512,14 +583,20 @@ class TestDoubleBuffer(ChildTestCase):
         min_ticks = int(MIN_TABLE_DURATION / TICK)
 
         rows = SequencerRows()
-        rows.add_seq_entry(count=2, half_duration=min_ticks // 4 + 100,
-                           position=position)
+        rows.add_seq_entry(
+            count=2, half_duration=min_ticks // 4 + 100, position=position
+        )
 
         expected = SequencerRows()
-        expected.add_seq_entry(count=1, half_duration=min_ticks // 4 + 100,
-                               position=position)
-        expected.add_seq_entry(count=1, half_duration=min_ticks // 4 + 100,
-                               position=position, trim=SEQ_TABLE_SWITCH_DELAY)
+        expected.add_seq_entry(
+            count=1, half_duration=min_ticks // 4 + 100, position=position
+        )
+        expected.add_seq_entry(
+            count=1,
+            half_duration=min_ticks // 4 + 100,
+            position=position,
+            trim=SEQ_TABLE_SWITCH_DELAY,
+        )
         return rows, expected
 
     def test_tables_update_correctly_on_active_status(self):
@@ -592,12 +669,11 @@ class TestDoubleBuffer(ChildTestCase):
 
 
 class TestSequencerRows(ChildTestCase):
-
     def test_get_table(self):
-        initial_list = [(1, Trigger.POSA_GT, 100, 3000, 1, 0, 0, 0, 0, 0,
-                         2700, 0, 0, 0, 0, 0, 0),
-                        (3, Trigger.BITA_0, 300, 2000, 0, 1, 0, 0, 0, 0,
-                         1900, 0, 0, 0, 0, 0, 0)]
+        initial_list = [
+            (1, Trigger.POSA_GT, 100, 3000, 1, 0, 0, 0, 0, 0, 2700, 0, 0, 0, 0, 0, 0),
+            (3, Trigger.BITA_0, 300, 2000, 0, 1, 0, 0, 0, 0, 1900, 0, 0, 0, 0, 0, 0),
+        ]
 
         total_ticks = (3000 + 2700) + 3 * (2000 + 1900)
 
@@ -605,28 +681,42 @@ class TestSequencerRows(ChildTestCase):
         seq_rows.add_seq_entry()
         seq_rows.add_seq_entry(4, Trigger.POSA_GT, 400, 1000, 0, 1, 50)
         seq_rows.add_seq_entry(
-            (2 * MAX_REPEATS) + 20, Trigger.BITA_0, 300, 200, 1, 0, 100)
+            (2 * MAX_REPEATS) + 20, Trigger.BITA_0, 300, 200, 1, 0, 100
+        )
 
-        total_ticks += ((MIN_PULSE * 2) + (4 * (1000 + 950)) +
-                        (2 * MAX_REPEATS + 20) * (200 + 100))
+        total_ticks += (
+            (MIN_PULSE * 2) + (4 * (1000 + 950)) + (2 * MAX_REPEATS + 20) * (200 + 100)
+        )
         assert isclose(seq_rows.duration, total_ticks * TICK)
         assert len(seq_rows) == 7
 
         table = seq_rows.get_table()
         GT = Trigger.POSA_GT
-        IM = Trigger.IMMEDIATE
+        IT = Trigger.IMMEDIATE
         B0 = Trigger.BITA_0
         assert table.repeats == [1, 3, 1, 4, MAX_REPEATS, MAX_REPEATS, 20]
-        assert table.trigger == [GT, B0, IM, GT, B0, B0, B0]
+        assert table.trigger == [GT, B0, IT, GT, B0, B0, B0]
         assert table.position == [100, 300, 0, 400, 300, 300, 300]
         assert table.time1 == [3000, 2000, MIN_PULSE, 1000, 200, 200, 200]
         assert table.outa1 == [1, 0, 0, 0, 1, 1, 1]  # Live
         assert table.outb1 == [0, 1, 0, 1, 0, 0, 0]  # Dead
-        assert table.outc1 == table.outd1 == table.oute1 == table.outf1 == \
-            [0, 0, 0, 0, 0, 0, 0]
+        assert (
+            table.outc1
+            == table.outd1
+            == table.oute1
+            == table.outf1
+            == [0, 0, 0, 0, 0, 0, 0]
+        )
         assert table.time2 == [2700, 1900, MIN_PULSE, 950, 100, 100, 100]
-        assert table.outa2 == table.outb2 == table.outc2 == table.outd2 == \
-            table.oute2 == table.outf2 == [0, 0, 0, 0, 0, 0, 0]
+        assert (
+            table.outa2
+            == table.outb2
+            == table.outc2
+            == table.outd2
+            == table.oute2
+            == table.outf2
+            == [0, 0, 0, 0, 0, 0, 0]
+        )
 
     def test_extend(self):
         seq_rows = SequencerRows()
@@ -646,17 +736,23 @@ class TestSequencerRows(ChildTestCase):
         assert table.time1 == [MIN_PULSE, 1000]
         assert table.outa1 == [0, 0]  # Live
         assert table.outb1 == [0, 1]  # Dead
-        assert table.outc1 == table.outd1 == table.oute1 == table.outf1 == \
-            [0, 0]
+        assert table.outc1 == table.outd1 == table.oute1 == table.outf1 == [0, 0]
         assert table.time2 == [MIN_PULSE, 950]
-        assert table.outa2 == table.outb2 == table.outc2 == table.outd2 == \
-            table.oute2 == table.outf2 == [0, 0]
+        assert (
+            table.outa2
+            == table.outb2
+            == table.outc2
+            == table.outd2
+            == table.oute2
+            == table.outf2
+            == [0, 0]
+        )
 
     def test_as_tuple(self):
-        initial_list = [(1, Trigger.POSA_GT, 100, 3000, 1, 0, 0, 0, 0, 0,
-                         2700, 0, 0, 0, 0, 0, 0),
-                        (3, Trigger.BITA_0, 300, 2000, 0, 1, 0, 0, 0, 0,
-                         1900, 0, 0, 0, 0, 0, 0)]
+        initial_list = [
+            (1, Trigger.POSA_GT, 100, 3000, 1, 0, 0, 0, 0, 0, 2700, 0, 0, 0, 0, 0, 0),
+            (3, Trigger.BITA_0, 300, 2000, 0, 1, 0, 0, 0, 0, 1900, 0, 0, 0, 0, 0, 0),
+        ]
 
         expected = tuple(initial_list)
 
@@ -671,8 +767,9 @@ class TestSequencerRows(ChildTestCase):
         expected = SequencerRows()
         expected.add_seq_entry(4, Trigger.POSB_LT, 400, 1000, 0, 1, 50)
         expected.add_seq_entry(2, Trigger.BITA_0, 300, 2000, 1, 0, 100)
-        expected.add_seq_entry(1, Trigger.BITA_0, 300, 2000, 1, 0, 100 +
-                               SEQ_TABLE_SWITCH_DELAY)
+        expected.add_seq_entry(
+            1, Trigger.BITA_0, 300, 2000, 1, 0, 100 + SEQ_TABLE_SWITCH_DELAY
+        )
 
         remainder = seq_rows.split(100)
 
@@ -689,8 +786,9 @@ class TestSequencerRows(ChildTestCase):
         expected = SequencerRows()
         expected.add_seq_entry(4, Trigger.POSB_LT, 400, 1000, 0, 1, 50)
         expected.add_seq_entry(3, Trigger.BITA_0, 300, 2000, 1, 0, 100)
-        expected.add_seq_entry(1, Trigger.POSB_GT, 300, 2000, 0, 1, 100 +
-                               SEQ_TABLE_SWITCH_DELAY)
+        expected.add_seq_entry(
+            1, Trigger.POSB_GT, 300, 2000, 0, 1, 100 + SEQ_TABLE_SWITCH_DELAY
+        )
 
         exp_rem = SequencerRows()
         exp_rem.add_seq_entry(1, Trigger.POSB_GT, 300, 2000, 0, 1, 100)
@@ -726,8 +824,9 @@ class TestSequencerRows(ChildTestCase):
         expected = SequencerRows()
         expected.add_seq_entry(4, Trigger.POSB_LT, 400, 1000, 0, 1, 50)
         expected.add_seq_entry(3, Trigger.BITA_0, 300, 2000, 1, 0, 100)
-        expected.add_seq_entry(1, Trigger.POSB_LT, 300, 2000, 0, 1, 100 +
-                               SEQ_TABLE_SWITCH_DELAY)
+        expected.add_seq_entry(
+            1, Trigger.POSB_LT, 300, 2000, 0, 1, 100 + SEQ_TABLE_SWITCH_DELAY
+        )
 
         remainder = seq_rows.split(3)
 
