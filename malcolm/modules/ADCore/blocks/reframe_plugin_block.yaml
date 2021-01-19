@@ -56,6 +56,11 @@
     pv: $(prefix):$(suffix):TriggerCount
 
 - ca.parts.CALongPart:
+    name: triggerChannel
+    description: Channel source for triggers
+    pv: $(prefix):$(suffix):TriggerChannel
+
+- ca.parts.CALongPart:
     name: triggerCountReadback
     description: Number of output triggers
     rbv: $(prefix):$(suffix):OutputCount_RBV

@@ -1,0 +1,64 @@
+- builtin.parameters.string:
+    name: mri_prefix
+    description: Malcolm resource id of the Block and prefix for children
+
+- builtin.parameters.string:
+    name: pv_prefix
+    description: PV prefix for driver
+
+- builtin.parameters.string:
+    name: config_dir
+    description: Where to store saved configs
+
+- builtin.parameters.string:
+    name: label
+    description: Beamline specific label for the detector
+    default: EtherCAT Cont.
+
+- builtin.parameters.string:
+    name: hdf5_pv_suffix
+    description: PV suffix for HDF5 plugin
+    default: HDF5
+
+- builtin.defines.docstring:
+    value: |
+      Device block corresponding to ADEthercat + hdf writer. Used for
+      continuous writing of EtherCAT data during a scan.
+
+      - Camera driver should have pv prefix $(pv_prefix):DRV
+      - HDF should have pv prefix $(pv_prefix):HDF5
+
+- scanning.controllers.RunnableController:
+    mri: $(mri_prefix)
+    config_dir: $(config_dir)
+    description: |
+      ADEthercat is the AreaDetector driver for ethercat modules
+
+- builtin.parts.LabelPart:
+    value: $(label)
+
+- ADEthercat.blocks.ethercat_driver_block:
+    mri: $(mri_prefix):DRV
+    prefix: $(pv_prefix):DRV
+
+- ADEthercat.parts.EthercatDriverPart:
+    name: DRV
+    mri: $(mri_prefix):DRV
+
+- ADCore.blocks.hdf_writer_block:
+    mri: $(mri_prefix):HDF5
+    prefix: $(pv_prefix):$(hdf5_pv_suffix)
+
+- ADCore.parts.HDFContinuousWriterPart:
+    name: HDF5
+    mri: $(mri_prefix):HDF5
+
+- scanning.parts.DatasetTablePart:
+    name: DSET
+
+- scanning.parts.ExposureDeadtimePart:
+    name: DEADTIME
+    initial_readout_time: 1e-3
+
+- builtin.parts.IconPart:
+    svg: $(yamldir)/../icons/ethercat-logo.svg

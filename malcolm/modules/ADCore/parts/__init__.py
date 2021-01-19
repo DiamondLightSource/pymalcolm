@@ -17,7 +17,7 @@ from .hdfwriterpart import (
     AWriteAllNDAttributes,
     HDFWriterPart,
 )
-from .hdfwriterwithtimeoutpart import HDFWriterWithTimeoutPart
+from .hdfcontinuouswriterpart import HDFContinuousWriterPart
 from .positionlabellerpart import PositionLabellerPart
 from .reframepluginpart import ReframePluginPart
 from .statspluginpart import APartName, StatsPluginPart
