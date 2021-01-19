@@ -1,7 +1,7 @@
 # Treat all division as float division even in python2
 from __future__ import division
 
-from annotypes import add_call_types, Anno, TYPE_CHECKING
+from annotypes import add_call_types, Anno
 from scanpointgenerator import Point
 
 from malcolm.core import APartName, Block, Context, PartRegistrar
@@ -12,8 +12,7 @@ from ..util import Trigger
 
 import numpy as np
 
-if TYPE_CHECKING:
-    from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict
 
 #: The SEQ.table attributes that should be present in PANDA.exports
 SEQ_TABLES = ("seqTableA", "seqTableB")
@@ -43,8 +42,7 @@ class SeqTriggers(object):
         self.last_point = None
 
     @staticmethod
-    def _what_moves_most(point, axis_mapping):
-        # type: (Point, Dict[str, pmac.infos.MotorInfo]) -> Tuple[str, int, bool]
+    def _what_moves_most(point: Point, axis_mapping: Dict[str, pmac.infos.MotorInfo]) -> Tuple[str, int, bool]:
         """Work out which axis from the given axis mapping moves most for this
         point"""
         # TODO: should use new velocity calcs when Giles has finished
@@ -70,8 +68,7 @@ class SeqTriggers(object):
         compare_cts, increasing = compare_increasing[axis_name]
         return axis_name, compare_cts, increasing
 
-    def _how_long_moving_wrong_way(self, axis_name, point, increasing):
-        # type: (str, Point, bool) -> float
+    def _how_long_moving_wrong_way(self, axis_name: str, point: Point, increasing: bool) -> float:
         """Work out the turnaround for the axis with the given MotorInfo, and
         how long it is moving in the opposite direction from where we want it to
         be going for point"""
@@ -257,8 +254,7 @@ class SeqTriggers(object):
         self.last_point = None
 
 
-def _get_blocks(context, panda_mri):
-    # type: (Context, str) -> List[Block]
+def _get_blocks(context: Context, panda_mri: str) -> List[Block]:
     """Get panda, seqA and seqB Blocks using the given context"""
     # {part_name: export_name}
     panda = context.block_view(panda_mri)
@@ -285,8 +281,7 @@ def _get_blocks(context, panda_mri):
     return blocks
 
 
-def doing_pcomp(row_trigger_value):
-    # type: (str) -> bool
+def doing_pcomp(row_trigger_value: str) -> bool:
     return row_trigger_value == "Position Compare"
 
 
@@ -300,8 +295,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
     - seqSetEnable: forceSet Method of an SRGATE that is used to gate both SEQs
     """
 
-    def __init__(self, name, mri, initial_visibility=None):
-        # type: (APartName, AMri, AInitialVisibility) -> None
+    def __init__(self, name: APartName, mri: AMri, initial_visibility: AInitialVisibility = None) -> None:
         super(PandASeqTriggerPart, self).__init__(
             name, mri, initial_visibility=initial_visibility, stateful=False)
         # Stored generator for positions
@@ -325,8 +319,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         # The DoubleBuffer object used to load tables during a scan
         self.db_seq_table = None
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
+    def setup(self, registrar: PartRegistrar) -> None:
         super(PandASeqTriggerPart, self).setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
@@ -338,8 +331,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         registrar.hook(builtin.hooks.ResetHook, self.on_reset)
 
     @add_call_types
-    def on_report_status(self, context):
-        # type: (scanning.hooks.AContext) -> scanning.hooks.UInfos
+    def on_report_status(self, context: scanning.hooks.AContext) -> scanning.hooks.UInfos:
         child = context.block_view(self.mri)
         # Work out if we need the motor controller to send start of row triggers
         # or no triggers
@@ -352,9 +344,8 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         info = scanning.infos.MotionTriggerInfo(trigger)
         return info
 
-    def setup_pcomp_dicts(self, seqa, seqb, axis_mapping):
+    def setup_pcomp_dicts(self, seqa: Block, seqb: Block, axis_mapping: Dict[str, pmac.infos.MotorInfo]) -> None:
         """Setup the axis_mapping and trigger_enum dicts for position compare"""
-        # type: (Block, Block, Dict[str, pmac.infos.MotorInfo]) -> None
         # Check that both sequencers are pointing to the same encoders
         seq_pos = {}
         for suff in "abc":
@@ -400,14 +391,13 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
     # noinspection PyPep8Naming
     @add_call_types
     def on_configure(self,
-                     context,  # type: scanning.hooks.AContext
-                     completed_steps,  # type: scanning.hooks.ACompletedSteps
-                     steps_to_do,  # type: scanning.hooks.AStepsToDo
-                     part_info,  # type: scanning.hooks.APartInfo
-                     generator,  # type: scanning.hooks.AGenerator
-                     axesToMove  # type: scanning.hooks.AAxesToMove
-                     ):
-        # type: (...) -> None
+                     context: scanning.hooks.AContext,
+                     completed_steps: scanning.hooks.ACompletedSteps,
+                     steps_to_do: scanning.hooks.AStepsToDo,
+                     part_info: scanning.hooks.APartInfo,
+                     generator: scanning.hooks.AGenerator,
+                     axesToMove: scanning.hooks.AAxesToMove
+                     ) -> None:
         context.unsubscribe_all()
 
         self.generator = generator
@@ -471,21 +461,18 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         self.db_seq_table.configure(rows_gen)
 
     @add_call_types
-    def on_run(self, context):
-        # type: (scanning.hooks.AContext) -> None
+    def on_run(self, context: scanning.hooks.AContext) -> None:
         # Call sequence table enable
         self.panda.seqSetEnable()
         futures = self.db_seq_table.run()
         context.wait_all_futures(futures)
 
     @add_call_types
-    def on_reset(self, context):
-        # type: (builtin.hooks.AContext) -> None
+    def on_reset(self, context: builtin.hooks.AContext) -> None:
         super(PandASeqTriggerPart, self).on_reset(context)
         self.on_abort(context)
 
     @add_call_types
-    def on_abort(self, context):
-        # type: (builtin.hooks.AContext) -> None
+    def on_abort(self, context: builtin.hooks.AContext) -> None:
         if self.db_seq_table is not None:
             self.db_seq_table.abort()

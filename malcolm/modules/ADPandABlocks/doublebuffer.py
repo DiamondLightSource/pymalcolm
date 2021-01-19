@@ -119,9 +119,8 @@ class SequencerRows:
         return len(self._rows)
 
     @staticmethod
-    def _seq_row(repeats=1, trigger=Trigger.IMMEDIATE, position=0,
-                 half_duration=MIN_PULSE, live=0, dead=0, trim=0):
-        # type: (int, str, int, int, int, int, int) -> List
+    def _seq_row(repeats: int = 1, trigger: str = Trigger.IMMEDIATE, position: int = 0,
+                 half_duration: int = MIN_PULSE, live: int = 0, dead: int = 0, trim: int = 0) -> List:
         """Create a pulse with phase1 having given live/dead values
 
         If trim=0, there is a 50% duty cycle. Trim reduces the total duration
