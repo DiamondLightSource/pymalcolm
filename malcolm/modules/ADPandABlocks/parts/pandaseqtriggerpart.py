@@ -1,3 +1,4 @@
+from operator import itemgetter
 from typing import Dict, List, Tuple
 
 import numpy as np
@@ -69,7 +70,7 @@ class SeqTriggers(object):
         )
 
         # Sort on abs(diff), take the biggest
-        axis_name = sorted(diffs, key=diffs.get)[-1]
+        axis_name = max(diffs.items(), key=itemgetter(1))[0]
         compare_cts, increasing = compare_increasing[axis_name]
         return axis_name, compare_cts, increasing
 
