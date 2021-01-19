@@ -1,6 +1,3 @@
-# Treat all division as float division even in python2
-from __future__ import division
-
 from typing import Dict, List, Tuple
 
 import numpy as np
@@ -314,7 +311,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
     def __init__(
         self, name: APartName, mri: AMri, initial_visibility: AInitialVisibility = None
     ) -> None:
-        super(PandASeqTriggerPart, self).__init__(
+        super().__init__(
             name, mri, initial_visibility=initial_visibility, stateful=False
         )
         # Stored generator for positions
@@ -339,7 +336,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         self.db_seq_table = None
 
     def setup(self, registrar: PartRegistrar) -> None:
-        super(PandASeqTriggerPart, self).setup(registrar)
+        super().setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
         registrar.hook(
@@ -504,7 +501,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
 
     @add_call_types
     def on_reset(self, context: builtin.hooks.AContext) -> None:
-        super(PandASeqTriggerPart, self).on_reset(context)
+        super().on_reset(context)
         self.on_abort(context)
 
     @add_call_types

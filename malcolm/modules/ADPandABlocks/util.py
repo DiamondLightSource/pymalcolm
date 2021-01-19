@@ -108,7 +108,7 @@ class DatasetBitsTable(pandablocks.util.BitsTable):
         datasetName: UAttributeNames,
         datasetType: UAttributeTypes,
     ) -> None:
-        super(DatasetBitsTable, self).__init__(name, value, capture)
+        super().__init__(name, value, capture)
         self.datasetName = AAttributeNames(datasetName)
         self.datasetType = AAttributeTypes(datasetType)
 
@@ -127,8 +127,6 @@ class DatasetPositionsTable(pandablocks.util.PositionsTable):
         datasetName: UAttributeNames,
         datasetType: UAttributeTypes,
     ) -> None:
-        super(DatasetPositionsTable, self).__init__(
-            name, value, units, scale, offset, capture
-        )
+        super().__init__(name, value, units, scale, offset, capture)
         self.datasetName = AAttributeNames(datasetName)
         self.datasetType = AAttributeTypes(datasetType)
