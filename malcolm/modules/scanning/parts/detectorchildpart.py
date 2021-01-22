@@ -41,7 +41,6 @@ with Anno("The initial value of FramesPerStep for this detector at configure"):
     AInitialFramesPerStep = int
 
 # Pull re-used annotypes into our namespace in case we are subclassed
-APartName = APartName
 AMri = builtin.parts.AMri
 AInitialVisibility = builtin.parts.AInitialVisibility
 
