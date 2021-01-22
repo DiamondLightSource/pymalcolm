@@ -1,12 +1,13 @@
 import collections
+import os
 import signal
 import sys
 import time
-import os
-
 from enum import Enum
+from threading import get_ident as get_thread_ident
+from typing import List
 
-from malcolm.compat import get_profiler_dir, get_thread_ident
+from malcolm.compat import get_profiler_dir
 
 
 class ProfilerMode(Enum):
@@ -17,9 +18,10 @@ class ProfilerMode(Enum):
 
 
 # A combination of plop.Collector and plot.Formatter
-class Profiler(object):
-    def __init__(self, dirname=None, mode=ProfilerMode.PROF):
-        # type: (str, ProfilerMode) -> None
+class Profiler:
+    def __init__(
+        self, dirname: str = "", mode: ProfilerMode = ProfilerMode.PROF
+    ) -> None:
         if not dirname:
             dirname = get_profiler_dir()
         if not os.path.isdir(dirname):
@@ -29,7 +31,7 @@ class Profiler(object):
         self.start_time = None
         self.running = False
         self.stopping = False
-        self.stacks = []
+        self.stacks: List = []
         sig = mode.value[1]
         signal.signal(sig, self.handler)
         signal.siginterrupt(sig, False)
@@ -48,8 +50,7 @@ class Profiler(object):
                 frames = []
                 while frame is not None:
                     code = frame.f_code
-                    frames.append(
-                        (code.co_filename, code.co_firstlineno, code.co_name))
+                    frames.append((code.co_filename, code.co_firstlineno, code.co_name))
                     frame = frame.f_back
                 self.stacks.append(frames)
 
@@ -69,16 +70,15 @@ class Profiler(object):
             pass  # need busy wait; ITIMER_PROF doesn't proceed while sleeping
         # If not given a filename, calculate one
         if not filename:
-            start_date = time.strftime(
-                '%Y%m%d-%H%M%S', time.localtime(self.start_time))
+            start_date = time.strftime("%Y%m%d-%H%M%S", time.localtime(self.start_time))
             duration = time.time() - self.start_time
             filename = "%s-for-%ds.plop" % (start_date, duration)
         # Format to be compatible with plop viewer
-        stack_counts = collections.Counter(
-            tuple(frames) for frames in self.stacks)
+        stack_counts = collections.Counter(tuple(frames) for frames in self.stacks)
         max_stacks = 50
-        stack_counts = dict(sorted(stack_counts.items(),
-                                   key=lambda kv: -kv[1])[:max_stacks])
+        stack_counts = dict(
+            sorted(stack_counts.items(), key=lambda kv: -kv[1])[:max_stacks]
+        )
         with open(os.path.join(self.dirname, filename), "w") as f:
             f.write(repr(stack_counts))
         return filename

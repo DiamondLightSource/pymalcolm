@@ -1,14 +1,13 @@
 import unittest
 
-from malcolm.modules.scanning.parts import DatasetTablePart
-from malcolm.modules.scanning.infos import DatasetProducedInfo
-from malcolm.modules.scanning.util import DatasetType
-
 from mock import MagicMock
+
+from malcolm.modules.scanning.infos import DatasetProducedInfo
+from malcolm.modules.scanning.parts import DatasetTablePart
+from malcolm.modules.scanning.util import DatasetType
 
 
 class TestDatasetReportingPart(unittest.TestCase):
-
     def setUp(self):
         self.r = MagicMock()
         self.o = DatasetTablePart(name="n")
@@ -16,17 +15,21 @@ class TestDatasetReportingPart(unittest.TestCase):
 
     def test_init(self):
         assert list(self.o.datasets.meta.elements) == (
-                         ["name", "filename", "type", "rank", "path", "uniqueid"])
+            ["name", "filename", "type", "rank", "path", "uniqueid"]
+        )
 
     def test_post_configure(self):
         part_info = dict(
             HDF=[
-                DatasetProducedInfo("det.data", "fn1", DatasetType.PRIMARY, 2,
-                                    "/p/det", "/p/uid"),
-                DatasetProducedInfo("det.sum", "fn1", DatasetType.SECONDARY, 0,
-                                    "/p/s1", "/p/uid"),
-                DatasetProducedInfo("det.min", "fn1", DatasetType.SECONDARY, 0,
-                                    "/p/s2", "/p/uid"),
+                DatasetProducedInfo(
+                    "det.data", "fn1", DatasetType.PRIMARY, 2, "/p/det", "/p/uid"
+                ),
+                DatasetProducedInfo(
+                    "det.sum", "fn1", DatasetType.SECONDARY, 0, "/p/s1", "/p/uid"
+                ),
+                DatasetProducedInfo(
+                    "det.min", "fn1", DatasetType.SECONDARY, 0, "/p/s2", "/p/uid"
+                ),
             ]
         )
         self.o.on_post_configure(part_info)
@@ -34,7 +37,10 @@ class TestDatasetReportingPart(unittest.TestCase):
         assert v.name == ["det.data", "det.sum", "det.min"]
         assert v.filename == ["fn1", "fn1", "fn1"]
         assert v.type == [
-            DatasetType.PRIMARY, DatasetType.SECONDARY, DatasetType.SECONDARY]
+            DatasetType.PRIMARY,
+            DatasetType.SECONDARY,
+            DatasetType.SECONDARY,
+        ]
         assert list(v.rank) == [2, 0, 0]
         assert v.path == ["/p/det", "/p/s1", "/p/s2"]
         assert v.uniqueid == ["/p/uid", "/p/uid", "/p/uid"]

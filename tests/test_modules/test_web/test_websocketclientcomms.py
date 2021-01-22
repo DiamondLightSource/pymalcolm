@@ -1,11 +1,10 @@
 import unittest
 
-from malcolm.modules.web.controllers import WebsocketClientComms
 from malcolm.core import Process
+from malcolm.modules.web.controllers import WebsocketClientComms
 
 
 class TestWebsocketClientComms(unittest.TestCase):
-
     def setUp(self):
         self.process = Process("proc")
         self.o = WebsocketClientComms(mri="mri")

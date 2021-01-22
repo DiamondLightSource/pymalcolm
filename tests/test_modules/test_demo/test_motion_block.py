@@ -1,7 +1,7 @@
 import unittest
 
-from malcolm.modules.demo.blocks import motion_block
 from malcolm.core import Process
+from malcolm.modules.demo.blocks import motion_block
 
 
 class TestMotionBlock(unittest.TestCase):

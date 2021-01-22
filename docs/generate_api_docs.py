@@ -1,7 +1,6 @@
 import os
 import shutil
 
-
 repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 build_dir = os.path.join(repo_root, "docs", "build")
 modules_root = os.path.join(repo_root, "malcolm", "modules")

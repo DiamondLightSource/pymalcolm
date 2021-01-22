@@ -2,7 +2,6 @@ import unittest
 
 from malcolm.core import Queue, Spawned
 from malcolm.core.errors import UnexpectedError
-from multiprocessing.pool import ThreadPool
 
 
 def do_div(a, b, q, throw_me=None):
@@ -14,13 +13,11 @@ def do_div(a, b, q, throw_me=None):
 
 
 class TestSpawned(unittest.TestCase):
-
     def setUp(self):
         self.q = Queue()
 
     def do_spawn(self, throw_me=None):
-        s = Spawned(
-            do_div, (40, 2, self.q, throw_me), {})
+        s = Spawned(do_div, (40, 2, self.q, throw_me), {})
         return s
 
     def test_spawn_div(self):

@@ -4,12 +4,10 @@ from malcolm.modules.ADCore.infos import FilePathTranslatorInfo, NDAttributeData
 
 
 class TestInfo(unittest.TestCase):
-
     def test_file_path_translator_drive_mount_succeeds_with_valid_path(self):
         info = FilePathTranslatorInfo("C", "/foo", "")
         part_info = {"WINPATH": [info]}
-        win_path = info.translate_filepath(
-            part_info, "/foo/directory/file_name.xml")
+        win_path = info.translate_filepath(part_info, "/foo/directory/file_name.xml")
 
         assert "C:\\directory\\file_name.xml" == win_path
 
@@ -36,7 +34,12 @@ class TestInfo(unittest.TestCase):
 
 
 class TestNDAttributeDatasetInfo(unittest.TestCase):
-
     def test_from_attribute_type_raises_AttributeError_with_bad_dataset_type(self):
 
-        self.assertRaises(AttributeError, NDAttributeDatasetInfo.from_attribute_type, "POSITION", float, "POSITION.X")
+        self.assertRaises(
+            AttributeError,
+            NDAttributeDatasetInfo.from_attribute_type,
+            "POSITION",
+            float,
+            "POSITION.X",
+        )

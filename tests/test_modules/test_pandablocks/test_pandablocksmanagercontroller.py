@@ -1,20 +1,22 @@
-from collections import OrderedDict
 import unittest
-from mock import patch, ANY
+from collections import OrderedDict
+
+from mock import ANY, patch
 
 from malcolm.core import Process, Queue, Subscribe
 from malcolm.modules.pandablocks.controllers import PandAManagerController
-from malcolm.modules.pandablocks.pandablocksclient import \
-    FieldData, BlockData
-from malcolm.modules.pandablocks.util import PositionCapture, BitsTable
+from malcolm.modules.pandablocks.pandablocksclient import BlockData, FieldData
+from malcolm.modules.pandablocks.util import BitsTable, PositionCapture
 
 
 class PandABlocksManagerControllerTest(unittest.TestCase):
-    @patch("malcolm.modules.pandablocks.controllers.pandamanagercontroller.PandABlocksClient")
+    @patch(
+        "malcolm.modules.pandablocks.controllers."
+        "pandamanagercontroller.PandABlocksClient"
+    )
     def setUp(self, mock_client):
         self.process = Process()
-        self.o = PandAManagerController(
-            mri="P", config_dir="/tmp", poll_period=1000)
+        self.o = PandAManagerController(mri="P", config_dir="/tmp", poll_period=1000)
         self.client = self.o._client
         self.client.started = False
         blocks_data = OrderedDict()
@@ -61,12 +63,21 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
 
     def test_initial_changes(self):
         assert self.process.mri_list == [
-            'P', 'P:PCOMP', 'P:COUNTER', 'P:TTLIN1', 'P:TTLIN2', 'P:PCAP']
+            "P",
+            "P:PCOMP",
+            "P:COUNTER",
+            "P:TTLIN1",
+            "P:TTLIN2",
+            "P:PCAP",
+        ]
         assert self.o._bit_outs == {
-            'TTLIN1.VAL': False, 'TTLIN2.VAL': False, 'PCOMP.OUT': False}
-        pcomp = self.process.block_view('P:PCOMP')
-        counter = self.process.block_view('P:COUNTER')
-        ttlin = self.process.block_view('P:TTLIN1')
+            "TTLIN1.VAL": False,
+            "TTLIN2.VAL": False,
+            "PCOMP.OUT": False,
+        }
+        pcomp = self.process.block_view("P:PCOMP")
+        counter = self.process.block_view("P:COUNTER")
+        ttlin = self.process.block_view("P:TTLIN1")
         assert pcomp.inp.value == "ZERO"
         assert pcomp.start.value == 0.0
         assert pcomp.step.value == 0.0
@@ -77,7 +88,7 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
         assert ttlin.val.value is False
 
     def test_toggling_bit_outs(self):
-        ttlin = self.process.block_view('P:TTLIN1')
+        ttlin = self.process.block_view("P:TTLIN1")
         assert ttlin.val.value is False
 
         # Change to a different value, should change once and stick
@@ -123,7 +134,7 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
         assert ttlin.val.value is True
 
     def test_constant_toggling_bit_outs(self):
-        ttlin = self.process.block_view('P:TTLIN1')
+        ttlin = self.process.block_view("P:TTLIN1")
         assert ttlin.val.value is False
 
         # Constant updates, should toggle each time
@@ -157,15 +168,15 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
         self.o.handle_request(subscribe)
         delta = queue.get()
         table = delta.changes[0][1]["bits"]["value"]
-        assert table.name == ['TTLIN1.VAL', 'TTLIN2.VAL', 'PCOMP.OUT']
+        assert table.name == ["TTLIN1.VAL", "TTLIN2.VAL", "PCOMP.OUT"]
         assert table.value == [False, False, False]
         assert table.capture == [False, False, False]
 
         self.o.handle_changes([("TTLIN1.VAL", "1")])
         delta = queue.get()
         assert delta.changes == [
-            [['bits', 'value', 'value'], [True, False, False]],
-            [['bits', 'timeStamp'], ANY]
+            [["bits", "value", "value"], [True, False, False]],
+            [["bits", "timeStamp"], ANY],
         ]
 
     def test_pos_table_deltas(self):
@@ -174,10 +185,12 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
         subscribe.set_callback(queue.put)
         self.o.handle_request(subscribe)
         delta = queue.get()
-        capture_enums = delta.changes[0][1]["positions"]["meta"]["elements"]["capture"]["choices"]
+        capture_enums = delta.changes[0][1]["positions"]["meta"]["elements"]["capture"][
+            "choices"
+        ]
         assert capture_enums[0] == PositionCapture.NO
         table = delta.changes[0][1]["positions"]["value"]
-        assert table.name == ['COUNTER.OUT']
+        assert table.name == ["COUNTER.OUT"]
         assert table.value == [0.0]
         assert table.scale == [1.0]
         assert table.offset == [0.0]
@@ -186,43 +199,39 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
         self.o.handle_changes([("COUNTER.OUT", "20")])
         delta = queue.get()
         assert delta.changes == [
-            [['positions', 'value', 'value'], [20.0]],
-            [['positions', 'timeStamp'], ANY]
+            [["positions", "value", "value"], [20.0]],
+            [["positions", "timeStamp"], ANY],
         ]
 
-        self.o.handle_changes([("COUNTER.OUT", "5"),
-                               ("COUNTER.OUT.SCALE", 0.5)])
+        self.o.handle_changes([("COUNTER.OUT", "5"), ("COUNTER.OUT.SCALE", 0.5)])
         delta = queue.get()
         assert delta.changes == [
-            [['positions', 'value', 'value'], [2.5]],
-            [['positions', 'value', 'scale'], [0.5]],
-            [['positions', 'timeStamp'], ANY]
+            [["positions", "value", "value"], [2.5]],
+            [["positions", "value", "scale"], [0.5]],
+            [["positions", "timeStamp"], ANY],
         ]
 
     def test_change_pcap_bits(self):
-        b = self.process.block_view('P')
+        b = self.process.block_view("P")
         assert b.bits.value.capture == [False, False, False]
-        b.bits.put_value(BitsTable(
-            name=["TTLIN1.VAL"], value=[False], capture=[True]))
+        b.bits.put_value(BitsTable(name=["TTLIN1.VAL"], value=[False], capture=[True]))
         assert b.bits.value.capture == [True, False, False]
-        self.client.set_fields.assert_called_once_with(
-            {"PCAP.BITS0.CAPTURE": 'Value'})
+        self.client.set_fields.assert_called_once_with({"PCAP.BITS0.CAPTURE": "Value"})
         self.client.set_fields.reset_mock()
         self.o.handle_changes([("PCAP.BITS0.CAPTURE", "Value")])
         assert b.bits.value.capture == [True, True, True]
-        b.bits.put_value(BitsTable(
-            name=["TTLIN1.VAL"], value=[False], capture=[False]))
+        b.bits.put_value(BitsTable(name=["TTLIN1.VAL"], value=[False], capture=[False]))
         assert b.bits.value.capture == [False, True, True]
-        self.client.set_fields.assert_called_once_with(
-            {"PCAP.BITS0.CAPTURE": 'No'})
+        self.client.set_fields.assert_called_once_with({"PCAP.BITS0.CAPTURE": "No"})
         self.o.handle_changes([("PCAP.BITS0.CAPTURE", "No")])
         assert b.bits.value.capture == [False, False, False]
 
     def test_label_change(self):
-        pcomp = self.process.block_view('P:PCOMP')
+        pcomp = self.process.block_view("P:PCOMP")
         assert pcomp.label.value == "Position Compare"
         self.o.handle_changes([("*METADATA.LABEL_PCOMP1", "New Label")])
         assert pcomp.label.value == "New Label"
         pcomp.label.put_value("Very new")
         self.client.set_field.assert_called_once_with(
-            "*METADATA", "LABEL_PCOMP1", "Very new")
+            "*METADATA", "LABEL_PCOMP1", "Very new"
+        )

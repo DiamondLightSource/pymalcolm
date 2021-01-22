@@ -6,7 +6,6 @@ from malcolm.modules.builtin import parameters
 
 
 class TestParameters(unittest.TestCase):
-
     def test_imports(self):
         decorated = {}
         for k in dir(parameters):
@@ -14,9 +13,8 @@ class TestParameters(unittest.TestCase):
             if hasattr(v, "call_types"):
                 decorated[k] = v
         assert decorated == dict(
-            string=parameters.string,
-            float64=parameters.float64,
-            int32=parameters.int32)
+            string=parameters.string, float64=parameters.float64, int32=parameters.int32
+        )
 
     def test_make_string(self):
         o = parameters.string("me", "desc")

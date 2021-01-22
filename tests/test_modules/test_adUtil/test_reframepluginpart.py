@@ -1,6 +1,5 @@
-from mock import MagicMock, ANY, call
-
-from scanpointgenerator import LineGenerator, CompoundGenerator
+from mock import call
+from scanpointgenerator import CompoundGenerator, LineGenerator
 
 from malcolm.core import Context, Process
 from malcolm.modules.adUtil.blocks import reframe_plugin_block
@@ -9,13 +8,12 @@ from malcolm.testutil import ChildTestCase
 
 
 class TestReframePluginPart(ChildTestCase):
-
     def setUp(self):
         self.process = Process("Process")
         self.context = Context(self.process)
         self.child = self.create_child_block(
-            reframe_plugin_block, self.process,
-            mri="mri", prefix="prefix")
+            reframe_plugin_block, self.process, mri="mri", prefix="prefix"
+        )
         self.mock_when_value_matches(self.child)
         self.o = ReframePluginPart(name="m", mri="mri")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
@@ -54,12 +52,14 @@ class TestReframePluginPart(ChildTestCase):
         # We wait to be armed, so set this here
         self.set_attributes(self.child, acquiring=True)
         self.o.on_configure(
-            self.context, completed_steps, steps_to_do, {}, generator, fileDir="/tmp")
+            self.context, completed_steps, steps_to_do, {}, generator, fileDir="/tmp"
+        )
         assert self.child.handled_requests.mock_calls == [
-            call.put('arrayCallbacks', True),
-            call.put('arrayCounter', 0),
-            call.put('imageMode', 'Multiple'),
-            call.put('numImages', 6),
-            call.put('postCount', 999),
-            call.post('start'),
-            call.when_value_matches('acquiring', True, None)]
+            call.put("arrayCallbacks", True),
+            call.put("arrayCounter", 0),
+            call.put("imageMode", "Multiple"),
+            call.put("numImages", 6),
+            call.put("postCount", 999),
+            call.post("start"),
+            call.when_value_matches("acquiring", True, None),
+        ]

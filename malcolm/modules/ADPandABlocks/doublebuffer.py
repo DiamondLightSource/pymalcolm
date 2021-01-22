@@ -1,12 +1,9 @@
 # Treat all division as float division even in python2
 from __future__ import division
 
-from annotypes import TYPE_CHECKING
+from typing import Tuple
 
 from .util import SequencerTable, Trigger
-
-if TYPE_CHECKING:
-    from typing import List
 
 #: The number of sequencer table rows
 SEQ_TABLE_ROWS = 4096
@@ -137,7 +134,7 @@ class SequencerRows:
         live: int = 0,
         dead: int = 0,
         trim: int = 0,
-    ) -> List:
+    ) -> Tuple:
         """Create a pulse with phase1 having given live/dead values
 
         If trim=0, there is a 50% duty cycle. Trim reduces the total duration

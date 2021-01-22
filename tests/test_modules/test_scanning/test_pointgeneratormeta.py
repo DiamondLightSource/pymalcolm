@@ -1,12 +1,12 @@
 import unittest
+
 from mock import MagicMock, patch
+from scanpointgenerator import CompoundGenerator
 
 from malcolm.modules.scanning.util import PointGeneratorMeta
-from scanpointgenerator import CompoundGenerator
 
 
 class TestPointGeneratorMeta(unittest.TestCase):
-
     def setUp(self):
         self.PGM = PointGeneratorMeta("test_description")
 
@@ -18,7 +18,7 @@ class TestPointGeneratorMeta(unittest.TestCase):
         g = CompoundGenerator([], [], [])
         self.PGM.validate(g)
 
-    @patch('malcolm.modules.scanning.util.CompoundGenerator.from_dict')
+    @patch("malcolm.modules.scanning.util.CompoundGenerator.from_dict")
     def test_validate_dict_then_create_and_return(self, from_dict_mock):
         gen_mock = MagicMock()
         from_dict_mock.return_value = gen_mock

@@ -1,12 +1,12 @@
 import unittest
+
 from mock import MagicMock
 
-from malcolm.modules.builtin.controllers import ProxyController
 from malcolm.core import Process
+from malcolm.modules.builtin.controllers import ProxyController
 
 
 class TestProxyController(unittest.TestCase):
-
     def setUp(self):
         self.process = Process("proc")
         self.comms = MagicMock()

@@ -1,16 +1,15 @@
-import pytest
-
-import unittest
-from mock import MagicMock, ANY, call
 import time
+import unittest
 
-from malcolm.core.context import Context
-from malcolm.core.errors import ResponseError, TimeoutError, BadValueError, \
-    AbortedError
-from malcolm.core.request import Put, Post, Subscribe, Unsubscribe
-from malcolm.core.response import Error, Return, Update
+import pytest
+from mock import ANY, MagicMock
+
 from malcolm.core import Process
+from malcolm.core.context import Context
+from malcolm.core.errors import AbortedError, BadValueError, ResponseError, TimeoutError
 from malcolm.core.future import Future
+from malcolm.core.request import Post, Put, Subscribe, Unsubscribe
+from malcolm.core.response import Error, Return, Update
 
 
 class MyWarning(Exception):
@@ -47,8 +46,7 @@ class TestContext(unittest.TestCase):
     def test_put(self):
         self.o._q.put(Return(1, 33))
         ret = self.o.put(["block", "attr", "value"], 32)
-        self.assert_handle_request_called_with(
-            Put(1, ["block", "attr", "value"], 32))
+        self.assert_handle_request_called_with(Put(1, ["block", "attr", "value"], 32))
         assert ret == 33
 
     def test_put_failure(self):
@@ -60,8 +58,7 @@ class TestContext(unittest.TestCase):
     def test_post(self):
         self.o._q.put(Return(1, dict(a=2)))
         result = self.o.post(["block", "method"], dict(b=32))
-        self.assert_handle_request_called_with(
-            Post(1, ["block", "method"], dict(b=32)))
+        self.assert_handle_request_called_with(Post(1, ["block", "method"], dict(b=32)))
         assert result == dict(a=2)
 
     def test_post_failure(self):
@@ -72,23 +69,22 @@ class TestContext(unittest.TestCase):
 
     def test_subscribe(self):
         cb = MagicMock()
-        f = self.o.subscribe(["block", "attr", "value"], cb, self.o, 'arg2')
-        self.assert_handle_request_called_with(
-            Subscribe(1, ["block", "attr", "value"]))
+        f = self.o.subscribe(["block", "attr", "value"], cb, self.o, "arg2")
+        self.assert_handle_request_called_with(Subscribe(1, ["block", "attr", "value"]))
         self.o._q.put(Update(1, "value1"))
         with self.assertRaises(TimeoutError):
             self.o.wait_all_futures(f, 0.01)
-        cb.assert_called_once_with("value1", ANY, 'arg2')
+        cb.assert_called_once_with("value1", ANY, "arg2")
         # since args = self.o it should be a weak proxy in second argument
-        param1 = cb.call_args[0][1]
+        cb.call_args[0][1]
         # TODO: giles cant work out how to check weakproxy equivalence??
         # self.assertEquals(param1, self.o)
         cb.reset_mock()
         self.o._q.put(Update(1, "value2"))
         self.o._q.put(Return(1))
         self.o.wait_all_futures(f, 0.01)
-        cb.assert_called_once_with("value2", ANY, 'arg2')
-        assert f.result(0.01) == None
+        cb.assert_called_once_with("value2", ANY, "arg2")
+        assert f.result(0.01) is None
 
     def test_subscribe_cb_failure(self):
         def cb(value):
@@ -128,12 +124,16 @@ class TestContext(unittest.TestCase):
         self.o.wait_all_futures(future)
 
     def test_many_puts(self):
-        fs = [self.o.put_async(["block", "attr", "value"], 32),
-              self.o.put_async(["block", "attr2", "value"], 32)]
+        fs = [
+            self.o.put_async(["block", "attr", "value"], 32),
+            self.o.put_async(["block", "attr2", "value"], 32),
+        ]
         with self.assertRaises(TimeoutError) as cm:
             self.o.wait_all_futures(fs, 0.01)
-        assert str(cm.exception) == \
-            "Timeout waiting for [block.attr.value.put_value(32), block.attr2.value.put_value(32)]"
+        assert str(cm.exception) == (
+            "Timeout waiting for [block.attr.value.put_value(32), "
+            "block.attr2.value.put_value(32)]"
+        )
         assert [f.done() for f in fs] == [False, False]
         self.o._q.put(Return(2, None))
         assert [f.done() for f in fs] == [False, False]
@@ -157,8 +157,8 @@ class TestContext(unittest.TestCase):
         self.o._q.put(Return(1))
         self.o.when_matches(["block", "attr", "value"], "value1", timeout=0.01)
         self.assert_handle_request_called_with(
-            Subscribe(1, ["block", "attr", "value"]),
-            Unsubscribe(1))
+            Subscribe(1, ["block", "attr", "value"]), Unsubscribe(1)
+        )
 
     def test_when_matches_func(self):
         self.o._q.put(Update(1, "value1"))
@@ -169,20 +169,20 @@ class TestContext(unittest.TestCase):
 
         self.o.when_matches(["block", "attr", "value"], f, timeout=0.01)
         self.assert_handle_request_called_with(
-            Subscribe(1, ["block", "attr", "value"]),
-            Unsubscribe(1))
+            Subscribe(1, ["block", "attr", "value"]), Unsubscribe(1)
+        )
 
     def test_when_not_matches(self):
         self.o._q.put(Update(1, "value2"))
         with self.assertRaises(BadValueError) as cm:
             self.o.when_matches(
-                ["block", "attr", "value"], "value1", ["value2"], timeout=0.01)
-        assert str(cm.exception) == \
-            "Waiting for 'value1', got 'value2'"
+                ["block", "attr", "value"], "value1", ["value2"], timeout=0.01
+            )
+        assert str(cm.exception) == "Waiting for 'value1', got 'value2'"
 
         self.assert_handle_request_called_with(
-            Subscribe(1, ["block", "attr", "value"]),
-            Unsubscribe(1))
+            Subscribe(1, ["block", "attr", "value"]), Unsubscribe(1)
+        )
 
     def test_ignore_stops_before_now(self):
         fs = [self.o.put_async(["block", "attr", "value"], 32)]
@@ -208,15 +208,17 @@ class TestContext(unittest.TestCase):
         self.o.stop()
         with self.assertRaises(AbortedError) as cm:
             self.o.wait_all_futures(fs, 0)
-        assert str(cm.exception) == \
-            "Aborted waiting for [block.attr.value.put_value(32)]"
+        assert (
+            str(cm.exception) == "Aborted waiting for [block.attr.value.put_value(32)]"
+        )
 
     def test_timeout_bad(self):
         future = self.o.put_async(["block", "attr", "value"], 32)
         with self.assertRaises(TimeoutError) as cm:
             self.o.wait_all_futures(future, timeout=0.01)
-        assert str(cm.exception) == \
-            "Timeout waiting for [block.attr.value.put_value(32)]"
+        assert (
+            str(cm.exception) == "Timeout waiting for [block.attr.value.put_value(32)]"
+        )
 
     def test_timeout_good(self):
         future = self.o.put_async(["block", "attr", "value"], 32)
@@ -227,8 +229,9 @@ class TestContext(unittest.TestCase):
         future = self.o.put_async(["block", "attr", "value"], 32)
         with self.assertRaises(TimeoutError) as cm:
             self.o.wait_all_futures(future, event_timeout=0.01)
-        assert str(cm.exception) == \
-            "Timeout waiting for [block.attr.value.put_value(32)]"
+        assert (
+            str(cm.exception) == "Timeout waiting for [block.attr.value.put_value(32)]"
+        )
 
     def test_event_timeout_good(self):
         future = self.o.put_async(["block", "attr", "value"], 32)

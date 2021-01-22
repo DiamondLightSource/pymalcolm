@@ -1,4 +1,6 @@
-from annotypes import TYPE_CHECKING, add_call_types, Any
+from typing import Tuple
+
+from annotypes import Any, add_call_types
 
 from malcolm.core import PartRegistrar
 from malcolm.modules import builtin, scanning
@@ -12,13 +14,9 @@ POSITIONS_PER_XML = 5000
 # How far to load ahead
 N_LOAD_AHEAD = 4
 
-if TYPE_CHECKING:
-    from typing import Tuple
-
 
 # We will set these attributes on the child block, so don't save them
-@builtin.util.no_save(
-    "xml", "enableCallbacks", "idStart", "qty", "arrayCounter")
+@builtin.util.no_save("xml", "enableCallbacks", "idStart", "qty", "arrayCounter")
 class PositionLabellerPart(builtin.parts.ChildPart):
     """Part for controlling a `position_labeller_block` in a scan"""
 
@@ -35,31 +33,35 @@ class PositionLabellerPart(builtin.parts.ChildPart):
     # When arrayCounter gets to here we are done
     done_when_reaches = None
 
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
-        super(PositionLabellerPart, self).setup(registrar)
+    def setup(self, registrar: PartRegistrar) -> None:
+        super().setup(registrar)
         # Hooks
-        registrar.hook((scanning.hooks.ConfigureHook,
-                        scanning.hooks.PostRunArmedHook,
-                        scanning.hooks.SeekHook), self.on_configure)
+        registrar.hook(
+            (
+                scanning.hooks.ConfigureHook,
+                scanning.hooks.PostRunArmedHook,
+                scanning.hooks.SeekHook,
+            ),
+            self.on_configure,
+        )
         registrar.hook(scanning.hooks.RunHook, self.on_run)
-        registrar.hook((scanning.hooks.AbortHook,
-                        scanning.hooks.PauseHook), self.on_abort)
+        registrar.hook(
+            (scanning.hooks.AbortHook, scanning.hooks.PauseHook), self.on_abort
+        )
 
     @add_call_types
-    def on_reset(self, context):
-        # type: (scanning.hooks.AContext) -> None
-        super(PositionLabellerPart, self).on_reset(context)
+    def on_reset(self, context: scanning.hooks.AContext) -> None:
+        super().on_reset(context)
         self.on_abort(context)
 
     @add_call_types
-    def on_configure(self,
-                     context,  # type: scanning.hooks.AContext
-                     completed_steps,  # type: scanning.hooks.ACompletedSteps
-                     steps_to_do,  # type: scanning.hooks.AStepsToDo
-                     generator,  # type: scanning.hooks.AGenerator
-                     ):
-        # type: (...) -> None
+    def on_configure(
+        self,
+        context: scanning.hooks.AContext,
+        completed_steps: scanning.hooks.ACompletedSteps,
+        steps_to_do: scanning.hooks.AStepsToDo,
+        generator: scanning.hooks.AGenerator,
+    ) -> None:
         # clear out old subscriptions
         context.unsubscribe_all()
         self.generator = generator
@@ -72,14 +74,15 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         else:
             # This is rewinding or setting up for another batch, so the detector
             # will skip to a uniqueID that has not been produced yet
+            assert self.done_when_reaches, "Done when reaches not assigned"
             id_start = self.done_when_reaches + 1
             self.done_when_reaches += steps_to_do
         # Delete any remaining old positions
         child = context.block_view(self.mri)
         futures = [child.delete_async()]
-        futures += child.put_attribute_values_async(dict(
-            enableCallbacks=True,
-            idStart=id_start))
+        futures += child.put_attribute_values_async(
+            dict(enableCallbacks=True, idStart=id_start)
+        )
         self.steps_up_to = completed_steps + steps_to_do
         xml, self.end_index = self._make_xml(completed_steps)
         # Wait for the previous puts to finish
@@ -90,35 +93,36 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         self.start_future = child.start_async()
 
     @add_call_types
-    def on_run(self, context):
-        # type: (scanning.hooks.AContext) -> None
+    def on_run(self, context: scanning.hooks.AContext) -> None:
         self.loading = False
         child = context.block_view(self.mri)
         child.qty.subscribe_value(self.load_more_positions, child)
         context.wait_all_futures(self.start_future)
 
     @add_call_types
-    def on_abort(self, context):
-        # type: (scanning.hooks.AContext) -> None
+    def on_abort(self, context: scanning.hooks.AContext) -> None:
         child = context.block_view(self.mri)
         child.stop()
 
-    def load_more_positions(self, number_left, child):
-        # type: (int, Any) -> None
-        if not self.loading and self.end_index < self.steps_up_to and \
-                number_left < POSITIONS_PER_XML * N_LOAD_AHEAD:
-            self.loading = True
-            xml, self.end_index = self._make_xml(self.end_index)
-            child.xml.put_value(xml)
-            self.loading = False
+    def load_more_positions(self, number_left: int, child: Any) -> None:
+        if self.end_index and self.steps_up_to:
+            if (
+                not self.loading
+                and self.end_index < self.steps_up_to
+                and number_left < POSITIONS_PER_XML * N_LOAD_AHEAD
+            ):
+                self.loading = True
+                xml, self.end_index = self._make_xml(self.end_index)
+                child.xml.put_value(xml)
+                self.loading = False
 
-    def _make_xml(self, start_index):
-        # type: (int) -> Tuple[str, int]
+    def _make_xml(self, start_index: int) -> Tuple[str, int]:
 
         # Make xml root
         xml = '<?xml version="1.0" ?><pos_layout><dimensions>'
 
         # Make an index for every hdf index
+        assert self.generator, "No generator"
         for i in range(len(self.generator.dimensions)):
             xml += '<dimension name="d%d" />' % i
 
@@ -126,6 +130,7 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         xml += "</dimensions><positions>"
 
         end_index = start_index + POSITIONS_PER_XML
+        assert self.steps_up_to, "No steps up to"
         if end_index > self.steps_up_to:
             end_index = self.steps_up_to
 

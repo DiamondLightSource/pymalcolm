@@ -1,16 +1,17 @@
-#!/dls_sw/prod/tools/RHEL7-x86_64/defaults/bin/dls-python
-import logging.config
-import threading
+#!/dls_sw/prod/tools/RHEL7-x86_64/defaults/bin/dls-python3
 import argparse
 import atexit
 import getpass
 import json
+import logging.config
 import os
+import queue
 import sys
+import threading
+from logging.handlers import QueueListener
 
 
 def make_async_logging(log_config):
-    from malcolm.compat import QueueListener, queue
     # Now we have our user specified logging config, pipe all logging messages
     # through a queue to make it asynchronous
 
@@ -21,7 +22,9 @@ def make_async_logging(log_config):
     # a queue, and set it as the handler for the root logger (and children)
     q = queue.Queue()
     log_config["handlers"]["queue"] = {
-        "class": "malcolm.compat.QueueHandler", "queue": q}
+        "class": "logging.handlers.QueueHandler",
+        "queue": q,
+    }
     log_config["root"]["handlers"] = ["queue"]
     configurator = logging.config.DictConfigurator(log_config)
     configurator.configure()
@@ -36,16 +39,16 @@ def make_async_logging(log_config):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(
-        description="Interactive shell for malcolm")
+    parser = argparse.ArgumentParser(description="Interactive shell for malcolm")
     parser.add_argument(
-        '--client', '-c',
-        help="Add a client to given server, like ws://localhost:8008 or pva")
+        "--client",
+        "-c",
+        help="Add a client to given server, like ws://localhost:8008 or pva",
+    )
+    parser.add_argument("--logcfg", help="Logging dict config in JSON or YAML file")
     parser.add_argument(
-        '--logcfg', help="Logging dict config in JSON or YAML file")
-    parser.add_argument(
-        'yaml', nargs="?",
-        help="The YAML file containing the blocks to be loaded")
+        "yaml", nargs="?", help="The YAML file containing the blocks to be loaded"
+    )
     args = parser.parse_args()
     return args
 
@@ -56,44 +59,39 @@ def make_logging_config(args):
     log_config = {
         "version": 1,
         "disable_existing_loggers": False,
-
         "formatters": {
-            "simple": {
-                "format": "%(name)s: %(message)s"
-            },
+            "simple": {"format": "%(name)s: %(message)s"},
             "extended": {
-                "format": "%(asctime)s - %(levelname)6s - %(name)s\n"
-                          "    %(message)s"
+                "format": "%(asctime)s - %(levelname)6s - %(name)s\n" "    %(message)s"
             },
-            "syslog": {
-                "format": "%(name)s: %(message)s\n##%(extra)s##"
-            },
+            # "syslog": {
+            #     "format": "%(name)s: %(message)s\n##%(extra)s##"
+            # },
         },
-
         "handlers": {
             "console": {
                 "class": "logging.StreamHandler",
                 "level": "WARNING",
                 "formatter": "simple",
-                "stream": "ext://sys.stdout"
+                "stream": "ext://sys.stdout",
             },
 
-            #"local_file_handler": {
-            #    "class": "logging.handlers.RotatingFileHandler",
-            #    "level": "DEBUG",
-            #    "formatter": "extended",
-            #    "filename": "/tmp/malcolm-debug.log",
-            #    "maxBytes": 100048576,
-            #    "backupCount": 4,
-            #    "encoding": "utf8"
-            #},
+            # "local_file_handler": {
+            #     "class": "logging.handlers.RotatingFileHandler",
+            #     "level": "DEBUG",
+            #     "formatter": "extended",
+            #     "filename": "/tmp/malcolm-debug.log",
+            #     "maxBytes": 100048576,
+            #     "backupCount": 4,
+            #     "encoding": "utf8"
+            # },
 
-            "syslog_graylog": {
-                "class": "malcolm.syslogger.JsonSysLogHandler",
-                "formatter": "syslog",
-                "address": "/dev/log",
-                "facility": "local0"
-            },
+            # "syslog_graylog": {
+            #     "class": "malcolm.syslogger.JsonSysLogHandler",
+            #     "formatter": "syslog",
+            #     "address": "/dev/log",
+            #     "facility": "local0"
+            # },
 
             "graylog_gelf": {
                 "class": "pygelf.GelfTcpHandler",
@@ -107,11 +105,9 @@ def make_logging_config(args):
                 # False
                 "include_extra_fields": True,
                 "username": getpass.getuser(),
-                "pid": os.getpid()
-            }
+                "pid": os.getpid(),
+            },
         },
-
-
         # "loggers": {
         #     # Fine-grained logging configuration for individual modules or
         #     # classes
@@ -126,10 +122,9 @@ def make_logging_config(args):
         #         "handlers": ["console"]
         #     }
         # },
-
         "root": {
             "level": "DEBUG",
-            "handlers": ["graylog_gelf", "console", "syslog_graylog"],
+            "handlers": ["graylog_gelf", "console"]  # , "syslog_graylog"],
         }
     }
 
@@ -166,16 +161,17 @@ def prepare_locals(args):
     if args.client:
         if args.client.startswith("ws://"):
             from malcolm.modules.web.controllers import WebsocketClientComms
+
             hostname, port = args.client[5:].split(":")
             comms = WebsocketClientComms(
-                mri="%s:%s" % (hostname, port), hostname=hostname,
-                port=int(port))
+                mri="%s:%s" % (hostname, port), hostname=hostname, port=int(port)
+            )
         elif args.client == "pva":
             from malcolm.modules.pva.controllers import PvaClientComms
+
             comms = PvaClientComms(mri="pva")
         else:
-            raise ValueError(
-                "Don't know how to create client to %s" % args.client)
+            raise ValueError("Don't know how to create client to %s" % args.client)
         proc.add_controller(comms)
     proc.start(timeout=60)
     return proc
@@ -184,6 +180,7 @@ def prepare_locals(args):
 def try_prepare_locals(q, args):
     # This will start cothread in this thread
     import cothread
+
     cothread.input_hook._install_readline_hook(False)
     try:
         locals_d = prepare_locals(args)
@@ -197,7 +194,6 @@ def try_prepare_locals(q, args):
 
 def main():
     print("Loading malcolm...")
-    from malcolm.compat import queue
     from malcolm.profiler import Profiler
 
     args = parse_args()
@@ -216,7 +212,7 @@ def main():
 
     # If using p4p then set cothread to use the right ca libs before it is
     try:
-        import epicscorelibs.path.cothread
+        import epicscorelibs.path.cothread  # noqa
     except ImportError:
         pass
 
@@ -239,8 +235,7 @@ def main():
     class UserContext(Context):
         def post(self, path, params=None, timeout=None, event_timeout=None):
             try:
-                return super(UserContext, self).post(
-                    path, params, timeout, event_timeout)
+                return super().post(path, params, timeout, event_timeout)
             except KeyboardInterrupt:
                 self.post([path[0], "abort"])
 
@@ -252,18 +247,15 @@ def main():
             cothread.CallbackResult(self._make_proxy, comms, mri)
 
         def block_view(self, mri):
-            return cothread.CallbackResult(
-                super(UserContext, self).block_view, mri)
+            return cothread.CallbackResult(super().block_view, mri)
 
         def make_view(self, controller, data, child_name):
             return cothread.CallbackResult(
-                super(UserContext, self).make_view,
-                controller, data, child_name)
+                super().make_view, controller, data, child_name
+            )
 
         def handle_request(self, controller, request):
-            cothread.CallbackResult(
-                super(UserContext, self).handle_request,
-                controller, request)
+            cothread.CallbackResult(super().handle_request, controller, request)
 
     self = UserContext(process)
 
@@ -274,18 +266,21 @@ self.mri_list:
 
 # To create a view of an existing Block
 block = self.block_view("<mri>")
- 
+
 # To create a proxy of a Block in another Malcolm
 self.make_proxy("<client_comms_mri>", "<mri>")
 block = self.block_view("<mri>")
 
 # To view state of Blocks in a GUI
-!firefox localhost:8008""" % (self.mri_list,)
+!firefox localhost:8008""" % (
+        self.mri_list,
+    )
 
     try:
         import IPython
     except ImportError:
         import code
+
         code.interact(header, local=locals())
     else:
         IPython.embed(header=header)
@@ -297,32 +292,10 @@ block = self.block_view("<mri>")
 
 
 if __name__ == "__main__":
-    from pkg_resources import require
-    print("Loading external modules...")
-
     os.environ["EPICS_CA_MAX_ARRAY_BYTES"] = "6000000"
 
     sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-    require(
-        # External
-        "enum34==1.1.6",
-        "tornado==4.5.1",
-        "numpy==1.13.1",
-        "ruamel.yaml==0.15.33",
-        "h5py==2.9.0",
-        "p4p==3.2.0",
-        "pygelf==0.3.5",
-        "plop==0.3.0",
-        "typing==3.6.1",
-        # scipy only needed for scanpointgenerator.plot_generator
-        "scipy==0.19.1",
-        # DLS developed
-        "annotypes==0.20",
-        "cothread==2.14",
-        "scanpointgenerator==3.1",
-        "vdsgen==0.5.1"
-    )
-    #sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "cothread"))
-    #sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "annotypes"))
+    # sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "cothread"))
+    # sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "annotypes"))
     main()

@@ -15,3 +15,10 @@
 
 - ADCore.includes.adbase_parts:
     prefix: $(prefix)
+
+- ca.parts.CAChoicePart:
+    name: triggerSource
+    description: Detector trigger source
+    pv: $(prefix):TriggerSource
+    rbv_suffix: _RBV
+

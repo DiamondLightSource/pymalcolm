@@ -19,3 +19,18 @@
     name: i10
     description: Value of i10 (servo ticks)
     rbv: $(pv_prefix):I10
+
+- ca.parts.CACharArrayPart:
+    name: iVariables
+    description: representation of the values of i variables in the slow poll
+    rbv: $(pv_prefix):I_VARIABLES_RBV
+
+- ca.parts.CACharArrayPart:
+    name: pVariables
+    description: representation of the values of p variables in the slow poll
+    rbv: $(pv_prefix):P_VARIABLES_RBV
+
+- ca.parts.CACharArrayPart:
+    name: mVariables
+    description: representation of the values of m variables in the slow poll
+    rbv: $(pv_prefix):M_VARIABLES_RBV

@@ -1,5 +1,5 @@
 from operator import itemgetter
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 from annotypes import Anno, add_call_types
@@ -14,6 +14,7 @@ from malcolm.modules.ADPandABlocks.doublebuffer import (
     DoubleBuffer,
     SequencerRows,
 )
+from malcolm.modules.scanning.infos import MinTurnaroundInfo
 
 from ..util import Trigger
 
@@ -310,7 +311,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
     """
 
     def __init__(
-        self, name: APartName, mri: AMri, initial_visibility: AInitialVisibility = None
+        self, name: APartName, mri: AMri, initial_visibility: AInitialVisibility = True
     ) -> None:
         super().__init__(
             name, mri, initial_visibility=initial_visibility, stateful=False
@@ -324,17 +325,17 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         # If we are currently loading then block loading more points
         self.loading = False
         # What is the mapping of scannable name to MotorInfo
-        self.axis_mapping = {}
+        self.axis_mapping: Dict[str, pmac.infos.MotorInfo] = {}
         # The minimum turnaround time for non-joined points
-        self.min_turnaround = 0
+        self.min_turnaround = 0.0
         # The minimum time between turnaround points
-        self.min_interval = 0
+        self.min_interval = 0.0
         # {(scannable, increasing): trigger_enum}
-        self.trigger_enums = {}
+        self.trigger_enums: Dict[Tuple[str, bool], str] = {}
         # The panda Block we will be prodding
-        self.panda = None
+        self.panda: Optional[Any] = None
         # The DoubleBuffer object used to load tables during a scan
-        self.db_seq_table = None
+        self.db_seq_table: Optional[Any] = None
 
     def setup(self, registrar: PartRegistrar) -> None:
         super().setup(registrar)
@@ -385,6 +386,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
             seq_pos[seqa_pos_inp] = "POS%s" % suff.upper()
 
         # Fix the mres and offsets from the panda positions table
+        assert self.panda, "No PandA"
         positions_table = self.panda.positions.value
         for i, name in enumerate(positions_table.name):
             try:
@@ -438,7 +440,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         row_trigger = child.rowTrigger.value
 
         # See if there is a minimum turnaround
-        infos = scanning.infos.MinTurnaroundInfo.filter_values(part_info)
+        infos: List[MinTurnaroundInfo] = MinTurnaroundInfo.filter_values(part_info)
         if infos:
             assert len(infos) == 1, "Expected 0 or 1 MinTurnaroundInfos, got %d" % len(
                 infos
@@ -491,11 +493,14 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
 
         self.db_seq_table = DoubleBuffer(context, seqa, seqb)
 
+        assert self.db_seq_table, "No DoubleBuffer"
         self.db_seq_table.configure(rows_gen)
 
     @add_call_types
     def on_run(self, context: scanning.hooks.AContext) -> None:
         # Call sequence table enable
+        assert self.panda, "No PandA"
+        assert self.db_seq_table, "No DoubleBuffer"
         self.panda.seqSetEnable()
         futures = self.db_seq_table.run()
         context.wait_all_futures(futures)

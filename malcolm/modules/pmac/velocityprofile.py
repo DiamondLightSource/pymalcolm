@@ -1,4 +1,4 @@
-from math import sqrt, fabs
+from math import fabs, sqrt
 
 import numpy as np
 
@@ -58,16 +58,16 @@ class VelocityProfile:
     """
 
     def __init__(
-            self,
-            v1,  # type: float
-            v2,  # type: float
-            d,  # type: float
-            t_total,  # type: float
-            a,  # type: float
-            v_max,  # type: float
-            settle_time=0,  # type: float
-            interval=0  # type: float
-    ):  # type: (...) -> None
+        self,
+        v1: float,
+        v2: float,
+        d: float,
+        t_total: float,
+        a: float,
+        v_max: float,
+        settle_time: float = 0,
+        interval: float = 0,
+    ) -> None:
         """
         Initialize the properties that define the desired profile
 
@@ -99,8 +99,7 @@ class VelocityProfile:
         self.quantized = False
 
         assert not np.isclose(a, 0), "zero acceleration is illegal"
-        assert fabs(v1) <= v_max and fabs(v2) <= v_max, \
-            "v1, v2 must be <= v_max"
+        assert fabs(v1) <= v_max and fabs(v2) <= v_max, "v1, v2 must be <= v_max"
         assert v_max > 0 and a > 0, "v_max, acceleration must be > 0"
 
     def check_range(self):
@@ -140,11 +139,12 @@ class VelocityProfile:
         # calculate the maximum and minimum distances attainable by hitting the
         # above maxima. i.e. sum 2 trapezoids described by v1, v_peak, v2
         # and the x axis
-        self.d_peak = (self.v1 + self.v_peak) * self.t_peak / 2 + \
-                      (self.v2 + self.v_peak) * (self.tv2 - self.t_peak) / 2
-        self.d_trough = (self.v1 + self.v_trough) * self.t_trough / 2 + \
-                        (self.v2 + self.v_trough) * \
-                        (self.tv2 - self.t_trough) / 2
+        self.d_peak = (self.v1 + self.v_peak) * self.t_peak / 2 + (
+            self.v2 + self.v_peak
+        ) * (self.tv2 - self.t_peak) / 2
+        self.d_trough = (self.v1 + self.v_trough) * self.t_trough / 2 + (
+            self.v2 + self.v_trough
+        ) * (self.tv2 - self.t_trough) / 2
         # this helps with the domain checks in calculate_vm()
         if np.isclose(self.d, self.d_trough, rtol=R_TOL):
             self.d_trough = self.d
@@ -220,13 +220,20 @@ class VelocityProfile:
 
         # STEP 1
         if self.d > self.calculate_distance(vm=100000):
-            self.tv2 = (sqrt(2) * sqrt(
-                2 * self.a * self.d + self.v1 ** 2 + self.v2 ** 2) - self.v1 -
-                        self.v2) / self.a
+            self.tv2 = (
+                sqrt(2) * sqrt(2 * self.a * self.d + self.v1 ** 2 + self.v2 ** 2)
+                - self.v1
+                - self.v2
+            ) / self.a
         elif self.d < self.calculate_distance(vm=-100000):
-            self.tv2 = -(-sqrt(2) * sqrt(
-                2 * self.a * -self.d + self.v1 ** 2 + self.v2 ** 2) - self.v1 -
-                         self.v2) / self.a
+            self.tv2 = (
+                -(
+                    -sqrt(2) * sqrt(2 * self.a * -self.d + self.v1 ** 2 + self.v2 ** 2)
+                    - self.v1
+                    - self.v2
+                )
+                / self.a
+            )
         # STEP2
         dc = self.calculate_distance(vm=self.v_max)
         if self.d > dc:
@@ -319,8 +326,9 @@ class VelocityProfile:
         # zone vm needs to extend to get the correct d. For each calculation
         # more_d is the difference between distance described by the lower
         # zones and the target distance
-        assert self.d_trough <= self.d <= self.d_peak, \
-            "cannot achieve distance d, time stretch required"
+        assert (
+            self.d_trough <= self.d <= self.d_peak
+        ), "cannot achieve distance d, time stretch required"
         if np.isclose(self.v_peak, v_high, rtol=R_TOL):
             # the profile is a straight line
             self.vm = (v_high + v_low) / 2
@@ -338,18 +346,18 @@ class VelocityProfile:
             if np.isclose(d_z3 - more_d, 0):
                 self.vm = self.v_peak
             else:
-                self.vm = self.v_peak - sqrt(
-                    self.a * (d_z3 - more_d))
+                self.vm = self.v_peak - sqrt(self.a * (d_z3 - more_d))
         else:
             assert False, "should not reach here"
 
-        assert np.isclose(self.v_peak, self.vm) or \
-               np.isclose(self.v_trough, self.vm) or \
-               self.v_trough <= self.vm <= self.v_peak, \
-            "velocity out of range, check the math"
-        assert np.isclose(self.v_max, self.vm) or \
-               self.vm <= self.v_max, \
-            "velocity exceeds maximum, check the math"
+        assert (
+            np.isclose(self.v_peak, self.vm)
+            or np.isclose(self.v_trough, self.vm)
+            or self.v_trough <= self.vm <= self.v_peak
+        ), "velocity out of range, check the math"
+        assert (
+            np.isclose(self.v_max, self.vm) or self.vm <= self.v_max
+        ), "velocity exceeds maximum, check the math"
 
     def get_profile(self):
         """
@@ -374,10 +382,11 @@ class VelocityProfile:
         self.calculate_times()
 
         # validate the results
-        assert np.isclose(self.d_peak, self.d) or \
-               np.isclose(self.d_trough, self.d) or \
-               self.d_trough <= self.d <= self.d_peak, \
-            "distance is outside of allowed trough and peak, check the math"
+        assert (
+            np.isclose(self.d_peak, self.d)
+            or np.isclose(self.d_trough, self.d)
+            or self.d_trough <= self.d <= self.d_peak
+        ), "distance is outside of allowed trough and peak, check the math"
 
     def check_quantize(self):
         """
@@ -433,9 +442,9 @@ class VelocityProfile:
         self.tv2 = np.round(self.tv2, decimals=14)
         self.t1 = np.round(self.t1, decimals=14)
         self.t2 = np.round(self.t2, decimals=14)
-        self.tv2 = np.ceil(
-            (self.tv2 + self.interval * 2) / (self.interval * 2)
-        ) * (self.interval * 2)
+        self.tv2 = np.ceil((self.tv2 + self.interval * 2) / (self.interval * 2)) * (
+            self.interval * 2
+        )
         if self.tm == 0:
             # pointy hat
             self.t1 = np.ceil(self.t1 / self.interval + 1) * self.interval

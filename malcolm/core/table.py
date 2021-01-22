@@ -7,12 +7,13 @@ class Table(Serializable):
     # getitem supported for row by row operations
     def validate_column_lengths(self):
         lengths = {a: len(getattr(self, a)) for a in self.call_types}
-        assert len(set(lengths.values())) == 1, \
+        assert len(set(lengths.values())) == 1, (
             "Column lengths %s don't match" % lengths
+        )
 
     def __getitem__(self, item):
         try:
-            return super(Table, self).__getitem__(item)
+            return super().__getitem__(item)
         except KeyError:
             # If we have an integer, make a row
             if isinstance(item, int):
@@ -36,8 +37,7 @@ class Table(Serializable):
         for row in zip(*data):
             yield list(row)
 
-    def __eq__(self, other):
-        # type: (object) -> bool
+    def __eq__(self, other: object) -> bool:
         return not self != other
 
     def __ne__(self, other):

@@ -1,4 +1,5 @@
 import unittest
+
 from mock import MagicMock
 
 from malcolm.core.future import Future
@@ -9,7 +10,6 @@ class MyError(Exception):
 
 
 class TestFuture(unittest.TestCase):
-
     def setUp(self):
         self.context = MagicMock()
 

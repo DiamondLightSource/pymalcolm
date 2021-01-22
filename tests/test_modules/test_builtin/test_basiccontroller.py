@@ -1,6 +1,6 @@
 import unittest
 
-from malcolm.core import Process, Alarm, AlarmSeverity
+from malcolm.core import Alarm, AlarmSeverity, Process
 from malcolm.modules.builtin.controllers import BasicController
 from malcolm.modules.builtin.infos import HealthInfo
 
