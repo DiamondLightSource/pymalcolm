@@ -6,8 +6,8 @@ from malcolm.modules import ADCore, builtin, scanning
 
 @builtin.util.no_save("numImagesPerSeries")
 class EigerDriverPart(ADCore.parts.DetectorDriverPart):
-    """ Overrides default AD behaviour because the Eiger AD support
-        does not count frames when Odin is consuming the frames."""
+    """Overrides default AD behaviour because the Eiger AD support
+    does not count frames when Odin is consuming the frames."""
 
     def setup(self, registrar: PartRegistrar) -> None:
         super().setup(registrar)

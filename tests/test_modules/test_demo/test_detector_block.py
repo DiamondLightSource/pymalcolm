@@ -58,6 +58,7 @@ class TestDetectorBlock(unittest.TestCase):
             "generator",
             "fileDir",
             "axesToMove",
+            "breakpoints",
             "exposure",
             "formatName",
             "fileTemplate",

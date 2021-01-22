@@ -153,10 +153,10 @@ class TestOdinWriterPart(ChildTestCase):
 
     def test_excalibur_vds(self):
         """
-            The HDF data for this test was created by running a 6 point scan
-            and then using the function make_test_data above to fill each frame
-            with its own (1 based) index
-            """
+        The HDF data for this test was created by running a 6 point scan
+        and then using the function make_test_data above to fill each frame
+        with its own (1 based) index
+        """
         tmp_dir = mkdtemp() + os.path.sep
         test_data = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data/*")
         for f in glob.glob(test_data):

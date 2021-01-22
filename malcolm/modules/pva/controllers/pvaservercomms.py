@@ -143,9 +143,12 @@ class BlockHandler(Handler):
         else:
             # Get the path and string "value" from the put value
             split = changed.split(".")
-            assert len(split) == 2 and split[1] == "value", (
-                "Can only put to value of %s.%s, not %s"
-                % (self.controller.mri, split[0], split[1])
+            assert (
+                len(split) == 2 and split[1] == "value"
+            ), "Can only put to value of %s.%s, not %s" % (
+                self.controller.mri,
+                split[0],
+                split[1],
             )
             path += list(split)
             op_value = op.value()[split[0]]

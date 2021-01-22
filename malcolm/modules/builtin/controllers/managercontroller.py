@@ -63,7 +63,12 @@ ADescription = ADescription
 
 
 def check_git_version(required_version):
-    output = subprocess.check_output(("git", "--version",))
+    output = subprocess.check_output(
+        (
+            "git",
+            "--version",
+        )
+    )
     version = output.decode("utf-8").replace("git version ", "").strip("\n")
     return StrictVersion(version) >= StrictVersion(required_version)
 
