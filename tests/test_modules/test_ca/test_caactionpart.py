@@ -19,11 +19,7 @@ class ca_nothing(object):
 class TestCAActionPart(unittest.TestCase):
     def create_part(self, params=None):
         if params is None:
-            params = dict(
-                name="mname",
-                description="desc",
-                pv="pv",
-            )
+            params = dict(name="mname", description="desc", pv="pv",)
 
         p = CAActionPart(**params)
         p.setup(Mock())

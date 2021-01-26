@@ -210,14 +210,8 @@ class TestCAParts(unittest.TestCase):
             CAWaveformTablePart(
                 name="attrname",
                 description="desc",
-                pv_list=(
-                    "yPv",
-                    "xPv",
-                ),
-                name_list=(
-                    "yData",
-                    "xData",
-                ),
+                pv_list=("yPv", "xPv",),
+                name_list=("yData", "xData",),
                 timeout=-1,
             ),
             "withDisplayFromPv",

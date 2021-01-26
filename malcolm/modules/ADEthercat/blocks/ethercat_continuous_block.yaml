@@ -28,7 +28,8 @@
       - Camera driver should have pv prefix $(pv_prefix):DRV
       - HDF should have pv prefix $(pv_prefix):HDF5
 
-- scanning.controllers.RunnableController:
+#- scanning.controllers.RunnableController:
+- ADEthercat.controllers.EthercatContinuousRunnableController:
     mri: $(mri_prefix)
     config_dir: $(config_dir)
     description: |

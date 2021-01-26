@@ -85,9 +85,7 @@ class TestStatefulController(unittest.TestCase):
         if self.process.state:
             self.process.stop(timeout=1)
 
-    def test_process_init(
-        self,
-    ):
+    def test_process_init(self,):
         assert not self.part.started
         self.start_process()
         assert self.part.started

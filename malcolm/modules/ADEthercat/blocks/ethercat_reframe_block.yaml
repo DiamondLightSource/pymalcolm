@@ -51,14 +51,14 @@
     pv_prefix: $(pv_prefix)
     mri_prefix: $(mri_prefix)
 
-- ADCore.blocks.reframe_plugin_block:
+- adUtil.blocks.reframe_plugin_block:
     mri: $(mri_prefix):REFRAME
-    prefix: $(pv_prefix)
-    suffix: $(reframe_pv_suffix)
+    prefix: $(pv_prefix):$(reframe_pv_suffix)
 
-- ADCore.parts.ReframePluginPart:
+- adUtil.parts.ReframePluginPart:
     name: REFRAME
     mri: $(mri_prefix):REFRAME
+    sample_freq: 1000.0
 
 - scanning.parts.ExposureDeadtimePart:
     name: DEADTIME

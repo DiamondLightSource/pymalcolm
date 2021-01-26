@@ -965,9 +965,7 @@ class TestScanRunnerPart(unittest.TestCase):
 
         self.assertEqual(False, scan_runner_part.scan_is_aborting(scan_block_mock))
 
-    def test_get_file_contents_returns_for_success(
-        self,
-    ):
+    def test_get_file_contents_returns_for_success(self,):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
 
         # Mock the scan file
