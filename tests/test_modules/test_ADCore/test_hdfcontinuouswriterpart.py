@@ -113,6 +113,7 @@ class TestHDFContinuousWriterPart(ChildTestCase):
             "generator",
             "fileDir",
             "axesToMove",
+            "breakpoints",
             "formatName",
             "fileTemplate",
         ]
