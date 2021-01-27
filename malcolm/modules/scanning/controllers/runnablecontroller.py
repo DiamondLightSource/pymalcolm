@@ -22,6 +22,7 @@ from malcolm.modules import builtin
 from ..hooks import (
     AAxesToMove,
     AbortHook,
+    ABreakpoints,
     ConfigureHook,
     ControllerHook,
     PauseHook,
@@ -195,10 +196,16 @@ class RunnableController(builtin.controllers.ManagerController):
         # Queue so that do_run can wait to see why it was aborted and resume if
         # needed
         self.resume_queue: Optional[Queue] = None
+        # Stored for pause. If using breakpoints, it is a list of steps
+        self.steps_per_run = []  # type: List[int]
+        # If the list of breakpoints is not empty, this will be true
+        self.use_breakpoints = False  # type: bool
+        # Absolute steps where the run() returns
+        self.breakpoint_steps = []  # type: List[int]
+        # Breakpoint index, modified in run() and pause()
+        self.breakpoint_index = 0
         # Queue so we can wait for aborts to complete
         self.abort_queue: Optional[Queue] = None
-        # Stored for pause
-        self.steps_per_run: int = 0
         # Create sometimes writeable attribute for the current completed scan
         # step
         self.completed_steps = NumberMeta(
@@ -268,11 +275,66 @@ class RunnableController(builtin.controllers.ManagerController):
             ConfigureParamsInfo, self.update_configure_params
         )
 
+    def get_steps_per_run(self, generator, axes_to_move, breakpoints):
+        # type: (CompoundGenerator, List[str], List[int]) -> List[int]
+        self.use_breakpoints = False
+        steps = [1]
+        axes_set = set(axes_to_move)
+        for dim in reversed(generator.dimensions):
+            # If the axes_set is empty and the dimension has axes then we have
+            # done as many dimensions as we can, so return
+            if dim.axes and not axes_set:
+                break
+            # Consume the axes that this generator scans
+            for axis in dim.axes:
+                assert axis in axes_set, "Axis %s is not in %s" % (axis, axes_to_move)
+                axes_set.remove(axis)
+            # Now multiply by the dimensions to get the number of steps
+            steps[0] *= dim.size
+
+        # If we have breakpoints we make a list of steps
+        if len(breakpoints) > 0:
+            total_breakpoint_steps = sum(breakpoints)
+            assert (
+                total_breakpoint_steps <= steps[0]
+            ), "Sum of breakpoints greater than steps in scan"
+            self.use_breakpoints = True
+
+            # Cast to list so we can append
+            breakpoints_list = list(breakpoints)
+
+            # Check if we need to add the final breakpoint to the inner scan
+            if total_breakpoint_steps < steps[0]:
+                last_breakpoint = steps[0] - total_breakpoint_steps
+                breakpoints_list += [last_breakpoint]
+
+            # Repeat the set of breakpoints for each outer step
+            breakpoints_list *= self._get_outer_steps(generator, axes_to_move)
+
+            steps = breakpoints_list
+
+            # List of steps completed at end of each run
+            self.breakpoint_steps = [sum(steps[:i]) for i in range(1, len(steps) + 1)]
+
+        return steps
+
+    def _get_outer_steps(self, generator, axes_to_move):
+        outer_steps = 1
+        for dim in reversed(generator.dimensions):
+            outer_axis = True
+            for axis in dim.axes:
+                if axis in axes_to_move:
+                    outer_axis = False
+            if outer_axis:
+                outer_steps *= dim.size
+        return outer_steps
+
     def do_reset(self):
         super().do_reset()
         self.configured_steps.set_value(0)
         self.completed_steps.set_value(0)
         self.total_steps.set_value(0)
+        self.breakpoint_index = 0
 
     def update_configure_params(
         self, part: Part = None, info: ConfigureParamsInfo = None
@@ -333,7 +395,11 @@ class RunnableController(builtin.controllers.ManagerController):
     # noinspection PyPep8Naming
     @add_call_types
     def validate(
-        self, generator: AGenerator, axesToMove: AAxesToMove = None, **kwargs: Any
+        self,
+        generator: AGenerator,
+        axesToMove: AAxesToMove = None,
+        breakpoints: ABreakpoints = None,
+        **kwargs: Any
     ) -> AConfigureParams:
         """Validate configuration parameters and return validated parameters.
 
@@ -344,7 +410,7 @@ class RunnableController(builtin.controllers.ManagerController):
         for k, default in self._block.configure.meta.defaults.items():
             kwargs.setdefault(k, default)
         # The validated parameters we will eventually return
-        params = ConfigureParams(generator, axesToMove, **kwargs)
+        params = ConfigureParams(generator, axesToMove, breakpoints, **kwargs)
         # Make some tasks just for validate
         part_contexts = self.create_part_contexts()
         # Get any status from all parts
@@ -387,7 +453,11 @@ class RunnableController(builtin.controllers.ManagerController):
     # noinspection PyPep8Naming
     @add_call_types
     def configure(
-        self, generator: AGenerator, axesToMove: AAxesToMove = None, **kwargs: Any
+        self,
+        generator: AGenerator,
+        axesToMove: AAxesToMove = None,
+        breakpoints: ABreakpoints = None,
+        **kwargs: Any
     ) -> AConfigureParams:
         """Validate the params then configure the device ready for run().
 
@@ -399,7 +469,7 @@ class RunnableController(builtin.controllers.ManagerController):
         return in Aborted state. If something goes wrong it will return in Fault
         state. If the user disables then it will return in Disabled state.
         """
-        params = self.validate(generator, axesToMove, **kwargs)
+        params = self.validate(generator, axesToMove, breakpoints, **kwargs)
         state = self.state.value
         try:
             self.transition(ss.CONFIGURING)
@@ -443,7 +513,9 @@ class RunnableController(builtin.controllers.ManagerController):
         self.configured_steps.set_value(0)
         # TODO: We can be cleverer about this and support a different number
         # of steps per run for each run by examining the generator structure
-        self.steps_per_run = get_steps_per_run(params.generator, params.axesToMove)
+        self.steps_per_run = self.get_steps_per_run(
+            params.generator, params.axesToMove, params.breakpoints
+        )
         # Get any status from all parts
         part_info = self.run_hooks(
             ReportStatusHook(p, c) for p, c in self.part_contexts.items()
@@ -451,7 +523,8 @@ class RunnableController(builtin.controllers.ManagerController):
         # Run the configure command on all parts, passing them info from
         # ReportStatus. Parts should return any reporting info for PostConfigure
         completed_steps = 0
-        steps_to_do = self.steps_per_run
+        self.breakpoint_index = 0
+        steps_to_do = self.steps_per_run[self.breakpoint_index]
         part_info = self.run_hooks(
             ConfigureHook(p, c, completed_steps, steps_to_do, part_info, **kw)
             for p, c, kw in self._part_params()
@@ -522,7 +595,9 @@ class RunnableController(builtin.controllers.ManagerController):
         self.abortable_transition(ss.POSTRUN)
         completed_steps = self.configured_steps.value
         if completed_steps < self.total_steps.value:
-            steps_to_do = self.steps_per_run
+            if self.use_breakpoints:
+                self.breakpoint_index += 1
+            steps_to_do = self.steps_per_run[self.breakpoint_index]
             part_info = self.run_hooks(
                 ReportStatusHook(p, c) for p, c in self.part_contexts.items()
             )
@@ -535,6 +610,7 @@ class RunnableController(builtin.controllers.ManagerController):
             )
             self.configured_steps.set_value(completed_steps + steps_to_do)
         else:
+            self.completed_steps.set_value(completed_steps)
             self.run_hooks(
                 PostRunReadyHook(p, c) for p, c in self.part_contexts.items()
             )
@@ -636,9 +712,22 @@ class RunnableController(builtin.controllers.ManagerController):
         self.try_aborting_function(ss.SEEKING, next_state, self.do_pause, lastGoodStep)
 
     def do_pause(self, completed_steps: int) -> None:
+        """Recalculates the number of configured steps
+        Arguments:
+        completed_steps -- Last good step performed
+        """
         self.run_hooks(PauseHook(p, c) for p, c in self.create_part_contexts().items())
-        in_run_steps = completed_steps % self.steps_per_run
-        steps_to_do = self.steps_per_run - in_run_steps
+
+        if self.use_breakpoints:
+            self.breakpoint_index -= 1
+            in_run_steps = (
+                completed_steps % self.breakpoint_steps[self.breakpoint_index]
+            )
+            steps_to_do = self.breakpoint_steps[self.breakpoint_index] - in_run_steps
+        else:
+            in_run_steps = completed_steps % self.steps_per_run[self.breakpoint_index]
+            steps_to_do = self.steps_per_run[self.breakpoint_index] - in_run_steps
+
         part_info = self.run_hooks(
             ReportStatusHook(p, c) for p, c in self.part_contexts.items()
         )

@@ -13,6 +13,7 @@ from malcolm.modules import builtin
 from ..hooks import (
     AAxesToMove,
     AbortHook,
+    ABreakpoints,
     ACompletedSteps,
     AContext,
     AFileDir,
@@ -145,11 +146,12 @@ class DetectorChildPart(builtin.parts.ChildPart):
         fileDir: AFileDir,
         detectors: ADetectorTable = None,
         axesToMove: AAxesToMove = None,
+        breakpoints: ABreakpoints = None,
         fileTemplate: AFileTemplate = "%s.h5",
     ) -> UParameterTweakInfos:
         # Work out if we are taking part
         enable, frames_per_step, kwargs = self._configure_args(
-            generator, fileDir, detectors, axesToMove, fileTemplate
+            generator, fileDir, detectors, axesToMove, breakpoints, fileTemplate
         )
         ret = []
         tweak_detectors = False
@@ -249,6 +251,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
         file_dir: AFileDir,
         detectors: ADetectorTable = None,
         axes_to_move: AAxesToMove = None,
+        breakpoints: ABreakpoints = None,
         file_template: AFileTemplate = "%s.h5",
     ) -> Tuple[bool, int, Dict[str, Any]]:
         # Check the detector table to see what we need to do
@@ -285,6 +288,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
         kwargs = dict(
             generator=generator,
             axesToMove=axes_to_move,
+            breakpoints=breakpoints,
             fileDir=file_dir,
             # formatName is the unique part of the HDF filename, so use the part
             # name for this
@@ -305,11 +309,12 @@ class DetectorChildPart(builtin.parts.ChildPart):
         fileDir: AFileDir,
         detectors: ADetectorTable = None,
         axesToMove: AAxesToMove = None,
+        breakpoints: ABreakpoints = None,
         fileTemplate: AFileTemplate = "%s.h5",
     ) -> UInfos:
         # Work out if we are taking part
         enable, self.frames_per_step, kwargs = self._configure_args(
-            generator, fileDir, detectors, axesToMove, fileTemplate
+            generator, fileDir, detectors, axesToMove, breakpoints, fileTemplate
         )
         if not enable:
             # We aren't taking part in the scan

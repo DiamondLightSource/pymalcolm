@@ -1,5 +1,6 @@
 from typing import Any, Callable, Dict, Mapping, Sequence, TypeVar, Union
 
+import numpy as np
 from annotypes import NO_DEFAULT, Anno, Array
 from scanpointgenerator import CompoundGenerator
 
@@ -22,6 +23,9 @@ with Anno("Generator instance providing specification for scan"):
 with Anno("List of axes in inner dimension of generator that should be moved"):
     AAxesToMove = Union[Array[str]]
 UAxesToMove = Union[AAxesToMove, Sequence[str]]
+with Anno("List of points at which the run will return in Armed state"):
+    ABreakpoints = Union[Array[np.int32]]
+UBreakpoints = Union[ABreakpoints, Sequence[int]]
 with Anno("Parameters that need to be changed to make them compatible"):
     AParameterTweakInfos = Union[Array[ParameterTweakInfo]]
 UInfos = Union[AInfos, Sequence[Info], Info, None]
@@ -72,6 +76,7 @@ class ValidateHook(ControllerHook[UParameterTweakInfos]):
         part_info: UPartInfo,
         generator: AGenerator,
         axesToMove: AAxesToMove,
+        breakpoints: ABreakpoints,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -80,6 +85,7 @@ class ValidateHook(ControllerHook[UParameterTweakInfos]):
             part_info=part_info,
             generator=generator,
             axesToMove=axesToMove,
+            breakpoints=breakpoints,
             **kwargs,
         )
 
@@ -126,6 +132,7 @@ class ConfigureHook(ControllerHook[UInfos]):
         part_info: APartInfo,
         generator: AGenerator,
         axesToMove: AAxesToMove,
+        breakpoints: ABreakpoints,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -136,6 +143,7 @@ class ConfigureHook(ControllerHook[UInfos]):
             part_info=part_info,
             generator=generator,
             axesToMove=axesToMove,
+            breakpoints=breakpoints,
             **kwargs,
         )
 
