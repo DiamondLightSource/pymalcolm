@@ -2,7 +2,7 @@ from annotypes import add_call_types
 
 from malcolm.core import DEFAULT_TIMEOUT, PartRegistrar
 from malcolm.modules import builtin, scanning
-from malcolm.modules.builtin.parts import AInitialVisibility, AStateful, ChildPart
+from malcolm.modules.builtin.parts import ChildPart
 from malcolm.modules.scanning.hooks import AContext
 
 # Pull re-used annotypes into our namespace in case we are subclassed

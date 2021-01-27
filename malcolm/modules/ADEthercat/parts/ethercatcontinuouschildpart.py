@@ -4,7 +4,6 @@ from malcolm.core import BadValueError, Put, Request
 from malcolm.modules import builtin
 from malcolm.modules.builtin.parts import ChildPart
 from malcolm.modules.scanning.hooks import (
-    AAxesToMove,
     AbortHook,
     AContext,
     AFileDir,
@@ -15,7 +14,6 @@ from malcolm.modules.scanning.hooks import (
     UInfos,
 )
 from malcolm.modules.scanning.infos import DatasetProducedInfo
-from malcolm.modules.scanning.util import ADetectorTable
 
 
 class EthercatContinuousChildPart(ChildPart):

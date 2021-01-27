@@ -7,5 +7,8 @@ from malcolm.testutil import ChildTestCase
 class TestReframePluginBlock(ChildTestCase):
     def test_reframe_plugin_block(self):
         self.create_child_block(
-            reframe_plugin_block, Mock(), mri="mri", prefix="prefix",
+            reframe_plugin_block,
+            Mock(),
+            mri="mri",
+            prefix="prefix",
         )

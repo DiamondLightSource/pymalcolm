@@ -1,16 +1,10 @@
-from mock import call, MagicMock, Mock, patch
-
-from malcolm.testutil import ChildTestCase
+from mock import MagicMock, Mock, call, patch
 
 from malcolm.core import BadValueError, Put
 from malcolm.modules.ADEthercat.parts import EthercatContinuousChildPart
-from malcolm.modules.scanning.hooks import (
-    AbortHook,
-    ConfigureHook,
-    PreConfigureHook,
-)
-
+from malcolm.modules.scanning.hooks import AbortHook, ConfigureHook, PreConfigureHook
 from malcolm.modules.scanning.infos import DatasetType
+from malcolm.testutil import ChildTestCase
 
 
 class TestEthercatContinuousChildPart(ChildTestCase):

@@ -1,4 +1,4 @@
-from mock import call, Mock, MagicMock
+from mock import MagicMock, Mock, call
 from scanpointgenerator import CompoundGenerator, LineGenerator
 
 from malcolm.core import Context, Process
@@ -35,7 +35,7 @@ class TestReframePluginPart(ChildTestCase):
 
         self.assertRaises(AssertionError, self.o.on_validate, Mock(), generator)
 
-    def test_validate_raises_AssertionError_for_exposure_equal_to_min_exposure_with_averaging(
+    def test_validate_raises_AssertionError_for_min_exposure_with_avg(
         self,
     ):
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
@@ -49,7 +49,7 @@ class TestReframePluginPart(ChildTestCase):
 
         self.assertRaises(AssertionError, self.o.on_validate, context_mock, generator)
 
-    def test_validate_raises_AssertionError_for_exposure_shorter_than_min_exposure_with_averaging(
+    def test_validate_raises_AssertionError_for_shorter_than_min_exposure_with_avg(
         self,
     ):
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)

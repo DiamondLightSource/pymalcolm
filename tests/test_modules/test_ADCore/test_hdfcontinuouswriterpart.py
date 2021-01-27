@@ -1,26 +1,16 @@
 import os
-from xml.etree import ElementTree
 
-import cothread
-from mock import MagicMock, Mock, call
+from mock import Mock, call
 from scanpointgenerator import CompoundGenerator, LineGenerator, SpiralGenerator
 
 from malcolm.core import Context, Process
 from malcolm.modules.ADCore.blocks import hdf_writer_block
-from malcolm.modules.ADCore.infos import (
-    CalculatedNDAttributeDatasetInfo,
-    FilePathTranslatorInfo,
-    NDArrayDatasetInfo,
-    NDAttributeDatasetInfo,
-)
+from malcolm.modules.ADCore.infos import FilePathTranslatorInfo, NDArrayDatasetInfo
 from malcolm.modules.ADCore.parts import HDFContinuousWriterPart
 from malcolm.modules.ADCore.parts.hdfwriterpart import greater_than_zero
-from malcolm.modules.ADCore.util import AttributeDatasetType
 from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.modules.scanning.util import DatasetType
 from malcolm.testutil import ChildTestCase
-
-from .test_hdfwriterpart import expected_xml
 
 
 class TestHDFContinuousWriterPart(ChildTestCase):
@@ -47,7 +37,12 @@ class TestHDFContinuousWriterPart(ChildTestCase):
         if on_windows:
             part_info["WINPATH"] = [FilePathTranslatorInfo("Y", "/tmp", "")]
         infos = self.o.on_configure(
-            self.context, part_info, generator, fileDir, formatName, fileTemplate,
+            self.context,
+            part_info,
+            generator,
+            fileDir,
+            formatName,
+            fileTemplate,
         )
         assert len(infos) == 4
         assert infos[0].name == "xspress3.data"
