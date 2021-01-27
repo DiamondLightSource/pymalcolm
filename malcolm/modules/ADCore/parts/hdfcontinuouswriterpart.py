@@ -25,7 +25,7 @@ class HDFContinuousWriterPart(HDFWriterPart):
         fileDir: scanning.hooks.AFileDir,
         formatName: scanning.hooks.AFormatName = "det",
         fileTemplate: scanning.hooks.AFileTemplate = "%s.h5",
-    ) -> None:
+    ) -> scanning.hooks.UInfos:
         child = context.block_view(self.mri)
         # For first run then open the file
         # Disable position mode

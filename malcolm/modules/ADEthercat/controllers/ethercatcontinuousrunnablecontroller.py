@@ -42,7 +42,7 @@ class EthercatContinuousRunnableController(RunnableController):
         self.completed_steps.set_value(0)
         self.configured_steps.set_value(1)
         # No reporting of steps so set to 0
-        self.steps_per_run = 0
+        self.steps_per_run = [0]
         # Get any status from all parts
         part_info = self.run_hooks(
             ReportStatusHook(p, c) for p, c in self.part_contexts.items()
