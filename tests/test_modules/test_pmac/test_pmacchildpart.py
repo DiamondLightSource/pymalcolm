@@ -798,7 +798,7 @@ class TestPMACChildPart(ChildTestCase):
         )
 
     def test_turnaround_overshoot(self):
-        """ check for a previous bug in a sawtooth X,Y scan
+        """check for a previous bug in a sawtooth X,Y scan
         The issue was that the first point at the start of each rising edge
         overshot in Y. The parameters for each rising edge are below.
 

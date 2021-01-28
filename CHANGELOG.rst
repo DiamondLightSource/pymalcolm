@@ -3,10 +3,32 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
-Unreleased_
------------
+`4-3-1`_ - 2020-09-18
+---------------------
 
 Added:
+
+- Converted module to Python 3
+
+  - Converted type hint comments to Python 3 annotations
+  - Now use setup.cfg
+  - Converted code base style using Black
+  - Removed Python 2 compatibility methods
+- Created Pipfile for use with pipenv
+- Added mypy, Black and Flake8 checks to Travis
+- Added Gitlab CI script
+- Added check during configure for valid layout file for HDFWriterPart
+- Added KinematicsSavuPart
+- Added ADPcoWin support
+- Added ffmpeg viewer as block in ADCore
+
+Fixed:
+
+- Fix hang when calling unsubscribe in callback
+
+
+`4-2b8`_ - 2020-04-17
+---------------------
 
 - Fix for 'sharksfin issue' - start positions in trajectories were
   incorrect for high acceleration motors
@@ -19,6 +41,11 @@ Added:
   - 3 = Zero Velocity
 - Recommend V3 of the pmac Trajectory Program but allow V2 (using V2 will
   invalidate the fix above which only applies to long, sparse trajectories)
+
+`4-2b6`_ - 2020-02-10
+---------------------
+
+- Added NDArrayAddress CAPart to NDPlugin parts
 
 `4-2b5`_ - 2020-01-27
 ---------------------
@@ -33,7 +60,6 @@ Fixed:
 
 - Updated docs for training course
 - Added BeamSelectorPart for DIAD
-
 
 `4-2b4`_ - 2019-12-04
 ---------------------
@@ -539,7 +565,9 @@ Added:
 - Initial release with hello world and websocket comms
 
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/4-2b5...HEAD
+.. _4-3-1: https://github.com/dls-controls/pymalcolm/compare/4-2b8...4-3-1
+.. _4-2b8: https://github.com/dls-controls/pymalcolm/compare/4-2b6...4-2b8
+.. _4-2b6: https://github.com/dls-controls/pymalcolm/compare/4-2b5...4-2b6
 .. _4-2b5: https://github.com/dls-controls/pymalcolm/compare/4-2b4...4-2b5
 .. _4-2b4: https://github.com/dls-controls/pymalcolm/compare/4-2b3...4-2b4
 .. _4-2b3: https://github.com/dls-controls/pymalcolm/compare/4-2b2...4-2b3

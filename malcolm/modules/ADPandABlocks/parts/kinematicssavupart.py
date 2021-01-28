@@ -1,7 +1,7 @@
 import collections
 import os
 from shutil import copyfile
-from typing import Dict, List, Optional
+from typing import TYPE_CHECKING, Optional
 
 import h5py
 import numpy as np
@@ -11,7 +11,10 @@ from malcolm.core import APartName, Info, PartRegistrar
 from malcolm.modules import builtin, pandablocks, pmac, scanning
 from malcolm.modules.builtin.util import LayoutTable
 
-PartInfo = Dict[str, List[Info]]
+if TYPE_CHECKING:
+    from typing import Dict, List
+
+    PartInfo = Dict[str, List[Info]]
 
 # Pull re-used annotypes into our namespace in case we are subclassed
 APartName = APartName
@@ -296,7 +299,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
             )
 
     def create_files(self):
-        """ Create the files that will be used by Savu
+        """Create the files that will be used by Savu
         - <ID>-savu.nxs - Input data file for Savu. Links to Panda data, and
             datasets which contain the kinematics code and variables, and
             whether to use min, mean and max datasets, or just the mean.

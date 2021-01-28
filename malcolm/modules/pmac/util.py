@@ -24,7 +24,8 @@ MIN_INTERVAL = 0.002
 
 
 def cs_port_with_motors_in(
-    context: Context, layout_table: builtin.util.LayoutTable,
+    context: Context,
+    layout_table: builtin.util.LayoutTable,
 ) -> str:
     for mri in layout_table.mri:
         child = context.block_view(mri)
@@ -106,7 +107,9 @@ def cs_axis_mapping(
 
 
 def cs_axis_numbers(
-    context: Context, layout_table: builtin.util.LayoutTable, cs_port: str,
+    context: Context,
+    layout_table: builtin.util.LayoutTable,
+    cs_port: str,
 ) -> Dict[str, int]:
     """Given the layout table of a PMAC, get the axis number for each name
     in the table which is in the specified CS"""
@@ -144,7 +147,7 @@ def and_all_axes(axes: Dict[str, Array[bool]]) -> Array[bool]:
 def all_points_same_velocities(points: Points) -> Array[bool]:
     """return a numpy array of bool where each element is true
     if the corresponding element is points has the same velocity as the
-    next element (for all axes at this point) """
+    next element (for all axes at this point)"""
     results = {}
     for axis_name in points.upper.keys():
         velocities = (
@@ -159,9 +162,9 @@ def all_points_same_velocities(points: Points) -> Array[bool]:
 
 def all_points_joined(points: Points) -> Array[bool]:
     """Check for axes that need to move within the space between points
-       this check is performed on all points and returns an array of
-       bool where True implies that the point at this index is joined
-       to the point at the next index
+    this check is performed on all points and returns an array of
+    bool where True implies that the point at this index is joined
+    to the point at the next index
     """
     results = {}
     no_delay = points.delay_after[:-1] == 0
@@ -198,9 +201,12 @@ def point_velocities(
         # so vl = 2 * vlp - vp
         # where vlp = dlp / (t/2)
         velocity = 4 * d_half / point.duration - vp
-        assert abs(velocity) < motor_info.max_velocity, (
-            "Velocity %s invalid for %r with max_velocity %s"
-            % (velocity, axis_name, motor_info.max_velocity)
+        assert (
+            abs(velocity) < motor_info.max_velocity
+        ), "Velocity %s invalid for %r with max_velocity %s" % (
+            velocity,
+            axis_name,
+            motor_info.max_velocity,
         )
         velocities[axis_name] = velocity
     return velocities

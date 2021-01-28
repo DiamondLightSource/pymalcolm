@@ -154,6 +154,7 @@ class TestHDFWriterPart(ChildTestCase):
             "generator",
             "fileDir",
             "axesToMove",
+            "breakpoints",
             "formatName",
             "fileTemplate",
         ]

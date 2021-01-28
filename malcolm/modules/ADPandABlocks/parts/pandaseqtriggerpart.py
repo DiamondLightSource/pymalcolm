@@ -1,3 +1,4 @@
+from operator import itemgetter
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
@@ -49,8 +50,7 @@ def seq_row(
     live: int = 0,
     dead: int = 0,
 ) -> List:
-    """Create a 50% duty cycle pulse with phase1 having given live/dead values
-    """
+    """Create a 50% duty cycle pulse with phase1 having given live/dead values"""
     row = [
         repeats,
         trigger,
@@ -86,9 +86,11 @@ def _get_blocks(context: Context, panda_mri: str) -> List[Block]:
                 ".table"
             ), "Expected export %s to come from SEQx.table, got %s" % (export, source)
             seq_part_names[source[: -len(".table")]] = export
-    assert tuple(sorted(seq_part_names.values())) == SEQ_TABLES, (
-        "Expected exported attributes %s, got %s"
-        % (SEQ_TABLES, panda.exports.value.export)
+    assert (
+        tuple(sorted(seq_part_names.values())) == SEQ_TABLES
+    ), "Expected exported attributes %s, got %s" % (
+        SEQ_TABLES,
+        panda.exports.value.export,
     )
     # {export_name: mri}
     seq_mris = {}
@@ -128,7 +130,7 @@ def _what_moves_most(
     )
 
     # Sort on abs(diff), take the biggest
-    axis_name = sorted(diffs, key=diffs.get)[-1]
+    axis_name = max(diffs.items(), key=itemgetter(1))[0]
     compare_cts, increasing = compare_increasing[axis_name]
     return axis_name, compare_cts, increasing
 
@@ -214,9 +216,13 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
             # Something like INENC1.VAL or ZERO
             seqa_pos_inp = seqa["pos" + suff].value
             seqb_pos_inp = seqb["pos" + suff].value
-            assert seqa_pos_inp == seqb_pos_inp, (
-                "SeqA Pos%s = %s != SeqB Pos%s = %s"
-                % (suff, seqa_pos_inp, suff, seqb_pos_inp)
+            assert (
+                seqa_pos_inp == seqb_pos_inp
+            ), "SeqA Pos%s = %s != SeqB Pos%s = %s" % (
+                suff,
+                seqa_pos_inp,
+                suff,
+                seqb_pos_inp,
             )
             seq_pos[seqa_pos_inp] = "POS%s" % suff.upper()
 

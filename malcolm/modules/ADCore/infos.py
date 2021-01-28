@@ -26,9 +26,11 @@ class FilePathTranslatorInfo(Info):
             "No or multiple FilePathTranslatorPart found: must have exactly "
             "1 if any part in the AD chain is running on Windows",
         )
-        assert filepath.startswith(translator.path_prefix), (
-            "filepath %s does not start with expected prefix %s"
-            % (filepath, translator.path_prefix)
+        assert filepath.startswith(
+            translator.path_prefix
+        ), "filepath %s does not start with expected prefix %s" % (
+            filepath,
+            translator.path_prefix,
         )
         assert (
             filepath.find(":") == -1

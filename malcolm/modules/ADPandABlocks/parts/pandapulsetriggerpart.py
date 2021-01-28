@@ -135,18 +135,23 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
         for suffix in suffixes:
             if suffix != "Pulses":
                 units = pulse_block[suffix.lower() + "Units"].value
-                assert units == "s", (
-                    "Pulse block %r attribute %r needs units 's', not %r"
-                    % (panda_mri, suffix, units)
+                assert (
+                    units == "s"
+                ), "Pulse block %r attribute %r needs units 's', not %r" % (
+                    panda_mri,
+                    suffix,
+                    units,
                 )
 
     def on_post_configure(self):
         if self.frames_per_step > 0:
             # Sanity check that the detector is armed
             detector_state = self.detector.state.value
-            assert detector_state == "Armed", (
-                "Expected %s to be Armed, but it is %s"
-                % (self.detector.mri, detector_state)
+            assert (
+                detector_state == "Armed"
+            ), "Expected %s to be Armed, but it is %s" % (
+                self.detector.mri,
+                detector_state,
             )
             # We are taking part, so calculate pulse values
             step = float(self.generator_duration) / self.frames_per_step

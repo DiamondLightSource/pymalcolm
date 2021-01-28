@@ -1,3 +1,4 @@
+import inspect
 import logging
 import time
 from typing import (
@@ -16,7 +17,7 @@ from typing import (
 
 from annotypes import Anno, WithCallTypes
 
-from malcolm.compat import OrderedDict, getargspec
+from malcolm.compat import OrderedDict
 
 from .concurrency import Queue, Spawned
 from .errors import AbortedError
@@ -35,7 +36,7 @@ ArgsGen = Callable[[List[str]], List[str]]
 
 def make_args_gen(func: Callable) -> ArgsGen:
     call_types = getattr(func, "call_types", {})
-    arg_spec = getargspec(func)
+    arg_spec = inspect.getfullargspec(func)
     need_args = [k for k in arg_spec.args if k != "self"]
 
     if need_args and not call_types:
