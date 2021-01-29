@@ -11,10 +11,3 @@
 
 - ADCore.includes.adbase_parts:
     prefix: $(prefix)
-
-- ca.parts.CADoublePart:
-    name: pointsPerRow
-    description: Number of points before xspress3 will reset buffers
-    pv: $(prefix):PointsPerRow
-    rbv_suffix: _RBV
-

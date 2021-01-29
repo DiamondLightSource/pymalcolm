@@ -1,0 +1,28 @@
+- builtin.parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- builtin.parameters.string:
+    name: prefix
+    description: The root PV for the all records
+
+- builtin.defines.docstring:
+    value: |
+      Hardware block corresponding to PVs used for Xspress3DTC plugin
+
+      - xspress3DTCPlugin.template should have pv prefix $(prefix)
+
+- builtin.controllers.StatefulController:
+    mri: $(mri)
+    description: $(docstring)
+
+# This includes the input port
+- ADCore.includes.ndpluginbase_parts:
+    prefix: $(prefix)
+    mri: $(mri)
+
+- ca.parts.CABooleanPart:
+    name: squashAuxDim
+    description: Reshape dataset to 2D if no resgrades (legacy support)
+    pv: $(prefix):SquashAuxDim
+#    rbv_suffix: _RBV
