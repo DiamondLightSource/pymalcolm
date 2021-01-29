@@ -8,19 +8,27 @@ from malcolm.modules import ADCore, builtin, scanning
 with Anno("Sample frequency of ADC signal in Hz"):
     ASampleFreq = float
 
+with Anno("Is the input trigger gated?"):
+    AGatedTrigger = bool
+
 # Pull re-used annotypes into our namespace in case we are subclassed
 APartName = ADCore.parts.APartName
 AMri = ADCore.parts.AMri
 
 
 # We will set these attributes on the child block, so don't save them
-@builtin.util.no_save("postCount")
+@builtin.util.no_save("postCount", "averageSamples")
 class ReframePluginPart(ADCore.parts.DetectorDriverPart):
     def __init__(
-        self, name: APartName, mri: AMri, sample_freq: ASampleFreq = 10000.0
+        self,
+        name: APartName,
+        mri: AMri,
+        sample_freq: ASampleFreq = 10000.0,
+        gated_trigger: AGatedTrigger = False,
     ) -> None:
         super().__init__(name, mri)
         self.sample_freq = sample_freq
+        self.gated_trigger = gated_trigger
 
     def setup(self, registrar: PartRegistrar) -> None:
         super().setup(registrar)
@@ -28,15 +36,12 @@ class ReframePluginPart(ADCore.parts.DetectorDriverPart):
         registrar.hook(scanning.hooks.ValidateHook, self.on_validate)
 
     @add_call_types
-    def on_validate(
-        self, context: scanning.hooks.AContext, generator: scanning.hooks.AGenerator
-    ) -> None:
-        child = context.block_view(self.mri)
+    def on_validate(self, generator: scanning.hooks.AGenerator) -> None:
         exposure = generator.duration
         assert (
             exposure > 0
         ), f"Duration {exposure} for generator must be >0 to signify fixed exposure"
-        if child.averageSamples.value == "Yes":
+        if self.gated_trigger:
             min_exposure = 1.0 / self.sample_freq
             assert (
                 exposure >= min_exposure
@@ -46,8 +51,8 @@ class ReframePluginPart(ADCore.parts.DetectorDriverPart):
                 self._number_of_adc_samples(exposure) > 0
             ), f"Duration {exposure} for generator gives < 1 ADC sample"
 
-    def _number_of_adc_samples(self, exposure: float):
-        return int(exposure * self.sample_freq) - 1
+    def _number_of_adc_samples(self, generator_duration: float):
+        return int(generator_duration * self.sample_freq) - 1
 
     def setup_detector(
         self,
@@ -85,10 +90,10 @@ class ReframePluginPart(ADCore.parts.DetectorDriverPart):
 
         child.put_attribute_values(kwargs)
 
-        # Check if samples will be averaged to a single point per channel
-        if child.averageSamples.value == "Yes":
-            child.postCount.put_value(0)
-        else:
-            # Set number of post-trigger samples
-            post_trigger_samples = int(duration * self.sample_freq) - 1
-            child.postCount.put_value(post_trigger_samples)
+        # Number of post trigger samples depend on if we are gated
+        post_trigger_samples = self._number_of_adc_samples(duration)
+        if self.gated_trigger:
+            post_trigger_samples = 0
+            # We also need averaging to ensure we get consistent frame dimensions
+            child.averageSamples.put_value("Yes")
+        child.postCount.put_value(post_trigger_samples)

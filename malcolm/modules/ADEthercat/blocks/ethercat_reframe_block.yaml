@@ -20,6 +20,11 @@
     description: PV suffix for reframe plugin
     default: REFR
 
+- builtin.parameters.string:
+    name: gated_trigger
+    description: Whether we send a gated signal to the reframe plugin
+    default: False
+
 - builtin.defines.docstring:
     value: |
       Device block corresponding to ADEthercat + reframe + pos + hdf writer.
@@ -59,6 +64,7 @@
     name: REFRAME
     mri: $(mri_prefix):REFRAME
     sample_freq: 1000.0
+    gated_trigger: $(gated_trigger)
 
 - scanning.parts.ExposureDeadtimePart:
     name: DEADTIME
