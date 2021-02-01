@@ -55,23 +55,10 @@ jobs:
     - name: Set EPICS Base path
       run: echo "EPICS_BASE=`pwd`/${EPICS_BASE_DIR}" >> $GITHUB_ENV
 
-    - name: Environment information
-      run: |
-        pwd
-        ls -l ${EPICS_BASE_DIR}
-        env
-        ifconfig
-        IP=$(ip addr show docker0 | grep -Po 'inet \K[\d.]+')
-        echo $IP
-        # Fix docker0 broadcast address so p4p will work
-        sudo ip addr del $IP/16 dev docker0
-        sudo ip addr add $IP/16 broadcast + dev docker0
-        ifconfig
-
-    - name: Install Packages
+    - name: Install packages
       run: sudo apt-get install graphviz
 
-    - name: Install Python Dependencies
+    - name: Install Python dependencies
       run: |
         env
         pip install pipenv
