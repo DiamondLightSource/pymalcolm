@@ -151,9 +151,8 @@ class DetectorDriverPart(builtin.parts.ChildPart):
             self.update_completed_steps, registrar
         )
 
-        # Now wait to make sure any update_completed_steps come in. Give
-        # it 5 seconds to timeout just in case there are any stray frames that
-        # haven't made it through yet
+        # Wait for the array counter to reach the desired value. If any one frame takes
+        # more than event_timeout to appear, consider scan dead
         child.when_value_matches(
             "arrayCounterReadback",
             self.done_when_reaches,
