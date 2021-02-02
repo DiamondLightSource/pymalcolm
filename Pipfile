@@ -27,7 +27,6 @@ mypy = "*"
 atomicwrites = "*"
 
 [packages]
-enum34 = "*"
 tornado = "*"
 numpy = "*"
 ruamel-yaml = "*"
