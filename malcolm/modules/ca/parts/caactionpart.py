@@ -23,8 +23,7 @@ with Anno("How long to wait for status_pv == good_status before returning"):
 
 
 class CAActionPart(Part):
-    """Group a number of PVs together that represent a method like acquire()
-    """
+    """Group a number of PVs together that represent a method like acquire()"""
 
     def __init__(
         self,
@@ -115,7 +114,11 @@ class CAActionPart(Part):
                 )
             else:
                 message = ""
-            assert status == self.good_status, (
-                "Status %s:%s while performing 'caput %s %s'"
-                % (status, message, self.pv, self.value)
+            assert (
+                status == self.good_status
+            ), "Status %s:%s while performing 'caput %s %s'" % (
+                status,
+                message,
+                self.pv,
+                self.value,
             )

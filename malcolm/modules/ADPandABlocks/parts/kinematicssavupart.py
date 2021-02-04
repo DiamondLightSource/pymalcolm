@@ -299,7 +299,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
             )
 
     def create_files(self):
-        """ Create the files that will be used by Savu
+        """Create the files that will be used by Savu
         - <ID>-savu.nxs - Input data file for Savu. Links to Panda data, and
             datasets which contain the kinematics code and variables, and
             whether to use min, mean and max datasets, or just the mean.

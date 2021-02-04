@@ -2,9 +2,11 @@ import os
 import shutil
 import tempfile
 import unittest
+from typing import List, Union
+from unittest.mock import Mock, patch
 
 from annotypes import Anno, add_call_types
-from scanpointgenerator import CompoundGenerator, LineGenerator
+from scanpointgenerator import CompoundGenerator, ConcatGenerator, LineGenerator
 
 from malcolm.core import (
     AMri,
@@ -33,10 +35,29 @@ from malcolm.modules.scanning.parts import (
     DetectorChildPart,
     ExposureDeadtimePart,
 )
-from malcolm.modules.scanning.util import DetectorTable
+from malcolm.modules.scanning.util import DetectorTable, RunnableStates
 
 with Anno("How long to wait"):
     AWait = float
+
+
+class MockChildState:
+    """Mock child state by iterating through a list of values"""
+
+    def __init__(self, values: Union[RunnableStates, List[RunnableStates]]):
+        self.values = values
+        self.index = 0
+
+    def __getattr__(self, attr):
+        if attr == "value":
+            if isinstance(self.values, List):
+                self.index += 1
+                return self.values[self.index - 1]
+            else:
+                return self.values
+        raise AttributeError(
+            f"{self.__class__.__name__} object has no attribute {attr}"
+        )
 
 
 class WaitingPart(Part):
@@ -96,6 +117,86 @@ class FaultyPart(Part):
         raise ValueError("I'm bad")
 
 
+class TestDetectorChildPartMethods(unittest.TestCase):
+    def setUp(self):
+        self.detector_part = DetectorChildPart(
+            name="CHILDPART", mri="child", initial_visibility=True
+        )
+
+    @patch("malcolm.modules.builtin.parts.ChildPart.on_init")
+    def test_part_does_not_become_faulty_with_value_on_init(self, mock_on_init):
+        mock_context = Mock(name="context_mock")
+
+        self.detector_part.on_init(mock_context)
+
+        mock_on_init.assert_called_once_with(mock_context)
+        self.assertEqual(False, self.detector_part.faulty)
+
+    @patch("malcolm.modules.builtin.parts.ChildPart.on_init")
+    def test_part_becomes_faulty_with_BadValueError_on_init(self, mock_on_init):
+        mock_context = Mock(name="context_mock")
+        mock_on_init.side_effect = BadValueError()
+
+        self.detector_part.on_init(mock_context)
+
+        mock_on_init.assert_called_once_with(mock_context)
+        self.assertEqual(True, self.detector_part.faulty)
+
+    def test_on_run_has_future_when_child_is_armed(self):
+        mock_context = Mock(name="context_mock")
+        mock_child = Mock(name="child_mock")
+        mock_child.state.value = RunnableStates.ARMED
+        mock_child.run_async.return_value = "run_async_return_value"
+        mock_child.when_value_matches_async.return_value = (
+            "when_value_matches_return_value"
+        )
+        mock_context.block_view.return_value = mock_child
+
+        self.detector_part.on_run(mock_context)
+
+        assert self.detector_part.run_future == "run_async_return_value"
+        mock_context.wait_all_futures.assert_called_once_with(
+            "when_value_matches_return_value"
+        )
+
+    def test_on_run_resumes_when_child_is_not_armed(self):
+        mock_context = Mock(name="context_mock")
+        mock_child = Mock(name="child_mock")
+        mock_child.state.value = RunnableStates.PAUSED
+        mock_child.when_value_matches_async.return_value = (
+            "when_value_matches_return_value"
+        )
+        mock_context.block_view.return_value = mock_child
+
+        self.detector_part.on_run(mock_context)
+
+        mock_child.resume.assert_called_once()
+        mock_context.wait_all_futures.assert_called_once_with(
+            "when_value_matches_return_value"
+        )
+
+    def test_on_run_raises_run_future_exception_when_child_is_in_fault(self):
+        mock_context = Mock(name="context_mock")
+        mock_child = Mock(name="child_mock")
+        mock_run_future = Mock(name="run_future_mock")
+        mock_run_future.exception.return_value = TimeoutError()
+        mock_child.state = MockChildState([RunnableStates.ARMED, RunnableStates.FAULT])
+        mock_child.run_async.return_value = mock_run_future
+        mock_context.block_view.return_value = mock_child
+        mock_context.wait_all_futures.side_effect = BadValueError()
+
+        self.assertRaises(TimeoutError, self.detector_part.on_run, mock_context)
+
+    def test_on_run_re_raises_BadValueError_when_child_is_not_in_fault(self):
+        mock_context = Mock(name="context_mock")
+        mock_child = Mock(name="child_mock")
+        mock_child.state = MockChildState(RunnableStates.ARMED)
+        mock_context.block_view.return_value = mock_child
+        mock_context.wait_all_futures.side_effect = BadValueError
+
+        self.assertRaises(BadValueError, self.detector_part.on_run, mock_context)
+
+
 class TestDetectorChildPart(unittest.TestCase):
     def setUp(self):
         self.p = Process("process1")
@@ -125,15 +226,19 @@ class TestDetectorChildPart(unittest.TestCase):
 
         # And a top level one, this loads slow and fast designs for the
         # children on every configure (or load), but not at init
-        ct = RunnableController(
+        self.ct = RunnableController(
             mri="top", config_dir=DESIGN_PATH, use_git=False, initial_design="default"
         )
-        ct.add_part(DetectorChildPart(name="FAST", mri="fast", initial_visibility=True))
-        ct.add_part(DetectorChildPart(name="SLOW", mri="slow", initial_visibility=True))
-        ct.add_part(
+        self.ct.add_part(
+            DetectorChildPart(name="FAST", mri="fast", initial_visibility=True)
+        )
+        self.ct.add_part(
+            DetectorChildPart(name="SLOW", mri="slow", initial_visibility=True)
+        )
+        self.ct.add_part(
             DetectorChildPart(name="BAD", mri="faulty", initial_visibility=False)
         )
-        ct.add_part(
+        self.ct.add_part(
             DetectorChildPart(
                 name="BAD2",
                 mri="faulty",
@@ -143,9 +248,9 @@ class TestDetectorChildPart(unittest.TestCase):
         )
         self.fast_multi = MaybeMultiPart("fast")
         self.slow_multi = MaybeMultiPart("slow")
-        ct.add_part(self.fast_multi)
-        ct.add_part(self.slow_multi)
-        self.p.add_controller(ct)
+        self.ct.add_part(self.fast_multi)
+        self.ct.add_part(self.slow_multi)
+        self.p.add_controller(self.ct)
 
         # Some blocks to interface to them
         self.b = self.context.block_view("top")
@@ -399,3 +504,124 @@ class TestDetectorChildPart(unittest.TestCase):
         assert self.bf.design.value == "fast"
         assert self.b.design.value == "default"
         assert self.b.modified.value is False
+
+    def make_generator_breakpoints(self):
+        line1 = LineGenerator("x", "mm", -10, -10, 5)
+        line2 = LineGenerator("x", "mm", 0, 180, 10)
+        line3 = LineGenerator("x", "mm", 190, 190, 2)
+        duration = 0.01
+        concat = ConcatGenerator([line1, line2, line3])
+
+        return CompoundGenerator([concat], [], [], duration)
+
+    def checkSteps(self, block, configured, completed, total):
+        assert block.configuredSteps.value == configured
+        assert block.completedSteps.value == completed
+        assert block.totalSteps.value == total
+
+    def checkState(self, block, state):
+        assert block.state.value == state
+
+    def test_breakpoints_tomo(self):
+        breakpoints = [2, 3, 10, 2]
+        # Configure RunnableController(mri='top')
+        self.b.configure(
+            generator=self.make_generator_breakpoints(),
+            fileDir=self.tmpdir,
+            detectors=DetectorTable.from_rows(
+                [[False, "SLOW", "slow", 0.0, 1], [True, "FAST", "fast", 0.0, 1]]
+            ),
+            axesToMove=["x"],
+            breakpoints=breakpoints,
+        )
+
+        assert self.ct.configure_params.generator.size == 17
+        self.checkSteps(self.b, 2, 0, 17)
+        self.checkSteps(self.bf, 2, 0, 17)
+        assert self.b.state.value == "Armed"
+        assert self.bs.state.value == "Ready"
+        assert self.bf.state.value == "Armed"
+
+        self.b.run()
+        self.checkSteps(self.b, 5, 2, 17)
+        self.checkSteps(self.bf, 5, 2, 17)
+        assert self.b.state.value == "Armed"
+        assert self.bs.state.value == "Ready"
+        assert self.bf.state.value == "Armed"
+
+        self.b.run()
+        self.checkSteps(self.b, 15, 5, 17)
+        assert self.b.state.value == "Armed"
+        assert self.bs.state.value == "Ready"
+        assert self.bf.state.value == "Armed"
+
+        self.b.run()
+        self.checkSteps(self.b, 17, 15, 17)
+        assert self.b.state.value == "Armed"
+        assert self.bs.state.value == "Ready"
+        assert self.bf.state.value == "Armed"
+
+        self.b.run()
+        self.checkSteps(self.b, 17, 17, 17)
+        self.checkSteps(self.bf, 17, 17, 17)
+        assert self.b.state.value == "Finished"
+        assert self.bs.state.value == "Ready"
+        assert self.bf.state.value == "Finished"
+
+    def test_breakpoints_with_pause(self):
+        breakpoints = [2, 3, 10, 2]
+        self.b.configure(
+            generator=self.make_generator_breakpoints(),
+            fileDir=self.tmpdir,
+            detectors=DetectorTable.from_rows(
+                [[False, "SLOW", "slow", 0.0, 1], [True, "FAST", "fast", 0.0, 1]]
+            ),
+            axesToMove=["x"],
+            breakpoints=breakpoints,
+        )
+
+        assert self.ct.configure_params.generator.size == 17
+
+        self.checkSteps(self.b, 2, 0, 17)
+        self.checkSteps(self.bf, 2, 0, 17)
+        self.checkState(self.b, RunnableStates.ARMED)
+
+        self.b.run()
+        self.checkSteps(self.b, 5, 2, 17)
+        self.checkSteps(self.bf, 5, 2, 17)
+        self.checkState(self.b, RunnableStates.ARMED)
+
+        # rewind
+        self.b.pause(lastGoodStep=1)
+        self.checkSteps(self.b, 2, 1, 17)
+        self.checkSteps(self.bf, 2, 1, 17)
+        self.checkState(self.b, RunnableStates.ARMED)
+        self.b.run()
+        self.checkSteps(self.b, 5, 2, 17)
+        self.checkSteps(self.bf, 5, 2, 17)
+        self.checkState(self.b, RunnableStates.ARMED)
+
+        self.b.run()
+        self.checkSteps(self.b, 15, 5, 17)
+        self.checkSteps(self.bf, 15, 5, 17)
+        self.checkState(self.b, RunnableStates.ARMED)
+
+        self.b.run()
+        self.checkSteps(self.b, 17, 15, 17)
+        self.checkSteps(self.bf, 17, 15, 17)
+        self.checkState(self.b, RunnableStates.ARMED)
+
+        # rewind
+        self.b.pause(lastGoodStep=11)
+        self.checkSteps(self.b, 15, 11, 17)
+        self.checkSteps(self.bf, 15, 11, 17)
+        self.checkState(self.b, RunnableStates.ARMED)
+        self.b.run()
+        self.checkSteps(self.b, 17, 15, 17)
+        self.checkSteps(self.bf, 17, 15, 17)
+        self.checkState(self.b, RunnableStates.ARMED)
+
+        self.b.run()
+        self.checkSteps(self.b, 17, 17, 17)
+        self.checkSteps(self.bf, 17, 17, 17)
+        self.checkState(self.b, RunnableStates.FINISHED)

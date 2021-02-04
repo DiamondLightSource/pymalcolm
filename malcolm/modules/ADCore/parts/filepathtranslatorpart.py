@@ -29,13 +29,16 @@ class FilepathTranslatorPart(Part):
     ) -> None:
         super().__init__(name)
         self.windows_drive_letter = StringMeta(
-            drive_letter_desc, tags=[Widget.TEXTINPUT.tag(), config_tag()],
+            drive_letter_desc,
+            tags=[Widget.TEXTINPUT.tag(), config_tag()],
         ).create_attribute_model(initial_windows_drive_letter)
         self.path_prefix = StringMeta(
-            path_prefix_desc, tags=[Widget.TEXTINPUT.tag(), config_tag()],
+            path_prefix_desc,
+            tags=[Widget.TEXTINPUT.tag(), config_tag()],
         ).create_attribute_model(initial_path_prefix)
         self.network_prefix = StringMeta(
-            network_prefix_desc, tags=[Widget.TEXTINPUT.tag(), config_tag()],
+            network_prefix_desc,
+            tags=[Widget.TEXTINPUT.tag(), config_tag()],
         ).create_attribute_model(initial_network_prefix)
 
     def setup(self, registrar: PartRegistrar) -> None:

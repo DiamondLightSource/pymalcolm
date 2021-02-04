@@ -56,10 +56,12 @@ class TestSystemDetectorPVA(unittest.TestCase):
         block = self.process2.block_view("TESTDET")
         self.check_blocks_equal()
         generator = self.make_generator()
+        an_empty_list = pytest.approx([])  # see comment in test_configure()
         validated = dict(
             generator=generator.to_dict(),
             fileDir=self.tmpdir,
             axesToMove=["y", "x"],
+            breakpoints=an_empty_list,
             fileTemplate="%s.h5",
             formatName="det",
             exposure=0.0489975,
@@ -70,6 +72,7 @@ class TestSystemDetectorPVA(unittest.TestCase):
             generator=generator.to_dict(),
             fileDir=self.tmpdir,
             axesToMove=[],
+            breakpoints=an_empty_list,
             fileTemplate="",
             formatName="",
             exposure=0,
@@ -81,6 +84,7 @@ class TestSystemDetectorPVA(unittest.TestCase):
             "generator",
             "fileDir",
             "axesToMove",
+            "breakpoints",
             "exposure",
             "formatName",
             "fileTemplate",
@@ -94,16 +98,21 @@ class TestSystemDetectorPVA(unittest.TestCase):
         block = self.process2.block_view("TESTDET")
         self.check_blocks_equal()
         generator = self.make_generator()
+        # an_empty_list = np.ndarray(shape=(0,), dtype=np.int64)
+        # for some reason, the above is not equating to array([]) in Py3
+        an_empty_list = pytest.approx([])
         validated = dict(
             generator=generator.to_dict(),
             fileDir=self.tmpdir,
             axesToMove=["x", "y"],
             fileTemplate="%s.h5",
+            breakpoints=an_empty_list,
             formatName="det",
             exposure=0.0489975,
         )
         params = block.configure(generator, self.tmpdir, axesToMove=["x", "y"])
-        assert params == validated
+
+        assert validated == params
         # TODO: ordering is not maintained in PVA, so may need to wait before
         #       get
         # block._context.sleep(0.1)
@@ -111,6 +120,7 @@ class TestSystemDetectorPVA(unittest.TestCase):
         assert block.configure.took.value == dict(
             generator=generator.to_dict(),
             axesToMove=["x", "y"],
+            breakpoints=an_empty_list,
             exposure=0.0,
             fileDir=self.tmpdir,
             fileTemplate="",
@@ -122,6 +132,7 @@ class TestSystemDetectorPVA(unittest.TestCase):
             "generator",
             "fileDir",
             "axesToMove",
+            "breakpoints",
             "exposure",
             "formatName",
             "fileTemplate",

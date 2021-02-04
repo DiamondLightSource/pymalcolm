@@ -22,7 +22,7 @@ from malcolm.core import (
 )
 from malcolm.modules import builtin
 
-from .hooks import AAxesToMove, AGenerator, UAxesToMove
+from .hooks import AAxesToMove, ABreakpoints, AGenerator, UAxesToMove
 from .infos import DatasetType
 
 
@@ -40,7 +40,11 @@ class ConfigureParams(Serializable):
     # This will be serialized, so maintain camelCase for axesToMove
     # noinspection PyPep8Naming
     def __init__(
-        self, generator: AGenerator, axesToMove: UAxesToMove = None, **kwargs: Any
+        self,
+        generator: AGenerator,
+        axesToMove: UAxesToMove = None,
+        breakpoints: ABreakpoints = None,
+        **kwargs: Any
     ) -> None:
         if kwargs:
             # Got some additional args to report
@@ -54,6 +58,10 @@ class ConfigureParams(Serializable):
         if axesToMove is None:
             axesToMove = generator.axes
         self.axesToMove = AAxesToMove(axesToMove)
+
+        if breakpoints is None:
+            breakpoints = []
+        self.breakpoints = ABreakpoints(breakpoints)
 
 
 @Serializable.register_subclass("malcolm:core/PointGeneratorMeta:1.0")

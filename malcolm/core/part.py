@@ -114,9 +114,12 @@ class FieldRegistry:
         )
         for o, fields in self.fields.items():
             existing = [x for x in fields if x[0] == name]
-            assert not existing, (
-                "Field %r published by %s would overwrite one made by %s"
-                % (name, owner, o)
+            assert (
+                not existing
+            ), "Field %r published by %s would overwrite one made by %s" % (
+                name,
+                owner,
+                o,
             )
         part_fields = self.fields.setdefault(owner, [])
         part_fields.append((name, model, cast(Callable, writeable_func), needs_context))
