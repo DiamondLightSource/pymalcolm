@@ -271,8 +271,10 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         if self.required_version is not None:
             required_version = Version(self.required_version)
             running_version = Version(child.driverVersion.value)
-            if required_version.major != running_version.major\
-               or running_version.minor < required_version.minor:
+            if (
+                required_version.major != running_version.major
+                or running_version.minor < required_version.minor
+            ):
                 raise (
                     IncompatibleError(
                         "Detector driver v{} detected. "
