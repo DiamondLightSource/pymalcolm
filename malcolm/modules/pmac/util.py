@@ -3,8 +3,7 @@ from typing import Dict, List, Set
 
 import numpy as np
 from annotypes import Array, Sequence
-from scanpointgenerator import CompoundGenerator, Point, StaticPointGenerator
-from scanpointgenerator.core.point import Points
+from scanpointgenerator import CompoundGenerator, Point, Points, StaticPointGenerator
 
 from malcolm.core import Context
 from malcolm.modules import builtin, scanning
