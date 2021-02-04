@@ -3,6 +3,7 @@ from typing import Any, List, Optional, Sequence, Union
 from xml.etree import cElementTree as ET
 
 from annotypes import Anno, Array, add_call_types
+from packaging.version import Version
 
 from malcolm.compat import et_to_string
 from malcolm.core import (
@@ -11,6 +12,7 @@ from malcolm.core import (
     BadValueError,
     Context,
     Future,
+    IncompatibleError,
     Info,
     PartRegistrar,
     TableMeta,
@@ -29,6 +31,8 @@ from ..util import (
     make_xml_filename,
 )
 
+with Anno("Minimum required version for compatibility"):
+    AVersionRequirement = str
 with Anno("Is main detector dataset useful to publish in DatasetTable?"):
     AMainDatasetUseful = bool
 with Anno("List of trigger modes that do not use hardware triggers"):
@@ -56,8 +60,10 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         soft_trigger_modes: USoftTriggerModes = None,
         main_dataset_useful: AMainDatasetUseful = True,
         runs_on_windows: APartRunsOnWindows = False,
+        required_version: AVersionRequirement = None,
     ) -> None:
         super().__init__(name, mri)
+        self.required_version = required_version
         self.soft_trigger_modes = soft_trigger_modes
         self.is_hardware_triggered = True
         self.main_dataset_useful = main_dataset_useful
@@ -261,6 +267,21 @@ class DetectorDriverPart(builtin.parts.ChildPart):
             need_keys.append("exposure")
         return need_keys
 
+    def check_driver_version(self, child):
+        if self.required_version is not None:
+            required_version = Version(self.required_version)
+            running_version = Version(child.driverVersion.value)
+            if required_version.major != running_version.major\
+               or running_version.minor < required_version.minor:
+                raise (
+                    IncompatibleError(
+                        "Detector driver v{} detected. "
+                        "Malcolm requires v{}".format(
+                            child.driverVersion.value, self.required_version
+                        )
+                    )
+                )
+
     # Allow CamelCase as fileDir parameter will be serialized
     # noinspection PyPep8Naming
     @add_call_types
@@ -276,6 +297,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
     ) -> None:
         context.unsubscribe_all()
         child = context.block_view(self.mri)
+        self.check_driver_version(child)
         # If detector can be soft triggered, then we might need to defer
         # starting it until run. Check triggerMode to find out
         if self.soft_trigger_modes:
