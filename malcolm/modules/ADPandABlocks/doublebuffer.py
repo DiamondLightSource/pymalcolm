@@ -1,44 +1,45 @@
-# Treat all division as float division even in python2
-from __future__ import division
+from __future__ import annotations
 
-from typing import Tuple
+from typing import Any, Dict, Iterator, List, Optional, Tuple
+
+from malcolm.core import Block, Context, Future
 
 from .util import SequencerTable, Trigger
 
 #: The number of sequencer table rows
-SEQ_TABLE_ROWS = 4096
+SEQ_TABLE_ROWS: int = 4096
 
 # How long is a single tick if prescaler is 0
-TICK = 8e-9
+TICK: float = 8e-9
 
 # How long is the smallest pulse that will travel across TTL
-MIN_PULSE = 1250  # ticks = 10us
+MIN_PULSE: int = 1250  # ticks = 10us
 
 # Maximum repeats of a single row
-MAX_REPEATS = 4096
+MAX_REPEATS: int = 4096
 
 # How long the last pulse should be (50% duty cycle) to make sure we don't flip
 # to an unfilled sequencer and produce a false pulse. This should be at least
 # as long as it takes the PandA EPICS driver to see that we got the last frame
 # and disarm PCAP
-LAST_PULSE = 125000000  # ticks = 1s
+LAST_PULSE: int = 125000000  # ticks = 1s
 
 # The number of clock ticks required to switch between the two sequencers
-SEQ_TABLE_SWITCH_DELAY = 6
+SEQ_TABLE_SWITCH_DELAY: int = 6
 
 # Default minimum table duration. This is the minimum time (in seconds) for a
 # table used by the double-buffering system.
-MIN_TABLE_DURATION = 15.0
+MIN_TABLE_DURATION: float = 15.0
 
 
 class SequencerRows:
-    def __init__(self, rows=None):
+    def __init__(self, rows: List[Tuple] = None) -> None:
+        self._rows: List[Tuple] = []
+        self._duration: float = 0
+
         if rows:
             self._rows = rows
             self._duration = self._calculate_duration(self._rows)
-        else:
-            self._rows = []
-            self._duration = 0
 
     def add_seq_entry(
         self,
@@ -49,7 +50,7 @@ class SequencerRows:
         live=0,
         dead=0,
         trim=0,
-    ):
+    ) -> None:
         complete_rows = count // MAX_REPEATS
         remaining = count % MAX_REPEATS
 
@@ -62,7 +63,7 @@ class SequencerRows:
         )
         self._duration += count * (2 * half_duration - trim)
 
-    def split(self, count):
+    def split(self, count: int) -> SequencerRows:
         """Separate this object into two SequencerRows objects, deducting the
         time delay required to switch between sequencers from the end of the
         current object, and returning the remainder."""
@@ -70,8 +71,8 @@ class SequencerRows:
         assert len(self._rows) > 0, "Zero length seq rows should never be split"
 
         if len(self._rows) >= count:
-            final_row = self._rows[count - 1]
-            if final_row[0] == 0:  # Row in continuous loop
+            final_row = list(self._rows[count - 1])
+            if final_row[0] == 0:  # Final row in continuous loop
                 assert len(self._rows) == count  # Continuous loop always at end
                 return SequencerRows()
 
@@ -98,7 +99,7 @@ class SequencerRows:
                 final_row[0] -= 1
                 self._rows[-1] = tuple(final_row)
                 final_row[0] = 1
-                self._rows += [final_row]
+                self._rows += [tuple(final_row)]
 
         final_self_row = list(self._rows[-1])
         final_self_row[10] -= SEQ_TABLE_SWITCH_DELAY
@@ -107,22 +108,22 @@ class SequencerRows:
         self._duration -= remainder.duration
         return remainder
 
-    def extend(self, other):
+    def extend(self, other: SequencerRows) -> None:
         self._rows += other._rows
         self._duration += other._duration
 
-    def get_table(self):
+    def get_table(self) -> SequencerTable:
         return SequencerTable.from_rows(self._rows)
 
-    def as_tuple(self):
+    def as_tuple(self) -> Tuple[Tuple, ...]:
         """Used for comparisons during testing."""
         return tuple(self._rows)
 
     @property
-    def duration(self):
+    def duration(self) -> float:
         return self._duration * TICK
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._rows)
 
     @staticmethod
@@ -162,7 +163,7 @@ class SequencerRows:
         )
 
     @staticmethod
-    def _calculate_duration(rows):
+    def _calculate_duration(rows: List[Tuple]) -> float:
         duration = 0.0
         for row in rows:
             duration += row[0] * (row[3] + row[10])
@@ -171,20 +172,21 @@ class SequencerRows:
 
 
 class DoubleBuffer:
-    def __init__(self, context, seq_a, seq_b):
-        self._context = context
-        self._table_map = {"seqA": seq_a, "seqB": seq_b}
-        self._seq_status = None
-        self._futures = []
-        self._finished = True
-        self._table_gen = None
+    def __init__(self, context: Context, seq_a: Block, seq_b: Block) -> None:
+        self._context: Context = context
+        # Need to replace Block with Any due to limitations of typing in malcolm core
+        self._table_map: Dict[str, Any] = {"seqA": seq_a, "seqB": seq_b}
+        self._seq_status: Dict[str, Optional[bool]] = {"seqA": None, "seqB": None}
+        self._futures: List[Future] = []
+        self._finished: bool = True
+        self._table_gen: Iterator[SequencerTable] = iter(())
 
-    def _fill_table(self, table, gen):
+    def _fill_table(self, table, gen) -> None:
         seq_table = self._table_map[table]
         seq_table.table.put_value(next(gen))
 
     @staticmethod
-    def _get_tables(rows_gen):
+    def _get_tables(rows_gen) -> Iterator[SequencerTable]:
         rows = SequencerRows()
         for rs in rows_gen:
             rows.extend(rs)
@@ -200,7 +202,7 @@ class DoubleBuffer:
         if len(rows):
             yield rows.get_table()
 
-    def configure(self, rows_generator):
+    def configure(self, rows_generator: Iterator[SequencerRows]) -> None:
         self._clean_up()
         self._table_gen = self._get_tables(rows_generator)
 
@@ -212,7 +214,7 @@ class DoubleBuffer:
         else:
             self._finished = False
 
-    def _seq_active_handler(self, value, table="seqA"):
+    def _seq_active_handler(self, value: bool, table: str = "seqA") -> None:
         prev = self._seq_status[table]
         if prev is not None and prev and not value:
             # We only care when the seq is deactivated
@@ -224,7 +226,7 @@ class DoubleBuffer:
 
         self._seq_status[table] = value
 
-    def _setup_subscriptions(self):
+    def _setup_subscriptions(self) -> None:
         for table in self._table_map:
             self._futures += [
                 self._table_map[table].active.subscribe_value(
@@ -232,22 +234,22 @@ class DoubleBuffer:
                 )
             ]
 
-    def run(self):
+    def run(self) -> List[Future]:
         if not self._finished:
             self._setup_subscriptions()
 
         return self._futures
 
-    def _remove_subscriptions(self):
+    def _remove_subscriptions(self) -> None:
         for future in self._futures:
             self._context.unsubscribe(future)
 
         self._futures = []
 
-    def _clean_up(self):
+    def _clean_up(self) -> None:
         self._remove_subscriptions()
         self._seq_status = {"seqA": None, "seqB": None}
         self._finished = True
 
-    def abort(self):
+    def abort(self) -> None:
         self._clean_up()

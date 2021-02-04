@@ -1,21 +1,15 @@
 from operator import itemgetter
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple
 
 import numpy as np
 from annotypes import Anno, add_call_types
-from scanpointgenerator import Point
+from scanpointgenerator import CompoundGenerator, Point, Points
 
 from malcolm.core import APartName, Block, Context, PartRegistrar
 from malcolm.modules import builtin, pmac, scanning
-from malcolm.modules.ADPandABlocks.doublebuffer import (
-    LAST_PULSE,
-    MIN_PULSE,
-    TICK,
-    DoubleBuffer,
-    SequencerRows,
-)
 from malcolm.modules.scanning.infos import MinTurnaroundInfo
 
+from ..doublebuffer import LAST_PULSE, MIN_PULSE, TICK, DoubleBuffer, SequencerRows
 from ..util import Trigger
 
 #: The SEQ.table attributes that should be present in PANDA.exports
@@ -30,21 +24,26 @@ AMri = builtin.parts.AMri
 AInitialVisibility = builtin.parts.AInitialVisibility
 
 # SeqTriggers processing batch size
-BATCH_SIZE = 5000
+BATCH_SIZE: int = 5000
 
 
 class SeqTriggers(object):
     """Class that provides Sequencer triggers for input Points generator"""
 
     def __init__(
-        self, generator, axis_mapping, trigger_enums, min_turnaround, min_interval
-    ):
-        self.generator = generator
-        self.axis_mapping = axis_mapping
-        self.trigger_enums = trigger_enums
-        self.min_turnaround = min_turnaround
-        self.min_interval = min_interval
-        self.last_point = None
+        self,
+        generator: CompoundGenerator,
+        axis_mapping: Dict[str, pmac.infos.MotorInfo],
+        trigger_enums: Dict[Tuple[str, bool], str],
+        min_turnaround: float,
+        min_interval: float,
+    ) -> None:
+        self.generator: CompoundGenerator = generator
+        self.axis_mapping: Dict[str, pmac.infos.MotorInfo] = axis_mapping
+        self.trigger_enums: Dict[Tuple[str, bool], str] = trigger_enums
+        self.min_turnaround: float = min_turnaround
+        self.min_interval: float = min_interval
+        self.last_point: Point = None
 
     @staticmethod
     def _what_moves_most(
@@ -106,7 +105,7 @@ class SeqTriggers(object):
         return blind
 
     @staticmethod
-    def _get_row_indices(points):
+    def _get_row_indices(points: Points) -> Tuple[np.ndarray, np.ndarray]:
         """Generate list of start and end indices for separate rows
 
         The first point (index 0) is not registered as a separate row. This is
@@ -131,7 +130,7 @@ class SeqTriggers(object):
         return start_indices, end_indices
 
     @staticmethod
-    def _create_immediate_rows(durations):
+    def _create_immediate_rows(durations: Sequence[float]) -> SequencerRows:
         """Create a series of immediate rows from `durations`"""
         if len(durations) == 0:
             return SequencerRows()
@@ -151,11 +150,12 @@ class SeqTriggers(object):
 
         return rows
 
-    def _create_triggered_rows(self, points, start_index, end_index, add_blind):
+    def _create_triggered_rows(
+        self, points: Points, start_index: int, end_index: int, add_blind: bool
+    ) -> SequencerRows:
         """Generate sequencer rows corresponding to a triggered points row"""
-        rows = []
-        initial_point = points[start_index]
-        half_frame = int(round(initial_point.duration / TICK / 2))
+        initial_point: Point = points[start_index]
+        half_frame: int = int(round(initial_point.duration / TICK / 2))
 
         rows = SequencerRows()
         if self.trigger_enums:
@@ -199,7 +199,7 @@ class SeqTriggers(object):
         return rows
 
     @staticmethod
-    def _overlapping_points_range(generator, start, end):
+    def _overlapping_points_range(generator, start: int, end: int) -> Iterator[Points]:
         """Create a series of points objects that cover the entire range.
 
         Yielded points overlap by one point to identify whether the start of a
@@ -219,7 +219,7 @@ class SeqTriggers(object):
             low_index = high_index - 1  # Include final point from previous range
             high_index = min(low_index + BATCH_SIZE + 1, end)
 
-    def get_rows(self, loaded_up_to, scan_up_to):
+    def get_rows(self, loaded_up_to: int, scan_up_to: int) -> Iterator[SequencerRows]:
         for points in self._overlapping_points_range(
             self.generator, loaded_up_to, scan_up_to
         ):
@@ -278,9 +278,11 @@ def _get_blocks(context: Context, panda_mri: str) -> List[Block]:
                 ".table"
             ), "Expected export %s to come from SEQx.table, got %s" % (export, source)
             seq_part_names[source[: -len(".table")]] = export
-    assert tuple(sorted(seq_part_names.values())) == SEQ_TABLES, (
-        "Expected exported attributes %s, got %s"
-        % (SEQ_TABLES, panda.exports.value.export)
+    assert (
+        tuple(sorted(seq_part_names.values())) == SEQ_TABLES
+    ), "Expected exported attributes %s, got %s" % (
+        SEQ_TABLES,
+        panda.exports.value.export,
     )
     # {export_name: mri}
     seq_mris = {}
@@ -317,25 +319,25 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
             name, mri, initial_visibility=initial_visibility, stateful=False
         )
         # Stored generator for positions
-        self.generator = None
+        self.generator: scanning.hooks.AGenerator = None
         # The last index we have loaded
-        self.loaded_up_to = 0
+        self.loaded_up_to: int = 0
         # The last scan point index of the current run
-        self.scan_up_to = 0
+        self.scan_up_to: int = 0
         # If we are currently loading then block loading more points
-        self.loading = False
+        self.loading: bool = False
         # What is the mapping of scannable name to MotorInfo
         self.axis_mapping: Dict[str, pmac.infos.MotorInfo] = {}
         # The minimum turnaround time for non-joined points
-        self.min_turnaround = 0.0
+        self.min_turnaround: float = 0.0
         # The minimum time between turnaround points
-        self.min_interval = 0.0
+        self.min_interval: float = 0.0
         # {(scannable, increasing): trigger_enum}
         self.trigger_enums: Dict[Tuple[str, bool], str] = {}
         # The panda Block we will be prodding
         self.panda: Optional[Any] = None
         # The DoubleBuffer object used to load tables during a scan
-        self.db_seq_table: Optional[Any] = None
+        self.db_seq_table: Optional[DoubleBuffer] = None
 
     def setup(self, registrar: PartRegistrar) -> None:
         super().setup(registrar)
@@ -379,9 +381,13 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
             # Something like INENC1.VAL or ZERO
             seqa_pos_inp = seqa["pos" + suff].value
             seqb_pos_inp = seqb["pos" + suff].value
-            assert seqa_pos_inp == seqb_pos_inp, (
-                "SeqA Pos%s = %s != SeqB Pos%s = %s"
-                % (suff, seqa_pos_inp, suff, seqb_pos_inp)
+            assert (
+                seqa_pos_inp == seqb_pos_inp
+            ), "SeqA Pos%s = %s != SeqB Pos%s = %s" % (
+                suff,
+                seqa_pos_inp,
+                suff,
+                seqb_pos_inp,
             )
             seq_pos[seqa_pos_inp] = "POS%s" % suff.upper()
 
