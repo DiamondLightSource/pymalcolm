@@ -22,6 +22,16 @@
     description: Whether to take 1, many, or unlimited images at start
     pv: $(prefix):TriggerMode
 
+- ca.parts.CAChoicePart:
+    name: triggerMode
+    description: What is triggering the plugin to generate frames
+    pv: $(prefix):TriggerOnCond
+
+- ca.parts.CAChoicePart:
+    name: triggerOffCondition
+    description: What is signalling the end of a frame
+    pv: $(prefix):TriggerOffCond
+
 - ca.parts.CALongPart:
     name: numImages
     description: Number of images to take if imageMode=Multiple

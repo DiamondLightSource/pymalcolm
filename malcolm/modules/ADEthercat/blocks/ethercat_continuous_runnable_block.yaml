@@ -13,23 +13,29 @@
 - builtin.parameters.string:
     name: label
     description: Beamline specific label for the detector
-    default: EtherCAT Cont.
+    default: EtherCAT Continuous
 
 - builtin.parameters.string:
-    name: hdf5_pv_suffix
-    description: PV suffix for HDF5 plugin
-    default: HDF5
+    name: plugin_pv_suffix
+    description: PV suffix for plugins
+    default:
+
+- builtin.parameters.string:
+    name: gated_trigger
+    description: Whether we send a gated signal to the reframe plugin
+    default: False
 
 - builtin.defines.docstring:
     value: |
-      Device block corresponding to ADEthercat + hdf writer. Used for
+      Device block corresponding to ADEthercat + reframe + pos + hdf writer. Used for
       continuous writing of EtherCAT data during a scan.
 
       - Camera driver should have pv prefix $(pv_prefix):DRV
-      - HDF should have pv prefix $(pv_prefix):HDF5
+      - Reframe should have pv prefix $(pv_prefix)$(plugin_pv_suffix):REFR
+      - Pos plugin should have pv prefix $(pv_prefix)$(plugin_pv_suffix):POS
+      - HDF plugin should have pv prefix $(pv_prefix)$(plugin_pv_suffix):HDF5
 
-#- scanning.controllers.RunnableController:
-- ADEthercat.controllers.EthercatContinuousRunnableController:
+- scanning.controllers.RunnableController:
     mri: $(mri_prefix)
     config_dir: $(config_dir)
     description: |
@@ -46,16 +52,19 @@
     name: DRV
     mri: $(mri_prefix):DRV
 
-- ADCore.blocks.hdf_writer_block:
-    mri: $(mri_prefix):HDF5
-    prefix: $(pv_prefix):$(hdf5_pv_suffix)
+- ADCore.includes.filewriting_collection:
+    pv_prefix: $(pv_prefix)$(plugin_pv_suffix)
+    mri_prefix: $(mri_prefix)
 
-- ADCore.parts.HDFContinuousWriterPart:
-    name: HDF5
-    mri: $(mri_prefix):HDF5
+- adUtil.blocks.reframe_plugin_block:
+    mri: $(mri_prefix):REFRAME
+    prefix: $(pv_prefix)$(plugin_pv_suffix):REFR
 
-- scanning.parts.DatasetTablePart:
-    name: DSET
+- adUtil.parts.ReframePluginPart:
+    name: REFRAME
+    mri: $(mri_prefix):REFRAME
+    sample_freq: 1000.0
+    gated_trigger: $(gated_trigger)
 
 - builtin.parts.IconPart:
     svg: $(yamldir)/../icons/ethercat-logo.svg

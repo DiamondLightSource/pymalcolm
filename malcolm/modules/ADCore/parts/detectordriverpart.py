@@ -276,6 +276,12 @@ class DetectorDriverPart(builtin.parts.ChildPart):
     ) -> None:
         context.unsubscribe_all()
         child = context.block_view(self.mri)
+        # If detector can be soft triggered, then we might need to defer
+        # starting it until run. Check triggerMode to find out
+        if self.soft_trigger_modes:
+            mode = child.triggerMode.value
+            self.is_hardware_triggered = mode not in self.soft_trigger_modes
+        # Set up the detector
         self.setup_detector(
             context,
             completed_steps,
@@ -291,11 +297,6 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         else:
             # Double it to be safe
             self.frame_timeout += FRAME_TIMEOUT
-        # If detector can be soft triggered, then we might need to defer
-        # starting it until run. Check triggerMode to find out
-        if self.soft_trigger_modes:
-            mode = child.triggerMode.value
-            self.is_hardware_triggered = mode not in self.soft_trigger_modes
         if self.is_hardware_triggered:
             # Start now if we are hardware triggered
             self.arm_detector(context)

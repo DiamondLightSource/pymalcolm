@@ -4,7 +4,7 @@
 
 - builtin.parameters.string:
     name: pv_prefix
-    description: PV prefix for driver and all plugins
+    description: PV prefix for driver
 
 - builtin.parameters.string:
     name: config_dir
@@ -13,12 +13,12 @@
 - builtin.parameters.string:
     name: label
     description: Beamline specific label for the detector
-    default: EtherCAT
+    default: EtherCAT Hardware triggered
 
 - builtin.parameters.string:
-    name: reframe_pv_suffix
-    description: PV suffix for reframe plugin
-    default: REFR
+    name: plugin_pv_suffix
+    description: PV suffix for plugins
+    default:
 
 - builtin.parameters.string:
     name: gated_trigger
@@ -27,13 +27,13 @@
 
 - builtin.defines.docstring:
     value: |
-      Device block corresponding to ADEthercat + reframe + pos + hdf writer.
-      Used for reframing and averaging EtherCAT data based on hardware triggers.
+      Device block corresponding to ADEthercat + reframe + pos + hdf writer. Used for
+      acquiring hardware-triggered EtherCAT data during a scan.
 
       - Camera driver should have pv prefix $(pv_prefix):DRV
-      - Reframe should have pv prefix $(pv_prefix):REFR
-      - Pos should have pv prefix $(pv_prefix):POS
-      - HDF should have pv prefix $(pv_prefix):HDF5
+      - Reframe should have pv prefix $(pv_prefix)$(plugin_pv_suffix):REFR
+      - Pos plugin should have pv prefix $(pv_prefix)$(plugin_pv_suffix):POS
+      - HDF plugin should have pv prefix $(pv_prefix)$(plugin_pv_suffix):HDF5
 
 - scanning.controllers.RunnableController:
     mri: $(mri_prefix)
@@ -53,12 +53,12 @@
     mri: $(mri_prefix):DRV
 
 - ADCore.includes.filewriting_collection:
-    pv_prefix: $(pv_prefix)
+    pv_prefix: $(pv_prefix)$(plugin_pv_suffix)
     mri_prefix: $(mri_prefix)
 
 - adUtil.blocks.reframe_plugin_block:
     mri: $(mri_prefix):REFRAME
-    prefix: $(pv_prefix):$(reframe_pv_suffix)
+    prefix: $(pv_prefix)$(plugin_pv_suffix):REFR
 
 - adUtil.parts.ReframePluginPart:
     name: REFRAME

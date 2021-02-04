@@ -10,7 +10,6 @@ from .detectordriverpart import (
     USoftTriggerModes,
 )
 from .filepathtranslatorpart import APartName, FilepathTranslatorPart
-from .hdfcontinuouswriterpart import HDFContinuousWriterPart
 from .hdfwriterpart import (
     AMri,
     APartName,

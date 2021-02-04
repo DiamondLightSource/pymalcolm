@@ -1,8 +1,8 @@
 from mock import Mock
 
 from malcolm.modules.ADEthercat.blocks import (
-    ethercat_continuous_block,
-    ethercat_reframe_block,
+    ethercat_continuous_runnable_block,
+    ethercat_hardware_runnable_block,
 )
 from malcolm.testutil import ChildTestCase
 
@@ -11,7 +11,7 @@ from malcolm.testutil import ChildTestCase
 class TestADEthercatReframeBlock(ChildTestCase):
     def test_ethercat_runnable_block(self):
         self.create_child_block(
-            ethercat_reframe_block,
+            ethercat_hardware_runnable_block,
             Mock(),
             mri_prefix="mri_prefix",
             pv_prefix="pv_prefix",
@@ -23,7 +23,7 @@ class TestADEthercatReframeBlock(ChildTestCase):
 class TestADEthercatContinuousBlock(ChildTestCase):
     def test_ethercat_runnable_block(self):
         self.create_child_block(
-            ethercat_continuous_block,
+            ethercat_continuous_runnable_block,
             Mock(),
             mri_prefix="mri_prefix",
             pv_prefix="pv_prefix",

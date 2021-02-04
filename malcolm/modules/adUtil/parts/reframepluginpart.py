@@ -26,7 +26,7 @@ class ReframePluginPart(ADCore.parts.DetectorDriverPart):
         sample_freq: ASampleFreq = 10000.0,
         gated_trigger: AGatedTrigger = False,
     ) -> None:
-        super().__init__(name, mri)
+        super().__init__(name, mri, soft_trigger_modes="Always On")
         self.sample_freq = sample_freq
         self.gated_trigger = gated_trigger
 
@@ -37,22 +37,16 @@ class ReframePluginPart(ADCore.parts.DetectorDriverPart):
 
     @add_call_types
     def on_validate(self, generator: scanning.hooks.AGenerator) -> None:
-        exposure = generator.duration
+        duration = generator.duration
         assert (
-            exposure > 0
-        ), f"Duration {exposure} for generator must be >0 to signify fixed exposure"
-        if self.gated_trigger:
-            min_exposure = 1.0 / self.sample_freq
-            assert (
-                exposure >= min_exposure
-            ), f"Duration {exposure} too short for sample frequency {self.sample_freq}"
-        else:
-            assert (
-                self._number_of_adc_samples(exposure) > 0
-            ), f"Duration {exposure} for generator gives < 1 ADC sample"
+            duration > 0
+        ), f"Generator duration of {duration} must be > 0 to signify fixed exposure"
+        assert (
+            self._number_of_adc_samples(duration) > 0
+        ), f"Generator duration of {duration} gives < 1 ADC sample"
 
     def _number_of_adc_samples(self, generator_duration: float):
-        return int(generator_duration * self.sample_freq) - 1
+        return int(generator_duration * self.sample_freq)
 
     def setup_detector(
         self,
@@ -90,10 +84,23 @@ class ReframePluginPart(ADCore.parts.DetectorDriverPart):
 
         child.put_attribute_values(kwargs)
 
-        # Number of post trigger samples depend on if we are gated
+        # Calculate number of samples
         post_trigger_samples = self._number_of_adc_samples(duration)
-        if self.gated_trigger:
-            post_trigger_samples = 0
-            # We also need averaging to ensure we get consistent frame dimensions
-            child.averageSamples.put_value("Yes")
+        if self.is_hardware_triggered:
+            if self.gated_trigger:
+                # Gated signal is responsible for number of samples
+                post_trigger_samples = 0
+                # We also need averaging to ensure we get consistent frame dimensions
+                child.averageSamples.put_value("Yes")
+            else:
+                # For getting just start triggers, ensure we do not miss one
+                post_trigger_samples -= 1
+                assert (
+                    post_trigger_samples > 0
+                ), f"Generator duration {duration} too short for start triggers"
+        else:
+            # Need triggerOffCondition to be Always On for Software triggers
+            assert (
+                child.triggerOffCondition.value == "Always On"
+            ), "Software triggering requires off condition to be 'Always On'"
         child.postCount.put_value(post_trigger_samples)
