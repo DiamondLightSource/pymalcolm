@@ -28,11 +28,13 @@ LAST_PULSE: int = 125000000  # ticks = 1s
 SEQ_TABLE_SWITCH_DELAY: int = 6
 
 # Default minimum table duration. This is the minimum time (in seconds) for a
-# table used by the double-buffering system.
+# table used by the double buffering system.
 MIN_TABLE_DURATION: float = 15.0
 
 
 class SequencerRows:
+    """A class that represents a series of rows for the Sequencer (SEQ) block."""
+
     def __init__(self, rows: List[Tuple] = None) -> None:
         self._rows: List[Tuple] = []
         self._duration: float = 0
@@ -51,6 +53,7 @@ class SequencerRows:
         dead=0,
         trim=0,
     ) -> None:
+        """Add a sequencer row with the given settings."""
         complete_rows = count // MAX_REPEATS
         remaining = count % MAX_REPEATS
 
@@ -64,9 +67,7 @@ class SequencerRows:
         self._duration += count * (2 * half_duration - trim)
 
     def split(self, count: int) -> SequencerRows:
-        """Separate this object into two SequencerRows objects, deducting the
-        time delay required to switch between sequencers from the end of the
-        current object, and returning the remainder."""
+        """Truncate this object after `count` rows, and return the remainder."""
 
         assert len(self._rows) > 0, "Zero length seq rows should never be split"
 
@@ -109,21 +110,28 @@ class SequencerRows:
         return remainder
 
     def extend(self, other: SequencerRows) -> None:
+        """Extend this object by the given `SequencerRows` object."""
         self._rows += other._rows
         self._duration += other._duration
 
     def get_table(self) -> SequencerTable:
+        """Return a `SequencerTable` from this object's rows."""
         return SequencerTable.from_rows(self._rows)
 
     def as_tuple(self) -> Tuple[Tuple, ...]:
-        """Used for comparisons during testing."""
+        """Return the sequencer rows as a tuple of tuples.
+
+        This is used for comparisons during testing.
+        """
         return tuple(self._rows)
 
     @property
     def duration(self) -> float:
+        """Return the total duration of all Sequencer rows."""
         return self._duration * TICK
 
     def __len__(self) -> int:
+        """Return the number of Sequencer rows."""
         return len(self._rows)
 
     @staticmethod
@@ -136,9 +144,10 @@ class SequencerRows:
         dead: int = 0,
         trim: int = 0,
     ) -> Tuple:
-        """Create a pulse with phase1 having given live/dead values
+        """Create a pulse with phase1 having the given live/dead values.
 
-        If trim=0, there is a 50% duty cycle. Trim reduces the total duration
+        If trim=0, there is a 50% duty cycle. Trim (in ticks) reduces total duration by
+        subtracting ticks from the phase2 time.
         """
         return (
             repeats,
@@ -164,6 +173,7 @@ class SequencerRows:
 
     @staticmethod
     def _calculate_duration(rows: List[Tuple]) -> float:
+        """Return the duration of the given Sequencer rows (in list format)."""
         duration = 0.0
         for row in rows:
             duration += row[0] * (row[3] + row[10])
@@ -172,6 +182,8 @@ class SequencerRows:
 
 
 class DoubleBuffer:
+    """A class that uses two Sequencer (SEQ) blocks in a double buffering system."""
+
     def __init__(self, context: Context, seq_a: Block, seq_b: Block) -> None:
         self._context: Context = context
         # Need to replace Block with Any due to limitations of typing in malcolm core
@@ -182,11 +194,16 @@ class DoubleBuffer:
         self._table_gen: Iterator[SequencerTable] = iter(())
 
     def _fill_table(self, table, gen) -> None:
+        """Fill the given Sequencer table using the given generator."""
         seq_table = self._table_map[table]
         seq_table.table.put_value(next(gen))
 
     @staticmethod
-    def _get_tables(rows_gen) -> Iterator[SequencerTable]:
+    def _get_tables(rows_gen: Iterator[SequencerRows]) -> Iterator[SequencerTable]:
+        """Yield a series of SequencerTable objects from the given rows generator.
+
+        This generator ensures that each SequencerTable can fit onto a SEQ block.
+        """
         rows = SequencerRows()
         for rs in rows_gen:
             rows.extend(rs)
@@ -203,6 +220,10 @@ class DoubleBuffer:
             yield rows.get_table()
 
     def configure(self, rows_generator: Iterator[SequencerRows]) -> None:
+        """Configure the double buffer object.
+
+        This is designed to be called as part of the malcolm configure process.
+        """
         self._clean_up()
         self._table_gen = self._get_tables(rows_generator)
 
@@ -215,6 +236,7 @@ class DoubleBuffer:
             self._finished = False
 
     def _seq_active_handler(self, value: bool, table: str = "seqA") -> None:
+        """Handler for the SEQ block activation subscription."""
         prev = self._seq_status[table]
         if prev is not None and prev and not value:
             # We only care when the seq is deactivated
@@ -227,6 +249,7 @@ class DoubleBuffer:
         self._seq_status[table] = value
 
     def _setup_subscriptions(self) -> None:
+        """Set up subscriptions to the SEQ block 'active' field."""
         for table in self._table_map:
             self._futures += [
                 self._table_map[table].active.subscribe_value(
@@ -235,21 +258,25 @@ class DoubleBuffer:
             ]
 
     def run(self) -> List[Future]:
+        """Start the double buffering system."""
         if not self._finished:
             self._setup_subscriptions()
 
         return self._futures
 
     def _remove_subscriptions(self) -> None:
+        """Remove all subscriptions in this `DoubleBuffer` object."""
         for future in self._futures:
             self._context.unsubscribe(future)
 
         self._futures = []
 
     def _clean_up(self) -> None:
+        """Clean up in preparation for the next scan."""
         self._remove_subscriptions()
         self._seq_status = {"seqA": None, "seqB": None}
         self._finished = True
 
     def abort(self) -> None:
+        """Abort the double buffering process."""
         self._clean_up()

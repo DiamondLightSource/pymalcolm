@@ -28,7 +28,7 @@ BATCH_SIZE: int = 5000
 
 
 class SeqTriggers(object):
-    """Class that provides Sequencer triggers for input Points generator"""
+    """A class that generates Sequencer (SEQ) block triggers from a Points generator."""
 
     def __init__(
         self,
@@ -49,8 +49,8 @@ class SeqTriggers(object):
     def _what_moves_most(
         point: Point, axis_mapping: Dict[str, pmac.infos.MotorInfo]
     ) -> Tuple[str, int, bool]:
-        """Work out which axis from the given axis mapping moves most for this
-        point"""
+        """Return the axis from `axis_mapping` that moves most for this point.
+        """
         # TODO: should use new velocity calcs when Giles has finished
         # {axis_name: abs(diff_cts)}
         diffs = {}
@@ -77,9 +77,8 @@ class SeqTriggers(object):
     def _how_long_moving_wrong_way(
         self, axis_name: str, point: Point, increasing: bool
     ) -> float:
-        """Work out the turnaround for the axis with the given MotorInfo, and
-        how long it is moving in the opposite direction from where we want it to
-        be going for point"""
+        """Return the duration that the given axis is moving in the opposite direction from
+        that required for `point`, during the prior turnaround."""
         min_turnaround = max(self.min_turnaround, point.delay_after)
         time_arrays, velocity_arrays = pmac.util.profile_between_points(
             self.axis_mapping, self.last_point, point, min_turnaround, self.min_interval
@@ -106,12 +105,11 @@ class SeqTriggers(object):
 
     @staticmethod
     def _get_row_indices(points: Points) -> Tuple[np.ndarray, np.ndarray]:
-        """Generate list of start and end indices for separate rows
+        """Generate list of start and end indices for separate rows.
 
-        The first point (index 0) is not registered as a separate row. This is
-        because for the first row of a scan, the triggering is handled
-        separately, and for later batches of points, the initial value is from
-        a previous row.
+        The first point (index 0) is not registered as a separate row. This is because
+        for the first row of a scan the triggering is handled separately, and for later
+        batches of points the initial value is from a previous row.
         """
         points_joined = pmac.util.all_points_joined(points)
 
@@ -131,7 +129,7 @@ class SeqTriggers(object):
 
     @staticmethod
     def _create_immediate_rows(durations: Sequence[float]) -> SequencerRows:
-        """Create a series of immediate rows from `durations`"""
+        """Generate sequencer rows with 'Immediate' trigger type, from `durations`."""
         if len(durations) == 0:
             return SequencerRows()
 
@@ -153,7 +151,7 @@ class SeqTriggers(object):
     def _create_triggered_rows(
         self, points: Points, start_index: int, end_index: int, add_blind: bool
     ) -> SequencerRows:
-        """Generate sequencer rows corresponding to a triggered points row"""
+        """Generate sequencer rows corresponding to a triggered points row."""
         initial_point: Point = points[start_index]
         half_frame: int = int(round(initial_point.duration / TICK / 2))
 
@@ -200,10 +198,10 @@ class SeqTriggers(object):
 
     @staticmethod
     def _overlapping_points_range(generator, start: int, end: int) -> Iterator[Points]:
-        """Create a series of points objects that cover the entire range.
+        """Yield a series of `Points` objects that cover the given range.
 
-        Yielded points overlap by one point to identify whether the start of a
-        given batch corresponds to the middle of a row.
+        Yielded points overlap by one point to indicate whether the start of a given
+        batch corresponds to the middle of a row.
         """
         if start == end:
             return
@@ -220,6 +218,7 @@ class SeqTriggers(object):
             high_index = min(low_index + BATCH_SIZE + 1, end)
 
     def get_rows(self, loaded_up_to: int, scan_up_to: int) -> Iterator[SequencerRows]:
+        """Yield a series of `SequencerRows` that correspond to the given range."""
         for points in self._overlapping_points_range(
             self.generator, loaded_up_to, scan_up_to
         ):
@@ -268,7 +267,7 @@ class SeqTriggers(object):
 
 
 def _get_blocks(context: Context, panda_mri: str) -> List[Block]:
-    """Get panda, seqA and seqB Blocks using the given context"""
+    """Get panda, seqA, and seqB Blocks using the given context."""
     # {part_name: export_name}
     panda = context.block_view(panda_mri)
     seq_part_names = {}
@@ -299,12 +298,14 @@ def _get_blocks(context: Context, panda_mri: str) -> List[Block]:
 
 
 def doing_pcomp(row_trigger_value: str) -> bool:
+    """Indicate whether the row_trigger is for position compare."""
     return row_trigger_value == "Position Compare"
 
 
 class PandASeqTriggerPart(builtin.parts.ChildPart):
-    """Part for operating a pair of SEQ blocks in a PandA to do position
-    compare at the start of each row and time based pulses within the row.
+    """Part for operating a pair of Sequencer (SEQ) blocks in a PandA to do position
+    compare at the start of each row, and time based pulses within the row.
+
     Needs the following exports:
 
     - seqTableA: table Attribute of the first SEQ block
@@ -374,7 +375,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
     def setup_pcomp_dicts(
         self, seqa: Block, seqb: Block, axis_mapping: Dict[str, pmac.infos.MotorInfo]
     ) -> None:
-        """Setup the axis_mapping and trigger_enum dicts for position compare"""
+        """Setup the axis mapping and trigger enum attributes for position compare."""
         # Check that both sequencers are pointing to the same encoders
         seq_pos = {}
         for suff in "abc":

@@ -8,9 +8,10 @@ from malcolm.modules import ADCore, pandablocks
 
 
 class Trigger:
-    """Convenience Enum for setting sequencer tables, will be translated into
-    integer values by the TablePart. The strings must match what comes from the
-    PandA"""
+    """Convenience Enum for setting sequencer table trigger values.
+
+    These will be translated into integer values by the `TablePart`. The strings must
+    match those that come from the PandA."""
 
     IMMEDIATE = "Immediate"
     BITA_0 = "BITA=0"
@@ -58,7 +59,7 @@ UPositionCaptures = pandablocks.util.UPositionCaptures
 
 
 class SequencerTable(Table):
-    """Convenience Table object for building sequencer tables"""
+    """Convenience `Table` class for building sequencer tables."""
 
     def __init__(
         self,
