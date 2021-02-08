@@ -2,3 +2,19 @@ include:
   - project: 'controls/reports/ci_templates'
     ref: master
     file: 'python3/dls_py3_template.yml'
+    variables:
+      SKIP_DOCS: 1 # This 
+
+flake8:
+  tags:
+    - rhel7
+  stage: test
+  script:
+    - pipenv run flake8
+
+build_docs:
+  tags:
+    - rhel7
+  stage: test
+  script:
+    - pipenv run docs
