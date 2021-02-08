@@ -1,5 +1,4 @@
 import os
-import socket
 from datetime import datetime
 
 import pytest
@@ -513,7 +512,8 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         self.gate_part.enable_set.assert_called_once()
 
     def test_configure_long_pcomp_row_trigger(self):
-        if "diamond.ac.uk" not in socket.gethostname():
+        # Skip on GitHub Actions and GitLab CI
+        if "CI" in os.environ:
             pytest.skip("performance test only")
 
         self.set_motor_attributes(
