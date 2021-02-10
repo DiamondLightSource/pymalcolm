@@ -40,7 +40,6 @@ with Anno("List of trigger modes that do not use hardware triggers"):
 USoftTriggerModes = Union[ASoftTriggerModes, Sequence[str]]
 
 # Pull re-used annotypes into our namespace in case we are subclassed
-APartName = APartName
 AMri = builtin.parts.AMri
 
 
@@ -272,8 +271,10 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         if self.required_version is not None:
             required_version = Version(self.required_version)
             running_version = Version(child.driverVersion.value)
-            if required_version.major != running_version.major\
-               or running_version.minor < required_version.minor:
+            if (
+                required_version.major != running_version.major
+                or running_version.minor < required_version.minor
+            ):
                 raise (
                     IncompatibleError(
                         "Detector driver v{} detected. "
@@ -299,6 +300,12 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         context.unsubscribe_all()
         child = context.block_view(self.mri)
         self.check_driver_version(child)
+        # If detector can be soft triggered, then we might need to defer
+        # starting it until run. Check triggerMode to find out
+        if self.soft_trigger_modes:
+            mode = child.triggerMode.value
+            self.is_hardware_triggered = mode not in self.soft_trigger_modes
+        # Set up the detector
         self.setup_detector(
             context,
             completed_steps,
@@ -314,11 +321,6 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         else:
             # Double it to be safe
             self.frame_timeout += FRAME_TIMEOUT
-        # If detector can be soft triggered, then we might need to defer
-        # starting it until run. Check triggerMode to find out
-        if self.soft_trigger_modes:
-            mode = child.triggerMode.value
-            self.is_hardware_triggered = mode not in self.soft_trigger_modes
         if self.is_hardware_triggered:
             # Start now if we are hardware triggered
             self.arm_detector(context)

@@ -21,7 +21,16 @@
     name: imageMode
     description: Whether to take 1, many, or unlimited images at start
     pv: $(prefix):TriggerMode
-    rbv_suffix: _RBV
+
+- ca.parts.CAChoicePart:
+    name: triggerMode
+    description: What is triggering the plugin to generate frames
+    pv: $(prefix):TriggerOnCond
+
+- ca.parts.CAChoicePart:
+    name: triggerOffCondition
+    description: What is signalling the end of a frame
+    pv: $(prefix):TriggerOffCond
 
 - ca.parts.CALongPart:
     name: numImages
@@ -33,7 +42,6 @@
     name: postCount
     description: How many samples to take after each trigger
     pv: $(prefix):POSTCOUNT
-    rbv_suffix: _RBV
 
 - ca.parts.CAActionPart:
     name: start
@@ -53,3 +61,13 @@
     name: acquiring
     description: If plugin is currently acquiring
     rbv: $(prefix):Capture
+
+- ca.parts.CAChoicePart:
+    name: averageSamples
+    description: Average samples for each channel
+    pv: $(prefix):AverageSamples
+
+- ca.parts.CALongPart:
+    name: triggerChannel
+    description: Channel source for triggers
+    pv: $(prefix):TriggerChannel
