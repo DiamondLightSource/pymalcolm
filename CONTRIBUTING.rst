@@ -67,6 +67,20 @@ References:
 * Flake8: https://flake8.pycqa.org/en/latest/
 * Mypy: https://mypy.readthedocs.io/en/stable/
 
+Pipfile.lock
+------------
+
+When updating/installing dependencies you may find the Pipfile.lock is also
+updated. This should only be committed if tested with the Diamond Python 3 
+environment, and ensuring all dependencies are available using::
+
+    $ dls-py3 compare-dependencies
+
+See the `Diamond Python 3 Confluence area`_ for more information. 
+
+.. _Diamond Python 3 Confluence area:
+    https://confluence.diamond.ac.uk/x/GxKRBQ
+
 Documentation
 ~~~~~~~~~~~~~
 
@@ -218,9 +232,9 @@ Building the docs
 
 When in the project directory::
 
-    $ pip install -r requirements/docs.txt
-    $ python setup.py build_sphinx
-    $ firefox docs/_build/html/index.html
+    $ pipenv install --dev
+    $ pipenv run docs
+    $ firefox docs/html/index.html
 
 Release Checklist
 -----------------
