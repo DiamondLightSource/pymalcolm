@@ -87,11 +87,11 @@ To install Malcolm run::
 
 .. _pipenv: https://www.python.org/dev/peps/pep-0440
 
-For development then you can also install required development packages::
+For development then you can also include required development packages::
 
     $ git clone git://github.com/dls-controls/pymalcolm.git
     $ cd pymalcolm
-    $ pipenv install
+    $ pipenv install --dev
 
 Then you can use the entry point to run Malcolm::
 
