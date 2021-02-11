@@ -16,6 +16,10 @@ Added:
 - Directory monitor support - checks whether all expected file mounts are
   present on a server during configure
 
+Fixed:
+
+- GitLab CI script
+
 Removed:
 
 - Travis CI
