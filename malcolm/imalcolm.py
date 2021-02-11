@@ -1,4 +1,3 @@
-#!/dls_sw/prod/tools/RHEL7-x86_64/defaults/bin/dls-python3
 import argparse
 import atexit
 import getpass
