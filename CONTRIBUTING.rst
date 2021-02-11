@@ -13,15 +13,14 @@ the scope of the project.
 Running the tests
 -----------------
 
-To get the source source code and run the unit tests, run::
+To get the source source code and run the unit tests (requires pipenv_, run::
 
     $ git clone git://github.com/dls-controls/pymalcolm.git
     $ cd pymalcolm
-    $ virtualenv --no-site-packages -p /path/to/python2.7 venv27
-    $ . venv27/bin/activate
-    $ pip install 'pip>=9.0.1'
-    $ pip install -r requirements/test.txt
-    $ pytest tests
+    $ pipenv install --dev
+    $ pipenv run tests
+
+.. _pipenv: https://www.python.org/dev/peps/pep-0440
 
 While 100% code coverage does not make a library bug-free, it significantly
 reduces the number of easily caught bugs! Please make sure coverage remains the
@@ -29,22 +28,34 @@ same or is improved by a pull request!
 
 Code Styling
 ------------
-Please arrange imports with the following style
+Black and isort are used to format the code and order imports to a consistent
+style. Running these commands will reformat code and reorder imports for you::
 
-.. code-block:: python
+    $ pipenv run black malcolm/ tests/
+    $ pipenv run isort malcolm/ tests/
 
-    # Standard library imports
-    import os
+Flake8 is then used to check the formatting to ensure conventions such
+as PEP8 are followed. There is a script in the Pipfile so it can be run with::
 
-    # Third party package imports
-    from mock import patch
+    $ pipenv run flake8
 
-    # Local package imports
-    from malcolm.core import Block
+Finally, Mypy is used as a type checker.::
 
-Please follow `Google's python style`_ guide wherever possible.
+    $ pipenv run mypy malcolm/ tests/
 
-.. _Google's python style: https://google.github.io/styleguide/pyguide.html
+Mypy, isort and Black checks are performed as part of running the tests. Flake8
+is checked separately. Both sets of checks are run in CI jobs when commits are
+pushed to GitHub using GitHub Actions.
+
+It is reccommended to perform these checks before committing to ensure your
+code is correctly formatted and there are no typing issues.
+
+References:
+
+* Black: https://black.readthedocs.io/en/stable/
+* isort: https://pycqa.github.io/isort/
+* Flake8: https://flake8.pycqa.org/en/latest/
+* Mypy: https://mypy.readthedocs.io/en/stable/
 
 Docs follow the underlining convention::
 
