@@ -79,23 +79,33 @@ Using pipenv
 We now use pipenv_ to generate the environment for Malcolm at Diamond. This
 should also work in any environment where pipenv is available.
 
-To install Malcolm run::
-
-    $ git clone git://github.com/dls-controls/pymalcolm.git
-    $ cd pymalcolm
-    $ pipenv install
-
 .. _pipenv: https://www.python.org/dev/peps/pep-0440
 
-For development then you can also include required development packages::
+First download the source code::
 
     $ git clone git://github.com/dls-controls/pymalcolm.git
     $ cd pymalcolm
+
+To be able to use Malcolm run::
+
+    $ pipenv install
+
+For development you will need additional development packages::
+
     $ pipenv install --dev
 
 Then you can use the entry point to run Malcolm::
 
     $ pipenv run imalcolm
+
+Note: for development, you can also create an editable installation of Malcolm 
+with::
+
+    $ pipenv install --dev -e .
+
+Or by adding the following to the Pipfile under :code:`[dev-packages]`::
+
+    malcolm = {editable = true, path = "."}
 
 Using pip
 ~~~~~~~~~
