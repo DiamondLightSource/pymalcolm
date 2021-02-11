@@ -67,6 +67,9 @@ References:
 * Flake8: https://flake8.pycqa.org/en/latest/
 * Mypy: https://mypy.readthedocs.io/en/stable/
 
+Documentation
+~~~~~~~~~~~~~
+
 Docs follow the underlining convention::
 
     Headling 1 (page title)
