@@ -57,7 +57,7 @@ Mypy, isort and Black checks are performed as part of running the tests. Flake8
 is checked separately. Both sets of checks are run in CI jobs when commits are
 pushed to GitHub using GitHub Actions.
 
-It is reccommended to perform these checks before committing to ensure your
+It is recommended to perform these checks before committing to ensure your
 code is correctly formatted and there are no typing issues.
 
 References:
