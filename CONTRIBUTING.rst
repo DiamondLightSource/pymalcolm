@@ -146,29 +146,35 @@ in the setup function (not in __init__). e.g.:
 
     class MotionChildPart(builtin.parts.ChildPart):
         """Provides control of a `counter_block` within a `RunnableController`"""
-        # Generator instance
-        _generator = None  # type: scanning.hooks.AGenerator
-        # Where to start
-        _completed_steps = None  # type: int
-        # How many steps to do
-        _steps_to_do = None  # type: int
-        # When to blow up
-        _exception_step = None  # type: int
-        # Which axes we should be moving
-        _axes_to_move = None  # type: scanning.hooks.AAxesToMove
 
-        def setup(self, registrar):
-            # type: (PartRegistrar) -> None
-            super(MotionChildPart, self).setup(registrar)
+        # Generator instance
+        _generator: scanning.hooks.AGenerator = None
+        # Where to start
+        _completed_steps: int = 0
+        # How many steps to do
+        _steps_to_do: int = 0
+        # When to blow up
+        _exception_step: int = 0
+        # Which axes we should be moving
+        _axes_to_move: Optional[scanning.hooks.AAxesToMove] = None
+        # MaybeMover objects to help with async moves
+        _movers: Dict[str, MaybeMover] = {}
+
+        def setup(self, registrar: PartRegistrar) -> None:
+            super().setup(registrar)
             # Hooks
             registrar.hook(scanning.hooks.PreConfigureHook, self.reload)
-            registrar.hook((scanning.hooks.ConfigureHook,
-                            scanning.hooks.PostRunArmedHook,
-                            scanning.hooks.SeekHook), self.configure)
-            registrar.hook(scanning.hooks.RunHook, self.run)
+            registrar.hook(
+                (
+                    scanning.hooks.ConfigureHook,
+                    scanning.hooks.PostRunArmedHook,
+                    scanning.hooks.SeekHook,
+                ),
+                self.on_configure,
+            )
+            registrar.hook(scanning.hooks.RunHook, self.on_run)
             # Tell the controller to expose some extra configure parameters
-            registrar.report(scanning.hooks.ConfigureHook.create_info(
-                self.configure))
+            registrar.report(scanning.hooks.ConfigureHook.create_info(self.on_configure))
 
 Also do not override __init__() just to declare Attributes,
 instead declare them at the class level and initialise to None, then
@@ -182,27 +188,29 @@ TODO: add convenience for supplying private properties as per MotionChildPart
         """Defines a counter `Attribute` with zero and increment `Method` objects"""
 
         #: Writeable Attribute holding the current counter value
-        counter = None  # type: AttributeModel
+        counter: Optional[AttributeModel] = None
         #: Writeable Attribute holding the amount to increment() by
-        delta = None  # type: AttributeModel
+        delta: Optional[AttributeModel] = None
 
-        def setup(self, registrar):
-            # type: (PartRegistrar) -> None
-            super(CounterPart, self).setup(registrar)
+        def setup(self, registrar: PartRegistrar) -> None:
+            super().setup(registrar)
             # Add some Attribute and Methods to the Block
             self.counter = NumberMeta(
-                "float64", "The current value of the counter",
-                tags=[config_tag(), Widget.TEXTINPUT.tag()]
+                "float64",
+                "The current value of the counter",
+                tags=[config_tag(), Widget.TEXTINPUT.tag()],
             ).create_attribute_model()
-            registrar.add_attribute_model(
-                "counter", self.counter, self.counter.set_value)
+            registrar.add_attribute_model("counter", self.counter, self.counter.set_value)
 
             self.delta = NumberMeta(
-                "float64", "The amount to increment() by",
-                tags=[config_tag(), Widget.TEXTINPUT.tag()]
+                "float64",
+                "The amount to increment() by",
+                tags=[config_tag(), Widget.TEXTINPUT.tag()],
             ).create_attribute_model(initial_value=1)
-            registrar.add_attribute_model(
-                "delta", self.delta, self.delta.set_value)
+            registrar.add_attribute_model("delta", self.delta, self.delta.set_value)
+
+            registrar.add_method_model(self.zero)
+            registrar.add_method_model(self.increment)
 
 
 Building the docs
