@@ -10,17 +10,27 @@ the scope of the project.
 
 .. _dls_controls repository: https://github.com/dls-controls/pymalcolm/issues
 
-Running the tests
------------------
+Setup
+-----
 
-To get the source source code and run the unit tests (requires pipenv_, run::
+The simplest way to set up the Python environment is with pipenv_.
+
+Then all you need to do is download the source code and create the environment
+with developer packages::
 
     $ git clone git://github.com/dls-controls/pymalcolm.git
     $ cd pymalcolm
     $ pipenv install --dev
-    $ pipenv run tests
 
 .. _pipenv: https://www.python.org/dev/peps/pep-0440
+
+Running the tests
+-----------------
+
+Once the environment is created tests can be run using pipenv::
+
+    $ pipenv run tests
+
 
 While 100% code coverage does not make a library bug-free, it significantly
 reduces the number of easily caught bugs! Please make sure coverage remains the
