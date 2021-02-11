@@ -3,6 +3,23 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
+`Unreleased`_ - 2021-02-11
+--------------------------
+
+Added:
+
+- ADEthercat support - two runnable blocks for hardware and software-triggered
+  devices
+- Breakpoints - these can be defined for the scan to be broken up into
+  multiple sections where run returns in an armed state
+- GitHub Actions CI
+- Directory monitor support - checks whether all expected file mounts are
+  present on a server during configure
+
+Removed:
+
+- Travis CI
+
 `4-3-1`_ - 2020-09-18
 ---------------------
 
@@ -564,7 +581,7 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/4-3-1...master
 .. _4-3-1: https://github.com/dls-controls/pymalcolm/compare/4-2b8...4-3-1
 .. _4-2b8: https://github.com/dls-controls/pymalcolm/compare/4-2b6...4-2b8
 .. _4-2b6: https://github.com/dls-controls/pymalcolm/compare/4-2b5...4-2b6
