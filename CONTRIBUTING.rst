@@ -82,7 +82,7 @@ See the `Diamond Python 3 Confluence area`_ for more information.
     https://confluence.diamond.ac.uk/x/GxKRBQ
 
 Documentation
-~~~~~~~~~~~~~
+------------
 
 Docs follow the underlining convention::
 
@@ -244,7 +244,7 @@ Before a new release, please go through the following checklist:
 * Choose a new PEP440_ compliant release number (but with dashes until we move to python3)
 * Add a release note in CHANGELOG.rst
 * Git tag the version with message from CHANGELOG
-* Push to github and travis will make a release on pypi
-* Push to internal gitlab and do a dls-release.py of the tag
+* Push to github and GitHub Actions will make a release on pypi
+* Push to internal GitLab and do a dls-release.py to the Python 3 area of the tag
 
 .. _PEP440: https://www.python.org/dev/peps/pep-0440
