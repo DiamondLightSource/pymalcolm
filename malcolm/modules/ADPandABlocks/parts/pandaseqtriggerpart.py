@@ -311,6 +311,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
     - seqTableA: table Attribute of the first SEQ block
     - seqTableB: table Attribute of the second SEQ block
     - seqSetEnable: forceSet Method of an SRGATE that is used to gate both SEQs
+    - seqReset: forceRst Method of an SRGATE that is used to gate both SEQs
     """
 
     def __init__(
@@ -421,6 +422,15 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
             "the PandA positions table?" % (sorted(seq_pos), sorted(axis_mapping))
         )
 
+    def reset_seq(self, context):
+        """Reset the PandA sequencer using the given context.
+
+        We need to use the correct context when calling this function, as it will
+        otherwise get blocked.
+        """
+        panda = context.block_view(self.panda_mri)
+        panda.seqReset()
+
     # Allow CamelCase as these parameters will be serialized
     # noinspection PyPep8Naming
     @add_call_types
@@ -442,7 +452,8 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
 
         # Get the panda and the pmac we will be using
         child = context.block_view(self.mri)
-        panda_mri = child.panda.value
+        self.panda_mri = child.panda.value # Retain for use during reset / abort
+
         pmac_mri = child.pmac.value
         row_trigger = child.rowTrigger.value
 
@@ -459,7 +470,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
             self.min_interval = pmac.util.MIN_INTERVAL
 
         # Get panda Block, and the sequencer Blocks so we can do some checking
-        self.panda, seqa, seqb = _get_blocks(context, panda_mri)
+        self.panda, seqa, seqb = _get_blocks(context, self.panda_mri)
 
         # Fill in motor infos and trigger lookups
         motion_axes = pmac.util.get_motion_axes(generator, axesToMove)
@@ -519,5 +530,11 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
 
     @add_call_types
     def on_abort(self, context: builtin.hooks.AContext) -> None:
+        try:
+            self.reset_seq(context)
+        except AttributeError:
+            # Ensure we can reset or abort if different design is used for PandA
+            pass
+
         if self.db_seq_table is not None:
             self.db_seq_table.abort()

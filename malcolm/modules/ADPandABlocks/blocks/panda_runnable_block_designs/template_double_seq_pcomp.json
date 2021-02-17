@@ -75,7 +75,8 @@
     "exports": {
       "SEQ1.table": "seqTableA", 
       "SEQ2.table": "seqTableB", 
-      "SRGATE2.forceSet": "seqSetEnable"
+      "SRGATE2.forceSet": "seqSetEnable",
+      "SRGATE2.forceRst": "seqReset"
     }
   },
   "children": {
@@ -114,9 +115,9 @@
       "inputs": "expanded", 
       "inpa": "SEQ2.ACTIVE", 
       "inpaDelay": 0, 
-      "inpb": "PCAP.ACTIVE", 
+      "inpb": "SRGATE2.OUT", 
       "inpbDelay": 0, 
-      "inpc": "SRGATE2.OUT", 
+      "inpc": "ZERO", 
       "inpcDelay": 0, 
       "inpd": "ZERO", 
       "inpdDelay": 0, 
@@ -128,7 +129,7 @@
       "typec": "Input-Level", 
       "typed": "Input-Level", 
       "typee": "Input-Level", 
-      "func": "~A&B&C", 
+      "func": "~A&B", 
       "outputs": "expanded"
     }, 
     "LUT3": {
@@ -136,10 +137,10 @@
       "inputs": "expanded", 
       "inpa": "SEQ1.ACTIVE", 
       "inpaDelay": 0, 
-      "inpb": "PCAP.ACTIVE", 
+      "inpb": "SRGATE2.OUT", 
       "inpbDelay": 8, 
-      "inpc": "SRGATE2.OUT", 
-      "inpcDelay": 8, 
+      "inpc": "ZERO", 
+      "inpcDelay": 0, 
       "inpd": "ZERO", 
       "inpdDelay": 0, 
       "inpe": "ZERO", 
@@ -150,7 +151,7 @@
       "typec": "Input-Level", 
       "typed": "Input-Level", 
       "typee": "Input-Level", 
-      "func": "~A&B&C", 
+      "func": "~A&B", 
       "outputs": "expanded"
     }, 
     "LUT4": {
@@ -214,7 +215,6 @@
       "tsEndCapture": "No", 
       "tsTrigCapture": "No", 
       "samplesCapture": "Value", 
-      "readbacks": "expanded", 
       "attributesFile": "", 
       "triggerMode": "Internal"
     }, 
@@ -322,7 +322,7 @@
       "enableDelay": 0, 
       "set": "ZERO", 
       "setDelay": 0, 
-      "rst": "PCAP.ACTIVE", 
+      "rst": "ZERO", 
       "rstDelay": 0, 
       "parameters": "expanded", 
       "whenDisabled": "Set output low", 
