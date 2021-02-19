@@ -18,12 +18,6 @@ MIN_PULSE: int = 1250  # ticks = 10us
 # Maximum repeats of a single row
 MAX_REPEATS: int = 4096
 
-# How long the last pulse should be (50% duty cycle) to make sure we don't flip
-# to an unfilled sequencer and produce a false pulse. This should be at least
-# as long as it takes the PandA EPICS driver to see that we got the last frame
-# and disarm PCAP
-LAST_PULSE: int = 125000000  # ticks = 1s
-
 # The number of clock ticks required to switch between the two sequencers
 SEQ_TABLE_SWITCH_DELAY: int = 6
 

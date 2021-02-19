@@ -9,7 +9,7 @@ from malcolm.core import APartName, Block, Context, PartRegistrar
 from malcolm.modules import builtin, pmac, scanning
 from malcolm.modules.scanning.infos import MinTurnaroundInfo
 
-from ..doublebuffer import LAST_PULSE, MIN_PULSE, TICK, DoubleBuffer, SequencerRows
+from ..doublebuffer import MIN_PULSE, TICK, DoubleBuffer, SequencerRows
 from ..util import Trigger
 
 #: The SEQ.table attributes that should be present in PANDA.exports
@@ -258,7 +258,7 @@ class SeqTriggers(object):
 
         rows = SequencerRows()
         # add one last dead frame signal
-        rows.add_seq_entry(half_duration=LAST_PULSE, dead=1)
+        rows.add_seq_entry(half_duration=MIN_PULSE, dead=1)
         # add continuous loop to prevent sequencer switch
         rows.add_seq_entry(count=0)
         yield rows
