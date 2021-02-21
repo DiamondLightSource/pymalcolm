@@ -49,8 +49,7 @@ class SeqTriggers(object):
     def _what_moves_most(
         point: Point, axis_mapping: Dict[str, pmac.infos.MotorInfo]
     ) -> Tuple[str, int, bool]:
-        """Return the axis from `axis_mapping` that moves most for this point.
-        """
+        """Return the axis from `axis_mapping` that moves most for this point."""
         # TODO: should use new velocity calcs when Giles has finished
         # {axis_name: abs(diff_cts)}
         diffs = {}
@@ -452,7 +451,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
 
         # Get the panda and the pmac we will be using
         child = context.block_view(self.mri)
-        self.panda_mri = child.panda.value # Retain for use during reset / abort
+        self.panda_mri = child.panda.value  # Retain for use during reset / abort
 
         pmac_mri = child.pmac.value
         row_trigger = child.rowTrigger.value

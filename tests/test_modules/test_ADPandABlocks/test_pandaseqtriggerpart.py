@@ -92,9 +92,14 @@ class GatePart(Part):
     def enable(self):
         self.enable_set()
 
+    def reset(self):
+        self.seq_reset()
+
     def setup(self, registrar: PartRegistrar) -> None:
         self.enable_set = MagicMock()
         registrar.add_method_model(self.enable, "forceSet")
+        self.seq_reset = MagicMock()
+        registrar.add_method_model(self.reset, "forceReset")
 
 
 class TestPandaSeqTriggerPart(ChildTestCase):
@@ -172,6 +177,7 @@ class TestPandaSeqTriggerPart(ChildTestCase):
                 ("SEQ1.table", "seqTableA"),
                 ("SEQ2.table", "seqTableB"),
                 ("SRGATE1.forceSet", "seqSetEnable"),
+                ("SRGATE1.forceReset", "seqReset"),
             ]
         )
         self.panda.set_exports(exports)
@@ -295,7 +301,7 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         expected.add_seq_entry(1, IT, 0, hb, 0, 1)
         expected.add_seq_entry(1, GT, -350, hf, 1, 0)
         expected.add_seq_entry(3, IT, 0, hf, 1, 0)
-        expected.add_seq_entry(1, IT, 0, 125000000, 0, 1)
+        expected.add_seq_entry(1, IT, 0, 1250, 0, 1)
         expected.add_seq_entry(0, IT, 0, MIN_PULSE, 0, 0)
 
         assert seq_rows.as_tuple() == expected.as_tuple()
@@ -325,7 +331,7 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         expected.add_seq_entry(1, B0, 0, 1250, 0, 1)
         expected.add_seq_entry(1, B1, 0, hf, 1, 0)
         expected.add_seq_entry(3, IT, 0, hf, 1, 0)
-        expected.add_seq_entry(1, IT, 0, 125000000, 0, 1)
+        expected.add_seq_entry(1, IT, 0, 1250, 0, 1)
         expected.add_seq_entry(0, IT, 0, MIN_PULSE, 0, 0)
 
         assert seq_rows.as_tuple() == expected.as_tuple()
@@ -358,7 +364,7 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         expected.add_seq_entry(
             count=5, trigger=IT, position=0, half_duration=hf, live=1, dead=0
         )
-        expected.add_seq_entry(1, IT, 0, 125000000, 0, 1)
+        expected.add_seq_entry(1, IT, 0, 1250, 0, 1)
         expected.add_seq_entry(0, IT, 0, MIN_PULSE, 0, 0)
 
         assert seq_rows.as_tuple() == expected.as_tuple()
@@ -415,7 +421,7 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         expected.add_seq_entry(1, GT, -500, hf, 1, 0)
         expected.add_seq_entry(1, IT, 0, hb, 0, 1)
         expected.add_seq_entry(1, LT, 0, hf, 1, 0)
-        expected.add_seq_entry(1, IT, 0, 125000000, 0, 1)
+        expected.add_seq_entry(1, IT, 0, 1250, 0, 1)
         expected.add_seq_entry(0, IT, 0, MIN_PULSE, 0, 0)
 
         assert seq_rows.as_tuple() == expected.as_tuple()
@@ -455,7 +461,7 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         expected.add_seq_entry(1, GT, -375, hf, 1, 0)
         expected.add_seq_entry(1, IT, 0, hfb, 0, 1)
         expected.add_seq_entry(1, GT, -125, hf, 1, 0)
-        expected.add_seq_entry(1, IT, 0, 125000000, 0, 1)
+        expected.add_seq_entry(1, IT, 0, 1250, 0, 1)
         expected.add_seq_entry(0, IT, 0, MIN_PULSE, 0, 0)
 
         assert seq_rows.as_tuple() == expected.as_tuple()
