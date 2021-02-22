@@ -38,34 +38,22 @@ same or is improved by a pull request!
 
 Code Styling
 ------------
-Black and isort are used to format the code and order imports to a consistent
-style. Running these commands will reformat code and reorder imports for you::
 
-    $ pipenv run black malcolm/ tests/
-    $ pipenv run isort malcolm/ tests/
+The code in this repository conforms to standards set by the following tools:
 
-Flake8 is then used to check the formatting to ensure conventions such
-as PEP8 are followed. There is a script in the Pipfile so it can be run with::
+- black_ for code formatting
+- flake8_ for style checks
+- isort_ for import ordering
+- mypy_ for static type checking
 
-    $ pipenv run flake8
+.. _black: https://github.com/psf/black
+.. _flake8: http://flake8.pycqa.org/en/latest/
+.. _isort: https://github.com/timothycrosley/isort
+.. _mypy: https://github.com/python/mypy
 
-Finally, Mypy is used as a type checker.::
-
-    $ pipenv run mypy malcolm/ tests/
-
-Mypy, isort and Black checks are performed as part of running the tests. Flake8
-is checked separately. Both sets of checks are run in CI jobs when commits are
-pushed to GitHub using GitHub Actions.
-
-It is recommended to perform these checks before committing to ensure your
-code is correctly formatted and there are no typing issues.
-
-References:
-
-* Black: https://black.readthedocs.io/en/stable/
-* isort: https://pycqa.github.io/isort/
-* Flake8: https://flake8.pycqa.org/en/latest/
-* Mypy: https://mypy.readthedocs.io/en/stable/
+These tests will be run on code when running ``pipenv run tests`` and also
+automatically at check in. Please read the tool documentation for details
+on how to fix the errors it reports.
 
 Pipfile.lock
 ------------
@@ -82,7 +70,10 @@ See the `Diamond Python 3 Confluence area`_ for more information.
     https://confluence.diamond.ac.uk/x/GxKRBQ
 
 Documentation
-------------
+-------------
+
+Documentation is contained in the ``docs`` directory and extracted from
+docstrings of the API.
 
 Docs follow the underlining convention::
 
@@ -94,6 +85,22 @@ Docs follow the underlining convention::
 
     Heading 3
     ~~~~~~~~~
+
+
+You can build the docs from the project directory by running::
+
+    $ pipenv run docs
+    $ firefox build/html/index.html
+
+Building the docs
+~~~~~~~~~~~~~~~~~
+
+When in the project directory::
+
+    $ pipenv install --dev
+    $ pipenv run docs
+    $ firefox docs/html/index.html
+
 
 Coding Conventions
 ------------------
@@ -194,8 +201,6 @@ Also do not override __init__() just to declare Attributes,
 instead declare them at the class level and initialise to None, then
 create the Attribute model in setup.
 
-TODO: add convenience for supplying private properties as per MotionChildPart
-
 .. code-block:: python
 
     class CounterPart(Part):
@@ -226,25 +231,14 @@ TODO: add convenience for supplying private properties as per MotionChildPart
             registrar.add_method_model(self.zero)
             registrar.add_method_model(self.increment)
 
-
-Building the docs
------------------
-
-When in the project directory::
-
-    $ pipenv install --dev
-    $ pipenv run docs
-    $ firefox docs/html/index.html
-
 Release Checklist
 -----------------
 
 Before a new release, please go through the following checklist:
 
-* Choose a new PEP440_ compliant release number
-* Add a release note in CHANGELOG.rst
-* Git tag the version with message from CHANGELOG
-* Push to github and GitHub Actions will make a release on pypi
-* Push to internal GitLab and do a dls-release.py to the Python 3 area of the tag
+- Choose a new PEP440_ compliant release number
+- Git tag the version with a message summarizing the changes
+- Push to github and the actions will make a release on pypi
+- Push to internal gitlab and do a dls-release.py of the tag
 
 .. _PEP440: https://www.python.org/dev/peps/pep-0440
