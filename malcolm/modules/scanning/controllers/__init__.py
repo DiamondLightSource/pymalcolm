@@ -3,6 +3,7 @@ from malcolm.core import submodule_all
 
 from .runnablecontroller import (
     AConfigDir,
+    AConfigureParams,
     ADescription,
     AInitialDesign,
     AMri,

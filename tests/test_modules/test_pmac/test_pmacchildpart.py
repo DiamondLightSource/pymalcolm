@@ -1,4 +1,3 @@
-import socket
 from datetime import datetime
 from os import environ
 
@@ -1096,7 +1095,8 @@ class TestPMACChildPart(ChildTestCase):
         assert elapsed.total_seconds() < 3.5
 
     def test_configure_long_trajectory(self):
-        if "diamond.ac.uk" not in socket.gethostname():
+        # Skip on GitHub Actions and GitLab CI
+        if "CI" in environ:
             pytest.skip("performance test only")
         # brick triggered
         self.long_configure(False)

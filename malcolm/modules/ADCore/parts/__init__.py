@@ -10,7 +10,13 @@ from .detectordriverpart import (
     USoftTriggerModes,
 )
 from .filepathtranslatorpart import APartName, FilepathTranslatorPart
-from .hdfwriterpart import AMri, APartName, APartRunsOnWindows, HDFWriterPart
+from .hdfwriterpart import (
+    AMri,
+    APartName,
+    APartRunsOnWindows,
+    AWriteAllNDAttributes,
+    HDFWriterPart,
+)
 from .positionlabellerpart import PositionLabellerPart
 from .statspluginpart import APartName, StatsPluginPart
 

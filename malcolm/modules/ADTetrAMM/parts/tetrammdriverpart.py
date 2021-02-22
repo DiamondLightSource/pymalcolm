@@ -24,13 +24,14 @@ class TetrAMMDriverPart(ADCore.parts.DetectorDriverPart):
 
     def setup(self, registrar: PartRegistrar) -> None:
         super().setup(registrar)
-        registrar.add_attribute_model("targetSamplesPerFrame",
-                                      self.targetSamplesPerFrame,
-                                      self.targetSamplesPerFrame.set_value)
+        registrar.add_attribute_model(
+            "targetSamplesPerFrame",
+            self.targetSamplesPerFrame,
+            self.targetSamplesPerFrame.set_value,
+        )
         registrar.hook(scanning.hooks.PostRunReadyHook, self.on_post_run_ready)
         registrar.hook(scanning.hooks.PostRunArmedHook, self.on_post_run_armed)
-        registrar.hook(scanning.hooks.PostConfigureHook,
-                       self.on_post_configure)
+        registrar.hook(scanning.hooks.PostConfigureHook, self.on_post_configure)
 
     @add_call_types
     def on_post_configure(self, context: scanning.hooks.AContext):
@@ -38,8 +39,11 @@ class TetrAMMDriverPart(ADCore.parts.DetectorDriverPart):
         if self.targetSamplesPerFrame.value == 0:
             child.valuesPerRead.put_value(TETRAMM_MIN_VALUES_PER_READ)
         elif self.targetSamplesPerFrame.value > 0:
-            values_per_read = ceil(TETRAMM_BASE_FREQ * child.exposure.value
-                                   / self.targetSamplesPerFrame.value)
+            values_per_read = ceil(
+                TETRAMM_BASE_FREQ
+                * child.exposure.value
+                / self.targetSamplesPerFrame.value
+            )
             values_per_read = max(values_per_read, TETRAMM_MIN_VALUES_PER_READ)
             child.valuesPerRead.put_value(values_per_read)
 
