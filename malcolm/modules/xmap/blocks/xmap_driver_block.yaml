@@ -87,24 +87,28 @@
     description: MCA Max Energy
     pv: $(prefix):DXP1:MaxEnergy
     rbv_suffix: _RBV
+    config: false
 
 - ca.parts.CADoublePart:
     name: dxp2MaxEnergy
     description: MCA Max Energy
     pv: $(prefix):DXP2:MaxEnergy
     rbv_suffix: _RBV
+    config: false
 
 - ca.parts.CADoublePart:
     name: dxp3MaxEnergy
     description: MCA Max Energy
     pv: $(prefix):DXP3:MaxEnergy
     rbv_suffix: _RBV
+    config: false
 
 - ca.parts.CADoublePart:
     name: dxp4MaxEnergy
     description: MCA Max Energy
     pv: $(prefix):DXP4:MaxEnergy
     rbv_suffix: _RBV
+    config: false    
 
 - ca.parts.CALongPart:
     name: pixelsPerBuffer
