@@ -98,14 +98,8 @@ Then you can use the entry point to run Malcolm::
 
     $ pipenv run imalcolm
 
-Note: for development, you can also create an editable installation of Malcolm 
-with::
-
-    $ pipenv install --dev -e .
-
-Or by adding the following to the Pipfile under :code:`[dev-packages]`::
-
-    malcolm = {editable = true, path = "."}
+Note: Malcolm is now installed as an editable module by default to make
+development easier.
 
 Using pip
 ~~~~~~~~~
