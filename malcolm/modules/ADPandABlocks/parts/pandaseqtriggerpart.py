@@ -27,7 +27,7 @@ AInitialVisibility = builtin.parts.AInitialVisibility
 BATCH_SIZE: int = 5000
 
 
-class SeqTriggers(object):
+class SeqTriggers():
     """A class that generates Sequencer (SEQ) block triggers from a Points generator."""
 
     def __init__(
