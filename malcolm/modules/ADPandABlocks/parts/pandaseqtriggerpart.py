@@ -12,7 +12,7 @@ from malcolm.modules.scanning.infos import MinTurnaroundInfo
 from ..doublebuffer import MIN_PULSE, TICK, DoubleBuffer, SequencerRows
 from ..util import Trigger
 
-#: The SEQ.table attributes that should be present in PANDA.exports
+# The SEQ.table attributes that should be present in PANDA.exports
 SEQ_TABLES = ("seqTableA", "seqTableB")
 
 with Anno("Scannable name for sequencer input"):
