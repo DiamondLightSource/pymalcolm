@@ -3,7 +3,7 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
-`Unreleased`_ - 2021-02-11
+`4.4`_ - 2021-03-2
 --------------------------
 
 Added:
@@ -585,7 +585,7 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/4-3-1...master
+.. _4.4: https://github.com/dls-controls/pymalcolm/compare/4-3-1...4.4
 .. _4-3-1: https://github.com/dls-controls/pymalcolm/compare/4-2b8...4-3-1
 .. _4-2b8: https://github.com/dls-controls/pymalcolm/compare/4-2b6...4-2b8
 .. _4-2b6: https://github.com/dls-controls/pymalcolm/compare/4-2b5...4-2b6
