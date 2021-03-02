@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "b7481b4d899b3a8aa8dc93c63225444c3567b778586a41b33ced6faabbf68ff2"
+            "sha256": "83197f4820c5a346c09b1082f425eec08d44d45175f990c0643b9604b28a9975"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -18,7 +18,6 @@
             "hashes": [
                 "sha256:b330a35b7ae25ab97741dc40c0fb9c6ce64204a7f100e83d70655e5815dda650"
             ],
-            "index": "pypi",
             "version": "==0.21"
         },
         "backcall": {
@@ -31,7 +30,6 @@
             "hashes": [
                 "sha256:50cf5b5a65e7fcfd113f06c2d6b1f363e37b0caee412c75ac7608377aa0bd10a"
             ],
-            "index": "pypi",
             "version": "==2.17"
         },
         "decorator": {
@@ -104,7 +102,6 @@
                 "sha256:effab36e7fcb1c1a7b9bf5c014fdce226a4a09e498e9590bc6f36b23120c9f3e",
                 "sha256:f3b49107fbfc77333fc2b1ef4d5de2abcd57e7ea3a1482455229494cf2da56ce"
             ],
-            "index": "pypi",
             "version": "==2.9.0"
         },
         "ipython": {
@@ -112,7 +109,6 @@
                 "sha256:c987e8178ced651532b3b1ff9965925bfd445c279239697052561a9ab806d28f",
                 "sha256:cbb2ef3d5961d44e6a963b9817d4ea4e1fa2eb589c371a470fed14d8d40cbd6a"
             ],
-            "index": "pypi",
             "version": "==7.19.0"
         },
         "ipython-genutils": {
@@ -127,6 +123,10 @@
                 "sha256:92550a404bad8afed881a137ec9a461fed49eca661414be45059329614ed0707"
             ],
             "version": "==0.18.0"
+        },
+        "malcolm": {
+            "editable": true,
+            "path": "."
         },
         "nose": {
             "hashes": [
@@ -173,7 +173,6 @@
                 "sha256:dbd18bcf4889b720ba13a27ec2f2aac1981bd41203b3a3b27ba7a33f88ae4827",
                 "sha256:df609c82f18c5b9f6cb97271f03315ff0dbe481a2a02e56aeb1b1a985ce38e60"
             ],
-            "index": "pypi",
             "version": "==1.19.5"
         },
         "p4p": {
@@ -206,7 +205,6 @@
                 "sha256:f3ecadbe307b202a30b14edd99bfe573eb699c50c611c1538dcb63bc61b0c7d1",
                 "sha256:ff960870c025f3920101498afa8486191128a1a63f0b52ba0215ea18c3139f71"
             ],
-            "index": "pypi",
             "version": "==3.5.2"
         },
         "packaging": {
@@ -214,7 +212,6 @@
                 "sha256:24e0da08660a87484d1602c30bb4902d74816b6985b93de36926f5bc95741858",
                 "sha256:78598185a7008a470d64526a8059de9aaa449238f280fc9eb6b13ba6c4109093"
             ],
-            "index": "pypi",
             "version": "==20.8"
         },
         "parso": {
@@ -242,7 +239,6 @@
             "hashes": [
                 "sha256:2b583cc2e34f6bb10832793b87b58eaa555ea31a2c8b62b42fac65411cf90139"
             ],
-            "index": "pypi",
             "version": "==0.4.0"
         },
         "ply": {
@@ -271,7 +267,6 @@
                 "sha256:3693da38794561d42b0556a78af7dcb22d92ea450125577e58089ab89a890ee5",
                 "sha256:6d6ff56394c65a0cf3902db7ac40290f38df4b3db452297219f13eb1b150bda6"
             ],
-            "index": "pypi",
             "version": "==0.4.0"
         },
         "pygments": {
@@ -281,6 +276,10 @@
             ],
             "version": "==2.7.4"
         },
+        "pymalcolm": {
+            "editable": true,
+            "path": "."
+        },
         "pyparsing": {
             "hashes": [
                 "sha256:c203ec8783bf771a155b207279b9bccb8dea02d8f0c9e5f8ead507bc3246ecc1",
@@ -288,11 +287,11 @@
             ],
             "version": "==2.4.7"
         },
-        "ruamel-yaml": {
+        "ruamel.yaml": {
             "hashes": [
-                "sha256:012b9470a0ea06e4e44e99e7920277edf6b46eee0232a04487ea73a7386340a5"
+                "sha256:012b9470a0ea06e4e44e99e7920277edf6b46eee0232a04487ea73a7386340a5",
+                "sha256:076cc0bc34f1966d920a49f18b52b6ad559fbe656a0748e3535cf7b3f29ebf9e"
             ],
-            "index": "pypi",
             "version": "==0.16.12"
         },
         "ruamel.yaml.clib": {
@@ -329,7 +328,7 @@
                 "sha256:e9f7d1d8c26a6a12c23421061f9022bb62704e38211fe375c645485f38df34a2",
                 "sha256:f6061a31880c1ed6b6ce341215336e2f3d0c1deccd84957b6fa8ca474b41e89f"
             ],
-            "markers": "platform_python_implementation == 'CPython' and python_version < '3.9'",
+            "markers": "python_version < '3.9' and platform_python_implementation == 'CPython'",
             "version": "==0.2.2"
         },
         "scanpointgenerator": {
@@ -337,7 +336,6 @@
                 "sha256:28672715d82ebf67f62d3d6632dddd5cb6132e62c71d7884fcfbe6a88aa6ebe5",
                 "sha256:9be4879200f2e17635ee215af8d86bb275dc654280c256a27950cdd8e8cdc7f6"
             ],
-            "index": "pypi",
             "version": "==3.1"
         },
         "six": {
@@ -391,7 +389,6 @@
                 "sha256:fa2ba70284fa42c2a5ecb35e322e68823288a4251f9ba9cc77be04ae15eada68",
                 "sha256:fba85b6cd9c39be262fcd23865652920832b61583de2a2ca907dbd8e8a8c81e5"
             ],
-            "index": "pypi",
             "version": "==6.1"
         },
         "traitlets": {
@@ -406,7 +403,6 @@
                 "sha256:3429df0c6b0c5567db65c6a928ff061432e3c20b989d26ca7b48ef89f198317c",
                 "sha256:3eb61d229d510737b0f2bc8e48f9df7afef1c667abe680e0d55ff4df087ba213"
             ],
-            "index": "pypi",
             "version": "==0.5.2"
         },
         "wcwidth": {
@@ -737,7 +733,6 @@
                 "sha256:24e0da08660a87484d1602c30bb4902d74816b6985b93de36926f5bc95741858",
                 "sha256:78598185a7008a470d64526a8059de9aaa449238f280fc9eb6b13ba6c4109093"
             ],
-            "index": "pypi",
             "version": "==20.8"
         },
         "pathspec": {
@@ -1043,7 +1038,7 @@
                 "sha256:d746a437cdbca200622385305aedd9aef68e8a645e385cc483bdc5e488f07166",
                 "sha256:e683e409e5c45d5c9082dc1daf13f6374300806240719f95dc783d1fc942af10"
             ],
-            "markers": "implementation_name == 'cpython' and python_version < '3.8'",
+            "markers": "python_version < '3.8' and implementation_name == 'cpython'",
             "version": "==1.4.2"
         },
         "typing": {

@@ -73,12 +73,44 @@ be of interest.
 Installation Guide
 ------------------
 
-For now, in a Diamond environment just run::
+Using pipenv
+~~~~~~~~~~~~
 
-    git clone https://github.com/dls-controls/pymalcolm
+We now use pipenv_ to generate the environment for Malcolm at Diamond. This
+should also work in any environment where pipenv is available.
 
-All optional modules are already installed and available
+.. _pipenv: https://www.python.org/dev/peps/pep-0440
 
+First download the source code::
+
+    $ git clone git://github.com/dls-controls/pymalcolm.git
+    $ cd pymalcolm
+
+To be able to use Malcolm run::
+
+    $ pipenv install
+
+For development you will need additional development packages::
+
+    $ pipenv install --dev
+
+Then you can use the entry point to run Malcolm::
+
+    $ pipenv run imalcolm
+
+Note: Malcolm is now installed as an editable module by default to make
+development easier.
+
+Using pip
+~~~~~~~~~
+
+Otherwise you can install Malcolm using pip in any venv::
+
+    $ pip install malcolm
+
+Which then gives you the entry point (assuming the venv is activated)::
+
+    $ imalcolm
 
 
 .. _repository:
