@@ -1,3 +1,4 @@
+from collections import namedtuple
 from typing import Union
 
 import numpy as np
@@ -56,6 +57,30 @@ UPositionUnits = pandablocks.util.UPositionUnits
 UPositionScales = pandablocks.util.UPositionScales
 UPositionOffsets = pandablocks.util.UPositionOffsets
 UPositionCaptures = pandablocks.util.UPositionCaptures
+
+
+SequencerRow = namedtuple(
+    "SequencerRow",
+    [
+        "repeats",
+        "trigger",
+        "position",
+        "time1",
+        "outa1",
+        "outb1",
+        "outc1",
+        "outd1",
+        "oute1",
+        "outf1",
+        "time2",
+        "outa2",
+        "outb2",
+        "outc2",
+        "outd2",
+        "oute2",
+        "outf2",
+    ],
+)
 
 
 class SequencerTable(Table):

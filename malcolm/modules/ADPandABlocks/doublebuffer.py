@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Iterator, List, Optional, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Type, TypeVar
 
 from malcolm.core import Block, Context, Future
 
-from .util import SequencerTable, Trigger
+from .util import SequencerRow, SequencerTable, Trigger
 
 #: The number of sequencer table rows
 SEQ_TABLE_ROWS: int = 4096
@@ -25,17 +25,23 @@ SEQ_TABLE_SWITCH_DELAY: int = 6
 # table used by the double buffering system.
 MIN_TABLE_DURATION: float = 15.0
 
+T = TypeVar("T", bound="SequencerRows")  # Allows us to return cls from classmethod
+
 
 class SequencerRows:
     """A class that represents a series of rows for the Sequencer (SEQ) block."""
 
-    def __init__(self, rows: List[Tuple] = None) -> None:
-        self._rows: List[Tuple] = []
+    def __init__(self, rows: List[SequencerRow] = None) -> None:
+        self._rows: List[SequencerRow] = []
         self._duration: float = 0
 
         if rows:
             self._rows = rows
             self._duration = self._calculate_duration(self._rows)
+
+    @classmethod
+    def from_tuple_list(cls: Type[T], rows: List[Tuple]) -> T:
+        return cls([SequencerRow(*row) for row in rows])
 
     def add_seq_entry(
         self,
@@ -61,44 +67,45 @@ class SequencerRows:
         self._duration += count * (2 * half_duration - trim)
 
     def split(self, count: int) -> SequencerRows:
-        """Truncate this object after `count` rows, and return the remainder."""
+        """Truncate this object after `count` rows, and return the remainder.
+
+        We need the final row of this object to have a count of 1 in order to subtract
+        the table switch delay."""
 
         assert len(self._rows) > 0, "Zero length seq rows should never be split"
 
         if len(self._rows) >= count:
-            final_row = list(self._rows[count - 1])
-            if final_row[0] == 0:  # Final row in continuous loop
+            final_row = self._rows[count - 1]
+            if final_row.repeats == 0:  # Final row in continuous loop
                 assert len(self._rows) == count  # Continuous loop always at end
                 return SequencerRows()
 
-            if final_row[0] == 1:
+            if final_row.repeats == 1:
                 remainder = SequencerRows(self._rows[count:])
                 self._rows = self._rows[:count]
 
-            elif final_row[0] > 1:
-                final_row = list(final_row)
-                final_row[0] -= 1
-                remainder = SequencerRows([tuple(final_row)])
+            elif final_row.repeats > 1:
+                remainder = SequencerRows(
+                    [final_row._replace(repeats=final_row.repeats - 1)]
+                )
                 remainder.extend(SequencerRows(self._rows[count:]))
-                final_row[0] = 1
                 self._rows = self._rows[: count - 1]
-                self._rows.append(tuple(final_row))
+                self._rows.append(final_row._replace(repeats=1))
         else:
             remainder = SequencerRows()
 
-            if self._rows[-1][0] == 0:
+            if self._rows[-1].repeats == 0:
                 return remainder
 
-            if self._rows[-1][0] > 1:
-                final_row = list(self._rows[-1])
-                final_row[0] -= 1
-                self._rows[-1] = tuple(final_row)
-                final_row[0] = 1
-                self._rows += [tuple(final_row)]
+            if self._rows[-1].repeats > 1:
+                final_row = self._rows[-1]
+                self._rows[-1] = final_row._replace(repeats=final_row.repeats - 1)
+                self._rows += [final_row._replace(repeats=1)]
 
-        final_self_row = list(self._rows[-1])
-        final_self_row[10] -= SEQ_TABLE_SWITCH_DELAY
-        self._rows[-1] = tuple(final_self_row)
+        final_self_row = self._rows[-1]
+        self._rows[-1] = final_self_row._replace(
+            time2=final_self_row.time2 - SEQ_TABLE_SWITCH_DELAY
+        )
         self._duration -= SEQ_TABLE_SWITCH_DELAY
         self._duration -= remainder.duration
         return remainder
@@ -112,7 +119,7 @@ class SequencerRows:
         """Return a `SequencerTable` from this object's rows."""
         return SequencerTable.from_rows(self._rows)
 
-    def as_tuple(self) -> Tuple[Tuple, ...]:
+    def as_tuples(self) -> Tuple[Tuple, ...]:
         """Return the sequencer rows as a tuple of tuples.
 
         This is used for comparisons during testing.
@@ -137,13 +144,13 @@ class SequencerRows:
         live: int = 0,
         dead: int = 0,
         trim: int = 0,
-    ) -> Tuple:
+    ) -> SequencerRow:
         """Create a pulse with phase1 having the given live/dead values.
 
         If trim=0, there is a 50% duty cycle. Trim (in ticks) reduces total duration by
         subtracting ticks from the phase2 time.
         """
-        return (
+        return SequencerRow(
             repeats,
             trigger,
             position,
@@ -166,11 +173,11 @@ class SequencerRows:
         )
 
     @staticmethod
-    def _calculate_duration(rows: List[Tuple]) -> float:
+    def _calculate_duration(rows: List[SequencerRow]) -> float:
         """Return the duration of the given Sequencer rows (in list format)."""
         duration = 0.0
         for row in rows:
-            duration += row[0] * (row[3] + row[10])
+            duration += row.repeats * (row.time1 + row.time2)
 
         return duration
 

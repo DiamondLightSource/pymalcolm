@@ -303,7 +303,7 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         expected.add_seq_entry(1, IT, 0, 1250, 0, 1)
         expected.add_seq_entry(0, IT, 0, MIN_PULSE, 0, 0)
 
-        assert seq_rows.as_tuple() == expected.as_tuple()
+        assert seq_rows.as_tuples() == expected.as_tuples()
 
     def test_configure_motion_controller_trigger(self):
         xs = LineGenerator("x", "mm", 0.0, 0.3, 4, alternate=True)
@@ -333,7 +333,7 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         expected.add_seq_entry(1, IT, 0, 1250, 0, 1)
         expected.add_seq_entry(0, IT, 0, MIN_PULSE, 0, 0)
 
-        assert seq_rows.as_tuple() == expected.as_tuple()
+        assert seq_rows.as_tuples() == expected.as_tuples()
 
     def test_configure_stepped(self):
         xs = LineGenerator("x", "mm", 0.0, 0.3, 4, alternate=True)
@@ -366,7 +366,7 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         expected.add_seq_entry(1, IT, 0, 1250, 0, 1)
         expected.add_seq_entry(0, IT, 0, MIN_PULSE, 0, 0)
 
-        assert seq_rows.as_tuple() == expected.as_tuple()
+        assert seq_rows.as_tuples() == expected.as_tuples()
 
     def test_configure_single_point_multi_frames(self):
         # This test uses PCAP to generate a static point test.
@@ -423,7 +423,7 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         expected.add_seq_entry(1, IT, 0, 1250, 0, 1)
         expected.add_seq_entry(0, IT, 0, MIN_PULSE, 0, 0)
 
-        assert seq_rows.as_tuple() == expected.as_tuple()
+        assert seq_rows.as_tuples() == expected.as_tuples()
 
     def test_configure_with_delay_after(self):
         # a test to show that delay_after inserts a "loop_back" turnaround
@@ -463,7 +463,7 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         expected.add_seq_entry(1, IT, 0, 1250, 0, 1)
         expected.add_seq_entry(0, IT, 0, MIN_PULSE, 0, 0)
 
-        assert seq_rows.as_tuple() == expected.as_tuple()
+        assert seq_rows.as_tuples() == expected.as_tuples()
 
     def test_configure_long_pcomp_row_trigger(self):
         # Skip on GitHub Actions and GitLab CI
@@ -525,7 +525,7 @@ class TestDoubleBuffer(ChildTestCase):
         """Compare sequencer table output to SequencerRows object.
 
         This converts a sequencer table to the same format as produced by the
-        SequencerRows.as_tuple() method.
+        SequencerRows.as_tuples() method.
         """
         t = table
         table_params = [
@@ -550,7 +550,7 @@ class TestDoubleBuffer(ChildTestCase):
 
         # Transpose and convert to tuples
         table_tuple = tuple(zip(*table_params))
-        assert table_tuple == rows.as_tuple()
+        assert table_tuple == rows.as_tuples()
 
     @staticmethod
     def rows_generator(rows_arr):
@@ -691,7 +691,7 @@ class TestSequencerRows(ChildTestCase):
 
         total_ticks = (3000 + 2700) + 3 * (2000 + 1900)
 
-        seq_rows = SequencerRows(initial_list)
+        seq_rows = SequencerRows.from_tuple_list(initial_list)
         seq_rows.add_seq_entry()
         seq_rows.add_seq_entry(4, Trigger.POSA_GT, 400, 1000, 0, 1, 50)
         seq_rows.add_seq_entry(
@@ -762,16 +762,15 @@ class TestSequencerRows(ChildTestCase):
             == [0, 0]
         )
 
-    def test_as_tuple(self):
+    def test_as_tuples(self):
         initial_list = [
             (1, Trigger.POSA_GT, 100, 3000, 1, 0, 0, 0, 0, 0, 2700, 0, 0, 0, 0, 0, 0),
             (3, Trigger.BITA_0, 300, 2000, 0, 1, 0, 0, 0, 0, 1900, 0, 0, 0, 0, 0, 0),
         ]
+        seq_rows = SequencerRows.from_tuple_list(initial_list)
 
         expected = tuple(initial_list)
-
-        seq_rows = SequencerRows(initial_list)
-        assert seq_rows.as_tuple() == expected
+        assert seq_rows.as_tuples() == expected
 
     def test_split_below_max_table_size(self):
         seq_rows = SequencerRows()
@@ -787,8 +786,8 @@ class TestSequencerRows(ChildTestCase):
 
         remainder = seq_rows.split(100)
 
-        assert seq_rows.as_tuple() == expected.as_tuple()
-        assert remainder.as_tuple() == SequencerRows().as_tuple()
+        assert seq_rows.as_tuples() == expected.as_tuples()
+        assert remainder.as_tuples() == SequencerRows().as_tuples()
 
     def test_split_above_max_table_size(self):
         seq_rows = SequencerRows()
@@ -810,8 +809,8 @@ class TestSequencerRows(ChildTestCase):
 
         remainder = seq_rows.split(3)
 
-        assert seq_rows.as_tuple() == expected.as_tuple()
-        assert remainder.as_tuple() == exp_rem.as_tuple()
+        assert seq_rows.as_tuples() == expected.as_tuples()
+        assert remainder.as_tuples() == exp_rem.as_tuples()
 
     def test_split_with_final_row_zero_repeat(self):
         seq_rows = SequencerRows()
@@ -826,8 +825,8 @@ class TestSequencerRows(ChildTestCase):
 
         remainder = seq_rows.split(3)
 
-        assert seq_rows.as_tuple() == expected.as_tuple()
-        assert remainder.as_tuple() == SequencerRows().as_tuple()
+        assert seq_rows.as_tuples() == expected.as_tuples()
+        assert remainder.as_tuples() == SequencerRows().as_tuples()
 
     def test_split_with_final_row_one_repeat(self):
         seq_rows = SequencerRows()
@@ -844,5 +843,5 @@ class TestSequencerRows(ChildTestCase):
 
         remainder = seq_rows.split(3)
 
-        assert seq_rows.as_tuple() == expected.as_tuple()
-        assert remainder.as_tuple() == SequencerRows().as_tuple()
+        assert seq_rows.as_tuples() == expected.as_tuples()
+        assert remainder.as_tuples() == SequencerRows().as_tuples()
