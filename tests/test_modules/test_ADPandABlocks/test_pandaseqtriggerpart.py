@@ -465,7 +465,7 @@ class TestPandaSeqTriggerPart(ChildTestCase):
 
         assert seq_rows.as_tuples() == expected.as_tuples()
 
-    def test_configure_with_no_points(self):
+    def test_configure_with_zero_points(self):
         xs = LineGenerator("x", "mm", 0.0, 0.3, 4, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
         generator = CompoundGenerator([ys, xs], [], [], 1.0)
@@ -476,6 +476,28 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         # Triggers
         IT = Trigger.IMMEDIATE
         expected = SequencerRows()
+        expected.add_seq_entry(1, IT, 0, 1250, 0, 1)
+        expected.add_seq_entry(0, IT, 0, MIN_PULSE, 0, 0)
+
+        assert seq_rows.as_tuples() == expected.as_tuples()
+
+    def test_configure_with_one_point(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.3, 4, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
+        generator = CompoundGenerator([ys, xs], [], [], 1.0)
+        self.set_motor_attributes()
+        axes_to_move = ["x", "y"]
+
+        seq_rows = self.get_sequencer_rows(generator, axes_to_move, steps=1)
+        # Triggers
+        IT = Trigger.IMMEDIATE
+        LT = Trigger.POSA_LT
+        # Half a frame
+        hf = 62500000
+        expected = SequencerRows()
+        expected.add_seq_entry(
+            count=1, trigger=LT, position=50, half_duration=hf, live=1, dead=0
+        )
         expected.add_seq_entry(1, IT, 0, 1250, 0, 1)
         expected.add_seq_entry(0, IT, 0, MIN_PULSE, 0, 0)
 
