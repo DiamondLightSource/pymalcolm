@@ -225,7 +225,7 @@ class DoubleBuffer:
 
         This is designed to be called as part of the malcolm configure process.
         """
-        self._clean_up()
+        self.clean_up()
         self._table_gen = self._get_tables(rows_generator)
 
         try:
@@ -244,7 +244,7 @@ class DoubleBuffer:
             try:
                 self._fill_table(table, self._table_gen)
             except StopIteration:
-                self._clean_up()
+                self.clean_up()
                 return
 
         self._seq_status[table] = value
@@ -272,12 +272,8 @@ class DoubleBuffer:
 
         self._futures = []
 
-    def _clean_up(self) -> None:
+    def clean_up(self) -> None:
         """Clean up in preparation for the next scan."""
         self._remove_subscriptions()
         self._seq_status = {"seqA": None, "seqB": None}
         self._finished = True
-
-    def abort(self) -> None:
-        """Abort the double buffering process."""
-        self._clean_up()
