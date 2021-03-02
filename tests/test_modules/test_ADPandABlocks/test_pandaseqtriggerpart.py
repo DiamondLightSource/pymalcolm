@@ -87,6 +87,7 @@ class SequencerPart(Part):
 
 class GatePart(Part):
     enable_set = None
+    seq_reset = None
 
     def enable(self):
         self.enable_set()
@@ -252,6 +253,62 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         self.o.on_run(self.context)
         self.gate_part.enable_set.assert_called_once()
         buffer_instance.run.assert_called_once()
+
+    @patch(
+        "malcolm.modules.ADPandABlocks.parts.pandaseqtriggerpart.PandASeqTriggerPart"
+        ".on_abort",
+        autospec=True,
+    )
+    def test_reset_triggers_abort(self, abort_method):
+        abort_method.assert_not_called()
+        self.o.on_reset(self.context)
+        abort_method.assert_called_once()
+
+    @patch(
+        "malcolm.modules.ADPandABlocks.parts.pandaseqtriggerpart.DoubleBuffer.clean_up",
+        autospec=True,
+    )
+    def test_abort_cleans_up_correctly(self, db_clean_up_method):
+        xs = LineGenerator("x", "mm", 0.0, 0.3, 4, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
+        generator = CompoundGenerator([ys, xs], [], [], 1.0)
+        generator.prepare()
+        completed_steps = 0
+        steps_to_do = generator.size
+        self.set_motor_attributes()
+        axes_to_move = ["x", "y"]
+
+        db_clean_up_method.assert_not_called()
+        self.o.on_configure(
+            self.context, completed_steps, steps_to_do, {}, generator, axes_to_move
+        )
+        db_clean_up_method.assert_called_once()
+
+        self.gate_part.seq_reset.assert_not_called()
+        self.o.on_abort(self.context)
+        self.gate_part.seq_reset.assert_called_once()
+        assert 2 == db_clean_up_method.call_count
+
+    def test_abort_does_not_throw_exception_if_no_seq_reset_exported(self):
+        original_exports = self.panda.exports.value.rows()
+        exports = ExportTable.from_rows(
+            [row for row in original_exports if row[1] != "seqReset"]
+        )
+        self.panda.set_exports(exports)
+
+        xs = LineGenerator("x", "mm", 0.0, 0.3, 4, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
+        generator = CompoundGenerator([ys, xs], [], [], 1.0)
+        generator.prepare()
+        completed_steps = 0
+        steps_to_do = generator.size
+        self.set_motor_attributes()
+        axes_to_move = ["x", "y"]
+
+        self.o.on_configure(
+            self.context, completed_steps, steps_to_do, {}, generator, axes_to_move
+        )
+        self.o.on_abort(self.context)
 
     @patch(
         "malcolm.modules.ADPandABlocks.parts.pandaseqtriggerpart.DoubleBuffer",

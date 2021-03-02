@@ -531,7 +531,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
     def on_abort(self, context: builtin.hooks.AContext) -> None:
         try:
             self.reset_seq(context)
-        except AttributeError:
+        except (AttributeError, KeyError):
             # Ensure we can reset or abort if different design is used for PandA
             pass
 
