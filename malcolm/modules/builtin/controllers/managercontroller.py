@@ -1,10 +1,10 @@
 import os
 import socket
 import subprocess
-from distutils.version import StrictVersion
 from typing import Dict, List, Set, Tuple
 
 from annotypes import Anno, add_call_types, deserialize_object, json_decode, json_encode
+from packaging.version import parse
 
 from malcolm.compat import OrderedDict
 from malcolm.core import (
@@ -70,7 +70,7 @@ def check_git_version(required_version):
         )
     )
     version = output.decode("utf-8").replace("git version ", "").strip("\n")
-    return StrictVersion(version) >= StrictVersion(required_version)
+    return parse(version) >= parse(required_version)
 
 
 class ManagerController(StatefulController):
