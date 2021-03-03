@@ -2,7 +2,7 @@ import os
 import shutil
 import unittest
 
-from mock import MagicMock, call
+from mock import MagicMock, call, patch
 
 from malcolm.compat import OrderedDict
 from malcolm.core import (
@@ -14,9 +14,37 @@ from malcolm.core import (
     Widget,
     config_tag,
 )
-from malcolm.modules.builtin.controllers import ManagerController, StatefulController
+from malcolm.modules.builtin.controllers import (
+    ManagerController,
+    StatefulController,
+    check_git_version,
+)
 from malcolm.modules.builtin.parts import ChildPart
 from malcolm.modules.builtin.util import ExportTable, LayoutTable, ManagerStates
+
+
+class TestCheckGitVersion(unittest.TestCase):
+    @patch("subprocess.check_output")
+    def test_versions_are_new_enough(self, mock_check_output):
+        required_version = "1.7.2"
+        versions_to_check = ["2.2", "2.0alpha1", "2.16.5", "2.0.1.2"]
+        try:
+            for version in versions_to_check:
+                mock_check_output.return_value = f"git version {version}\n".encode()
+                assert check_git_version(required_version) is True
+        except AssertionError:
+            self.fail(f"Expected version {version} to pass check")
+
+    @patch("subprocess.check_output")
+    def test_versions_are_too_old(self, mock_check_output):
+        required_version = "1.7.2"
+        versions_to_check = ["1.2", "1.0alpha1", "1.6.5", "1.0.1.2"]
+        try:
+            for version in versions_to_check:
+                mock_check_output.return_value = f"git version {version}\n".encode()
+                assert check_git_version(required_version) is False
+        except AssertionError:
+            self.fail(f"Expected version {version} to fail check")
 
 
 class TestManagerStates(unittest.TestCase):
