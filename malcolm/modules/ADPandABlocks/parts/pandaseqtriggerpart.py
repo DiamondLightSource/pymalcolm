@@ -340,7 +340,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         # The DoubleBuffer object used to load tables during a scan
         self.db_seq_table: Optional[DoubleBuffer] = None
 
-    def setup(self, registrar: PartRegistrar) -> None:  # pragma: no cover
+    def setup(self, registrar: PartRegistrar) -> None:
         super().setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
@@ -353,8 +353,8 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
             self.on_configure,
         )
         registrar.hook(scanning.hooks.RunHook, self.on_run)
-        registrar.hook(scanning.hooks.AbortHook, self.on_abort)
         registrar.hook(builtin.hooks.ResetHook, self.on_reset)
+        registrar.hook(scanning.hooks.AbortHook, self.on_abort)
 
     @add_call_types
     def on_report_status(

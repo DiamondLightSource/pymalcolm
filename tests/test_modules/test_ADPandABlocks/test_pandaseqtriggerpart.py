@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 
 import pytest
-from mock import MagicMock, patch
+from mock import MagicMock, Mock, call, patch
 from numpy import isclose
 from scanpointgenerator import CompoundGenerator, LineGenerator, StaticPointGenerator
 
@@ -33,9 +33,18 @@ from malcolm.modules.ADPandABlocks.util import (
     Trigger,
 )
 from malcolm.modules.builtin.controllers import BasicController, ManagerController
+from malcolm.modules.builtin.hooks import ResetHook
 from malcolm.modules.builtin.parts import ChildPart
 from malcolm.modules.builtin.util import ExportTable
 from malcolm.modules.pandablocks.util import PositionCapture
+from malcolm.modules.scanning.hooks import (
+    AbortHook,
+    ConfigureHook,
+    PostRunArmedHook,
+    ReportStatusHook,
+    RunHook,
+    SeekHook,
+)
 from malcolm.testutil import ChildTestCase
 from malcolm.yamlutil import make_block_creator
 
@@ -218,6 +227,23 @@ class TestPandaSeqTriggerPart(ChildTestCase):
             velocitySettle=0.0,
             units=units,
         )
+
+    # Patch the super setup() method so we only get desired calls
+    @patch("malcolm.modules.builtin.parts.ChildPart.setup")
+    def test_setup(self, mocked_super_setup):
+        mock_registrar = Mock(name="mock_registrar")
+        call_list = [
+            call(ReportStatusHook, self.o.on_report_status),
+            call((ConfigureHook, SeekHook, PostRunArmedHook), self.o.on_configure),
+            call(RunHook, self.o.on_run),
+            call(ResetHook, self.o.on_reset),
+            call(AbortHook, self.o.on_abort),
+        ]
+
+        self.o.setup(mock_registrar)
+
+        mocked_super_setup.assert_called_once_with(mock_registrar)
+        mock_registrar.hook.assert_has_calls(call_list, any_order=True)
 
     @patch(
         "malcolm.modules.ADPandABlocks.parts.pandaseqtriggerpart.DoubleBuffer",
