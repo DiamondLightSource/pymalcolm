@@ -11,6 +11,7 @@ from .managercontroller import (
     ATemplateDesigns,
     AUseGit,
     ManagerController,
+    check_git_version,
 )
 from .proxycontroller import AComms, AMri, APublish, ProxyController
 from .servercomms import ADescription, AMri, ServerComms
