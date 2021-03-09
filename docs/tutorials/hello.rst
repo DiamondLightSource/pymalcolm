@@ -3,8 +3,9 @@
 Hello World Tutorial
 ====================
 
-If you have followed the `installation_guide` you will have a checked out a
-copy of pymalcolm which includes some example code.
+If you have followed the `installation_guide` using pipenv you will have a
+checked out a copy of pymalcolm, which includes some example code, and a
+virtual environment ready for running Malcolm.
   
 So now would be a good time for a "Hello World" tutorial.
 
@@ -22,7 +23,7 @@ So how do we launch a Malcolm process?
 
 The simplest way is to use the imalcolm application. It will be installed on the
 system as ``imalcolm``, but you can use it from your checked out copy of
-pymalcolm by running ``./malcolm/imalcolm.py``. You also need to tell imalcolm
+pymalcolm by running ``pipenv run imalcolm``. You also need to tell imalcolm
 what Blocks it should instantiate and what Comms modules it should use by
 writing a `YAML`_ `process_definition_` file.
 
@@ -42,16 +43,11 @@ process or a web GUI.
 
 Let's run it now::
 
-    [me@mypc pymalcolm]$ ./malcolm/imalcolm.py malcolm/modules/demo/DEMO-HELLO.yaml
-    Loading...
-    Python 2.7.13 (default, Oct  3 2017, 11:17:53)
-    Type "copyright", "credits" or "license" for more information.
-
-    IPython 5.4.1 -- An enhanced Interactive Python.
-    ?         -> Introduction and overview of IPython's features.
-    %quickref -> Quick reference.
-    help      -> Python's own help system.
-    object?   -> Details about 'object', use 'object??' for extra details.
+    [me@mypc pymalcolm]$ pipenv run imalcolm malcolm/modules/demo/DEMO-HELLO.yaml
+    Loading malcolm...
+    Python 3.7.2 (default, Jan 20 2020, 11:03:41)
+    Type 'copyright', 'credits' or 'license' for more information
+    IPython 7.19.0 -- An enhanced Interactive Python. Type '?' for help.
 
 
     Welcome to iMalcolm.
@@ -106,16 +102,11 @@ Well if we start a second imalcolm session we can tell it to connect to the
 first session, get the HELLO block from the first Process, and run a Method
 on it::
 
-    [me@mypc pymalcolm]$ ./malcolm/imalcolm.py -c ws://localhost:8008
-    Loading...
-    Python 2.7.13 (default, Oct  3 2017, 11:17:53)
-    Type "copyright", "credits" or "license" for more information.
-
-    IPython 5.4.1 -- An enhanced Interactive Python.
-    ?         -> Introduction and overview of IPython's features.
-    %quickref -> Quick reference.
-    help      -> Python's own help system.
-    object?   -> Details about 'object', use 'object??' for extra details.
+    [me@mypc pymalcolm]$ pipenv run imalcolm -c ws://localhost:8008
+    Loading malcolm...
+    Python 3.7.2 (default, Jan 20 2020, 11:03:41)
+    Type 'copyright', 'credits' or 'license' for more information
+    IPython 7.19.0 -- An enhanced Interactive Python. Type '?' for help.
 
 
     Welcome to iMalcolm.

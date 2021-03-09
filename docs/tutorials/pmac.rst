@@ -70,7 +70,7 @@ Define the Process Definition
 
 Let's make a Process Definition in ``etc/malcolm/BLxxI-ML-MALC-01.yaml``::
 
-    #!/dls_sw/prod/common/python/RHEL7-x86_64/pymalcolm/4-x/prefix/bin/imalcolm
+    #!/dls_sw/prod/tools/RHEL7-x86_64/defaults/bin/imalcolm
 
     # Define the directory that this YAML file lives in as a Malcolm module
     # so we can use Blocks defined there as BLxxI.blocks.yyy
@@ -124,7 +124,16 @@ The first thing to note is the ``#!`` line at the top of the file. This means
 that we can make the YAML file executable, and when it is executed
 ``imalcolm.py`` will be run with the path of the YAML file passed as an
 argument. The full path to ``imalcolm.py`` allows us to pin to a particular
-version of Malcolm.
+version of Malcolm. The example above will used the configured tool version of
+Malcolm, which is usually the latest release. But this can be pinned to a
+specific version, with the example below for 4.4::
+
+    #!/dls_sw/prod/python3/RHEL7-x86_64/pymalcolm/4.4/prefix/bin/imalcolm
+
+Alternatively, you can also run from a created virtual environment from a
+checked-out version of Malcolm using::
+
+    [me@mypc pymalcolm]$ pipenv run /path/to/yaml/dir/BLxxI-ML-MALC-01.yaml
 
 After this, we've defined a ``BLxxI`` module, and created two beamline specific
 Blocks from it (``brick01_block`` and ``scan_block``), and then
