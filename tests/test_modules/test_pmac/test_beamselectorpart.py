@@ -37,10 +37,10 @@ class TestBeamSelectorPart(ChildTestCase):
         self.o = BeamSelectorPart(
             name="beamSelector",
             mri="PMAC",
-            selectorAxis="x",
-            tomoAngle=0,
-            diffAngle=0.5,
-            moveTime=0.5,
+            selector_axis="x",
+            tomo_angle=0,
+            diff_angle=0.5,
+            move_time=0.5,
         )
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
@@ -165,29 +165,62 @@ class TestBeamSelectorPart(ChildTestCase):
             ),
         ]
 
-    def test_invalid_parameters(self):
-        self.part_under_test = BeamSelectorPart(
-            name="beamSelector2",
-            mri="PMAC",
-            selectorAxis="x",
-            tomoAngle="invalid",
-            diffAngle=0.5,
-            moveTime=0.5,
-        )
+    def test_invalid_parameters_raise_ValueError(self):
+        # Some valid parameters
+        name = "beamSelectorPart"
+        mri = "PMAC"
+        selector_axis = "x"
+        tomo_angle = 30.0
+        diff_angle = 65.0
+        move_time = 0.25
 
-        self.context.set_notify_dispatch_request(
-            self.part_under_test.notify_dispatch_request
-        )
+        # Mix with one of these invalid parameters
+        invalid_selector_axes = [0.0, 1]
+        invalid_angles = ["not_an_angle"]
+        invalid_move_times = ["this is not a number", -1.0, 0.0, "-0.45"]
 
-        self.set_motor_attributes()
-        nCycles = 1
-        generator = CompoundGenerator(
-            [StaticPointGenerator(nCycles)], [], [], duration=0.5
-        )
-        generator.prepare()
+        for invalid_axis in invalid_selector_axes:
+            self.assertRaises(
+                ValueError,
+                BeamSelectorPart,
+                name,
+                mri,
+                invalid_axis,
+                tomo_angle,
+                diff_angle,
+                move_time,
+            )
 
-        self.part_under_test.on_configure(self.context, 0, nCycles, {}, generator, [])
+        for invalid_angle in invalid_angles:
+            self.assertRaises(
+                ValueError,
+                BeamSelectorPart,
+                name,
+                mri,
+                selector_axis,
+                invalid_angle,
+                diff_angle,
+                move_time,
+            )
+            self.assertRaises(
+                ValueError,
+                BeamSelectorPart,
+                name,
+                mri,
+                selector_axis,
+                tomo_angle,
+                invalid_angle,
+                move_time,
+            )
 
-        assert self.part_under_test.tomoAngle == 0.0
-        assert self.part_under_test.diffAngle == 0.0
-        assert self.part_under_test.move_time == 0.5
+        for invalid_move_time in invalid_move_times:
+            self.assertRaises(
+                ValueError,
+                BeamSelectorPart,
+                name,
+                mri,
+                selector_axis,
+                tomo_angle,
+                diff_angle,
+                invalid_move_time,
+            )

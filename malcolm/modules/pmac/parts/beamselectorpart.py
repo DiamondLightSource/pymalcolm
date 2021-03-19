@@ -1,4 +1,4 @@
-from annotypes import add_call_types
+from annotypes import add_call_types, Anno
 from scanpointgenerator import CompoundGenerator, LineGenerator, StaticPointGenerator
 
 from malcolm.modules import builtin, scanning
@@ -12,9 +12,14 @@ AIV = builtin.parts.AInitialVisibility
 # Pull re-used annotypes into our namespace in case we are subclassed
 APartName = builtin.parts.APartName
 AMri = builtin.parts.AMri
-AAxisName = builtin.parts.AValue
-AAngle = builtin.parts.AValue
-ATime = builtin.parts.AValue
+with Anno("Name of the selector axis scannable"):
+    ASelectorAxis = str
+with Anno("Angle of for the tomography detector position"):
+    ATomoAngle = float
+with Anno("Angle of the diffraction detector position"):
+    ADiffAngle = float
+with Anno("Minimum move time between the two positions"):
+    AMoveTime = float
 
 
 class BeamSelectorPart(PmacChildPart):
@@ -22,23 +27,24 @@ class BeamSelectorPart(PmacChildPart):
         self,
         name: APartName,
         mri: AMri,
-        selectorAxis: AAxisName,
-        tomoAngle: AAngle,
-        diffAngle: AAngle,
-        moveTime: ATime,
+        selector_axis: ASelectorAxis,
+        tomo_angle: ATomoAngle,
+        diff_angle: ADiffAngle,
+        move_time: AMoveTime,
         initial_visibility: AIV = False,
     ) -> None:
-        super().__init__(name, mri, initial_visibility)
-        self.selectorAxis = selectorAxis
+        # Some basic checking
+        parsed_move_time = float(move_time)
+        if parsed_move_time <= 0.0:
+            raise ValueError("Move time must be larger than zero.")
+        elif not isinstance(selector_axis, str):
+            raise ValueError("Selector axis name must be a string")
 
-        try:
-            self.tomoAngle = float(tomoAngle)
-            self.diffAngle = float(diffAngle)
-            self.move_time = float(moveTime)
-        except ValueError:
-            self.tomoAngle = 0.0
-            self.diffAngle = 0.0
-            self.move_time = 0.500  # seconds
+        super().__init__(name, mri, initial_visibility)
+        self.selector_axis = selector_axis
+        self.tomo_angle = float(tomo_angle)
+        self.diff_angle = float(diff_angle)
+        self.move_time = float(move_time)
 
     @add_call_types
     def on_configure(
@@ -61,9 +67,9 @@ class BeamSelectorPart(PmacChildPart):
 
         # Create a linear scan axis (proper rotation)
         selector_axis = LineGenerator(
-            self.selectorAxis, "deg", self.tomoAngle, self.diffAngle, 1, alternate=True
+            self.selector_axis, "deg", self.tomo_angle, self.diff_angle, 1, alternate=True
         )
-        axesToMove = [self.selectorAxis]
+        axesToMove = [self.selector_axis]
 
         def get_minturnaround():
             # See if there is a minimum turnaround
