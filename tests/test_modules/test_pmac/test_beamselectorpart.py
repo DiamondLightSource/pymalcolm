@@ -8,6 +8,7 @@ from malcolm.core import Context, Process
 from malcolm.modules.builtin.defines import tmp_dir
 from malcolm.modules.pmac.parts import BeamSelectorPart
 from malcolm.modules.pmac.util import MIN_TIME
+from malcolm.modules.scanning.util import DetectorTable
 from malcolm.testutil import ChildTestCase
 from malcolm.yamlutil import make_block_creator
 
@@ -34,13 +35,16 @@ class TestBeamSelectorPart(ChildTestCase):
 
         # CS1 needs to have the right port otherwise we will error
         self.set_attributes(self.child_cs1, port="CS1")
+        self.move_time = 0.5
         self.o = BeamSelectorPart(
             name="beamSelector",
             mri="PMAC",
             selector_axis="x",
             tomo_angle=0,
             diff_angle=0.5,
-            move_time=0.5,
+            tomo_detector="tomoDetector",
+            diff_detector="diffDetector",
+            move_time=self.move_time,
         )
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
@@ -71,29 +75,44 @@ class TestBeamSelectorPart(ChildTestCase):
             units=units,
         )
 
-    def test_configure_cycle(self):
+    def _get_detector_table(self, imaging_exposure_time, diffraction_exposure_time):
+        return DetectorTable(
+            [True, True, True],
+            ["tomoDetector", "diffDetector", "PandA"],
+            ["ML-IMAGING-01", "ML-DIFF-01", "ML-PANDA-01"],
+            [imaging_exposure_time, diffraction_exposure_time, 0.0],
+            [1, 1, 2],
+        )
+
+    def test_configure_with_single_cycle(self):
         self.set_motor_attributes()
         nCycles = 1
         generator = CompoundGenerator(
-            [StaticPointGenerator(nCycles)], [], [], duration=4.0
+            [StaticPointGenerator(nCycles)], [], [], duration=0.0
         )
         generator.prepare()
-        self.o.on_configure(self.context, 0, nCycles, {}, generator, [])
+        imaging_exposure_time = 0.01
+        diffraction_exposure_time = 1.0
+        detectors = self._get_detector_table(
+            imaging_exposure_time, diffraction_exposure_time
+        )
+        self.o.on_configure(self.context, 0, nCycles, {}, generator, detectors, [])
 
-        assert generator.duration == 1.5
+        # Expected generator duration is sum of exposure times + 2*move_time
+        assert (
+            generator.duration
+            == self.move_time * 2 + imaging_exposure_time + diffraction_exposure_time
+        )
 
         assert self.child.handled_requests.mock_calls == [
             call.post(
                 "writeProfile", csPort="CS1", timeArray=[0.002], userPrograms=[8]
             ),
             call.post("executeProfile"),
-            call.post("moveCS1", a=-0.125, moveTime=pytest.approx(0.790, abs=1e-3)),
+            call.post("moveCS1", moveTime=0.790569415, a=-0.125),
             # pytest.approx to allow sensible compare with numpy arrays
             call.post(
                 "writeProfile",
-                a=pytest.approx(
-                    [0.0, 0.25, 0.5, 0.625, 0.625, 0.5, 0.25, 0.0, -0.125, -0.125, 0.0]
-                ),
                 csPort="CS1",
                 timeArray=pytest.approx(
                     [
@@ -101,51 +120,53 @@ class TestBeamSelectorPart(ChildTestCase):
                         250000,
                         250000,
                         250000,
-                        1000000,
+                        500000,
                         250000,
                         250000,
                         250000,
                         250000,
-                        1000000,
+                        500000,
                         250000,
                     ]
                 ),
-                userPrograms=pytest.approx([1, 4, 2, 8, 8, 1, 4, 2, 8, 8, 1]),
                 velocityMode=pytest.approx([1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 3]),
+                userPrograms=pytest.approx([1, 4, 2, 8, 8, 1, 4, 2, 8, 8, 1]),
+                a=pytest.approx(
+                    [0.0, 0.25, 0.5, 0.625, 0.625, 0.5, 0.25, 0.0, -0.125, -0.125, 0.0]
+                ),
             ),
         ]
         assert self.o.completed_steps_lookup == [0, 0, 1, 1, 1, 1, 1, 2, 3, 3, 3]
 
-    def test_validate(self):
-        generator = CompoundGenerator([StaticPointGenerator(2)], [], [], 0.0102)
-        axesToMove = ["x"]
-        # servoFrequency() return value
-        self.child.handled_requests.post.return_value = 4919.300698316487
-        ret = self.o.on_validate(self.context, generator, axesToMove, {})
-        expected = 0.010166
-        assert ret.value.duration == expected
-
-    def test_critical_exposure(self):
+    def test_configure_with_three_cycles(self):
         self.set_motor_attributes()
-        nCycles = 1
+        nCycles = 3
         generator = CompoundGenerator(
-            [StaticPointGenerator(nCycles)], [], [], duration=0.5
+            [StaticPointGenerator(nCycles)], [], [], duration=0.0
         )
         generator.prepare()
-        self.o.on_configure(self.context, 0, nCycles, {}, generator, [])
+        imaging_exposure_time = 0.01
+        diffraction_exposure_time = 1.0
+        detectors = self._get_detector_table(
+            imaging_exposure_time, diffraction_exposure_time
+        )
+        self.o.on_configure(self.context, 0, nCycles, {}, generator, detectors, [])
 
-        assert generator.duration == MIN_TIME
+        # Expected generator duration is sum of exposure times + 2*move_time
+        assert (
+            generator.duration
+            == self.move_time * 2 + imaging_exposure_time + diffraction_exposure_time
+        )
 
         assert self.child.handled_requests.mock_calls == [
             call.post(
                 "writeProfile", csPort="CS1", timeArray=[0.002], userPrograms=[8]
             ),
             call.post("executeProfile"),
-            call.post("moveCS1", a=-0.125, moveTime=pytest.approx(0.790, abs=1e-3)),
+            call.post("moveCS1", moveTime=0.790569415, a=-0.125),
             # pytest.approx to allow sensible compare with numpy arrays
             call.post(
                 "writeProfile",
-                a=pytest.approx([0.0, 0.25, 0.5, 0.625, 0.5, 0.25, 0.0, -0.125, 0.0]),
                 csPort="CS1",
                 timeArray=pytest.approx(
                     [
@@ -153,17 +174,311 @@ class TestBeamSelectorPart(ChildTestCase):
                         250000,
                         250000,
                         250000,
+                        500000,
                         250000,
                         250000,
                         250000,
                         250000,
+                        250000,
+                        250000,
+                        250000,
+                        250000,
+                        500000,
+                        250000,
+                        250000,
+                        250000,
+                        250000,
+                        250000,
+                        250000,
+                        250000,
+                        250000,
+                        500000,
+                        250000,
+                        250000,
+                        250000,
+                        250000,
+                        500000,
                         250000,
                     ]
                 ),
-                userPrograms=pytest.approx([1, 4, 2, 8, 1, 4, 2, 8, 1]),
-                velocityMode=pytest.approx([1, 0, 1, 1, 1, 0, 1, 1, 3]),
+                velocityMode=pytest.approx(
+                    [
+                        1,
+                        0,
+                        1,
+                        1,
+                        1,
+                        1,
+                        0,
+                        1,
+                        1,
+                        1,
+                        0,
+                        1,
+                        1,
+                        1,
+                        1,
+                        0,
+                        1,
+                        1,
+                        1,
+                        0,
+                        1,
+                        1,
+                        1,
+                        1,
+                        0,
+                        1,
+                        1,
+                        1,
+                        3,
+                    ]
+                ),
+                userPrograms=pytest.approx(
+                    [
+                        1,
+                        4,
+                        2,
+                        8,
+                        8,
+                        1,
+                        4,
+                        2,
+                        8,
+                        1,
+                        4,
+                        2,
+                        8,
+                        8,
+                        1,
+                        4,
+                        2,
+                        8,
+                        1,
+                        4,
+                        2,
+                        8,
+                        8,
+                        1,
+                        4,
+                        2,
+                        8,
+                        8,
+                        1,
+                    ]
+                ),
+                a=pytest.approx(
+                    [
+                        0.0,
+                        0.25,
+                        0.5,
+                        0.625,
+                        0.625,
+                        0.5,
+                        0.25,
+                        0.0,
+                        -0.125,
+                        0.0,
+                        0.25,
+                        0.5,
+                        0.625,
+                        0.625,
+                        0.5,
+                        0.25,
+                        0.0,
+                        -0.125,
+                        0.0,
+                        0.25,
+                        0.5,
+                        0.625,
+                        0.625,
+                        0.5,
+                        0.25,
+                        0.0,
+                        -0.125,
+                        -0.125,
+                        0.0,
+                    ]
+                ),
             ),
         ]
+        assert self.o.completed_steps_lookup == [
+            0,
+            0,
+            1,
+            1,
+            1,
+            1,
+            1,
+            2,
+            2,
+            2,
+            2,
+            3,
+            3,
+            3,
+            3,
+            3,
+            4,
+            4,
+            4,
+            4,
+            5,
+            5,
+            5,
+            5,
+            5,
+            6,
+            7,
+            7,
+            7,
+        ]
+
+    def test_configure_with_exposure_shorter_than_min_turnaround(self):
+        self.set_motor_attributes()
+        nCycles = 1
+        generator = CompoundGenerator(
+            [StaticPointGenerator(nCycles)], [], [], duration=0.0
+        )
+        generator.prepare()
+        imaging_exposure_time = 0.0001
+        diffraction_exposure_time = 1.0
+        detectors = self._get_detector_table(
+            imaging_exposure_time, diffraction_exposure_time
+        )
+        self.o.on_configure(self.context, 0, nCycles, {}, generator, detectors, [])
+
+        # Expected generator duration is longer because of min turnaround
+        assert (
+            generator.duration
+            == self.move_time * 2 + diffraction_exposure_time + MIN_TIME
+        )
+
+        assert self.child.handled_requests.mock_calls == [
+            call.post(
+                "writeProfile", csPort="CS1", timeArray=[0.002], userPrograms=[8]
+            ),
+            call.post("executeProfile"),
+            call.post("moveCS1", moveTime=0.790569415, a=-0.125),
+            # pytest.approx to allow sensible compare with numpy arrays
+            call.post(
+                "writeProfile",
+                csPort="CS1",
+                timeArray=pytest.approx(
+                    [
+                        250000,
+                        250000,
+                        250000,
+                        250000,
+                        500000,
+                        250000,
+                        250000,
+                        250000,
+                        250000,
+                        500000,
+                        250000,
+                    ]
+                ),
+                velocityMode=pytest.approx([1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 3]),
+                userPrograms=pytest.approx([1, 4, 2, 8, 8, 1, 4, 2, 8, 8, 1]),
+                a=pytest.approx(
+                    [0.0, 0.25, 0.5, 0.625, 0.625, 0.5, 0.25, 0.0, -0.125, -0.125, 0.0]
+                ),
+            ),
+        ]
+        assert self.o.completed_steps_lookup == [0, 0, 1, 1, 1, 1, 1, 2, 3, 3, 3]
+
+    def test_configure_raises_ValueError_with_missing_detector(self):
+        self.set_motor_attributes()
+        nCycles = 1
+        generator = CompoundGenerator(
+            [StaticPointGenerator(nCycles)], [], [], duration=0.0
+        )
+        generator.prepare()
+        exposure_time = 0.01
+        detectors_without_diffraction = DetectorTable(
+            [True, True],
+            ["tomoDetector", "PandA"],
+            ["ML-IMAGING-01", "ML-PANDA-01"],
+            [exposure_time, 0.0],
+            [1, 2],
+        )
+        detectors_without_imaging = DetectorTable(
+            [True, True],
+            ["diffDetector", "PandA"],
+            ["ML-DIFF-01", "ML-PANDA-01"],
+            [exposure_time, 0.0],
+            [1, 2],
+        )
+
+        self.assertRaises(
+            ValueError,
+            self.o.on_configure,
+            self.context,
+            0,
+            nCycles,
+            {},
+            generator,
+            detectors_without_diffraction,
+            [],
+        )
+        self.assertRaises(
+            ValueError,
+            self.o.on_configure,
+            self.context,
+            0,
+            nCycles,
+            {},
+            generator,
+            detectors_without_imaging,
+            [],
+        )
+
+    def test_configure_raises_AssertionError_with_invalid_frames_per_step(self):
+        self.set_motor_attributes()
+        nCycles = 1
+        generator = CompoundGenerator(
+            [StaticPointGenerator(nCycles)], [], [], duration=0.0
+        )
+        generator.prepare()
+        imaging_exposure_time = 0.01
+        diffraction_exposure_time = 1.0
+        detectors_with_bad_imaging_frames_per_step = DetectorTable(
+            [True, True, True],
+            ["tomoDetector", "diffDetector", "PandA"],
+            ["ML-IMAGING-01", "ML-DIFF-01", "ML-PANDA-01"],
+            [imaging_exposure_time, diffraction_exposure_time, 0.0],
+            [3, 1, 2],
+        )
+        detectors_with_bad_diffraction_frames_per_step = DetectorTable(
+            [True, True, True],
+            ["tomoDetector", "diffDetector", "PandA"],
+            ["ML-IMAGING-01", "ML-DIFF-01", "ML-PANDA-01"],
+            [imaging_exposure_time, diffraction_exposure_time, 0.0],
+            [1, 10, 2],
+        )
+        self.assertRaises(
+            AssertionError,
+            self.o.on_configure,
+            self.context,
+            0,
+            nCycles,
+            {},
+            generator,
+            detectors_with_bad_imaging_frames_per_step,
+            [],
+        )
+        self.assertRaises(
+            AssertionError,
+            self.o.on_configure,
+            self.context,
+            0,
+            nCycles,
+            {},
+            generator,
+            detectors_with_bad_diffraction_frames_per_step,
+            [],
+        )
 
     def test_invalid_parameters_raise_ValueError(self):
         # Some valid parameters
@@ -172,13 +487,29 @@ class TestBeamSelectorPart(ChildTestCase):
         selector_axis = "x"
         tomo_angle = 30.0
         diff_angle = 65.0
+        tomo_detector = "tomoDetector"
+        diff_detector = "diffDetector"
         move_time = 0.25
+
+        # Check the valid parameters
+        BeamSelectorPart(
+            name,
+            mri,
+            selector_axis,
+            tomo_angle,
+            diff_angle,
+            tomo_detector,
+            diff_detector,
+            move_time,
+        )
 
         # Mix with one of these invalid parameters
         invalid_selector_axes = [0.0, 1]
         invalid_angles = ["not_an_angle"]
+        invalid_detector_names = [10, 53.3]
         invalid_move_times = ["this is not a number", -1.0, 0.0, "-0.45"]
 
+        # Now we check they raise errors
         for invalid_axis in invalid_selector_axes:
             self.assertRaises(
                 ValueError,
@@ -188,6 +519,8 @@ class TestBeamSelectorPart(ChildTestCase):
                 invalid_axis,
                 tomo_angle,
                 diff_angle,
+                tomo_detector,
+                diff_detector,
                 move_time,
             )
 
@@ -200,6 +533,8 @@ class TestBeamSelectorPart(ChildTestCase):
                 selector_axis,
                 invalid_angle,
                 diff_angle,
+                tomo_detector,
+                diff_detector,
                 move_time,
             )
             self.assertRaises(
@@ -210,6 +545,34 @@ class TestBeamSelectorPart(ChildTestCase):
                 selector_axis,
                 tomo_angle,
                 invalid_angle,
+                tomo_detector,
+                diff_detector,
+                move_time,
+            )
+
+        for invalid_detector_name in invalid_detector_names:
+            self.assertRaises(
+                ValueError,
+                BeamSelectorPart,
+                name,
+                mri,
+                selector_axis,
+                tomo_angle,
+                diff_angle,
+                invalid_detector_name,
+                diff_detector,
+                move_time,
+            )
+            self.assertRaises(
+                ValueError,
+                BeamSelectorPart,
+                name,
+                mri,
+                selector_axis,
+                tomo_angle,
+                diff_angle,
+                tomo_detector,
+                invalid_detector_name,
                 move_time,
             )
 
@@ -222,5 +585,7 @@ class TestBeamSelectorPart(ChildTestCase):
                 selector_axis,
                 tomo_angle,
                 diff_angle,
+                tomo_detector,
+                diff_detector,
                 invalid_move_time,
             )
