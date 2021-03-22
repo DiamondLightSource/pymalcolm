@@ -9,16 +9,18 @@ from scanpointgenerator import CompoundGenerator
 from malcolm.core import Block, Future, PartRegistrar, Put, Request
 from malcolm.modules import builtin, scanning
 from malcolm.modules.pmac.util import get_motion_trigger
-from malcolm.modules.scanning.infos import MinTurnaroundInfo, MotionTrigger
+from malcolm.modules.scanning.infos import MotionTrigger
 
 from ..infos import MotorInfo
 from ..util import (
-    MIN_INTERVAL,
     MIN_TIME,
+    AMinInterval,
+    AMinTurnaround,
     all_points_joined,
     all_points_same_velocities,
     cs_axis_mapping,
     cs_port_with_motors_in,
+    get_min_turnaround_and_interval,
     get_motion_axes,
     point_velocities,
     profile_between_points,
@@ -79,9 +81,9 @@ class PmacChildPart(builtin.parts.ChildPart):
         # Lookup of the completed_step value for each point
         self.completed_steps_lookup: List[int] = []
         # The minimum turnaround time for non-joined points
-        self.min_turnaround = 0.0
-        # The minimum turnaround time for non-joined points
-        self.min_interval = 0.0
+        self.min_turnaround: AMinTurnaround = 0.0
+        # The minimum time between turnaround points
+        self.min_interval: AMinInterval = 0.0
         # If we are currently loading then block loading more points
         self.loading = False
         # Where we have generated into profile
@@ -240,19 +242,10 @@ class PmacChildPart(builtin.parts.ChildPart):
             self.generator = None
             return
 
-        # See if there is a minimum turnaround
-        infos: List[MinTurnaroundInfo] = scanning.infos.MinTurnaroundInfo.filter_values(
+        # Set minimum turnaround and interval
+        (self.min_turnaround, self.min_interval) = get_min_turnaround_and_interval(
             part_info
         )
-        if infos:
-            assert len(infos) == 1, "Expected 0 or 1 MinTurnaroundInfos, got %d" % len(
-                infos
-            )
-            self.min_turnaround = max(MIN_TIME, infos[0].gap)
-            self.min_interval = infos[0].interval
-        else:
-            self.min_turnaround = MIN_TIME
-            self.min_interval = MIN_INTERVAL
 
         # Work out the cs_port we should be using
         layout_table = child.layout.value

@@ -7,8 +7,12 @@ from scanpointgenerator import Point
 
 from malcolm.core import APartName, Attribute, Block, Context, PartRegistrar
 from malcolm.modules import builtin, pmac, scanning
-from malcolm.modules.pmac.util import all_points_joined
-from malcolm.modules.scanning.infos import MinTurnaroundInfo
+from malcolm.modules.pmac.util import (
+    AMinInterval,
+    AMinTurnaround,
+    all_points_joined,
+    get_min_turnaround_and_interval,
+)
 
 from ..util import SequencerTable, Trigger
 
@@ -168,9 +172,9 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         # What is the mapping of scannable name to MotorInfo
         self.axis_mapping: Dict[str, pmac.infos.MotorInfo] = {}
         # The minimum turnaround time for non-joined points
-        self.min_turnaround = 0.0
+        self.min_turnaround: AMinTurnaround = 0.0
         # The minimum time between turnaround points
-        self.min_interval = 0.0
+        self.min_interval: AMinInterval = 0.0
         # {(scannable, increasing): trigger_enum}
         self.trigger_enums: Dict[Tuple[str, bool], str] = {}
         # The panda Block we will be prodding
@@ -280,16 +284,9 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         row_trigger = child.rowTrigger.value
 
         # See if there is a minimum turnaround
-        infos: List[MinTurnaroundInfo] = MinTurnaroundInfo.filter_values(part_info)
-        if infos:
-            assert len(infos) == 1, "Expected 0 or 1 MinTurnaroundInfos, got %d" % len(
-                infos
-            )
-            self.min_turnaround = max(pmac.util.MIN_TIME, infos[0].gap)
-            self.min_interval = infos[0].interval
-        else:
-            self.min_turnaround = pmac.util.MIN_TIME
-            self.min_interval = pmac.util.MIN_INTERVAL
+        (self.min_turnaround, self.min_interval) = get_min_turnaround_and_interval(
+            part_info
+        )
 
         # Get panda Block, and the sequencer Blocks so we can do some checking
         self.panda, seqa, seqb = _get_blocks(context, panda_mri)
