@@ -1,9 +1,9 @@
 from collections import Counter
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Tuple
 
 import numpy as np
-from annotypes import Array, Sequence
-from scanpointgenerator import CompoundGenerator, Point, StaticPointGenerator
+from annotypes import Anno, Array, Sequence
+from scanpointgenerator import CompoundGenerator, Mutator, Point, StaticPointGenerator
 from scanpointgenerator.core.point import Points
 
 from malcolm.core import Context
@@ -300,3 +300,51 @@ def get_motion_trigger(
     else:
         trigger = scanning.infos.MotionTrigger.EVERY_POINT
     return trigger
+
+
+with Anno("Minimum turnaround time for non-joined points"):
+    AMinTurnaround = float
+with Anno("Minimum interval between turnaround points"):
+    AMinInterval = float
+
+
+def get_min_turnaround_and_interval(
+    part_info: scanning.hooks.APartInfo,
+) -> Tuple[AMinTurnaround, AMinInterval]:
+    # Use the part if it exists
+    infos = scanning.infos.MinTurnaroundInfo.filter_values(part_info)
+    if infos:
+        assert len(infos) == 1, "Expected 0 or 1 MinTurnaroundInfos, got %d" % len(
+            infos
+        )
+        min_turnaround = max(MIN_TIME, infos[0].gap)
+        min_interval = infos[0].interval
+    # Otherwise use the defaults
+    else:
+        min_turnaround = MIN_TIME
+        min_interval = MIN_INTERVAL
+
+    return min_turnaround, min_interval
+
+
+with Anno("Delay after value to add to even points"):
+    AEvenDelayAfter = float
+with Anno("Delay after value to add to odd points"):
+    AOddDelayAfter = float
+
+
+class AlternatingDelayAfterMutator(Mutator):
+    """Mutator to add alternating delay_after values to each point"""
+
+    def __init__(
+        self, even_delay_after: AEvenDelayAfter, odd_delay_after: AOddDelayAfter
+    ) -> None:
+        self.delays = [even_delay_after, odd_delay_after]
+
+    def mutate(self, point: Point, idx: int) -> Point:
+        if isinstance(point, Points):
+            delay_after = np.resize(self.delays, len(point))
+        else:
+            delay_after = self.delays[0]
+        point.delay_after += delay_after
+        return point
