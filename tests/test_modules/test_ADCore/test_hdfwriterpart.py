@@ -1,4 +1,5 @@
 import os
+import shutil
 from xml.etree import ElementTree
 
 import cothread
@@ -16,6 +17,7 @@ from malcolm.modules.ADCore.infos import (
 from malcolm.modules.ADCore.parts import HDFWriterPart
 from malcolm.modules.ADCore.parts.hdfwriterpart import greater_than_zero
 from malcolm.modules.ADCore.util import AttributeDatasetType
+from malcolm.modules.builtin.defines import tmp_dir
 from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.modules.scanning.util import DatasetType
 from malcolm.testutil import ChildTestCase
@@ -138,15 +140,17 @@ class TestHDFWriterPart(ChildTestCase):
         self.child = self.create_child_block(
             hdf_writer_block, self.process, mri="BLOCK:HDF5", prefix="prefix"
         )
+        self.config_dir = tmp_dir("config_dir")
         self.process.start()
 
     def tearDown(self):
         self.process.stop(2)
+        shutil.rmtree(self.config_dir.value)
 
     def test_init(self):
         self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
-        c = RunnableController("mri", "/tmp")
+        c = RunnableController("mri", self.config_dir.value)
         c.add_part(self.o)
         self.process.add_controller(c)
         b = c.block_view()

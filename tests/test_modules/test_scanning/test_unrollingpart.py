@@ -1,8 +1,10 @@
+import shutil
 import unittest
 
 from scanpointgenerator import CompoundGenerator, LineGenerator, SquashingExcluder
 
 from malcolm.core import Process
+from malcolm.modules.builtin.defines import tmp_dir
 from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.modules.scanning.parts import UnrollingPart
 
@@ -29,10 +31,14 @@ class TestUnrollingPart(unittest.TestCase):
         self.process = Process("proc")
         self.process.start()
         self.addCleanup(self.process.stop, 2)
-        c = RunnableController("mri", "/tmp")
+        self.config_dir = tmp_dir("config_dir")
+        c = RunnableController("mri", self.config_dir.value)
         c.add_part(self.o)
         self.process.add_controller(c)
         self.b = c.block_view()
+
+    def tearDown(self):
+        shutil.rmtree(self.config_dir.value)
 
     def test_2d_generator(self):
         generator = make_generator()

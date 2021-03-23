@@ -12,7 +12,7 @@ class TestPmacStatusPart(ChildTestCase):
             pmac_status_block, self.process, mri="my_mri", pv_prefix="PV:PRE"
         )
         self.set_attributes(child, i10=1705244)
-        c = ManagerController("PMAC", "/tmp")
+        c = ManagerController("PMAC", "/tmp", use_git=False)
         self.o = PmacStatusPart(name="part", mri="my_mri", initial_visibility=True)
         c.add_part(self.o)
         self.process.add_controller(c)

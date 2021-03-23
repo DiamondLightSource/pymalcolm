@@ -20,7 +20,7 @@ class TestMotorPreMovePart(ChildTestCase):
         # Add Beam Selector object
         self.o = MotorPreMovePart(name="MotorPreMovePart", mri="BS", demand=50)
 
-        controller = RunnableController("SCAN", "/tmp")
+        controller = RunnableController("SCAN", "/tmp", use_git=False)
         controller.add_part(self.o)
 
         self.process.add_controller(controller)

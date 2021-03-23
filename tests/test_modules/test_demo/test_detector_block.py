@@ -9,6 +9,7 @@ from cothread import cothread
 from scanpointgenerator import CompoundGenerator, LineGenerator
 
 from malcolm.core import Process
+from malcolm.modules.builtin.defines import tmp_dir
 from malcolm.modules.demo.blocks import detector_block
 from malcolm.modules.scanning.util import DatasetType
 
@@ -16,7 +17,8 @@ from malcolm.modules.scanning.util import DatasetType
 class TestDetectorBlock(unittest.TestCase):
     def setUp(self):
         self.p = Process("proc")
-        for c in detector_block("mri", config_dir="/tmp"):
+        self.config_dir = tmp_dir("config_dir")
+        for c in detector_block("mri", config_dir=self.config_dir.value):
             self.p.add_controller(c)
         self.p.start()
         self.b = self.p.block_view("mri")
@@ -25,6 +27,7 @@ class TestDetectorBlock(unittest.TestCase):
     def tearDown(self):
         self.p.stop(timeout=2)
         shutil.rmtree(self.tmpdir)
+        shutil.rmtree(self.config_dir.value)
 
     def test_init(self):
         assert list(self.b) == [

@@ -23,6 +23,7 @@ from malcolm.core import (
 from malcolm.modules.ADPandABlocks.blocks import panda_pulse_trigger_block
 from malcolm.modules.ADPandABlocks.parts import PandAPulseTriggerPart
 from malcolm.modules.builtin.controllers import BasicController, ManagerController
+from malcolm.modules.builtin.defines import tmp_dir
 from malcolm.modules.builtin.parts import ChildPart
 from malcolm.modules.builtin.util import ExportTable
 from malcolm.modules.demo.blocks import detector_block
@@ -58,7 +59,7 @@ class TestPandaPulseTriggerPart(ChildTestCase):
         self.context = Context(self.process)
 
         # Create a fake PandA with a pulse block
-        self.panda = ManagerController("PANDA", "/tmp")
+        self.panda = ManagerController("PANDA", "/tmp", use_git=False)
         controller = BasicController("PANDA:PULSE3")
         self.pulse_part = PulsePart("part")
         controller.add_part(self.pulse_part)
@@ -69,7 +70,8 @@ class TestPandaPulseTriggerPart(ChildTestCase):
         self.process.add_controller(self.panda)
 
         # And the detector
-        for c in detector_block("DET", config_dir="/tmp"):
+        self.config_dir = tmp_dir("config_dir")
+        for c in detector_block("DET", config_dir=self.config_dir.value):
             self.process.add_controller(c)
 
         # Make the child block holding panda and pmac mri
@@ -85,7 +87,7 @@ class TestPandaPulseTriggerPart(ChildTestCase):
         self.o = PandAPulseTriggerPart("detTrigger", "SCAN:PULSE")
 
         # Add in a scan block
-        self.scan = RunnableController("SCAN", "/tmp")
+        self.scan = RunnableController("SCAN", "/tmp", use_git=False)
         self.scan.add_part(DetectorChildPart("det", "DET", True))
         self.scan.add_part(self.o)
         self.process.add_controller(self.scan)
@@ -107,6 +109,7 @@ class TestPandaPulseTriggerPart(ChildTestCase):
     def tearDown(self):
         self.process.stop(timeout=2)
         shutil.rmtree(self.tmpdir)
+        shutil.rmtree(self.config_dir.value)
 
     def check_pulse_mocks(self, width, step, delay, pulses):
         self.pulse_part.mocks["width"].assert_called_once_with(pytest.approx(width))

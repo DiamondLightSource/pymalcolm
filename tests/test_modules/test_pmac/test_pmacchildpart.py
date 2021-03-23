@@ -1,3 +1,4 @@
+import shutil
 from datetime import datetime
 from os import environ
 
@@ -7,6 +8,7 @@ from mock import ANY, Mock, call, patch
 from scanpointgenerator import CompoundGenerator, LineGenerator, StaticPointGenerator
 
 from malcolm.core import Context, Process
+from malcolm.modules.builtin.defines import tmp_dir
 from malcolm.modules.pmac.parts import PmacChildPart
 from malcolm.modules.scanning.infos import (
     MinTurnaroundInfo,
@@ -21,9 +23,13 @@ class TestPMACChildPart(ChildTestCase):
     def setUp(self):
         self.process = Process("Process")
         self.context = Context(self.process)
+        self.config_dir = tmp_dir("config_dir")
         pmac_block = make_block_creator(__file__, "test_pmac_manager_block.yaml")
         self.child = self.create_child_block(
-            pmac_block, self.process, mri_prefix="PMAC", config_dir="/tmp"
+            pmac_block,
+            self.process,
+            mri_prefix="PMAC",
+            config_dir=self.config_dir.value,
         )
         # These are the child blocks we are interested in
         self.child_x = self.process.get_controller("BL45P-ML-STAGE-01:X")
@@ -40,6 +46,7 @@ class TestPMACChildPart(ChildTestCase):
     def tearDown(self):
         del self.context
         self.process.stop(timeout=1)
+        shutil.rmtree(self.config_dir.value)
 
     # TODO: restore this tests when GDA does units right
     def test_bad_units(self):
