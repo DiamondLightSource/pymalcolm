@@ -1,3 +1,4 @@
+import shutil
 import unittest
 
 import cothread
@@ -19,6 +20,7 @@ from malcolm.core import (
     Process,
 )
 from malcolm.modules import builtin, scanning
+from malcolm.modules.builtin.defines import tmp_dir
 from malcolm.modules.demo.blocks import motion_block
 from malcolm.modules.demo.parts import MotionChildPart
 from malcolm.modules.demo.parts.motionchildpart import AExceptionStep
@@ -237,14 +239,15 @@ class TestRunnableController(unittest.TestCase):
         self.context = Context(self.p)
 
         # Make a motion block to act as our child
-        for c in motion_block(mri="childBlock", config_dir="/tmp"):
+        self.config_dir = tmp_dir("config_dir")
+        for c in motion_block(mri="childBlock", config_dir=self.config_dir.value):
             self.p.add_controller(c)
         self.b_child = self.context.block_view("childBlock")
 
         part = MisbehavingPart(mri="childBlock", name="part", initial_visibility=True)
 
         # create a root block for the RunnableController block to reside in
-        self.c = RunnableController(mri="mainBlock", config_dir="/tmp")
+        self.c = RunnableController(mri="mainBlock", config_dir=self.config_dir.value)
         self.c.add_part(part)
         self.p.add_controller(self.c)
         self.b = self.context.block_view("mainBlock")
@@ -257,6 +260,7 @@ class TestRunnableController(unittest.TestCase):
 
     def tearDown(self):
         self.p.stop(timeout=1)
+        shutil.rmtree(self.config_dir.value)
 
     def checkState(self, state):
         assert self.c.state.value == state
@@ -585,12 +589,13 @@ class TestRunnableControllerBreakpoints(unittest.TestCase):
         self.context2 = Context(self.p2)
 
         # Make a motion block to act as our child
-        for c in motion_block(mri="childBlock", config_dir="/tmp"):
+        self.config_dir = tmp_dir("config_dir")
+        for c in motion_block(mri="childBlock", config_dir=self.config_dir.value):
             self.p.add_controller(c)
         self.b_child = self.context.block_view("childBlock")
 
         # create a root block for the RunnableController block to reside in
-        self.c = RunnableController(mri="mainBlock", config_dir="/tmp")
+        self.c = RunnableController(mri="mainBlock", config_dir=self.config_dir.value)
         self.p.add_controller(self.c)
         self.b = self.context.block_view("mainBlock")
         self.ss = self.c.state_set
@@ -602,6 +607,7 @@ class TestRunnableControllerBreakpoints(unittest.TestCase):
 
     def tearDown(self):
         self.p.stop(timeout=1)
+        shutil.rmtree(self.config_dir.value)
 
     def checkState(self, state):
         assert self.c.state.value == state

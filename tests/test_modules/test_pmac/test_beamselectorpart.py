@@ -1,11 +1,11 @@
-# Treat all division as float division even in python2
-from __future__ import division
+import shutil
 
 import pytest
 from mock import call
 from scanpointgenerator import CompoundGenerator, StaticPointGenerator
 
 from malcolm.core import Context, Process
+from malcolm.modules.builtin.defines import tmp_dir
 from malcolm.modules.pmac.parts import BeamSelectorPart
 from malcolm.modules.pmac.util import MIN_TIME
 from malcolm.testutil import ChildTestCase
@@ -16,9 +16,13 @@ class TestBeamSelectorPart(ChildTestCase):
     def setUp(self):
         self.process = Process("Process")
         self.context = Context(self.process)
+        self.config_dir = tmp_dir("config_dir")
         pmac_block = make_block_creator(__file__, "test_pmac_manager_block.yaml")
         self.child = self.create_child_block(
-            pmac_block, self.process, mri_prefix="PMAC", config_dir="/tmp"
+            pmac_block,
+            self.process,
+            mri_prefix="PMAC",
+            config_dir=self.config_dir.value,
         )
         # These are the child blocks we are interested in
         self.child_x = self.process.get_controller("BL45P-ML-STAGE-01:X")
@@ -46,7 +50,9 @@ class TestBeamSelectorPart(ChildTestCase):
     def tearDown(self):
         del self.context
         self.process.stop(timeout=1)
-        pass
+        # Remove config directory
+        print(["rm", "-rf", self.config_dir.value])
+        shutil.rmtree(self.config_dir.value)
 
     def set_motor_attributes(
         self, x_pos=0.5, units="deg", x_acceleration=4.0, x_velocity=10.0

@@ -19,7 +19,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
         self.child = self.create_child_block(
             pmac_trajectory_block, self.process, mri="PMAC:TRAJ", pv_prefix="PV:PRE"
         )
-        c = ManagerController("PMAC", "/tmp")
+        c = ManagerController("PMAC", "/tmp", use_git=False)
         self.o = PmacTrajectoryPart(name="pmac", mri="PMAC:TRAJ")
         c.add_part(self.o)
         self.process.add_controller(c)

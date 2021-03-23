@@ -1,9 +1,11 @@
+import shutil
 import unittest
 from collections import OrderedDict
 
 from mock import ANY, patch
 
 from malcolm.core import Process, Queue, Subscribe
+from malcolm.modules.builtin.defines import tmp_dir
 from malcolm.modules.pandablocks.controllers import PandAManagerController
 from malcolm.modules.pandablocks.pandablocksclient import BlockData, FieldData
 from malcolm.modules.pandablocks.util import BitsTable, PositionCapture
@@ -16,7 +18,10 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
     )
     def setUp(self, mock_client):
         self.process = Process()
-        self.o = PandAManagerController(mri="P", config_dir="/tmp", poll_period=1000)
+        self.config_dir = tmp_dir("config_dir")
+        self.o = PandAManagerController(
+            mri="P", config_dir=self.config_dir.value, poll_period=1000
+        )
         self.client = self.o._client
         self.client.started = False
         blocks_data = OrderedDict()
@@ -60,6 +65,7 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
 
     def tearDown(self):
         self.process.stop()
+        shutil.rmtree(self.config_dir.value)
 
     def test_initial_changes(self):
         assert self.process.mri_list == [

@@ -1,3 +1,4 @@
+import shutil
 import unittest
 
 from malcolm.core import (
@@ -10,6 +11,7 @@ from malcolm.core import (
     config_tag,
 )
 from malcolm.modules.builtin.controllers import BasicController, ManagerController
+from malcolm.modules.builtin.defines import tmp_dir
 from malcolm.modules.builtin.infos import SinkPortInfo, SourcePortInfo
 from malcolm.modules.builtin.parts import ChildPart
 from malcolm.modules.builtin.util import AVisibleArray, LayoutTable
@@ -58,7 +60,8 @@ class TestChildPart(unittest.TestCase):
         self.c3._block.sinkportConnector.set_value("Connector2")
 
         # create a root block for the child blocks to reside in
-        self.c = ManagerController(mri="mainBlock", config_dir="/tmp")
+        self.config_dir = tmp_dir("config_dir")
+        self.c = ManagerController(mri="mainBlock", config_dir=self.config_dir.value)
         for part in [self.p1, self.p2, self.p3]:
             self.c.add_part(part)
         self.p.add_controller(self.c)
@@ -71,6 +74,7 @@ class TestChildPart(unittest.TestCase):
 
     def tearDown(self):
         self.p.stop(timeout=1)
+        shutil.rmtree(self.config_dir.value)
 
     def test_init(self):
         for controller in (self.c1, self.c2, self.c3):

@@ -8,6 +8,7 @@ from scanpointgenerator import CompoundGenerator, LineGenerator
 
 from malcolm.core import Process
 from malcolm.modules.builtin.blocks import proxy_block
+from malcolm.modules.builtin.defines import tmp_dir
 from malcolm.modules.builtin.util import ExportTable
 from malcolm.modules.demo.blocks import detector_block, motion_block
 from malcolm.modules.pva.blocks import pva_client_block, pva_server_block
@@ -16,8 +17,9 @@ from malcolm.modules.pva.blocks import pva_client_block, pva_server_block
 class TestSystemDetectorPVA(unittest.TestCase):
     def setUp(self):
         self.process = Process("proc")
+        self.config_dir = tmp_dir("config_dir")
         for controller in detector_block(
-            mri="TESTDET", config_dir="/tmp"
+            mri="TESTDET", config_dir=self.config_dir.value
         ) + pva_server_block(mri="PVA-SERVER"):
             self.process.add_controller(controller)
         self.process.start()
@@ -33,6 +35,7 @@ class TestSystemDetectorPVA(unittest.TestCase):
         self.process.stop(timeout=2)
         self.process2.stop(timeout=2)
         shutil.rmtree(self.tmpdir)
+        shutil.rmtree(self.config_dir.value)
 
     def make_generator(self):
         line1 = LineGenerator("y", "mm", 0, 3, 3)
@@ -160,8 +163,9 @@ class TestSystemDetectorPVA(unittest.TestCase):
 class TestSystemMotionPVA(unittest.TestCase):
     def setUp(self):
         self.process = Process("proc")
+        self.config_dir = tmp_dir("config_dir")
         for controller in motion_block(
-            mri="TESTMOTION", config_dir="/tmp"
+            mri="TESTMOTION", config_dir=self.config_dir.value
         ) + pva_server_block(mri="PVA-SERVER"):
             self.process.add_controller(controller)
         self.process.start()
@@ -171,6 +175,9 @@ class TestSystemMotionPVA(unittest.TestCase):
         ):
             self.process2.add_controller(controller)
         self.process2.start()
+
+    def tearDown(self):
+        shutil.rmtree(self.config_dir.value)
 
     def test_exports(self):
         block = self.process2.block_view("TESTMOTION")

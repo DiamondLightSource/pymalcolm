@@ -5,6 +5,7 @@ import unittest
 from scanpointgenerator import CompoundGenerator, LineGenerator
 
 from malcolm.core import Process
+from malcolm.modules.builtin.defines import tmp_dir
 from malcolm.modules.demo.blocks import detector_block, motion_block, scan_1det_block
 from malcolm.modules.scanning.util import DatasetType, DetectorTable
 from malcolm.testutil import PublishController
@@ -13,10 +14,11 @@ from malcolm.testutil import PublishController
 class TestScanBlock(unittest.TestCase):
     def setUp(self):
         self.p = Process("proc")
+        self.config_dir = tmp_dir("config_dir")
         for c in (
-            detector_block("DETECTOR", config_dir="/tmp")
-            + motion_block("MOTION", config_dir="/tmp")
-            + scan_1det_block("SCANMRI", config_dir="/tmp")
+            detector_block("DETECTOR", config_dir=self.config_dir.value)
+            + motion_block("MOTION", config_dir=self.config_dir.value)
+            + scan_1det_block("SCANMRI", config_dir=self.config_dir.value)
         ):
             self.p.add_controller(c)
         self.pub = PublishController("PUB")
@@ -29,6 +31,7 @@ class TestScanBlock(unittest.TestCase):
     def tearDown(self):
         self.p.stop(timeout=2)
         shutil.rmtree(self.tmpdir)
+        shutil.rmtree(self.config_dir.value)
 
     def test_init(self):
         assert self.b.label.value == "Mapping x, y with demo detector"

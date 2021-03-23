@@ -14,7 +14,7 @@ class TestCSPart(ChildTestCase):
             cs_block, self.process, mri="PMAC:CS1", pv_prefix="PV:PRE"
         )
         self.set_attributes(self.child, port="PMAC2CS1")
-        c = ManagerController("PMAC", "/tmp")
+        c = ManagerController("PMAC", "/tmp", use_git=False)
         c.add_part(CSPart(mri="PMAC:CS1", cs=1))
         self.process.add_controller(c)
         self.process.start()
