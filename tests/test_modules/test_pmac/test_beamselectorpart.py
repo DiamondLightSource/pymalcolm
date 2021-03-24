@@ -54,8 +54,6 @@ class TestBeamSelectorPart(ChildTestCase):
     def tearDown(self):
         del self.context
         self.process.stop(timeout=1)
-        # Remove config directory
-        print(["rm", "-rf", self.config_dir.value])
         shutil.rmtree(self.config_dir.value)
 
     def set_motor_attributes(
