@@ -82,225 +82,103 @@ class TestBeamSelectorPart(ChildTestCase):
             [1, 1, 2],
         )
 
-    def test_configure_with_single_cycle(self):
-        self.set_motor_attributes()
+    def test_configure_with_one_cycle(self):
+        self.o.tomo_angle = 50.0
+        self.o.diff_angle = 90.0
+        self.set_motor_attributes(x_pos=50.0, x_velocity=800.0, x_acceleration=100000.0)
         nCycles = 1
         generator = CompoundGenerator(
             [StaticPointGenerator(nCycles)], [], [], duration=0.0
         )
         generator.prepare()
-        imaging_exposure_time = 0.01
-        diffraction_exposure_time = 1.0
+        imaging_exposure_time = 0.1
+        diffraction_exposure_time = 0.3
         detectors = self._get_detector_table(
             imaging_exposure_time, diffraction_exposure_time
         )
         self.o.on_configure(self.context, 0, nCycles, {}, generator, detectors, [])
 
         # Expected generator duration is sum of exposure times + 2*move_time
-        assert (
-            generator.duration
-            == self.move_time * 2 + imaging_exposure_time + diffraction_exposure_time
+        assert generator.duration == pytest.approx(
+            self.move_time * 2 + imaging_exposure_time + diffraction_exposure_time
         )
+
+        # Build up our expected values
+        diff_detector_time_row = [2000, 250000, 250000, 2000, 300000]
+        imaging_detector_time_row = [2000, 250000, 250000, 2000, 100000]
+        times = nCycles * (diff_detector_time_row + imaging_detector_time_row) + [2000]
+        diff_velocity_row = [1, 0, 1, 1, 1]
+        imaging_velocity_row = [1, 0, 1, 1, 1]
+        velocity_modes = nCycles * (diff_velocity_row + imaging_velocity_row) + [3]
+        diff_detector_program_row = [1, 4, 2, 8, 8]
+        imaging_detector_program_row = [1, 4, 2, 8, 8]
+        user_programs = nCycles * (
+            diff_detector_program_row + imaging_detector_program_row
+        ) + [1]
+        diff_detector_pos_row = [50.0, 70.0, 90.0, 90.08, 90.08]
+        imaging_detector_pos_row = [90.0, 70.0, 50.0, 49.92, 49.92]
+        positions = nCycles * (diff_detector_pos_row + imaging_detector_pos_row) + [
+            50.0
+        ]
+        completed_steps = [0, 0, 1, 1, 1, 1, 1, 2, 3, 3, 3]
 
         assert self.child.handled_requests.mock_calls == [
             call.post(
                 "writeProfile", csPort="CS1", timeArray=[0.002], userPrograms=[8]
             ),
             call.post("executeProfile"),
-            call.post("moveCS1", moveTime=0.790569415, a=-0.125),
+            call.post("moveCS1", moveTime=0.0017888544, a=49.92),
             # pytest.approx to allow sensible compare with numpy arrays
             call.post(
                 "writeProfile",
                 csPort="CS1",
-                timeArray=pytest.approx(
-                    [
-                        250000,
-                        250000,
-                        250000,
-                        250000,
-                        500000,
-                        250000,
-                        250000,
-                        250000,
-                        250000,
-                        500000,
-                        250000,
-                    ]
-                ),
-                velocityMode=pytest.approx([1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 3]),
-                userPrograms=pytest.approx([1, 4, 2, 8, 8, 1, 4, 2, 8, 8, 1]),
-                a=pytest.approx(
-                    [0.0, 0.25, 0.5, 0.625, 0.625, 0.5, 0.25, 0.0, -0.125, -0.125, 0.0]
-                ),
+                timeArray=pytest.approx(times),
+                velocityMode=pytest.approx(velocity_modes),
+                userPrograms=pytest.approx(user_programs),
+                a=pytest.approx(positions),
             ),
         ]
-        assert self.o.completed_steps_lookup == [0, 0, 1, 1, 1, 1, 1, 2, 3, 3, 3]
+        assert self.o.completed_steps_lookup == completed_steps
 
     def test_configure_with_three_cycles(self):
-        self.set_motor_attributes()
+        self.o.tomo_angle = 50.0
+        self.o.diff_angle = 90.0
+        self.set_motor_attributes(x_pos=50.0, x_velocity=800.0, x_acceleration=100000.0)
         nCycles = 3
         generator = CompoundGenerator(
             [StaticPointGenerator(nCycles)], [], [], duration=0.0
         )
         generator.prepare()
-        imaging_exposure_time = 0.01
-        diffraction_exposure_time = 1.0
+        imaging_exposure_time = 0.1
+        diffraction_exposure_time = 0.3
         detectors = self._get_detector_table(
             imaging_exposure_time, diffraction_exposure_time
         )
         self.o.on_configure(self.context, 0, nCycles, {}, generator, detectors, [])
 
         # Expected generator duration is sum of exposure times + 2*move_time
-        assert (
-            generator.duration
-            == self.move_time * 2 + imaging_exposure_time + diffraction_exposure_time
+        assert generator.duration == pytest.approx(
+            self.move_time * 2 + imaging_exposure_time + diffraction_exposure_time
         )
 
-        assert self.child.handled_requests.mock_calls == [
-            call.post(
-                "writeProfile", csPort="CS1", timeArray=[0.002], userPrograms=[8]
-            ),
-            call.post("executeProfile"),
-            call.post("moveCS1", moveTime=0.790569415, a=-0.125),
-            # pytest.approx to allow sensible compare with numpy arrays
-            call.post(
-                "writeProfile",
-                csPort="CS1",
-                timeArray=pytest.approx(
-                    [
-                        250000,
-                        250000,
-                        250000,
-                        250000,
-                        500000,
-                        250000,
-                        250000,
-                        250000,
-                        250000,
-                        250000,
-                        250000,
-                        250000,
-                        250000,
-                        500000,
-                        250000,
-                        250000,
-                        250000,
-                        250000,
-                        250000,
-                        250000,
-                        250000,
-                        250000,
-                        500000,
-                        250000,
-                        250000,
-                        250000,
-                        250000,
-                        500000,
-                        250000,
-                    ]
-                ),
-                velocityMode=pytest.approx(
-                    [
-                        1,
-                        0,
-                        1,
-                        1,
-                        1,
-                        1,
-                        0,
-                        1,
-                        1,
-                        1,
-                        0,
-                        1,
-                        1,
-                        1,
-                        1,
-                        0,
-                        1,
-                        1,
-                        1,
-                        0,
-                        1,
-                        1,
-                        1,
-                        1,
-                        0,
-                        1,
-                        1,
-                        1,
-                        3,
-                    ]
-                ),
-                userPrograms=pytest.approx(
-                    [
-                        1,
-                        4,
-                        2,
-                        8,
-                        8,
-                        1,
-                        4,
-                        2,
-                        8,
-                        1,
-                        4,
-                        2,
-                        8,
-                        8,
-                        1,
-                        4,
-                        2,
-                        8,
-                        1,
-                        4,
-                        2,
-                        8,
-                        8,
-                        1,
-                        4,
-                        2,
-                        8,
-                        8,
-                        1,
-                    ]
-                ),
-                a=pytest.approx(
-                    [
-                        0.0,
-                        0.25,
-                        0.5,
-                        0.625,
-                        0.625,
-                        0.5,
-                        0.25,
-                        0.0,
-                        -0.125,
-                        0.0,
-                        0.25,
-                        0.5,
-                        0.625,
-                        0.625,
-                        0.5,
-                        0.25,
-                        0.0,
-                        -0.125,
-                        0.0,
-                        0.25,
-                        0.5,
-                        0.625,
-                        0.625,
-                        0.5,
-                        0.25,
-                        0.0,
-                        -0.125,
-                        -0.125,
-                        0.0,
-                    ]
-                ),
-            ),
+        # Build up our expected values
+        diff_detector_time_row = [2000, 250000, 250000, 2000, 300000]
+        imaging_detector_time_row = [2000, 250000, 250000, 2000, 100000]
+        times = nCycles * (diff_detector_time_row + imaging_detector_time_row) + [2000]
+        diff_velocity_row = [1, 0, 1, 1, 1]
+        imaging_velocity_row = [1, 0, 1, 1, 1]
+        velocity_modes = nCycles * (diff_velocity_row + imaging_velocity_row) + [3]
+        diff_detector_program_row = [1, 4, 2, 8, 8]
+        imaging_detector_program_row = [1, 4, 2, 8, 8]
+        user_programs = nCycles * (
+            diff_detector_program_row + imaging_detector_program_row
+        ) + [1]
+        diff_detector_pos_row = [50.0, 70.0, 90.0, 90.08, 90.08]
+        imaging_detector_pos_row = [90.0, 70.0, 50.0, 49.92, 49.92]
+        positions = nCycles * (diff_detector_pos_row + imaging_detector_pos_row) + [
+            50.0
         ]
-        assert self.o.completed_steps_lookup == [
+        completed_steps = [
             0,
             0,
             1,
@@ -312,11 +190,13 @@ class TestBeamSelectorPart(ChildTestCase):
             2,
             2,
             2,
+            2,
             3,
             3,
             3,
             3,
             3,
+            4,
             4,
             4,
             4,
@@ -332,59 +212,237 @@ class TestBeamSelectorPart(ChildTestCase):
             7,
         ]
 
-    def test_configure_with_exposure_shorter_than_min_turnaround(self):
-        self.set_motor_attributes()
+        assert self.child.handled_requests.mock_calls == [
+            call.post(
+                "writeProfile", csPort="CS1", timeArray=[0.002], userPrograms=[8]
+            ),
+            call.post("executeProfile"),
+            call.post("moveCS1", moveTime=0.0017888544, a=49.92),
+            # pytest.approx to allow sensible compare with numpy arrays
+            call.post(
+                "writeProfile",
+                csPort="CS1",
+                timeArray=pytest.approx(times),
+                velocityMode=pytest.approx(velocity_modes),
+                userPrograms=pytest.approx(user_programs),
+                a=pytest.approx(positions),
+            ),
+        ]
+        assert self.o.completed_steps_lookup == completed_steps
+
+    def test_configure_with_one_cycle_with_long_exposure(self):
+        self.o.tomo_angle = 35.0
+        self.o.diff_angle = 125.0
+        self.set_motor_attributes(x_pos=35.0, x_velocity=800.0, x_acceleration=100000.0)
         nCycles = 1
         generator = CompoundGenerator(
             [StaticPointGenerator(nCycles)], [], [], duration=0.0
         )
         generator.prepare()
-        imaging_exposure_time = 0.0001
-        diffraction_exposure_time = 1.0
+        imaging_exposure_time = 4.0
+        diffraction_exposure_time = 10.0
         detectors = self._get_detector_table(
             imaging_exposure_time, diffraction_exposure_time
         )
         self.o.on_configure(self.context, 0, nCycles, {}, generator, detectors, [])
 
-        # Expected generator duration is longer because of min turnaround
+        # Expected generator duration is sum of exposure times + 2*move_time
         assert (
             generator.duration
-            == self.move_time * 2 + diffraction_exposure_time + MIN_TIME
+            == self.move_time * 2 + imaging_exposure_time + diffraction_exposure_time
         )
+
+        # Build up our expected values
+        diff_detector_time_row = [2000, 250000, 250000, 2000, 3333333, 3333334, 3333333]
+        imaging_detector_time_row = [2000, 250000, 250000, 2000, 4000000]
+        times = nCycles * (diff_detector_time_row + imaging_detector_time_row) + [2000]
+        diff_velocity_row = [1, 0, 1, 1, 0, 0, 1]
+        imaging_velocity_row = [1, 0, 1, 1, 1]
+        velocity_modes = nCycles * (diff_velocity_row + imaging_velocity_row) + [3]
+        diff_detector_program_row = [1, 4, 2, 8, 0, 0, 8]
+        imaging_detector_program_row = [1, 4, 2, 8, 8]
+        user_programs = nCycles * (
+            diff_detector_program_row + imaging_detector_program_row
+        ) + [1]
+        diff_detector_pos_row = [35.0, 80.0, 125.0, 125.18, 125.18, 125.18, 125.18]
+        imaging_detector_pos_row = [125.0, 80.0, 35.0, 34.82, 34.82]
+        positions = nCycles * (diff_detector_pos_row + imaging_detector_pos_row) + [
+            35.0
+        ]
+        completed_steps = [0, 0, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 3]
 
         assert self.child.handled_requests.mock_calls == [
             call.post(
                 "writeProfile", csPort="CS1", timeArray=[0.002], userPrograms=[8]
             ),
             call.post("executeProfile"),
-            call.post("moveCS1", moveTime=0.790569415, a=-0.125),
+            call.post("moveCS1", moveTime=0.0026832816, a=34.82),
             # pytest.approx to allow sensible compare with numpy arrays
             call.post(
                 "writeProfile",
                 csPort="CS1",
-                timeArray=pytest.approx(
-                    [
-                        250000,
-                        250000,
-                        250000,
-                        250000,
-                        500000,
-                        250000,
-                        250000,
-                        250000,
-                        250000,
-                        500000,
-                        250000,
-                    ]
-                ),
-                velocityMode=pytest.approx([1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 3]),
-                userPrograms=pytest.approx([1, 4, 2, 8, 8, 1, 4, 2, 8, 8, 1]),
-                a=pytest.approx(
-                    [0.0, 0.25, 0.5, 0.625, 0.625, 0.5, 0.25, 0.0, -0.125, -0.125, 0.0]
-                ),
+                timeArray=pytest.approx(times),
+                velocityMode=pytest.approx(velocity_modes),
+                userPrograms=pytest.approx(user_programs),
+                a=pytest.approx(positions),
             ),
         ]
-        assert self.o.completed_steps_lookup == [0, 0, 1, 1, 1, 1, 1, 2, 3, 3, 3]
+        assert self.o.completed_steps_lookup == completed_steps
+
+    def test_configure_with_three_cycles_with_long_exposure(self):
+        self.o.tomo_angle = 35.0
+        self.o.diff_angle = 125.0
+        self.set_motor_attributes(x_pos=35.0, x_velocity=800.0, x_acceleration=100000.0)
+        nCycles = 3
+        generator = CompoundGenerator(
+            [StaticPointGenerator(nCycles)], [], [], duration=0.0
+        )
+        generator.prepare()
+        imaging_exposure_time = 4.0
+        diffraction_exposure_time = 10.0
+        detectors = self._get_detector_table(
+            imaging_exposure_time, diffraction_exposure_time
+        )
+        self.o.on_configure(self.context, 0, nCycles, {}, generator, detectors, [])
+
+        # Expected generator duration is sum of exposure times + 2*move_time
+        assert (
+            generator.duration
+            == self.move_time * 2 + imaging_exposure_time + diffraction_exposure_time
+        )
+
+        # Build up our expected values
+        diff_detector_time_row = [2000, 250000, 250000, 2000, 3333333, 3333334, 3333333]
+        imaging_detector_time_row = [2000, 250000, 250000, 2000, 4000000]
+        times = nCycles * (diff_detector_time_row + imaging_detector_time_row) + [2000]
+        diff_velocity_row = [1, 0, 1, 1, 0, 0, 1]
+        imaging_velocity_row = [1, 0, 1, 1, 1]
+        velocity_modes = nCycles * (diff_velocity_row + imaging_velocity_row) + [3]
+        diff_detector_program_row = [1, 4, 2, 8, 0, 0, 8]
+        imaging_detector_program_row = [1, 4, 2, 8, 8]
+        user_programs = nCycles * (
+            diff_detector_program_row + imaging_detector_program_row
+        ) + [1]
+        diff_detector_pos_row = [35.0, 80.0, 125.0, 125.18, 125.18, 125.18, 125.18]
+        imaging_detector_pos_row = [125.0, 80.0, 35.0, 34.82, 34.82]
+        positions = nCycles * (diff_detector_pos_row + imaging_detector_pos_row) + [
+            35.0
+        ]
+        completed_steps = [
+            0,
+            0,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            2,
+            2,
+            2,
+            2,
+            2,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            4,
+            4,
+            4,
+            4,
+            4,
+            5,
+            5,
+            5,
+            5,
+            5,
+            5,
+            5,
+            6,
+            7,
+            7,
+            7,
+        ]
+
+        assert self.child.handled_requests.mock_calls == [
+            call.post(
+                "writeProfile", csPort="CS1", timeArray=[0.002], userPrograms=[8]
+            ),
+            call.post("executeProfile"),
+            call.post("moveCS1", moveTime=0.0026832816, a=34.82),
+            # pytest.approx to allow sensible compare with numpy arrays
+            call.post(
+                "writeProfile",
+                csPort="CS1",
+                timeArray=pytest.approx(times),
+                velocityMode=pytest.approx(velocity_modes),
+                userPrograms=pytest.approx(user_programs),
+                a=pytest.approx(positions),
+            ),
+        ]
+        assert self.o.completed_steps_lookup == completed_steps
+
+    def test_configure_with_exposure_time_less_than_min_turnaround(self):
+        self.o.tomo_angle = 50.0
+        self.o.diff_angle = 90.0
+        self.set_motor_attributes(x_pos=50.0, x_velocity=800.0, x_acceleration=100000.0)
+        nCycles = 1
+        generator = CompoundGenerator(
+            [StaticPointGenerator(nCycles)], [], [], duration=0.0
+        )
+        generator.prepare()
+        imaging_exposure_time = 0.0001
+        diffraction_exposure_time = 0.3
+        detectors = self._get_detector_table(
+            imaging_exposure_time, diffraction_exposure_time
+        )
+        self.o.on_configure(self.context, 0, nCycles, {}, generator, detectors, [])
+
+        # Expected generator duration is affected by min turnaround time
+        assert generator.duration == pytest.approx(
+            self.move_time * 2 + MIN_TIME + diffraction_exposure_time
+        )
+
+        # Build up our expected values
+        diff_detector_time_row = [2000, 250000, 250000, 2000, 300000]
+        imaging_detector_time_row = [2000, 250000, 250000]
+        times = nCycles * (diff_detector_time_row + imaging_detector_time_row) + [2000]
+        diff_velocity_row = [1, 0, 1, 1, 1]
+        imaging_velocity_row = [1, 0, 1]
+        velocity_modes = nCycles * (diff_velocity_row + imaging_velocity_row) + [3]
+        diff_detector_program_row = [1, 4, 2, 8, 8]
+        imaging_detector_program_row = [1, 4, 2]
+        user_programs = nCycles * (
+            diff_detector_program_row + imaging_detector_program_row
+        ) + [1]
+        diff_detector_pos_row = [50.0, 70.0, 90.0, 90.08, 90.08]
+        imaging_detector_pos_row = [90.0, 70.0, 50.0]
+        positions = nCycles * (diff_detector_pos_row + imaging_detector_pos_row) + [
+            50.0
+        ]
+        completed_steps = [0, 0, 1, 1, 1, 1, 1, 2, 3]
+
+        assert self.child.handled_requests.mock_calls == [
+            call.post(
+                "writeProfile", csPort="CS1", timeArray=[0.002], userPrograms=[8]
+            ),
+            call.post("executeProfile"),
+            call.post("moveCS1", moveTime=0.0017888544, a=49.92),
+            # pytest.approx to allow sensible compare with numpy arrays
+            call.post(
+                "writeProfile",
+                csPort="CS1",
+                timeArray=pytest.approx(times),
+                velocityMode=pytest.approx(velocity_modes),
+                userPrograms=pytest.approx(user_programs),
+                a=pytest.approx(positions),
+            ),
+        ]
+        assert self.o.completed_steps_lookup == completed_steps
 
     def test_configure_raises_ValueError_with_missing_detector(self):
         self.set_motor_attributes()

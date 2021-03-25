@@ -25,7 +25,7 @@ with Anno("Name of the tomography detector (should match DetectorChildPart)"):
     ATomoDetector = str
 with Anno("Name of the diffraction detector (should match DetectorChildPart)"):
     ADiffDetector = str
-with Anno("Minimum move time between the two positions"):
+with Anno("Minimum move time between the two positions in seconds"):
     AMoveTime = float
 
 
@@ -168,14 +168,7 @@ class BeamSelectorPart(PmacChildPart):
         # insert the turnaround points
         self.insert_gap(current_point, next_point, self.steps_up_to + 1)
 
-        # Do the last move
-        #        user_program = self.get_user_program(PointType.TURNAROUND)
-        #        self.add_profile_point(tail_off_time, ZERO_VELOCITY,
-        #                               user_program,
-        #                               self.steps_up_to, axis_points)
-        # Mangle the last point to end the scan
+        # Set the velocity of the last point to 0
         self.profile["velocityMode"][-1] = VelocityModes.ZERO_VELOCITY
-        # user_program = self.get_user_program(PointType.TURNAROUND)
-        # self.profile["userProgram"][-1] = user_program
 
         self.end_index = self.steps_up_to
