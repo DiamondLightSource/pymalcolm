@@ -345,6 +345,6 @@ class AlternatingDelayAfterMutator(Mutator):
         if isinstance(point, Points):
             delay_after = np.resize(self.delays, len(point))
         else:
-            delay_after = self.delays[0]
+            delay_after = self.delays[idx % 2]
         point.delay_after += delay_after
         return point
