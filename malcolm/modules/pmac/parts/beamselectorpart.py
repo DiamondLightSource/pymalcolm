@@ -93,6 +93,46 @@ class BeamSelectorPart(PmacChildPart):
 
         return diff_detector_exposure, tomo_detector_exposure
 
+    def _get_time_at_positions(
+        self, part_info: scanning.hooks.APartInfo, detectors: ADetectorTable
+    ) -> Tuple[float, float]:
+        # Find out the exposure times of our detectors
+        (
+            diff_detector_exposure,
+            tomo_detector_exposure,
+        ) = self._get_detector_exposure_times(detectors)
+
+        # Increase the time at each position to the minimum turnaround if necessary
+        min_turnaround = get_min_turnaround_and_interval(part_info)[0]
+        time_at_diff_position = max(min_turnaround, diff_detector_exposure)
+        time_at_tomo_position = max(min_turnaround, tomo_detector_exposure)
+
+        return time_at_diff_position, time_at_tomo_position
+
+    def _calculate_cycle_duration(self, time_at_diff_position, time_at_tomo_position):
+        return time_at_diff_position + time_at_tomo_position + 2 * self.move_time
+
+    @add_call_types
+    def on_validate(
+        self,
+        part_info: scanning.hooks.APartInfo,
+        generator: scanning.hooks.AGenerator,
+        detectors: ADetectorTable,
+    ) -> scanning.hooks.UParameterTweakInfos:
+        # Calculate the time that should be spent at each position
+        time_at_diff_position, time_at_tomo_position = self._get_time_at_positions(
+            part_info, detectors
+        )
+        # Now calculate how long one cycle should take
+        cycle_duration = self._calculate_cycle_duration(
+            time_at_diff_position, time_at_tomo_position
+        )
+        # Return the generator with our cycle duration
+        serialized = generator.to_dict()
+        new_generator = CompoundGenerator.from_dict(serialized)
+        new_generator.duration = cycle_duration
+        return scanning.infos.ParameterTweakInfo("generator", new_generator)
+
     @add_call_types
     def on_configure(
         self,
@@ -105,16 +145,10 @@ class BeamSelectorPart(PmacChildPart):
         axesToMove: scanning.hooks.AAxesToMove,
     ) -> None:
 
-        # Find out the exposure times of our detectors
-        (
-            diff_detector_exposure,
-            tomo_detector_exposure,
-        ) = self._get_detector_exposure_times(detectors)
-
-        # Increase the time at each position to the minimum turnaround if necessary
-        min_turnaround = get_min_turnaround_and_interval(part_info)[0]
-        time_at_diff_position = max(min_turnaround, diff_detector_exposure)
-        time_at_tomo_position = max(min_turnaround, tomo_detector_exposure)
+        # Calculate the time that should be spent at each position
+        time_at_diff_position, time_at_tomo_position = self._get_time_at_positions(
+            part_info, detectors
+        )
 
         # Build our mutator
         mutator = AlternatingDelayAfterMutator(
@@ -140,7 +174,7 @@ class BeamSelectorPart(PmacChildPart):
         )
         axesToMove = [self.selector_axis]
 
-        # Build the compound generator for the PMAC
+        # Build the compound generator for the PMAC for handling the motion
         new_generator = CompoundGenerator(
             [static_axis, selector_axis],
             [],
@@ -150,9 +184,10 @@ class BeamSelectorPart(PmacChildPart):
         )
         new_generator.prepare()
 
-        # Main generator duration should be time for complete cycle
-        generator.duration = (
-            2 * self.move_time + time_at_diff_position + time_at_tomo_position
+        # Update the parent generator duration
+        # TODO: check if this is actually needed now that validate handles updating the duration
+        generator.duration = self._calculate_cycle_duration(
+            time_at_diff_position, time_at_tomo_position
         )
 
         super().on_configure(
