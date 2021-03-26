@@ -184,12 +184,6 @@ class BeamSelectorPart(PmacChildPart):
         )
         new_generator.prepare()
 
-        # Update the parent generator duration
-        # TODO: check if this is actually needed now that validate handles updating the duration
-        generator.duration = self._calculate_cycle_duration(
-            time_at_diff_position, time_at_tomo_position
-        )
-
         super().on_configure(
             context, completed_steps, steps_to_do, part_info, new_generator, axesToMove
         )
