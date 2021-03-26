@@ -82,6 +82,24 @@ class TestBeamSelectorPart(ChildTestCase):
             [1, 1, 2],
         )
 
+    def test_validate_returns_tweaked_generator_duration(self):
+        nCycles = 1
+        generator = CompoundGenerator(
+            [StaticPointGenerator(nCycles)], [], [], duration=0.0
+        )
+        imaging_exposure_time = 0.1
+        diffraction_exposure_time = 0.3
+        detectors = self._get_detector_table(
+            imaging_exposure_time, diffraction_exposure_time
+        )
+
+        infos = self.o.on_validate({}, generator, detectors)
+
+        self.assertEqual(infos.parameter, "generator")
+        assert infos.value.duration == pytest.approx(
+            self.move_time * 2 + imaging_exposure_time + diffraction_exposure_time
+        )
+
     def test_configure_with_one_cycle(self):
         self.o.tomo_angle = 50.0
         self.o.diff_angle = 90.0
