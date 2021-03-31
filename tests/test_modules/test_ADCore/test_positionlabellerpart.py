@@ -27,9 +27,8 @@ class TestPositionLabellerPart(ChildTestCase):
         generator = CompoundGenerator([ys, xs], [], [])
         generator.prepare()
         completed_steps = 2
-        steps_to_do = 4
-        self.o.done_when_reaches = 30
-        self.o.on_configure(self.context, completed_steps, steps_to_do, generator)
+        self.o.id_end = 30
+        self.o.on_configure(self.context, completed_steps, generator)
         expected_xml = """<?xml version="1.0" ?>
 <pos_layout>
 <dimensions>
@@ -55,8 +54,7 @@ class TestPositionLabellerPart(ChildTestCase):
             call.put("xml", expected_xml),
             call.post("start"),
         ]
-        assert self.o.done_when_reaches == 34
-        assert self.o.steps_up_to == generator.size
+        assert self.o.id_end == 34
 
     def test_run(self):
         # Say that we've returned from start

@@ -4,6 +4,7 @@ from annotypes import Any, add_call_types
 
 from malcolm.core import PartRegistrar
 from malcolm.modules import builtin, scanning
+from malcolm.modules.scanning.hooks import AGenerator
 
 # How big an XML file can the EPICS waveform receive?
 XML_MAX_SIZE = 1000000 - 2
@@ -21,17 +22,15 @@ class PositionLabellerPart(builtin.parts.ChildPart):
     """Part for controlling a `position_labeller_block` in a scan"""
 
     # Stored generator for positions
-    generator = None
+    generator: AGenerator = None
     # The last index we have loaded
     end_index = None
-    # Where we should stop loading points
-    steps_up_to = None
     # Future for plugin run
     start_future = None
     # If we are currently loading then block loading more points
     loading = None
-    # When arrayCounter gets to here we are done
-    done_when_reaches = 0
+    # The uniqueID of the last point in the scan
+    id_end = 0
 
     def setup(self, registrar: PartRegistrar) -> None:
         super().setup(registrar)
@@ -54,7 +53,6 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         self,
         context: scanning.hooks.AContext,
         completed_steps: scanning.hooks.ACompletedSteps,
-        steps_to_do: scanning.hooks.AStepsToDo,
         generator: scanning.hooks.AGenerator,
     ) -> None:
         # clear out old subscriptions
@@ -62,23 +60,23 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         self.generator = generator
         # Work out the offset between the generator index and uniqueID
         if completed_steps == 0:
-            # The detector will reset, so the first uniqueId (for index 0)
-            # will be 1
+            # The detector will reset, so the first uniqueID (for index 0) will be 1
             id_start = 1
-            self.done_when_reaches = steps_to_do
+            # The last uniqueID will be the last point in the generator
+            self.id_end = generator.size
         else:
-            # This is rewinding or setting up for another batch, so the detector
-            # will skip to a uniqueID that has not been produced yet
-            assert self.done_when_reaches, "Done when reaches not assigned"
-            id_start = self.done_when_reaches + 1
-            self.done_when_reaches += steps_to_do
+            # This is rewinding, so the detector will skip to a uniqueID that could not
+            # have been produced in the original range, i.e. one more than the end
+            id_start = self.id_end + 1
+            # The new end will be the new start plus the remaining points
+            self.id_end += generator.size - completed_steps
+
         # Delete any remaining old positions
         child = context.block_view(self.mri)
         futures = [child.delete_async()]
         futures += child.put_attribute_values_async(
             dict(enableCallbacks=True, idStart=id_start)
         )
-        self.steps_up_to = generator.size
         xml, self.end_index = self._make_xml(completed_steps)
         # Wait for the previous puts to finish
         context.wait_all_futures(futures)
@@ -99,10 +97,10 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         child.stop()
 
     def load_more_positions(self, number_left: int, child: Any) -> None:
-        if self.end_index and self.steps_up_to:
+        if self.end_index and self.generator.size:
             if (
                 not self.loading
-                and self.end_index < self.steps_up_to
+                and self.end_index < self.generator.size
                 and number_left < POSITIONS_PER_XML * N_LOAD_AHEAD
             ):
                 self.loading = True
@@ -124,9 +122,9 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         xml += "</dimensions><positions>"
 
         end_index = start_index + POSITIONS_PER_XML
-        assert self.steps_up_to, "No steps up to"
-        if end_index > self.steps_up_to:
-            end_index = self.steps_up_to
+        assert self.generator.size, "Generator is empty"
+        if end_index > self.generator.size:
+            end_index = self.generator.size
 
         for i in range(start_index, end_index):
             point = self.generator.get_point(i)
