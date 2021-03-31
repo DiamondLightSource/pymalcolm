@@ -138,14 +138,33 @@ class TestPMACChildPart(ChildTestCase):
             axes_to_scan,
         )
 
-    def test_validate(self):
+    def test_validate_returns_expected_duration(self):
         generator = CompoundGenerator([], [], [], 0.0102)
         axesToMove = ["x"]
         # servoFrequency() return value
         self.child.handled_requests.post.return_value = 4919.300698316487
         ret = self.o.on_validate(self.context, generator, axesToMove, {})
-        expected = 0.010166
-        assert ret.value.duration == expected
+        expected_duration = 0.010166
+        assert ret.value.duration == expected_duration
+
+    def test_validate_returns_minimum_duration_when_input_duration_is_zero(self):
+        generator = CompoundGenerator([], [], [], 0.0)
+        axesToMove = ["x"]
+        # servoFrequency() return value
+        self.child.handled_requests.post.return_value = 4919.300698316487
+        ret = self.o.on_validate(self.context, generator, axesToMove, {})
+        # Duration is modified when converting to servo ticks
+        expected_duration = 0.001628
+        assert ret.value.duration == expected_duration
+
+    def test_validate_raises_AssertionError_for_negative_duration(self):
+        generator = CompoundGenerator([], [], [], -1.0)
+        axesToMove = ["x"]
+        # servoFrequency() return value
+        self.child.handled_requests.post.return_value = 4919.300698316487
+        self.assertRaises(
+            AssertionError, self.o.on_validate, self.context, generator, axesToMove, {}
+        )
 
     def do_check_output_quantized(self):
         assert self.child.handled_requests.mock_calls[:4] == [

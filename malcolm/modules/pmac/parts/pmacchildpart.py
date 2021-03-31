@@ -159,10 +159,14 @@ class PmacChildPart(builtin.parts.ChildPart):
         if trigger != scanning.infos.MotionTrigger.EVERY_POINT:
             return None
         # Find the duration
-        assert generator.duration > 0, "Can only do fixed duration at the moment"
+        duration = generator.duration
+        # We need to set the minimum acceptable duration if zero is passed to us
+        if generator.duration == 0.0:
+            duration = MIN_TIME
+        assert duration > 0, "Can only do fixed duration at the moment"
         servo_freq = child.servoFrequency()
         # convert half an exposure to multiple of servo ticks, rounding down
-        ticks = np.floor(servo_freq * 0.5 * generator.duration)
+        ticks = np.floor(servo_freq * 0.5 * duration)
         if not np.isclose(servo_freq, 3200):
             # + 0.002 for some observed jitter in the servo frequency if I10
             # isn't a whole number of 1/4 us move timer ticks

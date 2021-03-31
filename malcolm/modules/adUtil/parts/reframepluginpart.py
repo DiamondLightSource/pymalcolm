@@ -1,6 +1,7 @@
 from typing import Any
 
 from annotypes import Anno, add_call_types
+from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import Context, PartRegistrar
 from malcolm.modules import ADCore, builtin, scanning
@@ -36,14 +37,24 @@ class ReframePluginPart(ADCore.parts.DetectorDriverPart):
         registrar.hook(scanning.hooks.ValidateHook, self.on_validate)
 
     @add_call_types
-    def on_validate(self, generator: scanning.hooks.AGenerator) -> None:
+    def on_validate(
+        self, generator: scanning.hooks.AGenerator
+    ) -> scanning.hooks.UParameterTweakInfos:
         duration = generator.duration
-        assert (
-            duration > 0
-        ), f"Generator duration of {duration} must be > 0 to signify fixed exposure"
-        assert (
-            self._number_of_adc_samples(duration) > 0
-        ), f"Generator duration of {duration} gives < 1 ADC sample"
+        if duration == 0.0:
+            # Set the duration for 2 samples (1 live 1 dead)
+            serialized = generator.to_dict()
+            new_generator = CompoundGenerator.from_dict(serialized)
+            new_generator.duration = 2 / self.sample_freq
+            return scanning.infos.ParameterTweakInfo("generator", new_generator)
+        else:
+            assert (
+                duration > 0
+            ), f"Generator duration of {duration} must be > 0 to signify fixed exposure"
+            assert (
+                self._number_of_adc_samples(duration) > 0
+            ), f"Generator duration of {duration} gives < 1 ADC sample"
+            return None
 
     def _number_of_adc_samples(self, generator_duration: float):
         return int(generator_duration * self.sample_freq)

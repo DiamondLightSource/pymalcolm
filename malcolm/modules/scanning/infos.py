@@ -161,10 +161,9 @@ class ExposureDeadtimeInfo(Info):
     def calculate_exposure(self, duration: float, exposure: float = 0.0) -> float:
         """Calculate the exposure to set the detector to given the duration of
         the frame and the readout_time and frequency_accuracy"""
-        assert duration > 0, (
-            "Duration %s for generator must be >0 to signify constant "
-            "exposure" % duration
-        )
+        # If duration and exposure time are zero, return the minimum exposure time
+        if exposure == 0.0 and duration == 0.0:
+            return self.min_exposure
         max_exposure = (
             duration
             - self.readout_time
@@ -176,3 +175,11 @@ class ExposureDeadtimeInfo(Info):
         elif exposure < self.min_exposure:
             exposure = self.min_exposure
         return exposure
+
+    def calculate_minimum_duration(self, exposure: float) -> float:
+        """Calculate the minimum frame duration required for the frame"""
+        if exposure < self.min_exposure:
+            self.min_exposure
+        denominator = 1 - (self.frequency_accuracy / 1000000.0)
+        min_duration = (exposure + self.readout_time) / denominator
+        return min_duration

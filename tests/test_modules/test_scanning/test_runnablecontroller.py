@@ -1,8 +1,10 @@
 import shutil
 import unittest
+from typing import Optional
 
 import cothread
-from annotypes import add_call_types
+import pytest
+from annotypes import Anno, add_call_types
 from scanpointgenerator import (
     CompoundGenerator,
     ConcatGenerator,
@@ -21,7 +23,7 @@ from malcolm.core import (
 )
 from malcolm.modules import builtin, scanning
 from malcolm.modules.builtin.defines import tmp_dir
-from malcolm.modules.demo.blocks import motion_block
+from malcolm.modules.demo.blocks import detector_block, motion_block
 from malcolm.modules.demo.parts import MotionChildPart
 from malcolm.modules.demo.parts.motionchildpart import AExceptionStep
 from malcolm.modules.scanning.controllers import RunnableController
@@ -37,7 +39,16 @@ from malcolm.modules.scanning.hooks import (
     ValidateHook,
 )
 from malcolm.modules.scanning.infos import ParameterTweakInfo
-from malcolm.modules.scanning.util import RunnableStates
+from malcolm.modules.scanning.parts import DetectorChildPart
+from malcolm.modules.scanning.util import DetectorTable, RunnableStates
+
+APartName = builtin.parts.APartName
+AMri = builtin.parts.AMri
+AInitialVisibility = builtin.parts.AInitialVisibility
+AStateful = builtin.parts.AStateful
+
+with Anno("Minimum duration for tweaking duration in validate"):
+    AMinDuration = float
 
 
 class MisbehavingPauseException(Exception):
@@ -45,6 +56,19 @@ class MisbehavingPauseException(Exception):
 
 
 class MisbehavingPart(MotionChildPart):
+    def __init__(
+        self,
+        name: APartName,
+        mri: AMri,
+        initial_visibility: AInitialVisibility = False,
+        stateful: AStateful = True,
+        min_duration: AMinDuration = 0.1,
+    ) -> None:
+        super().__init__(
+            name, mri, initial_visibility=initial_visibility, stateful=stateful
+        )
+        self.min_duration = min_duration
+
     def setup(self, registrar):
         super(MisbehavingPart, self).setup(registrar)
         self.register_hooked(ValidateHook, self.validate)
@@ -52,10 +76,10 @@ class MisbehavingPart(MotionChildPart):
 
     @add_call_types
     def validate(self, generator: AGenerator) -> UInfos:
-        if generator.duration < 0.1:
+        if generator.duration < self.min_duration:
             serialized = generator.to_dict()
             new_generator = CompoundGenerator.from_dict(serialized)
-            new_generator.duration = 0.1
+            new_generator.duration = self.min_duration
             return ParameterTweakInfo("generator", new_generator)
         else:
             return None
@@ -306,16 +330,6 @@ class TestRunnableController(unittest.TestCase):
     def test_abort(self):
         self.b.abort()
         self.checkState(self.ss.ABORTED)
-
-    def test_validate(self):
-        line1 = LineGenerator("y", "mm", 0, 2, 3)
-        line2 = LineGenerator("x", "mm", 0, 2, 2)
-        compound = CompoundGenerator([line1, line2], [], [], duration=0.001)
-        actual = self.b.validate(generator=compound, axesToMove=["x"])
-        assert actual["generator"].duration == 0.1
-        actual["generator"].duration = 0.001
-        assert actual["generator"].to_dict() == compound.to_dict()
-        assert actual["axesToMove"] == ["x"]
 
     def prepare_half_run(self, duration=0.01, exception=0):
         line1 = LineGenerator("y", "mm", 0, 2, 3)
@@ -1277,3 +1291,587 @@ class TestRunnableControllerBreakpoints(unittest.TestCase):
         self.b.run()
         self.checkSteps(total_steps, total_steps, total_steps)
         self.checkState(self.ss.FINISHED)
+
+
+class TestRunnableControllerValidation(unittest.TestCase):
+    """This test class is to test validation with multiple parts tweaking
+    parameters"""
+
+    def setUp(self):
+        self.p = Process("process")
+        self.context = Context(self.p)
+
+        self.main_mri = "mainBlock"
+        self.detector_one_mri = "detector01"
+        self.detector_two_mri = "detector02"
+        self.detector_one_part_name = "detectorPart01"
+        self.detector_two_part_name = "detectorPart02"
+
+        # Make a motion block to act as our child
+        self.config_dir = tmp_dir("config_dir")
+
+        # Store a list of our detector block views
+        self.b_detectors = []
+
+        # create a root block for the RunnableController block to reside in
+        self.c = RunnableController(mri=self.main_mri, config_dir=self.config_dir.value)
+
+        # Set up the process
+        self.p.add_controller(self.c)
+        self.b = self.context.block_view(self.main_mri)
+        self.ss = self.c.state_set
+
+    def tearDown(self):
+        self.p.stop(timeout=1)
+        shutil.rmtree(self.config_dir.value)
+
+    def checkState(self, state):
+        assert self.c.state.value == state
+
+    def _start_process(self):
+        self.checkState(self.ss.DISABLED)
+        self.p.start()
+        self.checkState(self.ss.READY)
+
+    def _add_motion_block_and_part(self, mri="motion01", name="motionPart"):
+        # Add block
+        for c in motion_block(mri=mri, config_dir=self.config_dir.value):
+            self.p.add_controller(c)
+        self.b_motion = self.context.block_view(mri)
+        # Add part
+        self.motion_part = MisbehavingPart(mri=mri, name=name, initial_visibility=True)
+        self.c.add_part(self.motion_part)
+
+    def _add_detector_block_and_part(self, mri, name):
+        # Block
+        for c in detector_block(mri=mri, config_dir=self.config_dir.value):
+            self.p.add_controller(c)
+        # Append block view
+        self.b_detectors.append(self.context.block_view(mri))
+        # Part
+        detector_part = DetectorChildPart(mri=mri, name=name, initial_visibility=True)
+        self.c.add_part(detector_part)
+
+    def _get_compound_generator(self, duration: float) -> CompoundGenerator:
+        line1 = LineGenerator("y", "mm", 0, 2, 3)
+        line2 = LineGenerator("x", "mm", 0, 2, 2)
+        return CompoundGenerator([line1, line2], [], [], duration=duration)
+
+    def _get_detector_table(
+        self,
+        detector_one_exposure: float,
+        detector_two_exposure: Optional[float] = None,
+    ) -> DetectorTable:
+        if detector_two_exposure is None:
+            return DetectorTable(
+                [True],
+                [self.detector_one_part_name],
+                [self.detector_one_mri],
+                [detector_one_exposure],
+                [1],
+            )
+        else:
+            return DetectorTable(
+                [True, True],
+                [self.detector_one_part_name, self.detector_two_part_name],
+                [self.detector_one_mri, self.detector_two_mri],
+                [detector_one_exposure, detector_two_exposure],
+                [1, 1],
+            )
+
+    def test_validate_single_detector_calculates_correct_exposure_with_duration(self):
+        # Set up a single detector
+        self._add_detector_block_and_part(
+            self.detector_one_mri, self.detector_one_part_name
+        )
+        self._start_process()
+        self.b_detectors[0].readoutTime.put_value(0.1)
+
+        # Config
+        det_one_exposure = 0.89995
+        duration = 1.0
+        compound_generator = self._get_compound_generator(duration)
+
+        # Expected outputs
+        expected_detectors = self._get_detector_table(det_one_exposure)
+
+        # Validate
+        actual = self.b.validate(
+            generator=compound_generator, axesToMove=["x"], fileDir="/tmp"
+        )
+
+        # Check output
+        assert actual["generator"].to_dict() == compound_generator.to_dict()
+        assert actual["axesToMove"] == ["x"]
+        assert actual["detectors"].to_dict() == expected_detectors.to_dict()
+
+    def test_validate_single_detector_calculates_correct_duration_with_exposure(self):
+        # Set up a single detector
+        self._add_detector_block_and_part(
+            self.detector_one_mri, self.detector_one_part_name
+        )
+        self._start_process()
+        self.b_detectors[0].readoutTime.put_value(0.1)
+
+        # Config
+        det_one_exposure = 0.89995
+        compound_generator = self._get_compound_generator(0.0)
+        detectors = self._get_detector_table(det_one_exposure)
+
+        # Expected outputs
+        expected_duration = 1.0
+
+        # Validate
+        actual = self.b.validate(
+            generator=compound_generator,
+            axesToMove=["x"],
+            fileDir="/tmp",
+            detectors=detectors,
+        )
+
+        # Check output
+        assert actual["generator"].duration == expected_duration
+        actual["generator"].duration = 0.0
+        assert actual["generator"].to_dict() == compound_generator.to_dict()
+        assert actual["axesToMove"] == ["x"]
+        assert actual["detectors"].to_dict() == detectors.to_dict()
+
+    def test_validate_single_detector_succeeds_with_both_duration_and_exposure(self):
+        # Set up a single detector
+        self._add_detector_block_and_part(
+            self.detector_one_mri, self.detector_one_part_name
+        )
+        self._start_process()
+        self.b_detectors[0].readoutTime.put_value(0.1)
+
+        # Config
+        duration = 1.0
+        det_one_exposure = 0.3
+        compound_generator = self._get_compound_generator(duration)
+        expected_detectors = self._get_detector_table(det_one_exposure)
+
+        # Validate
+        actual = self.b.validate(
+            generator=compound_generator,
+            axesToMove=["x"],
+            fileDir="/tmp",
+            detectors=expected_detectors,
+        )
+
+        # Check output
+        assert actual["generator"].duration == duration
+        actual["generator"].duration = 0.0
+        assert actual["generator"].to_dict() == compound_generator.to_dict()
+        assert actual["axesToMove"] == ["x"]
+        assert actual["detectors"].to_dict() == expected_detectors.to_dict()
+
+    def test_validate_single_detector_shortens_exposure_with_exposure_and_duration(
+        self,
+    ):
+        # Set up a single detector
+        self._add_detector_block_and_part(
+            self.detector_one_mri, self.detector_one_part_name
+        )
+        self._start_process()
+        self.b_detectors[0].readoutTime.put_value(0.1)
+
+        # Config
+        duration = 0.4
+        det_one_exposure = 0.4
+        compound_generator = self._get_compound_generator(duration)
+        detectors = self._get_detector_table(det_one_exposure)
+
+        # Expected outputs
+        expected_det_one_exposure = 0.29998
+        expected_detectors = self._get_detector_table(expected_det_one_exposure)
+
+        # Validate
+        actual = self.b.validate(
+            generator=compound_generator,
+            axesToMove=["x"],
+            fileDir="/tmp",
+            detectors=detectors,
+        )
+
+        # Check output
+        assert actual["generator"].duration == duration
+        actual["generator"].duration = 0.0
+        assert actual["generator"].to_dict() == compound_generator.to_dict()
+        assert actual["axesToMove"] == ["x"]
+        assert actual["detectors"].to_dict() == expected_detectors.to_dict()
+
+    def test_validate_single_detector_sets_min_exposure_with_zero_exposure_and_duration(
+        self,
+    ):
+        # Set up a single detector
+        self._add_detector_block_and_part(
+            self.detector_one_mri, self.detector_one_part_name
+        )
+        self._start_process()
+        self.b_detectors[0].readoutTime.put_value(0.1)
+
+        # Config
+        duration = 0.0
+        det_one_exposure = 0.0
+        compound_generator = self._get_compound_generator(duration)
+        detectors = self._get_detector_table(det_one_exposure)
+
+        # Expected outputs
+        expected_duration = pytest.approx(0.100105)
+        expected_det_one_exposure = pytest.approx(0.0001)
+        expected_detectors = self._get_detector_table(expected_det_one_exposure)
+
+        # Validate
+        actual = self.b.validate(
+            generator=compound_generator,
+            axesToMove=["x"],
+            fileDir="/tmp",
+            detectors=detectors,
+        )
+
+        # Check output
+        assert actual["generator"].duration == expected_duration
+        actual["generator"].duration = 0.0
+        assert actual["generator"].to_dict() == compound_generator.to_dict()
+        assert actual["axesToMove"] == ["x"]
+        assert actual["detectors"].to_dict() == expected_detectors.to_dict()
+
+    def test_validate_two_detectors_set_exposure_of_both_with_duration(self):
+        # Set up a single detector
+        self._add_detector_block_and_part(
+            self.detector_one_mri, self.detector_one_part_name
+        )
+        self._add_detector_block_and_part(
+            self.detector_two_mri, self.detector_two_part_name
+        )
+        self._start_process()
+        self.b_detectors[0].readoutTime.put_value(0.1)
+        self.b_detectors[1].readoutTime.put_value(0.2)
+
+        # Config
+        duration = 1.0
+        compound_generator = self._get_compound_generator(duration)
+
+        # Expected outputs
+        expected_det_one_exposure = 0.89995
+        expected_det_two_exposure = 0.79995
+        expected_detectors = self._get_detector_table(
+            expected_det_one_exposure, expected_det_two_exposure
+        )
+
+        # Validate
+        actual = self.b.validate(
+            generator=compound_generator, axesToMove=["x"], fileDir="/tmp"
+        )
+
+        # Check output
+        assert actual["generator"].to_dict() == compound_generator.to_dict()
+        assert actual["axesToMove"] == ["x"]
+        assert actual["detectors"].to_dict() == expected_detectors.to_dict()
+
+    def test_validate_two_detectors_set_exposure_of_one_with_duration_and_one_exposure(
+        self,
+    ):
+        # Set up a single detector
+        self._add_detector_block_and_part(
+            self.detector_one_mri, self.detector_one_part_name
+        )
+        self._add_detector_block_and_part(
+            self.detector_two_mri, self.detector_two_part_name
+        )
+        self._start_process()
+        self.b_detectors[0].readoutTime.put_value(0.1)
+        self.b_detectors[1].readoutTime.put_value(0.2)
+
+        # Config
+        duration = 1.0
+        det_one_exposure = 0.45
+        det_two_exposure = 0.0
+        compound_generator = self._get_compound_generator(duration)
+        detectors = self._get_detector_table(det_one_exposure, det_two_exposure)
+
+        # Expected outputs
+        expected_det_two_exposure = 0.79995
+        expected_detectors = self._get_detector_table(
+            det_one_exposure, expected_det_two_exposure
+        )
+
+        # Validate
+        actual = self.b.validate(
+            generator=compound_generator,
+            axesToMove=["x"],
+            fileDir="/tmp",
+            detectors=detectors,
+        )
+
+        # Check output
+        assert actual["generator"].to_dict() == compound_generator.to_dict()
+        assert actual["axesToMove"] == ["x"]
+        assert actual["detectors"].to_dict() == expected_detectors.to_dict()
+
+        # Validate with the detectors swapped around
+
+        # Config
+        det_one_exposure = 0.0
+        det_two_exposure = 0.7
+        compound_generator = self._get_compound_generator(duration)
+        detectors = self._get_detector_table(det_one_exposure, det_two_exposure)
+
+        # Expected outputs
+        expected_det_one_exposure = 0.89995
+        expected_detectors = self._get_detector_table(
+            expected_det_one_exposure, det_two_exposure
+        )
+
+        actual = self.b.validate(
+            generator=compound_generator,
+            axesToMove=["x"],
+            fileDir="/tmp",
+            detectors=detectors,
+        )
+
+        # Check output
+        assert actual["generator"].to_dict() == compound_generator.to_dict()
+        assert actual["axesToMove"] == ["x"]
+        assert actual["detectors"].to_dict() == expected_detectors.to_dict()
+
+    def test_validate_two_detectors_set_duration_and_one_exposure_with_one_exposure(
+        self,
+    ):
+        # Set up a single detector
+        self._add_detector_block_and_part(
+            self.detector_one_mri, self.detector_one_part_name
+        )
+        self._add_detector_block_and_part(
+            self.detector_two_mri, self.detector_two_part_name
+        )
+        self._start_process()
+        self.b_detectors[0].readoutTime.put_value(0.1)
+        self.b_detectors[1].readoutTime.put_value(0.2)
+
+        # Config
+        duration = 0.0
+        det_one_exposure = 0.5
+        det_two_exposure = 0.0
+        expected_duration = 0.60003
+        compound_generator = self._get_compound_generator(duration)
+        detectors = self._get_detector_table(det_one_exposure, det_two_exposure)
+
+        # Expected outputs
+        expected_det_two_exposure = 0.4
+        expected_detectors = self._get_detector_table(
+            det_one_exposure, expected_det_two_exposure
+        )
+
+        # Validate
+        actual = self.b.validate(
+            generator=compound_generator,
+            axesToMove=["x"],
+            fileDir="/tmp",
+            detectors=detectors,
+        )
+
+        # Check output
+        assert actual["generator"].duration == pytest.approx(expected_duration)
+        actual["generator"].duration = 0.0
+        assert actual["generator"].to_dict() == compound_generator.to_dict()
+        assert actual["axesToMove"] == ["x"]
+        assert actual["detectors"].to_dict() == expected_detectors.to_dict()
+
+        # Validate with the detectors swapped around
+        det_one_exposure = 0.0
+        det_two_exposure = 0.7
+        compound_generator = self._get_compound_generator(duration)
+        detectors = self._get_detector_table(det_one_exposure, det_two_exposure)
+
+        # Expected ouputs
+        expected_duration = 0.900045
+        expected_det_one_exposure = pytest.approx(0.8)
+        expected_det_two_exposure = pytest.approx(0.7)
+        expected_detectors = self._get_detector_table(
+            expected_det_one_exposure, expected_det_two_exposure
+        )
+
+        actual = self.b.validate(
+            generator=compound_generator,
+            axesToMove=["x"],
+            fileDir="/tmp",
+            detectors=detectors,
+        )
+
+        # Check output
+        assert actual["generator"].duration == pytest.approx(
+            expected_duration, rel=1e-6
+        )
+        actual["generator"].duration = 0.0
+        assert actual["generator"].to_dict() == compound_generator.to_dict()
+        assert actual["axesToMove"] == ["x"]
+        assert actual["detectors"].to_dict() == expected_detectors.to_dict()
+
+    def test_validate_two_detectors_set_duration_with_both_exposures(self):
+        # Set up a single detector
+        self._add_detector_block_and_part(
+            self.detector_one_mri, self.detector_one_part_name
+        )
+        self._add_detector_block_and_part(
+            self.detector_two_mri, self.detector_two_part_name
+        )
+        self._start_process()
+        self.b_detectors[0].readoutTime.put_value(0.1)
+        self.b_detectors[1].readoutTime.put_value(0.2)
+
+        # Config
+        duration = 0.0
+        det_one_exposure = 0.3
+        det_two_exposure = 0.5
+        compound_generator = self._get_compound_generator(duration)
+        detectors = self._get_detector_table(det_one_exposure, det_two_exposure)
+
+        # Expected outputs
+        expected_duration = 0.700035
+        expected_det_one_exposure = pytest.approx(det_one_exposure)
+        expected_det_two_exposure = pytest.approx(det_two_exposure)
+        expected_detectors = self._get_detector_table(
+            expected_det_one_exposure, expected_det_two_exposure
+        )
+
+        # Validate
+        actual = self.b.validate(
+            generator=compound_generator,
+            axesToMove=["x"],
+            fileDir="/tmp",
+            detectors=detectors,
+        )
+
+        # Check output
+        assert actual["generator"].duration == pytest.approx(
+            expected_duration, rel=1e-6
+        )
+        actual["generator"].duration = 0.0
+        assert actual["generator"].to_dict() == compound_generator.to_dict()
+        assert actual["axesToMove"] == ["x"]
+        assert actual["detectors"].to_dict() == expected_detectors.to_dict()
+
+    def test_validate_two_detectors_shrinks_exposures_with_duration_and_exposures(self):
+        # Set up a single detector
+        self._add_detector_block_and_part(
+            self.detector_one_mri, self.detector_one_part_name
+        )
+        self._add_detector_block_and_part(
+            self.detector_two_mri, self.detector_two_part_name
+        )
+        self._start_process()
+        self.b_detectors[0].readoutTime.put_value(0.1)
+        self.b_detectors[1].readoutTime.put_value(0.2)
+
+        # Config
+        duration = 0.3
+        det_one_exposure = 0.3
+        det_two_exposure = 0.5
+        compound_generator = self._get_compound_generator(duration)
+        detectors = self._get_detector_table(det_one_exposure, det_two_exposure)
+
+        # Expected outputs
+        expected_det_one_exposure = pytest.approx(0.199985)
+        expected_det_two_exposure = pytest.approx(0.099985)
+        expected_detectors = self._get_detector_table(
+            expected_det_one_exposure, expected_det_two_exposure
+        )
+
+        # Validate
+        actual = self.b.validate(
+            generator=compound_generator,
+            axesToMove=["x"],
+            fileDir="/tmp",
+            detectors=detectors,
+        )
+
+        # Check output
+        assert actual["generator"].duration == duration
+        assert actual["generator"].to_dict() == compound_generator.to_dict()
+        assert actual["axesToMove"] == ["x"]
+        assert actual["detectors"].to_dict() == expected_detectors.to_dict()
+
+    def test_validate_two_detectors_calculates_min_duration_for_no_duration_or_exposure(
+        self,
+    ):
+        # Set up a single detector
+        self._add_detector_block_and_part(
+            self.detector_one_mri, self.detector_one_part_name
+        )
+        self._add_detector_block_and_part(
+            self.detector_two_mri, self.detector_two_part_name
+        )
+        self._start_process()
+        self.b_detectors[0].readoutTime.put_value(0.1)
+        self.b_detectors[1].readoutTime.put_value(0.3)
+
+        # Config
+        duration = 0.0
+        det_one_exposure = 0.0
+        det_two_exposure = 0.0
+        compound_generator = self._get_compound_generator(duration)
+        detectors = self._get_detector_table(det_one_exposure, det_two_exposure)
+
+        # Expected outputs
+        expected_duration = pytest.approx(0.300115)
+        expected_det_one_exposure = pytest.approx(0.2001)
+        expected_det_two_exposure = pytest.approx(0.0001)
+        expected_detectors = self._get_detector_table(
+            expected_det_one_exposure, expected_det_two_exposure
+        )
+
+        # Validate
+        actual = self.b.validate(
+            generator=compound_generator,
+            axesToMove=["x"],
+            fileDir="/tmp",
+            detectors=detectors,
+        )
+
+        # Check output
+        assert actual["generator"].duration == expected_duration
+        actual["generator"].duration = 0.0
+        assert actual["generator"].to_dict() == compound_generator.to_dict()
+        assert actual["axesToMove"] == ["x"]
+        assert actual["detectors"].to_dict() == expected_detectors.to_dict()
+
+    def test_validate_with_line_generator_increases_duration_for_motion_part(self):
+        # Setup two detectors and our motion block
+        self._add_motion_block_and_part()
+        self._add_detector_block_and_part(
+            self.detector_one_mri, self.detector_one_part_name
+        )
+        self._add_detector_block_and_part(
+            self.detector_two_mri, self.detector_two_part_name
+        )
+        self._start_process()
+
+        # Config
+        compound_generator = self._get_compound_generator(0.001)
+        self.b_detectors[0].readoutTime.put_value(0.1)
+        self.b_detectors[0].frequencyAccuracy.put_value(50)
+        motion_part_min_duration = 0.5
+        self.motion_part.min_duration = motion_part_min_duration
+
+        # Expected outputs
+        expected_duration = motion_part_min_duration
+        expected_det_one_exposure = 0.399975
+        expected_det_two_exposure = 0.498975
+        expected_table = self._get_detector_table(
+            expected_det_one_exposure, expected_det_two_exposure
+        )
+
+        # Call validate
+        actual = self.b.validate(
+            generator=compound_generator, axesToMove=["x"], fileDir="/tmp"
+        )
+
+        # Check output
+
+        # Duration should be increased by the motion part to 0.5
+        assert actual["generator"].duration == expected_duration
+        actual["generator"].duration = 0.001
+        assert actual["generator"].to_dict() == compound_generator.to_dict()
+        assert actual["axesToMove"] == ["x"]
+        assert actual["detectors"].to_dict() == expected_table.to_dict()

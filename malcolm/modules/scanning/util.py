@@ -5,7 +5,7 @@ rules are applied:
 - All types required to initialize info classes are in the infos namespace
 - util depends on hooks and infos (not vice versa)"""
 
-from typing import Any, Dict, Sequence, Union
+from typing import Any, Dict, List, Sequence, Union
 
 import numpy as np
 from annotypes import Anno, Array, Serializable
@@ -23,7 +23,7 @@ from malcolm.core import (
 from malcolm.modules import builtin
 
 from .hooks import AAxesToMove, ABreakpoints, AGenerator, UAxesToMove
-from .infos import DatasetType
+from .infos import DatasetType, ParameterTweakInfo
 
 
 def exposure_attribute(min_exposure: float) -> AttributeModel:
@@ -209,3 +209,20 @@ class RunnableStates(builtin.util.ManagerStates):
         # Set transitions for aborted states
         self.set_allowed(self.ABORTING, self.ABORTED)
         self.set_allowed(self.ABORTED, self.RESETTING)
+
+
+def resolve_generator_tweaks(
+    generator_tweaks: List[ParameterTweakInfo],
+) -> ParameterTweakInfo:
+    # Only one tweak is simple
+    if len(generator_tweaks) == 1:
+        return generator_tweaks[0]
+    else:
+        # Look for the largest duration in the tweaks
+        largest_duration = 0.0
+        for tweak in generator_tweaks:
+            if tweak.value.duration > largest_duration:
+                largest_duration = tweak.value.duration
+        generator = generator_tweaks[0].value
+        generator.duration = largest_duration
+        return ParameterTweakInfo("generator", generator)
