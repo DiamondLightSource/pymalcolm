@@ -1,4 +1,5 @@
 from annotypes import Anno, add_call_types
+from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import (
     APartName,
@@ -88,11 +89,36 @@ class ExposureDeadtimePart(Part):
     @add_call_types
     def on_validate(self, generator: AGenerator, exposure: AExposure = 0.0) -> UInfos:
         info = self.on_report_status()
-        new_exposure = info.calculate_exposure(generator.duration, exposure)
-        if new_exposure != exposure:
-            return ParameterTweakInfo("exposure", new_exposure)
+        if generator.duration == 0.0:
+            # We need to calculate a new duration
+            if exposure > 0:
+                # Calculate the minimum acceptable duration
+                new_duration = info.calculate_minimum_duration(exposure)
+                serialized = generator.to_dict()
+                new_generator = CompoundGenerator.from_dict(serialized)
+                new_generator.duration = new_duration
+                return ParameterTweakInfo("generator", new_generator)
+            else:
+                # First calculate the minimum possible exposure time
+                new_exposure = info.calculate_exposure(generator.duration, exposure)
+                # Now calculate minimum generator duration
+                new_duration = info.calculate_minimum_duration(new_exposure)
+                serialized = generator.to_dict()
+                new_generator = CompoundGenerator.from_dict(serialized)
+                # Add a tiny fractional amount because of floats being floats
+                new_generator.duration = new_duration * (1 + 1e-12)
+                # Return the tweaked parameters
+                return [
+                    ParameterTweakInfo("generator", new_generator),
+                    ParameterTweakInfo("exposure", new_exposure),
+                ]
         else:
-            return None
+            # We need to calculate the minimum acceptable exposure time
+            new_exposure = info.calculate_exposure(generator.duration, exposure)
+            if new_exposure != exposure:
+                return ParameterTweakInfo("exposure", new_exposure)
+            else:
+                return None
 
     @add_call_types
     def on_configure(self, exposure: AExposure = 0.0) -> None:

@@ -27,10 +27,11 @@ class TestReframePluginPart(ChildTestCase):
         assert len(infos) == 1
         assert infos[0].rank == 2
 
-    def test_validate_raises_AssertionError_for_negative_exposure(self):
+    def test_validate_raises_AssertionError_for_negative_duration(self):
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
-        generator = CompoundGenerator([ys, xs])
+        duration = -1.0
+        generator = CompoundGenerator([ys, xs], [], [], duration)
         generator.prepare()
 
         self.assertRaises(AssertionError, self.o.on_validate, generator)
@@ -38,23 +39,39 @@ class TestReframePluginPart(ChildTestCase):
     def test_validate_raises_AssertionError_for_too_short_exposure(self):
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
-        generator = CompoundGenerator([ys, xs], [], [], 0.00009)
+        duration = 0.00009
+        generator = CompoundGenerator([ys, xs], [], [], duration)
         generator.prepare()
 
         self.assertRaises(AssertionError, self.o.on_validate, generator)
 
-    def test_validate_succeeds_for_valid_params(self):
+    def test_validate_succeeds_without_tweaks_for_valid_params(self):
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
-        generator = CompoundGenerator([ys, xs], [], [], 0.0002)
+        duration = 0.0002
+        generator = CompoundGenerator([ys, xs], [], [], duration)
         generator.prepare()
 
-        self.o.on_validate(generator)
+        tweaks = self.o.on_validate(generator)
+        assert tweaks is None
+
+    def test_validate_returns_minimum_duration_for_two_samples_with_zero_duration(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
+        duration = 0.0
+        generator = CompoundGenerator([ys, xs], [], [], duration)
+        generator.prepare()
+
+        tweak = self.o.on_validate(generator)
+
+        assert tweak.parameter == "generator"
+        assert tweak.value.duration == 0.0002
 
     def test_configure_software_trigger_succeeds(self):
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
-        generator = CompoundGenerator([ys, xs], [], [], 0.1)
+        duration = 0.1
+        generator = CompoundGenerator([ys, xs], [], [], duration)
         generator.prepare()
         completed_steps = 0
         steps_to_do = 6

@@ -1,5 +1,6 @@
 import unittest
 
+import pytest
 from mock import MagicMock, call
 from scanpointgenerator import CompoundGenerator, LineGenerator
 
@@ -32,23 +33,35 @@ class TestExposureDeadtimePart(unittest.TestCase):
         ]
         assert self.o.exposure.value == 0.0
 
-    def test_validate_exposure_too_fast(self):
+    def test_validate_sets_exposure_to_minimum_value_when_below(self):
         tweak = self.o.on_validate(
             generator=make_generator(duration=0.1), exposure=0.001
         )
         assert tweak.parameter == "exposure"
         assert tweak.value == 0.01
 
-    def test_validate_no_duration(self):
-        with self.assertRaises(AssertionError) as cm:
-            self.o.on_validate(generator=make_generator(duration=0.0))
-        assert (
-            str(cm.exception)
-            == "Duration 0.0 for generator must be >0 to signify constant exposure"
+    def test_validate_returns_min_exposure_and_duration_when_neither_given(
+        self,
+    ):
+        tweaks = self.o.on_validate(
+            generator=make_generator(duration=0.0), exposure=0.0
         )
+        assert tweaks[0].parameter == "generator"
+        assert tweaks[0].value.duration == pytest.approx(0.0100005)
+        assert tweaks[1].parameter == "exposure"
+        assert tweaks[1].value == 0.01
 
-    def test_good_validate(self):
-        self.o.on_validate(generator=make_generator(duration=0.1))
+    def test_validate_returns_min_duration_when_given_exposure(
+        self,
+    ):
+        tweak = self.o.on_validate(generator=make_generator(duration=0.0), exposure=0.5)
+        assert tweak.parameter == "generator"
+        assert tweak.value.duration == pytest.approx(0.500025)
+
+    def test_validate_with_non_zero_duration_sets_maximum_possible_exposure_time(self):
+        tweak = self.o.on_validate(generator=make_generator(duration=0.1))
+        assert tweak.parameter == "exposure"
+        assert tweak.value == pytest.approx(0.099995)
 
     def test_configure(self):
         self.o.on_configure(exposure=0.099995)
