@@ -178,8 +178,6 @@ class ExposureDeadtimeInfo(Info):
 
     def calculate_minimum_duration(self, exposure: float) -> float:
         """Calculate the minimum frame duration required for the frame"""
-        if exposure < self.min_exposure:
-            self.min_exposure
         denominator = 1 - (self.frequency_accuracy / 1000000.0)
         min_duration = (exposure + self.readout_time) / denominator
         return min_duration
