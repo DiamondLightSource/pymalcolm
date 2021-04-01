@@ -113,7 +113,7 @@ class ExposureDeadtimePart(Part):
                     ParameterTweakInfo("exposure", new_exposure),
                 ]
         else:
-            # We need to calculate the minimum acceptable exposure time
+            # Check if we need to tweak the exposure
             new_exposure = info.calculate_exposure(generator.duration, exposure)
             if new_exposure != exposure:
                 return ParameterTweakInfo("exposure", new_exposure)
