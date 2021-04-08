@@ -61,7 +61,14 @@ class PandABlocksClient:
         # Holds response_queue to send next
         self._response_queues = self.queue_cls()
         self._socket = socket_cls()
-        self._socket.connect((self.hostname, self.port))
+        try:
+            self._socket.connect((self.hostname, self.port))
+        except OSError as e:
+            raise ConnectionError(
+                f"Can't connect to '{self.hostname}:{self.port}', "
+                "did all services on the PandA start correctly?"
+            ) from e
+
         self._send_spawned = spawn(self._send_loop)
         self._recv_spawned = spawn(self._recv_loop)
         self.started = True
