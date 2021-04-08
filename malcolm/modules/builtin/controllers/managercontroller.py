@@ -4,7 +4,6 @@ import subprocess
 from typing import Dict, List, Set, Tuple
 
 from annotypes import Anno, add_call_types, deserialize_object, json_decode, json_encode
-from packaging.version import parse
 
 from malcolm.compat import OrderedDict
 from malcolm.core import (
@@ -63,6 +62,7 @@ ADescription = ADescription
 
 
 def check_git_version(required_version):
+    from packaging.version import parse
     output = subprocess.check_output(
         (
             "git",
