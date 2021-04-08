@@ -257,7 +257,7 @@ class ChildPart(Part):
         child = self.child_controller.block_view()
         spawned = []
         if isinstance(response, Update):
-            new_fields = response.value
+            new_fields = list(response.value)
         elif isinstance(response, Return):
             # We got a return with None, so clear out all of the
             # config_subscriptions
@@ -266,7 +266,6 @@ class ChildPart(Part):
             self.log.warning("Got unexpected response {response}")
             return
 
-        assert new_fields, "No new fields"
         # Remove any existing subscription that is not in the new fields
         for subscribe in self.config_subscriptions.values():
             attr_name = subscribe.path[-2]
