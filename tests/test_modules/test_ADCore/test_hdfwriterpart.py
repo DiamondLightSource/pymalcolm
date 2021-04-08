@@ -408,11 +408,7 @@ class TestHDFWriterPart(ChildTestCase):
         self.o.done_when_reaches = 10
         completed_steps = 4
         steps_to_do = 3
-        self.o.on_seek(self.context, completed_steps, steps_to_do)
-        assert self.child.handled_requests.mock_calls == [
-            call.put("arrayCounter", 0),
-            call.when_value_matches("arrayCounterReadback", greater_than_zero, None),
-        ]
+        self.o.on_seek(completed_steps, steps_to_do)
         assert self.o.done_when_reaches == 13
 
     def test_post_run_ready(self):

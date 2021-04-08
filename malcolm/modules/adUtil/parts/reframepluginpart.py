@@ -53,6 +53,7 @@ class ReframePluginPart(ADCore.parts.DetectorDriverPart):
         context: Context,
         completed_steps: scanning.hooks.ACompletedSteps,
         steps_to_do: scanning.hooks.AStepsToDo,
+        num_images: int,
         duration: float,
         part_info: scanning.hooks.APartInfo,
         **kwargs: Any,
@@ -60,12 +61,12 @@ class ReframePluginPart(ADCore.parts.DetectorDriverPart):
         if completed_steps == 0:
             # This is an initial configure, so reset arrayCounter to 0
             array_counter = 0
-            self.done_when_reaches = steps_to_do
+            self.done_when_reaches = num_images
         else:
             # This is rewinding or setting up for another batch,
             # skip to a uniqueID that has not been produced yet
             array_counter = self.done_when_reaches
-            self.done_when_reaches += steps_to_do
+            self.done_when_reaches += num_images
         self.uniqueid_offset = completed_steps - array_counter
 
         child = context.block_view(self.mri)
@@ -73,7 +74,7 @@ class ReframePluginPart(ADCore.parts.DetectorDriverPart):
         for k, v in dict(
             arrayCounter=array_counter,
             imageMode="Multiple",
-            numImages=steps_to_do,
+            numImages=num_images,
             arrayCallbacks=True,
         ).items():
             if k not in kwargs and k in child:
