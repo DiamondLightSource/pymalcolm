@@ -26,9 +26,50 @@ class TestPositionLabellerPart(ChildTestCase):
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
         generator = CompoundGenerator([ys, xs], [], [])
         generator.prepare()
-        completed_steps = 2
-        self.o.id_end = 30
+
+        completed_steps = 0
         self.o.on_configure(self.context, completed_steps, generator)
+
+        expected_xml = """<?xml version="1.0" ?>
+<pos_layout>
+<dimensions>
+<dimension name="d0" />
+<dimension name="d1" />
+</dimensions>
+<positions>
+<position d0="0" d1="0" />
+<position d0="0" d1="1" />
+<position d0="0" d1="2" />
+<position d0="1" d1="2" />
+<position d0="1" d1="1" />
+<position d0="1" d1="0" />
+</positions>
+</pos_layout>""".replace(
+            "\n", ""
+        )
+
+        # Wait for the start_future so the post gets through to our child
+        # even on non-cothread systems
+        self.o.start_future.result(timeout=1)
+        assert self.child.handled_requests.mock_calls == [
+            call.post("delete"),
+            call.put("enableCallbacks", True),
+            call.put("idStart", 1),
+            call.put("xml", expected_xml),
+            call.post("start"),
+        ]
+        assert self.o.id_end == 6
+
+    def test_reconfigure(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
+        generator = CompoundGenerator([ys, xs], [], [])
+        generator.prepare()
+        self.o.id_end = 30
+
+        completed_steps = 2
+        self.o.on_configure(self.context, completed_steps, generator)
+
         expected_xml = """<?xml version="1.0" ?>
 <pos_layout>
 <dimensions>
@@ -44,8 +85,7 @@ class TestPositionLabellerPart(ChildTestCase):
 </pos_layout>""".replace(
             "\n", ""
         )
-        # Wait for the start_future so the post gets through to our child
-        # even on non-cothread systems
+
         self.o.start_future.result(timeout=1)
         assert self.child.handled_requests.mock_calls == [
             call.post("delete"),
