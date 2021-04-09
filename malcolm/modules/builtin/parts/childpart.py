@@ -1,4 +1,16 @@
-from typing import Any, Dict, List, Mapping, Optional, Set, Tuple, Type, TypeVar, Union
+from typing import (
+    Any,
+    Dict,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
 from annotypes import Anno, add_call_types
 
@@ -257,7 +269,8 @@ class ChildPart(Part):
         child = self.child_controller.block_view()
         spawned = []
         if isinstance(response, Update):
-            new_fields = list(response.value)  # type: ignore
+            new_fields = response.value
+            assert isinstance(new_fields, Sequence), f"Bad field list {new_fields}"
         elif isinstance(response, Return):
             # We got a return with None, so clear out all of the
             # config_subscriptions
