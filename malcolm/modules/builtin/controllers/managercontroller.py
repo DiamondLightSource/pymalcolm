@@ -1,7 +1,7 @@
 import os
 import socket
 import subprocess
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Sequence, Set, Tuple
 
 from annotypes import Anno, add_call_types, deserialize_object, json_decode, json_encode
 
@@ -113,7 +113,7 @@ class ManagerController(StatefulController):
         self._current_part_fields = ()
         self._subscriptions: List[Subscribe] = []
         self.port_info: Dict[APartName, List[PortInfo]] = {}
-        self.part_exportable: Dict[Part, List[AAttributeName]] = {}
+        self.part_exportable: Dict[Part, Sequence[AAttributeName]] = {}
         # TODO: turn this into "exported attribute modified"
         self.context_modified: Dict[Part, Set[str]] = {}
         self.part_modified: Dict[Part, PartModifiedInfo] = {}
