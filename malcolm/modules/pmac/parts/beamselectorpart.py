@@ -76,7 +76,7 @@ class BeamSelectorPart(PmacChildPart):
             raise ValueError(
                 self._get_error_message(name, mri, "Can only do 1 frame per step")
             )
-        elif enable is not True:
+        elif not enable:
             raise ValueError(
                 self._get_error_message(name, mri, "Detector needs to be enabled")
             )
