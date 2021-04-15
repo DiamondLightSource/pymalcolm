@@ -1,6 +1,6 @@
 from typing import Optional
 
-from annotypes import add_call_types
+from annotypes import add_call_types, Anno
 
 from malcolm.core import CAMEL_RE, APartName, BadValueError, PartRegistrar
 from malcolm.modules import builtin, scanning
@@ -9,6 +9,9 @@ from malcolm.modules import builtin, scanning
 APartName = APartName
 AMri = builtin.parts.AMri
 AInitialVisibility = builtin.parts.AInitialVisibility
+
+with Anno("Whether to zero the delay or centre the pulse to the frame"):
+    AZeroDelay = bool
 
 
 class PandAPulseTriggerPart(builtin.parts.ChildPart):
@@ -28,7 +31,11 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
     """
 
     def __init__(
-        self, name: APartName, mri: AMri, initial_visibility: AInitialVisibility = True
+        self,
+        name: APartName,
+        mri: AMri,
+        initial_visibility: AInitialVisibility = True,
+        zero_delay: AZeroDelay = False,
     ) -> None:
         super().__init__(
             name, mri, initial_visibility=initial_visibility, stateful=False
@@ -44,6 +51,8 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
         self.panda = None
         # The detector Block we will be reading from
         self.detector = None
+        # Whether to always set delay to zero
+        self.zero_delay = zero_delay
 
     def setup(self, registrar: PartRegistrar) -> None:
         super().setup(registrar)
@@ -162,10 +171,15 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
                 # No exposure, so assume a very tiny readout time
                 width = step - 1e-6
             assert width < step, "Width %s is not less than Step %s" % (width, step)
+            # Calculate delay of pulse
+            if self.zero_delay:
+                delay = 0.0
+            else:
+                delay = (step - width) / 2
             values = {
                 self.name + "Step": step,
                 self.name + "Width": width,
-                self.name + "Delay": (step - width) / 2,
+                self.name + "Delay": delay,
                 self.name + "Pulses": self.frames_per_step,
             }
             self.panda.put_attribute_values(values)
