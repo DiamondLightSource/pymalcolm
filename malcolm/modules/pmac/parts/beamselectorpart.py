@@ -162,11 +162,13 @@ class BeamSelectorPart(PmacChildPart):
         cycle_duration = self._calculate_cycle_duration(
             time_at_diffraction_position, time_at_imaging_position
         )
-        # Return the generator with our cycle duration
-        serialized = generator.to_dict()
-        new_generator = CompoundGenerator.from_dict(serialized)
-        new_generator.duration = cycle_duration
-        return scanning.infos.ParameterTweakInfo("generator", new_generator)
+        # See if we need to tweak the generator
+        if generator.duration != cycle_duration:
+            # Return the generator with our cycle duration
+            serialized = generator.to_dict()
+            new_generator = CompoundGenerator.from_dict(serialized)
+            new_generator.duration = cycle_duration
+            return scanning.infos.ParameterTweakInfo("generator", new_generator)
 
     @add_call_types
     def on_configure(
