@@ -5,5 +5,6 @@ scan_runner_block = make_block_creator(__file__, "scan_runner_block.yaml")
 attribute_block = make_block_creator(__file__, "attribute_block.yaml")
 directory_monitor_block = make_block_creator(__file__, "directory_monitor_block.yaml")
 unrolling_block = make_block_creator(__file__, "unrolling_block.yaml")
+multiple_trigger_block = make_block_creator(__file__, "multiple_trigger_block.yaml")
 
 __all__ = check_yaml_names(globals())

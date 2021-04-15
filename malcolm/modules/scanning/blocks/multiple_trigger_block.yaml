@@ -1,0 +1,15 @@
+- builtin.parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- builtin.parameters.string:
+      name: detector
+      description: MRI of the detector to support multiplying triggers
+
+- builtin.controllers.BasicController:
+    mri: $(mri)
+
+- builtin.parts.BlockPart:
+    name: detector
+    description: Detector mri
+    value: $(detector)
