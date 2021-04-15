@@ -1,5 +1,6 @@
-from annotypes import add_call_types, Anno, Array
 from typing import Union
+
+from annotypes import Anno, Array, add_call_types
 
 from malcolm.core import CAMEL_RE, APartName, PartRegistrar
 from malcolm.modules import builtin, scanning
