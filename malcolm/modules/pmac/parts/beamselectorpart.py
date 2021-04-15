@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Optional, Tuple
 
 from annotypes import Anno, add_call_types
 from scanpointgenerator import (
@@ -133,7 +133,7 @@ class BeamSelectorPart(PmacChildPart):
 
     def _calculate_cycle_duration(
         self, time_at_diffraction_position: float, time_at_imaging_position: float
-    ):
+    ) -> float:
         return (
             time_at_diffraction_position + time_at_imaging_position + 2 * self.move_time
         )
@@ -149,7 +149,7 @@ class BeamSelectorPart(PmacChildPart):
         part_info: scanning.hooks.APartInfo,
         generator: scanning.hooks.AGenerator,
         detectors: ADetectorTable,
-    ) -> scanning.hooks.UParameterTweakInfos:
+    ) -> Optional[scanning.hooks.UParameterTweakInfos]:
         # Check the primary generator is static
         self._check_generator_is_static(generator.generators[0])
 
@@ -169,6 +169,8 @@ class BeamSelectorPart(PmacChildPart):
             new_generator = CompoundGenerator.from_dict(serialized)
             new_generator.duration = cycle_duration
             return scanning.infos.ParameterTweakInfo("generator", new_generator)
+        else:
+            return None
 
     @add_call_types
     def on_configure(

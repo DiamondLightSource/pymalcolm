@@ -12,9 +12,9 @@ from .exposuredeadtimepart import (
     ExposureDeadtimePart,
 )
 from .minturnaroundpart import MinTurnaroundPart
+from .multipletriggerpart import MultipleTriggerPart
 from .scanrunnerpart import ScanRunnerPart
 from .simultaneousaxespart import SimultaneousAxesPart, USimultaneousAxes
 from .unrollingpart import UnrollingPart
-from .multipletriggerpart import MultipleTriggerPart
 
 __all__ = submodule_all(globals())
