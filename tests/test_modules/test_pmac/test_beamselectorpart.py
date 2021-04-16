@@ -93,12 +93,17 @@ class TestBeamSelectorPart(ChildTestCase):
             imaging_exposure_time, diffraction_exposure_time
         )
 
+        # First pass we should tweak
         infos = self.o.on_validate({}, generator, detectors)
 
         self.assertEqual(infos.parameter, "generator")
         assert infos.value.duration == pytest.approx(
             self.move_time * 2 + imaging_exposure_time + diffraction_exposure_time
         )
+
+        # Now re-run with our tweaked generator
+        infos = self.o.on_validate({}, infos.value, detectors)
+        assert infos is None, "We shouldn't need to tweak again"
 
     def test_validate_raises_AssertionError_for_bad_generator_type(self):
         line_generator = LineGenerator("x", "mm", 0.0, 5.0, 10)
