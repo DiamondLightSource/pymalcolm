@@ -60,13 +60,10 @@ class MultipleTriggerPart(builtin.parts.ChildPart):
     ) -> None:
         child = context.block_view(self.mri)
         detector_mri = child.detector.value
-        # Check that PandA has frames_per_step of 2
-        assert detectors, "No detectors found in table. Expecting a PandA"
-        try:
-            for i, mri in enumerate(detectors.mri):
-                if mri == detector_mri:
-                    assert (
-                        detectors.framesPerStep[i] == 2
-                    ), "Detector can only have framesPerStep=2"
-        except AttributeError:
-            raise
+        assert detectors, "Requires a detector table"
+        for enable, _, mri, _, frames in detectors.rows():
+            if mri == detector_mri:
+                if enable:
+                    if frames <= 0:
+                        raise ValueError(f"{mri}: Need positive frames per step")
+                return
