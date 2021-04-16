@@ -20,7 +20,11 @@ class MultipleTriggerPart(builtin.parts.ChildPart):
     """
 
     def __init__(
-        self, name: APartName, mri: AMri, valid_multiples: AMultiples = None, initial_visibility: AInitialVisibility = False
+        self,
+        name: APartName,
+        mri: AMri,
+        valid_multiples: AMultiples = None,
+        initial_visibility: AInitialVisibility = False,
     ) -> None:
         super().__init__(
             name, mri, initial_visibility=initial_visibility, stateful=False
@@ -61,8 +65,8 @@ class MultipleTriggerPart(builtin.parts.ChildPart):
         try:
             for i, mri in enumerate(detectors.mri):
                 if mri == detector_mri:
-                    assert detectors.framesPerStep[i] == 2, (
-                        "Detector can only have framesPerStep=2"
-                    )
+                    assert (
+                        detectors.framesPerStep[i] == 2
+                    ), "Detector can only have framesPerStep=2"
         except AttributeError:
             raise
