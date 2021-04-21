@@ -10,6 +10,16 @@ from malcolm.modules.scanning.util import DetectorTable
 from malcolm.testutil import ChildTestCase
 
 
+def get_detector_table(detector_mri, frames_per_step, enabled=True):
+    return DetectorTable(
+        [enabled, True],
+        ["detector", "panda"],
+        [detector_mri, "ML-PANDA-01"],
+        [1.0, 0.0],
+        [frames_per_step, 1],
+    )
+
+
 class TestMultipleTriggerPart(ChildTestCase):
     def setUp(self):
         self.process = Process()
@@ -33,15 +43,6 @@ class TestMultipleTriggerPart(ChildTestCase):
             name="detectorMultiTriggers", mri=self.block_mri
         )
 
-    def _get_detector_table(self, frames_per_step, enabled=True):
-        return DetectorTable(
-            [enabled, True],
-            ["detector", "panda"],
-            [self.detector_mri, "ML-PANDA-01"],
-            [1.0, 0.0],
-            [frames_per_step, 1],
-        )
-
     def test_setup_has_required_hooks(self):
         mock_registrar = MagicMock(name="registrar_mock")
 
@@ -61,13 +62,13 @@ class TestMultipleTriggerPart(ChildTestCase):
         assert isinstance(info, DetectorMutiframeInfo)
 
     def test_on_validate_succeeds_when_detector_is_disabled(self):
-        detectors = self._get_detector_table(0, enabled=False)
+        detectors = get_detector_table(self.detector_mri, 0, enabled=False)
 
         self.multi_trigger_part.on_validate(self.context, detectors=detectors)
 
     def test_on_validate_succeeds(self):
-        detectors_single_frame = self._get_detector_table(1)
-        detectors_ten_frames = self._get_detector_table(10)
+        detectors_single_frame = get_detector_table(self.detector_mri, 1)
+        detectors_ten_frames = get_detector_table(self.detector_mri, 10)
 
         self.multi_trigger_part.on_validate(
             self.context, detectors=detectors_single_frame
@@ -77,8 +78,8 @@ class TestMultipleTriggerPart(ChildTestCase):
         )
 
     def test_on_validate_raises_ValueError_for_bad_frames_per_step(self):
-        detectors_negative_frames = self._get_detector_table(-1)
-        detectors_zero_frames = self._get_detector_table(0)
+        detectors_negative_frames = get_detector_table(self.detector_mri, -1)
+        detectors_zero_frames = get_detector_table(self.detector_mri, 0)
 
         self.assertRaises(
             ValueError,
@@ -92,4 +93,90 @@ class TestMultipleTriggerPart(ChildTestCase):
             self.multi_trigger_part.on_validate,
             self.context,
             detectors=detectors_zero_frames,
+        )
+
+    def test_on_validate_succeeds_without_detector_table(
+        self,
+    ):
+        self.multi_trigger_part.on_validate(self.context)
+
+
+class TestMultipleTriggerPartValidationWithSingleValidMultiple(ChildTestCase):
+    def setUp(self):
+        self.process = Process()
+        self.context = Context(self.process)
+
+        self.detector_mri = "ML-DET-01"
+        self.block_mri = "ML-MULTI-01"
+
+        # Create a detector to which this part communicates
+        self.detector = ManagerController(self.detector_mri, "/tmp", use_git=False)
+
+        # Create a block for this part
+        self.child = self.create_child_block(
+            multiple_trigger_block,
+            self.process,
+            mri=self.block_mri,
+            detector=self.detector_mri,
+        )
+
+        self.multi_trigger_part = MultipleTriggerPart(
+            name="detectorMultiTriggers", mri=self.block_mri, valid_multiples=5
+        )
+
+    def test_on_validate_succeeds_if_detector_table_has_valid_multiple(self):
+        detectors = get_detector_table(self.detector_mri, 5)
+
+        self.multi_trigger_part.on_validate(self.context, detectors=detectors)
+
+    def test_on_validate_fails_if_detector_table_has_invalid_multiple(self):
+        detectors = get_detector_table(self.detector_mri, 2)
+
+        self.assertRaises(
+            ValueError,
+            self.multi_trigger_part.on_validate,
+            self.context,
+            detectors=detectors,
+        )
+
+
+class TestMultipleTriggerPartValidationWithMultipleValidMultiples(ChildTestCase):
+    def setUp(self):
+        self.process = Process()
+        self.context = Context(self.process)
+
+        self.detector_mri = "ML-DET-01"
+        self.block_mri = "ML-MULTI-01"
+
+        # Create a detector to which this part communicates
+        self.detector = ManagerController(self.detector_mri, "/tmp", use_git=False)
+
+        # Create a block for this part
+        self.child = self.create_child_block(
+            multiple_trigger_block,
+            self.process,
+            mri=self.block_mri,
+            detector=self.detector_mri,
+        )
+
+        self.valid_multiples = [1, 2, 4, 8, 16]
+        self.multi_trigger_part = MultipleTriggerPart(
+            name="detectorMultiTriggers",
+            mri=self.block_mri,
+            valid_multiples=self.valid_multiples,
+        )
+
+    def test_on_validate_succeeds_if_detector_table_has_valid_multiple(self):
+        for multiple in self.valid_multiples:
+            detectors = get_detector_table(self.detector_mri, multiple)
+            self.multi_trigger_part.on_validate(self.context, detectors=detectors)
+
+    def test_on_validate_fails_if_detector_table_has_invalid_multiple(self):
+        detectors = get_detector_table(self.detector_mri, 5)
+
+        self.assertRaises(
+            ValueError,
+            self.multi_trigger_part.on_validate,
+            self.context,
+            detectors=detectors,
         )
