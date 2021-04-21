@@ -341,11 +341,11 @@ class AlternatingDelayAfterMutator(Mutator):
     ) -> None:
         self.delays = [even_delay_after, odd_delay_after]
 
-    def mutate(self, point: Point, idx: Union[int, List[int]]) -> Point:
+    def mutate(self, point: Point, idx: Union[int, List[int], Array[int]]) -> Point:
         if isinstance(point, Points):
             assert isinstance(
-                idx, List
-            ), "Indices needs to be a list for multiple point"
+                idx, (List, np.ndarray)
+            ), "Indices needs to be list or array for multiple points"
             size = len(point)
             delay_after = np.empty(size)
             for i in range(size):
