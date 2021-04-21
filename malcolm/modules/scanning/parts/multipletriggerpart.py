@@ -56,9 +56,13 @@ class MultipleTriggerPart(builtin.parts.ChildPart):
         info = scanning.infos.DetectorMutiframeInfo(detector_mri)
         return info
 
-    def _check_frames_per_step_is_valid(self, detector_mri: str, frames_per_step: int) -> None:
+    def _check_frames_per_step_is_valid(
+        self, detector_mri: str, frames_per_step: int
+    ) -> None:
         if frames_per_step <= 0:
-            raise ValueError(f"{detector_mri}: frames per step has to be a positive value")
+            raise ValueError(
+                f"{detector_mri}: frames per step has to be a positive value"
+            )
         if self.valid_multiples:
             if frames_per_step not in self.valid_multiples:
                 raise ValueError(
