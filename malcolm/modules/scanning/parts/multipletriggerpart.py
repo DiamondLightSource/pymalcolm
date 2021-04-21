@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Sequence, Union
 
 from annotypes import Anno, Array, add_call_types
 
@@ -23,7 +23,7 @@ class MultipleTriggerPart(builtin.parts.ChildPart):
         self,
         name: APartName,
         mri: AMri,
-        valid_multiples: AMultiples = None,
+        valid_multiples: Union[AMultiples, Sequence[int], int] = None,
         initial_visibility: AInitialVisibility = False,
     ) -> None:
         super().__init__(
@@ -32,7 +32,13 @@ class MultipleTriggerPart(builtin.parts.ChildPart):
         assert CAMEL_RE.match(name), (
             "MultipleTriggerPart name %r should be camelCase" % name
         )
-        self.valid_multiples = valid_multiples
+        if valid_multiples:
+            if isinstance(valid_multiples, int):
+                self.valid_multiples = [valid_multiples]
+            else:
+                self.valid_multiples = list(valid_multiples)
+        else:
+            self.valid_multiples = list()
 
     def setup(self, registrar: PartRegistrar) -> None:
         super().setup(registrar)
@@ -50,6 +56,16 @@ class MultipleTriggerPart(builtin.parts.ChildPart):
         info = scanning.infos.DetectorMutiframeInfo(detector_mri)
         return info
 
+    def _check_frames_per_step_is_valid(self, frames_per_step: int) -> None:
+        if frames_per_step <= 0:
+            raise ValueError("Frames per step has to be a positive value")
+        if self.valid_multiples:
+            if frames_per_step not in self.valid_multiples:
+                raise ValueError(
+                    f"Frames per step {frames_per_step} "
+                    f"not in set of valid values: {self.valid_multiples}"
+                )
+
     # Allow CamelCase as these parameters will be serialized
     # noinspection PyPep8Naming
     @add_call_types
@@ -60,10 +76,11 @@ class MultipleTriggerPart(builtin.parts.ChildPart):
     ) -> None:
         child = context.block_view(self.mri)
         detector_mri = child.detector.value
-        assert detectors, "Requires a detector table"
-        for enable, _, mri, _, frames in detectors.rows():
-            if mri == detector_mri:
-                if enable:
-                    if frames <= 0:
-                        raise ValueError(f"{mri}: Need positive frames per step")
-                return
+        if detectors:
+            for enable, _, mri, _, frames in detectors.rows():
+                if mri == detector_mri:
+                    if enable:
+                        self._check_frames_per_step_is_valid(frames)
+                    return
+        else:
+            self._check_frames_per_step_is_valid(1)
