@@ -1,5 +1,5 @@
 from collections import Counter
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Set, Tuple, Union
 
 import numpy as np
 from annotypes import Anno, Array, Sequence
@@ -334,17 +334,24 @@ with Anno("Delay after value to add to odd points"):
 
 
 class AlternatingDelayAfterMutator(Mutator):
-    """Mutator to add alternating delay_after values to each point"""
+    """Mutator to add alternating delay_after values based on the index of each point"""
 
     def __init__(
         self, even_delay_after: AEvenDelayAfter, odd_delay_after: AOddDelayAfter
     ) -> None:
         self.delays = [even_delay_after, odd_delay_after]
 
-    def mutate(self, point: Point, idx: int) -> Point:
+    def mutate(self, point: Point, idx: Union[int, List[int]]) -> Point:
         if isinstance(point, Points):
-            delay_after = np.resize(self.delays, len(point))
+            assert isinstance(
+                idx, List
+            ), "Indices needs to be a list for multiple point"
+            size = len(point)
+            delay_after = np.empty(size)
+            for i in range(size):
+                delay_after[i] = self.delays[idx[i] % 2]
         else:
+            assert isinstance(idx, int), "Single index required for single point"
             delay_after = self.delays[idx % 2]
         point.delay_after += delay_after
         return point
