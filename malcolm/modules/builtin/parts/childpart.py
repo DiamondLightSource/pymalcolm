@@ -67,6 +67,7 @@ with Anno(
     "means only if child Source/Sink Ports connect to another Block"
 ):
     AInitialVisibility = bool
+UInitialVisibility = Optional[AInitialVisibility]
 with Anno("If the child is a StatefulController then this should be True"):
     AStateful = bool
 
@@ -107,7 +108,7 @@ class ChildPart(Part):
         self,
         name: APartName,
         mri: AMri,
-        initial_visibility: AInitialVisibility = False,
+        initial_visibility: UInitialVisibility = None,
         stateful: AStateful = True,
     ) -> None:
         # For docs: after ChildPart init
@@ -116,7 +117,7 @@ class ChildPart(Part):
         self.mri = mri
         self.x: float = 0.0
         self.y: float = 0.0
-        self.visible: bool = initial_visibility
+        self.visible: Optional[bool] = initial_visibility
         # {part_name: visible} saying whether part_name is visible
         self.part_visibility: Dict[str, bool] = {}
         # {attr_name: attr_value} of last saved/loaded structure
@@ -201,6 +202,7 @@ class ChildPart(Part):
         # If not specified then take our own visibility from this same dict
         if self.visible is None:
             self.visible = self.part_visibility.get(self.name, False)
+        assert self.visible is not None
         ret = LayoutInfo(mri=self.mri, x=self.x, y=self.y, visible=self.visible)
         return [ret]
 
