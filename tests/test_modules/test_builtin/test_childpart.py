@@ -45,7 +45,6 @@ class TestChildPart(unittest.TestCase):
             mri=block_mri,
             name="part%s" % block_mri,
             stateful=False,
-            initial_visibility=True,
         )
         self.p.add_controller(controller)
         return part, controller
@@ -106,6 +105,7 @@ class TestChildPart(unittest.TestCase):
         assert info_out.name == "sourceportConnector"
         assert info_out.port == Port.INT32
         assert info_out.connected_value == "Connector1"
+        assert self.c.block_view().layout.value.visible == [True, True, True]
 
     def test_layout(self):
         b = self.p.block_view("mainBlock")
