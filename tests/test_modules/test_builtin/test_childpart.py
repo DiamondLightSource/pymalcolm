@@ -1,6 +1,5 @@
 import shutil
 import unittest
-from unittest.mock import MagicMock
 
 from malcolm.core import (
     Context,
@@ -155,37 +154,3 @@ class TestChildPart(unittest.TestCase):
         assert structure2 == expected
         self.p1.on_load(context, dict(sinkportConnector="blah_again"))
         assert b1.sinkportConnector.value == "blah_again"
-
-    def test_on_layout_first_call_sets_part_visibility_to_False(self):
-        new_part = ChildPart("new_part", "NEW:PART:MRI")
-        context_mock = MagicMock(name="mock_context")
-        ports_mock = MagicMock(name="mock_ports")
-        layout_mock = MagicMock(name="mock_layout")
-        new_part.calculate_part_visibility = MagicMock(name="mock_calculate_visibility")
-
-        assert not new_part.part_visibility
-        assert not new_part.visible
-
-        returned_layout = new_part.on_layout(context_mock, ports_mock, layout_mock)
-
-        assert new_part.visible is False
-        assert new_part.calculate_part_visibility.called_once_with(ports_mock)
-        assert returned_layout[0].mri == "NEW:PART:MRI"
-        assert returned_layout[0].visible is False
-
-    def test_on_layout_first_call_keeps_part_visibility_to_True(self):
-        new_part = ChildPart("new_part", "NEW:PART:MRI", initial_visibility=True)
-        context_mock = MagicMock(name="mock_context")
-        ports_mock = MagicMock(name="mock_ports")
-        layout_mock = MagicMock(name="mock_layout")
-        new_part.calculate_part_visibility = MagicMock(name="mock_calculate_visibility")
-
-        assert not new_part.part_visibility
-        assert new_part.visible is True
-
-        returned_layout = new_part.on_layout(context_mock, ports_mock, layout_mock)
-
-        assert new_part.visible is True
-        assert new_part.calculate_part_visibility.called_once_with(ports_mock)
-        assert returned_layout[0].mri == "NEW:PART:MRI"
-        assert returned_layout[0].visible is True
