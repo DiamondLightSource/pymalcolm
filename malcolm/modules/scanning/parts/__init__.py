@@ -5,6 +5,7 @@ from .attributeprerunpart import AttributePreRunPart
 from .datasettablepart import DatasetTablePart
 from .detectorchildpart import AInitialVisibility, AMri, APartName, DetectorChildPart
 from .directorymonitorpart import DirectoryMonitorPart
+from .doubletriggerpart import DoubleTriggerPart
 from .exposuredeadtimepart import (
     AInitialAccuracy,
     AInitialReadoutTime,
@@ -12,7 +13,6 @@ from .exposuredeadtimepart import (
     ExposureDeadtimePart,
 )
 from .minturnaroundpart import MinTurnaroundPart
-from .multipletriggerpart import MultipleTriggerPart
 from .scanrunnerpart import ScanRunnerPart
 from .simultaneousaxespart import SimultaneousAxesPart, USimultaneousAxes
 from .unrollingpart import UnrollingPart
