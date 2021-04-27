@@ -3,7 +3,28 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
-`4.4`_ - 2021-03-2
+`4.5`_ - 2021-04-27
+--------------------------
+
+Changed:
+
+- Improvements when scanning with software outer axes:
+
+  - Hardware-triggered detectors remain armed between inner scans
+  - By default detectors write to single files for the whole scan instead of
+    for each inner scan
+  - For ADOdin you can set frames per block and blocks per file to control
+    number of output files
+
+Fixed:
+
+- Tutorials now described using pipenv
+- /tmp no longer becomes a git repository when running tests
+- Template designs now included in package data
+- Fixed issue where existing block wiring would not be shown before a design is
+  loaded
+
+`4.4`_ - 2021-03-02
 --------------------------
 
 Added:
@@ -585,6 +606,7 @@ Added:
 
 - Initial release with hello world and websocket comms
 
+.. _4.5: https://github.com/dls-controls/pymalcolm/compare/4.4...4.5
 .. _4.4: https://github.com/dls-controls/pymalcolm/compare/4-3-1...4.4
 .. _4-3-1: https://github.com/dls-controls/pymalcolm/compare/4-2b8...4-3-1
 .. _4-2b8: https://github.com/dls-controls/pymalcolm/compare/4-2b6...4-2b8
