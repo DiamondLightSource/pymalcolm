@@ -22,7 +22,7 @@ class DoubleTriggerPart(builtin.parts.ChildPart):
             name, mri, initial_visibility=initial_visibility, stateful=False
         )
         assert CAMEL_RE.match(name), (
-            "MultipleTriggerPart name %r should be camelCase" % name
+            f"DoubleTriggerPart name {name} should be camelCase"
         )
 
     def setup(self, registrar: PartRegistrar) -> None:
