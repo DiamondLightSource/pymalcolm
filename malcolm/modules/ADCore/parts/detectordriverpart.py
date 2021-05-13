@@ -293,6 +293,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         part_info: scanning.hooks.APartInfo,
         generator: scanning.hooks.AGenerator,
         fileDir: scanning.hooks.AFileDir,
+        breakpoints: scanning.controllers.ABreakpoints,
         **kwargs: Any,
     ) -> None:
         context.unsubscribe_all()
@@ -313,10 +314,10 @@ class DetectorDriverPart(builtin.parts.ChildPart):
             mode = child.triggerMode.value
             self.is_hardware_triggered = mode not in self.soft_trigger_modes
 
-        # If detector is hardware triggered we can configure the detector for all frames
-        # now, rather than configuring and arming for each inner scan, and send the
-        # triggers for one inner scan in each run
-        if self.is_hardware_triggered:
+        # If detector is hardware triggered, and we aren't using breakpoints, we can
+        # configure the detector for all frames now, rather than configuring and arming
+        # for each inner scan, and send the triggers for one inner scan in each run
+        if self.is_hardware_triggered and not breakpoints:
             num_images = generator.size - completed_steps
         else:
             num_images = steps_to_do
