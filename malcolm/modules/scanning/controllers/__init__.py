@@ -2,6 +2,7 @@
 from malcolm.core import submodule_all
 
 from .runnablecontroller import (
+    ABreakpoints,
     AConfigDir,
     AConfigureParams,
     ADescription,
