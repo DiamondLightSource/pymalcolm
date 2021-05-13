@@ -315,8 +315,8 @@ class DetectorDriverPart(builtin.parts.ChildPart):
             self.is_hardware_triggered = mode not in self.soft_trigger_modes
 
         # If detector is hardware triggered, and we aren't using breakpoints, we can
-        # configure the detector for all frames now, rather than configuring and arming
-        # for each inner scan, and send the triggers for one inner scan in each run
+        # configure the detector for all frames now. This is instead of configuring and
+        # arming the detector for each inner scan, so we save some time
         if self.is_hardware_triggered and not breakpoints:
             num_images = generator.size - completed_steps
         else:
