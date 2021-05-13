@@ -87,6 +87,36 @@ class TestDetectorDriverPart(ChildTestCase):
         ]
         assert not self.o.is_hardware_triggered
 
+    def test_configure_with_breakpoints(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
+        generator = CompoundGenerator([ys, xs], [], [], 0.1)
+        generator.prepare()
+        completed_steps = 0
+        steps_to_do = 3
+        info = ExposureDeadtimeInfo(0.01, 1000, 0.0)
+        part_info = dict(anyname=[info])
+        self.set_attributes(self.child, triggerMode="Internal")
+        self.o.on_configure(
+            self.context,
+            completed_steps,
+            steps_to_do,
+            part_info,
+            generator,
+            fileDir="/tmp",
+            breakpoints=[3, 3],
+            exposure=info.calculate_exposure(generator.duration),
+        )
+        assert self.child.handled_requests.mock_calls == [
+            call.put("arrayCallbacks", True),
+            call.put("arrayCounter", 0),
+            call.put("exposure", 0.1 - 0.01 - 0.0001),
+            call.put("imageMode", "Multiple"),
+            call.put("numImages", 3),
+            call.put("acquirePeriod", 0.1 - 0.0001),
+        ]
+        assert not self.o.is_hardware_triggered
+
     def test_configure_with_extra_attributes(self):
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
@@ -126,6 +156,69 @@ class TestDetectorDriverPart(ChildTestCase):
         actual_tree = ElementTree.XML(actual_xml)
         expected_tree = ElementTree.XML(expected_xml)
         assert ElementTree.dump(actual_tree) == ElementTree.dump(expected_tree)
+
+    def test_configure_with_hardware_trigger(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 20, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 3)
+        generator = CompoundGenerator([ys, xs], [], [], 0.1)
+        generator.prepare()
+        completed_steps = 0
+        steps_to_do = 20
+        info = ExposureDeadtimeInfo(0.01, 1000, 0.0)
+        part_info = dict(anyname=[info])
+        self.set_attributes(self.child, triggerMode="Hardware")
+        self.o.on_configure(
+            self.context,
+            completed_steps,
+            steps_to_do,
+            part_info,
+            generator,
+            fileDir="/tmp",
+            exposure=info.calculate_exposure(generator.duration),
+        )
+        assert self.child.handled_requests.mock_calls == [
+            call.put("arrayCallbacks", True),
+            call.put("arrayCounter", 0),
+            call.put("exposure", 0.1 - 0.01 - 0.0001),
+            call.put("imageMode", "Multiple"),
+            call.put("numImages", 60),
+            call.put("acquirePeriod", 0.1 - 0.0001),
+            call.post("start"),
+            call.when_value_matches("acquiring", True, None),
+        ]
+        assert self.o.is_hardware_triggered
+
+    def test_configure_with_hardware_trigger_and_breakpoints(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 20, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 3)
+        generator = CompoundGenerator([ys, xs], [], [], 0.1)
+        generator.prepare()
+        completed_steps = 0
+        steps_to_do = 15
+        info = ExposureDeadtimeInfo(0.01, 1000, 0.0)
+        part_info = dict(anyname=[info])
+        self.set_attributes(self.child, triggerMode="Hardware")
+        self.o.on_configure(
+            self.context,
+            completed_steps,
+            steps_to_do,
+            part_info,
+            generator,
+            fileDir="/tmp",
+            breakpoints=[15, 35, 10],
+            exposure=info.calculate_exposure(generator.duration),
+        )
+        assert self.child.handled_requests.mock_calls == [
+            call.put("arrayCallbacks", True),
+            call.put("arrayCounter", 0),
+            call.put("exposure", 0.1 - 0.01 - 0.0001),
+            call.put("imageMode", "Multiple"),
+            call.put("numImages", 15),
+            call.put("acquirePeriod", 0.1 - 0.0001),
+            call.post("start"),
+            call.when_value_matches("acquiring", True, None),
+        ]
+        assert self.o.is_hardware_triggered
 
     def test_version_check(self):
         block = self.context.block_view("mri")

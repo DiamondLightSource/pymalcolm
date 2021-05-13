@@ -293,7 +293,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         part_info: scanning.hooks.APartInfo,
         generator: scanning.hooks.AGenerator,
         fileDir: scanning.hooks.AFileDir,
-        breakpoints: scanning.controllers.ABreakpoints,
+        breakpoints: scanning.controllers.ABreakpoints = None,
         **kwargs: Any,
     ) -> None:
         context.unsubscribe_all()
