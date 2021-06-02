@@ -259,19 +259,90 @@ class TestDetectorDriverPart(ChildTestCase):
         assert self.o.registrar.report.call_count == 2
         assert self.o.registrar.report.call_args[0][0].steps == 0
 
-    def test_post_run_armed(self):
-        # This would have been done by configure
+    def test_post_run_armed_with_software_trigger(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 100, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 5)
+        generator = CompoundGenerator([ys, xs], [], [], 0.1)
+        generator.prepare()
+        info = ExposureDeadtimeInfo(0.01, 1000, 0.0)
+        part_info = dict(anyname=[info])
+
+        # This would have been done by initial configure
         self.o.is_hardware_triggered = False
         self.o.done_when_reaches = 100
-        self.o.on_post_run_armed(steps_to_do=100)
+
+        self.o.on_post_run_armed(self.context, 0, 100, part_info, generator)
+
         assert self.o.done_when_reaches == 100
 
-    def test_hardware_triggered_post_run_armed(self):
-        # This would have been done by configure
+    def test_post_run_armed_with_hardware_trigger(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 100, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 5)
+        generator = CompoundGenerator([ys, xs], [], [], 0.1)
+        generator.prepare()
+        info = ExposureDeadtimeInfo(0.01, 1000, 0.0)
+        part_info = dict(anyname=[info])
+
+        # This would have been done by initial configure
         self.o.is_hardware_triggered = True
         self.o.done_when_reaches = 100
-        self.o.on_post_run_armed(steps_to_do=100)
+
+        self.o.on_post_run_armed(self.context, 100, 100, part_info, generator)
+
         assert self.o.done_when_reaches == 200
+
+    def test_post_run_armed_with_software_trigger_and_breakpoints(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 100, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 5)
+        generator = CompoundGenerator([ys, xs], [], [], 0.1)
+        generator.prepare()
+        info = ExposureDeadtimeInfo(0.01, 1000, 0.0)
+        part_info = dict(anyname=[info])
+        breakpoints = [100, 400]
+
+        # This would have been done by initial configure
+        self.o.is_hardware_triggered = False
+        self.o.done_when_reaches = 100
+
+        self.o.on_post_run_armed(
+            self.context, 0, 100, part_info, generator, breakpoints
+        )
+
+        assert self.child.handled_requests.mock_calls == [
+            call.put("arrayCallbacks", True),
+            call.put("arrayCounter", 0),
+            call.put("imageMode", "Multiple"),
+            call.put("numImages", 100),
+            call.put("acquirePeriod", 0.1 - 0.0001),
+        ]
+        assert self.o.done_when_reaches == 100
+
+    def test_post_run_armed_with_hardware_trigger_and_breakpoints(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 100, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 5)
+        generator = CompoundGenerator([ys, xs], [], [], 0.1)
+        generator.prepare()
+        info = ExposureDeadtimeInfo(0.01, 1000, 0.0)
+        part_info = dict(anyname=[info])
+        breakpoints = [100, 400]
+
+        # This would have been done by initial configure
+        self.o.is_hardware_triggered = True
+        self.o.done_when_reaches = 100
+
+        self.o.on_post_run_armed(
+            self.context, 100, 400, part_info, generator, breakpoints
+        )
+        assert self.child.handled_requests.mock_calls == [
+            call.put("arrayCallbacks", True),
+            call.put("arrayCounter", 100),
+            call.put("imageMode", "Multiple"),
+            call.put("numImages", 400),
+            call.put("acquirePeriod", 0.1 - 0.0001),
+            call.post("start"),
+            call.when_value_matches("acquiring", True, None),
+        ]
+        assert self.o.done_when_reaches == 500
 
     def test_abort(self):
         self.o.on_abort(self.context)
