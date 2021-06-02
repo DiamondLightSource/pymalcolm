@@ -367,8 +367,30 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         )
 
     @add_call_types
-    def on_post_run_armed(self, steps_to_do: scanning.hooks.AStepsToDo) -> None:
-        if self.is_hardware_triggered:
+    def on_post_run_armed(
+        self,
+        context: scanning.hooks.AContext,
+        completed_steps: scanning.hooks.ACompletedSteps,
+        steps_to_do: scanning.hooks.AStepsToDo,
+        part_info: scanning.hooks.APartInfo,
+        generator: scanning.hooks.AGenerator,
+        breakpoints: scanning.controllers.ABreakpoints = None,
+    ) -> None:
+        if breakpoints:
+            # We may have a different number of steps each time
+            self.setup_detector(
+                context,
+                completed_steps,
+                steps_to_do,
+                steps_to_do,
+                generator.duration,
+                part_info,
+            )
+            if self.is_hardware_triggered:
+                # We can now re-arm hardware-triggered detectors
+                self.arm_detector(context)
+        elif self.is_hardware_triggered:
+            # Otherwise for hardware detectors just update done_when_reaches
             self.done_when_reaches += steps_to_do
 
     @add_call_types
