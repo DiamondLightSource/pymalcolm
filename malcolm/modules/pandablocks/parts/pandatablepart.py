@@ -144,7 +144,7 @@ class PandATablePart(PandAFieldPart):
             if field_data.labels:
                 column_value = [field_data.labels[i] for i in shifted_column]
             elif nbits == 1:
-                column_value = shifted_column.astype(np.bool)
+                column_value = shifted_column.astype(bool)
             else:
                 # View as the correct type
                 dtype = self.meta.elements[column_name].dtype

@@ -381,7 +381,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
 
             for datatype in datatypes:
                 for i in range(9):
-                    layout = h5py.VirtualLayout(shape=self.shape, dtype=np.float)
+                    layout = h5py.VirtualLayout(shape=self.shape, dtype=np.float64)
                     v_source = h5py.VirtualSource(
                         self.savu_full_filename,
                         "/entry/final_result_q%s/data" % datatype,
