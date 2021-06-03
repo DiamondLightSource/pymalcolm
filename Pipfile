@@ -12,7 +12,7 @@ mock = "*"
 nose = "*"
 coverage = "*"
 # Pinning black stops us having to allow pre-releases globally
-black = "==20.8b1"
+black = "==21.5b2"
 pytest = "*"
 pytest-cov = "*"
 pytest-black = "*"
