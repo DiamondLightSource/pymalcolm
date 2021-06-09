@@ -401,7 +401,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
                             "/entry/rawQ" + "%02d" % (i + 1) + "." + datatype,
                             layout,
                             fillvalue=-1,
-                        )                      
+                        )
 
             # Add any setpoint dimensions
             for dim in self.generator.dimensions:
