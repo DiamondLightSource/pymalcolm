@@ -172,7 +172,7 @@ def create_vds(generator, raw_name, vds_path, child, uid_name, sum_name):
         block_size,
         "data",
         "data",
-        data_type,
+        data_type.lower(),
     )
 
     shape = (hdf_shape, 1, 1)
