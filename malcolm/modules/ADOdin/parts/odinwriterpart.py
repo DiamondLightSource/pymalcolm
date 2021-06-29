@@ -421,7 +421,9 @@ class OdinWriterPart(builtin.parts.ChildPart):
 
     @add_call_types
     def on_post_run_armed(
-        self, context: scanning.hooks.AContext, steps_to_do: scanning.hooks.AStepsToDo,
+        self,
+        context: scanning.hooks.AContext,
+        steps_to_do: scanning.hooks.AStepsToDo,
     ) -> None:
         self.done_when_reaches += steps_to_do
 

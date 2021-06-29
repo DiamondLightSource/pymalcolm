@@ -57,23 +57,6 @@ AUseGit = builtin.controllers.AUseGit
 ATemplateDesigns = builtin.controllers.ATemplateDesigns
 
 
-def get_steps_per_run(generator: CompoundGenerator, axes_to_move: List[str]) -> int:
-    steps = 1
-    axes_set = set(axes_to_move)
-    for dim in reversed(generator.dimensions):
-        # If the axes_set is empty and the dimension has axes then we have done
-        # as many dimensions as we can, so return
-        if dim.axes and not axes_set:
-            break
-        # Consume the axes that this generator scans
-        for axis in dim.axes:
-            assert axis in axes_set, "Axis %s is not in %s" % (axis, axes_to_move)
-            axes_set.remove(axis)
-        # Now multiply by the dimensions to get the number of steps
-        steps *= dim.size
-    return steps
-
-
 def update_configure_model(
     configure_model: MethodMeta, part_configure_infos: List[ConfigureParamsInfo]
 ) -> None:
@@ -197,13 +180,13 @@ class RunnableController(builtin.controllers.ManagerController):
         # needed
         self.resume_queue: Optional[Queue] = None
         # Stored for pause. If using breakpoints, it is a list of steps
-        self.steps_per_run = []  # type: List[int]
+        self.steps_per_run: List[int] = []
         # If the list of breakpoints is not empty, this will be true
-        self.use_breakpoints = False  # type: bool
+        self.use_breakpoints: bool = False
         # Absolute steps where the run() returns
-        self.breakpoint_steps = []  # type: List[int]
+        self.breakpoint_steps: List[int] = []
         # Breakpoint index, modified in run() and pause()
-        self.breakpoint_index = 0
+        self.breakpoint_index: int = 0
         # Queue so we can wait for aborts to complete
         self.abort_queue: Optional[Queue] = None
         # Create sometimes writeable attribute for the current completed scan
@@ -275,8 +258,12 @@ class RunnableController(builtin.controllers.ManagerController):
             ConfigureParamsInfo, self.update_configure_params
         )
 
-    def get_steps_per_run(self, generator, axes_to_move, breakpoints):
-        # type: (CompoundGenerator, List[str], List[int]) -> List[int]
+    def get_steps_per_run(
+        self,
+        generator: CompoundGenerator,
+        axes_to_move: AAxesToMove,
+        breakpoints: List[int],
+    ) -> List[int]:
         self.use_breakpoints = False
         steps = [1]
         axes_set = set(axes_to_move)
@@ -399,7 +386,7 @@ class RunnableController(builtin.controllers.ManagerController):
         generator: AGenerator,
         axesToMove: AAxesToMove = None,
         breakpoints: ABreakpoints = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> AConfigureParams:
         """Validate configuration parameters and return validated parameters.
 
@@ -457,7 +444,7 @@ class RunnableController(builtin.controllers.ManagerController):
         generator: AGenerator,
         axesToMove: AAxesToMove = None,
         breakpoints: ABreakpoints = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> AConfigureParams:
         """Validate the params then configure the device ready for run().
 
@@ -719,7 +706,7 @@ class RunnableController(builtin.controllers.ManagerController):
         self.run_hooks(PauseHook(p, c) for p, c in self.create_part_contexts().items())
 
         if self.use_breakpoints:
-            self.breakpoint_index -= 1
+            self.breakpoint_index = self.get_breakpoint_index(completed_steps)
             in_run_steps = (
                 completed_steps % self.breakpoint_steps[self.breakpoint_index]
             )
@@ -737,6 +724,12 @@ class RunnableController(builtin.controllers.ManagerController):
             for p, c, kwargs in self._part_params()
         )
         self.configured_steps.set_value(completed_steps + steps_to_do)
+
+    def get_breakpoint_index(self, completed_steps: int) -> int:
+        index = 0
+        while completed_steps > self.breakpoint_steps[index]:
+            index += 1
+        return index
 
     @add_call_types
     def resume(self) -> None:

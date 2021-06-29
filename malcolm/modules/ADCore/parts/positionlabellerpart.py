@@ -6,6 +6,8 @@ from malcolm.core import PartRegistrar
 from malcolm.modules import builtin, scanning
 from malcolm.modules.scanning.hooks import AGenerator
 
+from ..util import FRAME_TIMEOUT
+
 # How big an XML file can the EPICS waveform receive?
 XML_MAX_SIZE = 1000000 - 2
 
@@ -17,7 +19,7 @@ N_LOAD_AHEAD = 4
 
 
 # We will set these attributes on the child block, so don't save them
-@builtin.util.no_save("xml", "enableCallbacks", "idStart", "qty", "arrayCounter")
+@builtin.util.no_save("xml", "enableCallbacks", "idStart", "arrayCounter")
 class PositionLabellerPart(builtin.parts.ChildPart):
     """Part for controlling a `position_labeller_block` in a scan"""
 
@@ -29,15 +31,24 @@ class PositionLabellerPart(builtin.parts.ChildPart):
     start_future = None
     # If we are currently loading then block loading more points
     loading = None
-    # The uniqueID of the last point in the scan
-    id_end = 0
+    # The uniqueID of the first point in the next run
+    id_start = 0
+    # When arrayCounter gets to here we are done
+    done_when_reaches = 0
+    # Timeout before saying we have stalled
+    frame_timeout = 0.0
 
     def setup(self, registrar: PartRegistrar) -> None:
         super().setup(registrar)
         # Hooks
         registrar.hook(
-            (scanning.hooks.ConfigureHook, scanning.hooks.SeekHook,), self.on_configure,
+            (
+                scanning.hooks.ConfigureHook,
+                scanning.hooks.SeekHook,
+            ),
+            self.on_configure,
         )
+        registrar.hook(scanning.hooks.PostRunArmedHook, self.on_post_run_armed)
         registrar.hook(scanning.hooks.RunHook, self.on_run)
         registrar.hook(
             (scanning.hooks.AbortHook, scanning.hooks.PauseHook), self.on_abort
@@ -53,23 +64,29 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         self,
         context: scanning.hooks.AContext,
         completed_steps: scanning.hooks.ACompletedSteps,
+        steps_to_do: scanning.hooks.AStepsToDo,
         generator: scanning.hooks.AGenerator,
     ) -> None:
         # clear out old subscriptions
         context.unsubscribe_all()
         self.generator = generator
-        # Work out the offset between the generator index and uniqueID
-        if completed_steps == 0:
-            # The detector will reset, so the first uniqueID (for index 0) will be 1
-            id_start = 1
-            # The last uniqueID will be the last point in the generator
-            self.id_end = generator.size
+        # Calculate how long to wait before marking this scan as stalled
+        self.frame_timeout = FRAME_TIMEOUT
+        if generator.duration > 0:
+            self.frame_timeout += generator.duration
         else:
-            # This is rewinding, so the detector will skip to a uniqueID that could not
-            # have been produced in the original range, i.e. one more than the end
-            id_start = self.id_end + 1
-            # The new end will be the new start plus the remaining points
-            self.id_end += generator.size - completed_steps
+            # Double it to be safe
+            self.frame_timeout += FRAME_TIMEOUT
+        # Work out the last expected ID
+        if completed_steps == 0:
+            # This is an initial configure, so reset start ID to 1
+            id_start = 1
+            self.done_when_reaches = steps_to_do
+        else:
+            # This is rewinding or setting up for another batch,
+            # skip to a uniqueID that has not been produced yet
+            id_start = self.done_when_reaches + 1
+            self.done_when_reaches += steps_to_do
 
         # Delete any remaining old positions
         child = context.block_view(self.mri)
@@ -90,11 +107,22 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         self.loading = False
         child = context.block_view(self.mri)
         child.qty.subscribe_value(self.load_more_positions, child)
+        child.when_value_matches(
+            "uniqueId", self.done_when_reaches, event_timeout=self.frame_timeout
+        )
 
     @add_call_types
     def on_abort(self, context: scanning.hooks.AContext) -> None:
         child = context.block_view(self.mri)
         child.stop()
+
+    @add_call_types
+    def on_post_run_armed(
+        self, context: scanning.hooks.AContext, steps_to_do: scanning.hooks.AStepsToDo
+    ) -> None:
+        # clear out old subscriptions
+        context.unsubscribe_all()
+        self.done_when_reaches += steps_to_do
 
     def load_more_positions(self, number_left: int, child: Any) -> None:
         if self.end_index and self.generator.size:
