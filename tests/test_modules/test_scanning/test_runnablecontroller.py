@@ -25,7 +25,6 @@ from malcolm.modules.demo.blocks import motion_block
 from malcolm.modules.demo.parts import MotionChildPart
 from malcolm.modules.demo.parts.motionchildpart import AExceptionStep
 from malcolm.modules.scanning.controllers import RunnableController
-from malcolm.modules.scanning.controllers.runnablecontroller import get_steps_per_run
 from malcolm.modules.scanning.hooks import (
     AAxesToMove,
     ABreakpoints,
@@ -101,57 +100,6 @@ class RunForeverPart(builtin.parts.ChildPart):
     def on_abort(self, context: scanning.hooks.AContext) -> None:
         # Sleep for 1s before returning
         context.sleep(1.0)
-
-
-class TestGetStepsPerRunMethod(unittest.TestCase):
-    def test_returns_single_step_for_no_moving_axes(self):
-        line1 = LineGenerator("y", "mm", 0, 2, 10)
-        line2 = LineGenerator("x", "mm", 0, 2, 50)
-        generator = CompoundGenerator([line1, line2], [], [], duration=0.001)
-        generator.prepare()
-
-        steps = get_steps_per_run(generator, list())
-
-        assert steps == 1
-
-    def test_returns_inner_steps_for_single_dimension_in_2d_scan(self):
-        line1 = LineGenerator("y", "mm", 0, 2, 30)
-        line2 = LineGenerator("x", "mm", 0, 2, 20)
-        generator = CompoundGenerator([line1, line2], [], [], duration=0.001)
-        generator.prepare()
-
-        steps = get_steps_per_run(generator, ["x"])
-
-        assert steps == 20
-
-    def test_raises_AssertionError_for_invalid_axes_to_move(self):
-        line1 = LineGenerator("y", "mm", 0, 2, 30)
-        line2 = LineGenerator("x", "mm", 0, 2, 20)
-        generator = CompoundGenerator([line1, line2], [], [], duration=0.001)
-        generator.prepare()
-
-        self.assertRaises(AssertionError, get_steps_per_run, generator, ["z"])
-
-    def test_returns_all_steps_for_both_dimensions_in_2d_scan(self):
-        line1 = LineGenerator("y", "mm", 0, 2, 30)
-        line2 = LineGenerator("x", "mm", 0, 2, 20)
-        generator = CompoundGenerator([line1, line2], [], [], duration=0.001)
-        generator.prepare()
-
-        steps = get_steps_per_run(generator, ["x", "y"])
-
-        assert steps == 600
-
-    def test_returns_inner_steps_for_two_dimensions_in_3d_scan(self):
-        line1 = LineGenerator("z", "mm", 0, 2, 15)
-        line2 = LineGenerator("y", "mm", 0, 2, 25)
-        line3 = LineGenerator("x", "mm", 0, 2, 20)
-        generator = CompoundGenerator([line1, line2, line3], [], [], duration=0.001)
-        generator.prepare()
-
-        steps = get_steps_per_run(generator, ["x", "y"])
-
-        assert steps == 500
 
 
 class TestRunnableStates(unittest.TestCase):

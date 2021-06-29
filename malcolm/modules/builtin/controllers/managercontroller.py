@@ -63,6 +63,7 @@ ADescription = ADescription
 
 def check_git_version(required_version):
     from packaging.version import parse
+
     output = subprocess.check_output(
         (
             "git",
