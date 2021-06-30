@@ -355,7 +355,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         return blind
 
     @staticmethod
-    def _get_row_indices(points) -> Tuple[np.array, np.array]:
+    def _get_row_indices(points) -> Tuple[np.ndarray, np.ndarray]:
         """Generate list of start and end indices for separate rows
 
         This excludes the initial row, which is handled separately.
