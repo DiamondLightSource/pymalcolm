@@ -1,6 +1,6 @@
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Type
 
-from annotypes import Anno, add_call_types, deserialize_object, json_encode
+from annotypes import Anno, add_call_types, deserialize_object
 from scanpointgenerator import CompoundGenerator
 
 from malcolm.compat import OrderedDict
@@ -12,7 +12,6 @@ from malcolm.core import (
     NumberMeta,
     Part,
     Queue,
-    Table,
     TimeoutError,
     Widget,
 )
