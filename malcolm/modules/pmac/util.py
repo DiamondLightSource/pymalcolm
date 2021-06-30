@@ -93,7 +93,7 @@ def cs_axis_mapping(
         missing,
         axis_mapping,
     )
-    assert len(cs_ports) == 1, "Requested axes %s are in multiple CS numbers %s" % (
+    assert len(cs_ports) <= 1, "Requested axes %s are in multiple CS numbers %s" % (
         axes_to_move,
         list(cs_ports),
     )
