@@ -6,9 +6,20 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 `4.6`_
 --------------------------
 
+Changed:
+
+- Added Unrolling block to be able to enable/disable unrolling part in scan
+  design
+
 Fixed:
+
 - Servo interrupt frequency getter for PowerPMAC (needed at scan
   configuring phase), this requires pmac version 2-5-5 or higher
+- Issue with PositionLabellerPart subscription not adding more positions after
+  the initial 5000 points
+- OdinWriterPart cast data type to lower case for NumPy V1.2
+- Nexus templates for Savu Kinematics added to package data
+- Savu Kinematics now supports no axes to move
 
 `4.5`_ - 2021-04-27
 --------------------------
