@@ -120,31 +120,6 @@ def update_configure_model(
     configure_model.set_defaults(defaults)
 
 
-def merge_non_writeable_table(
-    default: Table, supplied: Table, non_writeable: List[int]
-) -> Table:
-    default_rows = list(default.rows())
-    for supplied_row in supplied.rows():
-        key = [supplied_row[i] for i in non_writeable]
-        for default_row in default_rows:
-            if key == [default_row[i] for i in non_writeable]:
-                break
-        else:
-            d = OrderedDict()
-            for i, k in enumerate(supplied.call_types):
-                if i in non_writeable:
-                    d[k] = supplied_row[i]
-            raise ValueError(
-                "Table row with %s doesn't match a row in the default table"
-                % json_encode(d)
-            )
-        for i, v in enumerate(supplied_row):
-            if i not in non_writeable:
-                default_row[i] = v
-    table = default.from_rows(default_rows)
-    return table
-
-
 class RunnableController(builtin.controllers.ManagerController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
 
