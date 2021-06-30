@@ -39,7 +39,7 @@ class TimeStamp(Serializable):
             self.nanoseconds = np.int32(nanoseconds)
         self.userTag = userTag
 
-    def to_time(self) -> float:
+    def to_time(self) -> np.float64:
         return self.secondsPastEpoch + 1e-9 * self.nanoseconds
 
     zero: "TimeStamp"  # filled in below

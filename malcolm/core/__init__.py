@@ -48,6 +48,9 @@ from .models import (
     StringArrayMeta,
     StringMeta,
     TableMeta,
+    ULimitHigh,
+    ULimitLow,
+    UPrecision,
     VArrayMeta,
     VMeta,
 )
