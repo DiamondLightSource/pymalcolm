@@ -1,9 +1,11 @@
+import numpy as np
 from mock import MagicMock, call
 from scanpointgenerator import CompoundGenerator, LineGenerator
 
 from malcolm.core import Context, Future, Process
 from malcolm.modules.ADCore.blocks import position_labeller_block
 from malcolm.modules.ADCore.parts import PositionLabellerPart
+from malcolm.modules.ADCore.util import FRAME_TIMEOUT
 from malcolm.testutil import ChildTestCase
 
 
@@ -24,7 +26,7 @@ class TestPositionLabellerPart(ChildTestCase):
     def test_configure(self):
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
-        generator = CompoundGenerator([ys, xs], [], [])
+        generator = CompoundGenerator([ys, xs], [], [], duration=1.0)
         generator.prepare()
 
         completed_steps = 0
@@ -60,6 +62,7 @@ class TestPositionLabellerPart(ChildTestCase):
             call.post("start"),
         ]
         assert self.o.done_when_reaches == 6
+        assert np.isclose(self.o.frame_timeout, FRAME_TIMEOUT + 1.0)
 
     def test_reconfigure(self):
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
@@ -97,6 +100,7 @@ class TestPositionLabellerPart(ChildTestCase):
             call.post("start"),
         ]
         assert self.o.done_when_reaches == 30
+        assert np.isclose(self.o.frame_timeout, 2 * FRAME_TIMEOUT)
 
     def test_run(self):
         # Say that we've returned from start
@@ -131,3 +135,14 @@ class TestPositionLabellerPart(ChildTestCase):
         )
         assert child.mock_calls == [call.xml.put_value(expected_xml)]
         assert self.o.end_index == 6
+
+    def test_on_post_run_armed(self):
+        self.o.done_when_reaches = 100
+        # Add a dummy subscription so we check it clears
+        self.context.subscribe("BLOCK-POS", MagicMock())
+        assert len(self.context._subscriptions) == 1
+
+        self.o.on_post_run_armed(self.context, 50)
+
+        assert len(self.context._subscriptions) == 0
+        assert self.o.done_when_reaches == 150

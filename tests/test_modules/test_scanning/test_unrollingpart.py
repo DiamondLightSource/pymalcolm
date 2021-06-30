@@ -50,6 +50,12 @@ class TestUnrollingPartInitialVisibilityFalse(unittest.TestCase):
         assert len(generator_after.dimensions) == 2
         assert len(generator_after.excluders) == 0
 
+    def test_on_validate_returns_None_when_not_visible(self):
+        generator_before = make_generator()
+        assert self.o.visible is False
+        results = self.o.on_validate(generator_before, ["x", "y"])
+        assert results is None
+
 
 class TestUnrollingPart(unittest.TestCase):
     def setUp(self):
