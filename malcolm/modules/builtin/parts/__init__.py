@@ -23,11 +23,8 @@ from .choicepart import (
 from .float64part import (
     AConfig,
     AGroup,
-    ULimitHigh,
-    ULimitLow,
     AMetaDescription,
     APartName,
-    UPrecision,
     AUnits,
     AWidget,
     AWriteable,
