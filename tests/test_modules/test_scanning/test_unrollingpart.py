@@ -25,9 +25,35 @@ def make_generator(squashed=False, include_z=False):
     return compound
 
 
+class TestUnrollingPartInitialVisibilityFalse(unittest.TestCase):
+    def setUp(self):
+        self.o = UnrollingPart(name="Unroll", mri="mri", initial_visibility=False)
+        self.process = Process("proc")
+        self.process.start()
+        self.addCleanup(self.process.stop, 2)
+        self.config_dir = tmp_dir("config_dir")
+        c = RunnableController("mri", self.config_dir.value)
+        c.add_part(self.o)
+        self.process.add_controller(c)
+        self.b = c.block_view()
+
+    def tearDown(self):
+        shutil.rmtree(self.config_dir.value)
+
+    def test_2d_no_changes_when_initial_visibility_is_False(self):
+        generator_before = make_generator()
+        results = self.b.validate(generator_before, ["x", "y"])
+        generator_after = results["generator"]
+        generator_before.prepare()
+        generator_after.prepare()
+        assert generator_before == generator_after
+        assert len(generator_after.dimensions) == 2
+        assert len(generator_after.excluders) == 0
+
+
 class TestUnrollingPart(unittest.TestCase):
     def setUp(self):
-        self.o = UnrollingPart(name="Unroll")
+        self.o = UnrollingPart(name="Unroll", mri="mri", initial_visibility=True)
         self.process = Process("proc")
         self.process.start()
         self.addCleanup(self.process.stop, 2)
