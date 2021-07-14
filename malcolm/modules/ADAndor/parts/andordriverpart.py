@@ -42,6 +42,7 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
         num_images: int,
         duration: float,
         part_info: scanning.hooks.APartInfo,
+        initial_configure: bool = True,
         **kwargs: Any,
     ):
         # Calculate the readout time
@@ -84,6 +85,7 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
             num_images,
             duration,
             part_info,
+            initial_configure=initial_configure,
             **kwargs,
         )
 

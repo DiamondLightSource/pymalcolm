@@ -135,6 +135,7 @@ class TestAndorDetectorDriverPart(ChildTestCase):
             steps_to_do,
             duration,
             part_info,
+            initial_configure=True,
             exposure=actual_exposure,
         )
 
@@ -178,6 +179,7 @@ class TestAndorDetectorDriverPart(ChildTestCase):
             steps_to_do,
             duration,
             part_info,
+            initial_configure=True,
             exposure=actual_exposure,
         )
 
@@ -227,6 +229,7 @@ class TestAndorDetectorDriverPart(ChildTestCase):
             steps_to_do,
             duration,
             part_info,
+            initial_configure=True,
             exposure=actual_exposure,
         )
 
@@ -270,6 +273,7 @@ class TestAndorDetectorDriverPart(ChildTestCase):
             steps_to_do,
             duration,
             part_info,
+            initial_configure=True,
             exposure=actual_exposure,
         )
 

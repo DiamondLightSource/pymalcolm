@@ -56,9 +56,10 @@ class ReframePluginPart(ADCore.parts.DetectorDriverPart):
         num_images: int,
         duration: float,
         part_info: scanning.hooks.APartInfo,
+        initial_configure: bool = True,
         **kwargs: Any,
     ) -> None:
-        if completed_steps == 0:
+        if initial_configure:
             # This is an initial configure, so reset arrayCounter to 0
             array_counter = 0
             self.done_when_reaches = num_images

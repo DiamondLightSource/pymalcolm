@@ -305,17 +305,17 @@ class TestDetectorDriverPart(ChildTestCase):
         self.o.done_when_reaches = 100
 
         self.o.on_post_run_armed(
-            self.context, 0, 100, part_info, generator, breakpoints
+            self.context, 100, 400, part_info, generator, breakpoints
         )
 
         assert self.child.handled_requests.mock_calls == [
             call.put("arrayCallbacks", True),
-            call.put("arrayCounter", 0),
+            call.put("arrayCounter", 100),
             call.put("imageMode", "Multiple"),
-            call.put("numImages", 100),
+            call.put("numImages", 400),
             call.put("acquirePeriod", 0.1 - 0.0001),
         ]
-        assert self.o.done_when_reaches == 100
+        assert self.o.done_when_reaches == 500
 
     def test_post_run_armed_with_hardware_trigger_and_breakpoints(self):
         xs = LineGenerator("x", "mm", 0.0, 0.5, 100, alternate=True)

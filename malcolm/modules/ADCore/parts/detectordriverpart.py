@@ -100,10 +100,11 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         num_images: int,
         duration: float,
         part_info: scanning.hooks.APartInfo,
+        initial_configure: bool = True,
         **kwargs: Any,
     ) -> None:
         child = context.block_view(self.mri)
-        if completed_steps == 0:
+        if initial_configure:
             # This is an initial configure, so reset arrayCounter to 0
             array_counter = 0
             self.done_when_reaches = steps_to_do
@@ -220,8 +221,13 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         # Hooks
         registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
         registrar.hook(
-            (scanning.hooks.ConfigureHook, scanning.hooks.SeekHook),
+            scanning.hooks.ConfigureHook,
             self.on_configure,
+            self.configure_args_with_exposure,
+        )
+        registrar.hook(
+            scanning.hooks.SeekHook,
+            self.on_seek,
             self.configure_args_with_exposure,
         )
         registrar.hook(scanning.hooks.RunHook, self.on_run)
@@ -281,6 +287,46 @@ class DetectorDriverPart(builtin.parts.ChildPart):
                         )
                     )
                 )
+
+    # Allow CamelCase as fileDir parameter will be serialized
+    # noinspection PyPep8Naming
+    @add_call_types
+    def on_seek(
+        self,
+        context: scanning.hooks.AContext,
+        completed_steps: scanning.hooks.ACompletedSteps,
+        steps_to_do: scanning.hooks.AStepsToDo,
+        part_info: scanning.hooks.APartInfo,
+        generator: scanning.hooks.AGenerator,
+        fileDir: scanning.hooks.AFileDir,
+        breakpoints: scanning.controllers.ABreakpoints = None,
+        **kwargs: Any,
+    ) -> None:
+        context.unsubscribe_all()
+
+        # If detector is hardware triggered, and we aren't using breakpoints, we can
+        # configure the detector for all frames now. This is instead of configuring and
+        # arming the detector for each inner scan, so we save some time
+        if self.is_hardware_triggered and not breakpoints:
+            num_images = generator.size - completed_steps
+        else:
+            num_images = steps_to_do
+
+        # Set up the detector
+        self.setup_detector(
+            context,
+            completed_steps,
+            steps_to_do,
+            num_images,
+            generator.duration,
+            part_info,
+            initial_configure=False,
+            **kwargs,
+        )
+
+        # Start now if we are hardware triggered
+        if self.is_hardware_triggered:
+            self.arm_detector(context)
 
     # Allow CamelCase as fileDir parameter will be serialized
     # noinspection PyPep8Naming
@@ -385,6 +431,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
                 steps_to_do,
                 generator.duration,
                 part_info,
+                initial_configure=False,
             )
             if self.is_hardware_triggered:
                 # We can now re-arm hardware-triggered detectors
