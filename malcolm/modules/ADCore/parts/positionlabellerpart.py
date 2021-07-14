@@ -41,13 +41,8 @@ class PositionLabellerPart(builtin.parts.ChildPart):
     def setup(self, registrar: PartRegistrar) -> None:
         super().setup(registrar)
         # Hooks
-        registrar.hook(
-            (
-                scanning.hooks.ConfigureHook,
-                scanning.hooks.SeekHook,
-            ),
-            self.on_configure,
-        )
+        registrar.hook(scanning.hooks.ConfigureHook, self.on_configure)
+        registrar.hook(scanning.hooks.SeekHook, self.on_seek)
         registrar.hook(scanning.hooks.PostRunArmedHook, self.on_post_run_armed)
         registrar.hook(scanning.hooks.RunHook, self.on_run)
         registrar.hook(
@@ -59,26 +54,15 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         super().on_reset(context)
         self.on_abort(context)
 
-    @add_call_types
-    def on_configure(
+    def setup_plugin(
         self,
         context: scanning.hooks.AContext,
         completed_steps: scanning.hooks.ACompletedSteps,
         steps_to_do: scanning.hooks.AStepsToDo,
-        generator: scanning.hooks.AGenerator,
+        initial_configure=True,
     ) -> None:
-        # clear out old subscriptions
-        context.unsubscribe_all()
-        self.generator = generator
-        # Calculate how long to wait before marking this scan as stalled
-        self.frame_timeout = FRAME_TIMEOUT
-        if generator.duration > 0:
-            self.frame_timeout += generator.duration
-        else:
-            # Double it to be safe
-            self.frame_timeout += FRAME_TIMEOUT
         # Work out the last expected ID
-        if completed_steps == 0:
+        if initial_configure:
             # This is an initial configure, so reset start ID to 1
             id_start = 1
             self.done_when_reaches = steps_to_do
@@ -103,6 +87,28 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         self.start_future = child.start_async()
 
     @add_call_types
+    def on_configure(
+        self,
+        context: scanning.hooks.AContext,
+        completed_steps: scanning.hooks.ACompletedSteps,
+        steps_to_do: scanning.hooks.AStepsToDo,
+        generator: scanning.hooks.AGenerator,
+    ) -> None:
+        # clear out old subscriptions
+        context.unsubscribe_all()
+        self.generator = generator
+        # Calculate how long to wait before marking this scan as stalled
+        self.frame_timeout = FRAME_TIMEOUT
+        if generator.duration > 0:
+            self.frame_timeout += generator.duration
+        else:
+            # Double it to be safe
+            self.frame_timeout += FRAME_TIMEOUT
+
+        # Set up the plugin
+        self.setup_plugin(context, completed_steps, steps_to_do)
+
+    @add_call_types
     def on_run(self, context: scanning.hooks.AContext) -> None:
         self.loading = False
         child = context.block_view(self.mri)
@@ -123,6 +129,20 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         # clear out old subscriptions
         context.unsubscribe_all()
         self.done_when_reaches += steps_to_do
+
+    @add_call_types
+    def on_seek(
+        self,
+        context: scanning.hooks.AContext,
+        completed_steps: scanning.hooks.ACompletedSteps,
+        steps_to_do: scanning.hooks.AStepsToDo,
+    ) -> None:
+        # clear out old subscriptions
+        context.unsubscribe_all()
+        # We need to set up the plugin again when pausing
+        self.setup_plugin(
+            context, completed_steps, steps_to_do, initial_configure=False
+        )
 
     def load_more_positions(self, number_left: int, child: Any) -> None:
         if self.end_index and self.generator.size:

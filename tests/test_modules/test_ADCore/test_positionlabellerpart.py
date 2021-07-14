@@ -64,16 +64,20 @@ class TestPositionLabellerPart(ChildTestCase):
         assert self.o.done_when_reaches == 6
         assert np.isclose(self.o.frame_timeout, FRAME_TIMEOUT + 1.0)
 
-    def test_reconfigure(self):
-        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
-        ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
-        generator = CompoundGenerator([ys, xs], [], [])
+    def test_on_seek(self):
+        # Set up the generator which would have been done in original configure
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 5, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 3)
+        generator = CompoundGenerator([ys, xs], [], [], duration=1.0)
         generator.prepare()
+        self.o.generator = generator
 
-        completed_steps = 2
-        steps_to_do = 28
-        self.o.done_when_reaches = 2
-        self.o.on_configure(self.context, completed_steps, steps_to_do, generator)
+        # Now we can call on_seek
+        completed_steps = 10
+        steps_to_do = 5
+        self.o.done_when_reaches = 10
+
+        self.o.on_seek(self.context, completed_steps, steps_to_do)
 
         expected_xml = """<?xml version="1.0" ?>
 <pos_layout>
@@ -82,10 +86,11 @@ class TestPositionLabellerPart(ChildTestCase):
 <dimension name="d1" />
 </dimensions>
 <positions>
-<position d0="0" d1="2" />
-<position d0="1" d1="2" />
-<position d0="1" d1="1" />
-<position d0="1" d1="0" />
+<position d0="2" d1="0" />
+<position d0="2" d1="1" />
+<position d0="2" d1="2" />
+<position d0="2" d1="3" />
+<position d0="2" d1="4" />
 </positions>
 </pos_layout>""".replace(
             "\n", ""
@@ -95,12 +100,11 @@ class TestPositionLabellerPart(ChildTestCase):
         assert self.child.handled_requests.mock_calls == [
             call.post("delete"),
             call.put("enableCallbacks", True),
-            call.put("idStart", 3),
+            call.put("idStart", 11),
             call.put("xml", expected_xml),
             call.post("start"),
         ]
-        assert self.o.done_when_reaches == 30
-        assert np.isclose(self.o.frame_timeout, 2 * FRAME_TIMEOUT)
+        assert self.o.done_when_reaches == 15
 
     def test_run(self):
         # Say that we've returned from start
