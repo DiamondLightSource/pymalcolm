@@ -1,16 +1,16 @@
 from annotypes import Anno
 
 from malcolm.core import (
-    ULimitHigh,
-    ULimitLow,
     AMetaDescription,
     APartName,
-    UPrecision,
     AUnits,
     Display,
     NumberMeta,
     Part,
     PartRegistrar,
+    ULimitHigh,
+    ULimitLow,
+    UPrecision,
 )
 
 from ..util import AConfig, AGroup, AWidget, AWriteable, set_tags
