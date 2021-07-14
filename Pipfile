@@ -22,7 +22,7 @@ pytest-timeout = "*"
 pylint = "*"
 codecov = "*"
 typing = "*"
-# Without these lines lockfile isn't usable on multiple Python versions and platforms
+types-mock = "*"
 mypy = "*"
 atomicwrites = "*"
 
