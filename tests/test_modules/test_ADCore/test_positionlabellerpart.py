@@ -28,9 +28,9 @@ class TestPositionLabellerPart(ChildTestCase):
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
         generator = CompoundGenerator([ys, xs], [], [], duration=1.0)
         generator.prepare()
-
         completed_steps = 0
         steps_to_do = 6
+
         self.o.on_configure(self.context, completed_steps, steps_to_do, generator)
 
         expected_xml = """<?xml version="1.0" ?>
@@ -54,6 +54,7 @@ class TestPositionLabellerPart(ChildTestCase):
         # Wait for the start_future so the post gets through to our child
         # even on non-cothread systems
         self.o.start_future.result(timeout=1)
+
         assert self.child.handled_requests.mock_calls == [
             call.post("delete"),
             call.put("enableCallbacks", True),
@@ -63,6 +64,22 @@ class TestPositionLabellerPart(ChildTestCase):
         ]
         assert self.o.done_when_reaches == 6
         assert np.isclose(self.o.frame_timeout, FRAME_TIMEOUT + 1.0)
+
+    def test_configure_zero_duration_doubles_frame_timeout(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
+        generator = CompoundGenerator([ys, xs], [], [], duration=0.0)
+        generator.prepare()
+        completed_steps = 0
+        steps_to_do = 6
+
+        self.o.on_configure(self.context, completed_steps, steps_to_do, generator)
+
+        # Wait for the start_future so the post gets through to our child
+        # even on non-cothread systems
+        self.o.start_future.result(timeout=1)
+
+        assert np.isclose(self.o.frame_timeout, 2 * FRAME_TIMEOUT)
 
     def test_on_seek(self):
         # Set up the generator which would have been done in original configure

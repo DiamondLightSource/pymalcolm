@@ -351,6 +351,123 @@ class TestDetectorDriverPart(ChildTestCase):
             call.when_value_matches("acquiring", False, None),
         ]
 
+    def test_seek_with_hardware_trigger(self):
+        self.o.is_hardware_triggered = True
+        # Calling seek after 20 completed steps
+        self.o.done_when_reaches = 20
+
+        # Build our seek parameters
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 20, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 3)
+        generator = CompoundGenerator([ys, xs], [], [], 0.1)
+        generator.prepare()
+        completed_steps = 20
+        steps_to_do = 40
+        info = ExposureDeadtimeInfo(0.01, 1000, 0.0)
+        part_info = dict(anyname=[info])
+
+        self.o.on_seek(
+            self.context,
+            completed_steps,
+            steps_to_do,
+            part_info,
+            generator,
+            fileDir="/tmp",
+            exposure=info.calculate_exposure(generator.duration),
+        )
+
+        # Check we got the right calls to setup the driver
+        assert self.child.handled_requests.mock_calls == [
+            call.put("arrayCallbacks", True),
+            call.put("arrayCounter", 20),
+            call.put("exposure", 0.1 - 0.01 - 0.0001),
+            call.put("imageMode", "Multiple"),
+            call.put("numImages", 40),
+            call.put("acquirePeriod", 0.1 - 0.0001),
+            call.post("start"),
+            call.when_value_matches("acquiring", True, None),
+        ]
+        assert self.o.done_when_reaches == 60
+        assert len(self.context._subscriptions) == 0
+
+    def test_seek_with_software_trigger(self):
+        self.o.is_hardware_triggered = False
+        # Calling seek after 10 completed steps
+        self.o.done_when_reaches = 10
+
+        # Build our seek parameters
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 20, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 3)
+        generator = CompoundGenerator([ys, xs], [], [], 0.1)
+        generator.prepare()
+        completed_steps = 10
+        steps_to_do = 50
+        info = ExposureDeadtimeInfo(0.01, 1000, 0.0)
+        part_info = dict(anyname=[info])
+
+        self.o.on_seek(
+            self.context,
+            completed_steps,
+            steps_to_do,
+            part_info,
+            generator,
+            fileDir="/tmp",
+            exposure=info.calculate_exposure(generator.duration),
+        )
+
+        # Check we got the right calls to setup the driver
+        assert self.child.handled_requests.mock_calls == [
+            call.put("arrayCallbacks", True),
+            call.put("arrayCounter", 10),
+            call.put("exposure", 0.1 - 0.01 - 0.0001),
+            call.put("imageMode", "Multiple"),
+            call.put("numImages", 50),
+            call.put("acquirePeriod", 0.1 - 0.0001),
+        ]
+        assert self.o.done_when_reaches == 60
+        assert len(self.context._subscriptions) == 0
+
+    def test_seek_with_hardware_trigger_and_breakpoints(self):
+        self.o.is_hardware_triggered = True
+        # Calling seek after 10 completed steps with 10 left until a breakpoint
+        self.o.done_when_reaches = 10
+
+        # Build our seek parameters
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 20, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 3)
+        generator = CompoundGenerator([ys, xs], [], [], 0.1)
+        generator.prepare()
+        completed_steps = 10
+        steps_to_do = 10
+        info = ExposureDeadtimeInfo(0.01, 1000, 0.0)
+        part_info = dict(anyname=[info])
+        breakpoints = [20, 20, 20]
+
+        self.o.on_seek(
+            self.context,
+            completed_steps,
+            steps_to_do,
+            part_info,
+            generator,
+            fileDir="/tmp",
+            breakpoints=breakpoints,
+            exposure=info.calculate_exposure(generator.duration),
+        )
+
+        # Check we got the right calls to setup the driver
+        assert self.child.handled_requests.mock_calls == [
+            call.put("arrayCallbacks", True),
+            call.put("arrayCounter", 10),
+            call.put("exposure", 0.1 - 0.01 - 0.0001),
+            call.put("imageMode", "Multiple"),
+            call.put("numImages", 10),
+            call.put("acquirePeriod", 0.1 - 0.0001),
+            call.post("start"),
+            call.when_value_matches("acquiring", True, None),
+        ]
+        assert self.o.done_when_reaches == 20
+        assert len(self.context._subscriptions) == 0
+
 
 class TestDetectorDriverPartNestedConfigure(TestDetectorDriverPart):
     def setUp(self):
