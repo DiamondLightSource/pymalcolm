@@ -573,4 +573,7 @@ class HDFWriterPart(builtin.parts.ChildPart):
         completed_steps = value + self.uniqueid_offset
         self.last_id_update = time.time()
         assert self.registrar, "No registrar assigned"
-        self.registrar.report(scanning.infos.RunProgressInfo(completed_steps))
+        # Stop negative values being reported for first call when subscribing
+        # when we have a non-zero offset.
+        if completed_steps >= 0:
+            self.registrar.report(scanning.infos.RunProgressInfo(completed_steps))
