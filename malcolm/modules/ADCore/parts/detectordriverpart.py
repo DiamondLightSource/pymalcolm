@@ -407,7 +407,8 @@ class DetectorDriverPart(builtin.parts.ChildPart):
             self.arm_detector(context)
         assert self.registrar, "No assigned registrar"
 
-        self.log.debug("Done when reaches: %d", self.done_when_reaches)
+        self.log.debug(f"{self.mri}: Done when reaches: {self.done_when_reaches}")
+        print(f"{self.mri}: Running until reaches: {self.done_when_reaches}")
         self.wait_for_detector(
             context, self.registrar, event_timeout=self.frame_timeout
         )
@@ -422,8 +423,11 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         generator: scanning.hooks.AGenerator,
         breakpoints: scanning.controllers.ABreakpoints = None,
     ) -> None:
-        if breakpoints:
-            # We may have a different number of steps each time
+        # We may need to set up the detector again based on two conditions:
+        #   - breakpoints can be an uneven number of steps
+        #   - if pause has been called for a software-triggered detector which
+        #     will set a different number of steps to do
+        if breakpoints or not self.is_hardware_triggered:
             self.setup_detector(
                 context,
                 completed_steps,
@@ -436,8 +440,10 @@ class DetectorDriverPart(builtin.parts.ChildPart):
             if self.is_hardware_triggered:
                 # We can now re-arm hardware-triggered detectors
                 self.arm_detector(context)
-        elif self.is_hardware_triggered:
-            # Otherwise for hardware detectors just update done_when_reaches
+        # Otherwise if we have hardware triggers and no breakpoints then
+        # seek should have set up the correct number of images for the
+        # remainder of the scan and we do not need to re-arm
+        else:
             self.done_when_reaches += steps_to_do
 
     @add_call_types

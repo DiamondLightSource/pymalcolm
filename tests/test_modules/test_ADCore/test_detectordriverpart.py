@@ -271,9 +271,9 @@ class TestDetectorDriverPart(ChildTestCase):
         self.o.is_hardware_triggered = False
         self.o.done_when_reaches = 100
 
-        self.o.on_post_run_armed(self.context, 0, 100, part_info, generator)
+        self.o.on_post_run_armed(self.context, 100, 100, part_info, generator)
 
-        assert self.o.done_when_reaches == 100
+        assert self.o.done_when_reaches == 200
 
     def test_post_run_armed_with_hardware_trigger(self):
         xs = LineGenerator("x", "mm", 0.0, 0.5, 100, alternate=True)
