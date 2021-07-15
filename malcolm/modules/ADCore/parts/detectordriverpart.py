@@ -408,7 +408,6 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         assert self.registrar, "No assigned registrar"
 
         self.log.debug(f"{self.mri}: Done when reaches: {self.done_when_reaches}")
-        print(f"{self.mri}: Running until reaches: {self.done_when_reaches}")
         self.wait_for_detector(
             context, self.registrar, event_timeout=self.frame_timeout
         )
