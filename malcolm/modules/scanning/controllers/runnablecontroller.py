@@ -701,7 +701,7 @@ class RunnableController(builtin.controllers.ManagerController):
 
     def get_breakpoint_index(self, completed_steps: int) -> int:
         index = 0
-        while completed_steps > self.breakpoint_steps[index]:
+        while completed_steps >= self.breakpoint_steps[index]:
             index += 1
         return index
 
