@@ -1,8 +1,11 @@
 from annotypes import Anno
 
 from malcolm.core import (
+    ULimitHigh,
+    ULimitLow,
     AMetaDescription,
     APartName,
+    UPrecision,
     AUnits,
     Display,
     NumberMeta,
