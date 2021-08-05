@@ -76,7 +76,7 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         child = context.block_view(self.mri)
         futures = [child.delete_async()]
         futures += child.put_attribute_values_async(
-            dict(enableCallbacks=True, idStart=id_start)
+            dict(enableCallbacks=True, idStart=id_start, arrayCounter=id_start-1)
         )
         xml, self.end_index = self._make_xml(completed_steps)
         # Wait for the previous puts to finish
@@ -114,7 +114,7 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         child = context.block_view(self.mri)
         child.qty.subscribe_value(self.load_more_positions, child)
         child.when_value_matches(
-            "uniqueId", self.done_when_reaches, event_timeout=self.frame_timeout
+            "arrayCounterReadback", self.done_when_reaches, event_timeout=self.frame_timeout
         )
 
     @add_call_types

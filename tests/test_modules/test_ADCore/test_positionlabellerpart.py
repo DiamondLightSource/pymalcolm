@@ -57,6 +57,7 @@ class TestPositionLabellerPart(ChildTestCase):
 
         assert self.child.handled_requests.mock_calls == [
             call.post("delete"),
+            call.put("arrayCounter", 0),
             call.put("enableCallbacks", True),
             call.put("idStart", 1),
             call.put("xml", expected_xml),
@@ -116,6 +117,7 @@ class TestPositionLabellerPart(ChildTestCase):
         self.o.start_future.result(timeout=1)
         assert self.child.handled_requests.mock_calls == [
             call.post("delete"),
+            call.put("arrayCounter", 10),
             call.put("enableCallbacks", True),
             call.put("idStart", 11),
             call.put("xml", expected_xml),
