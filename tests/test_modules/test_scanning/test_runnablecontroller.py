@@ -361,6 +361,36 @@ class TestRunnableController(unittest.TestCase):
         self.b.run()
         self.checkState(self.ss.FINISHED)
 
+    def test_pause_seek_resume_at_boundaries_without_defined_lastGoodStep(self):
+        # When pausing at boundaries without lastGoodStep the scan should
+        # remain in the same state - Armed for the start of the next inner scan
+        # or Finished if the scan is complete.
+        self.prepare_half_run()
+        self.checkSteps(configured=2, completed=0, total=6)
+
+        self.b.pause()
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(2, 0, 6)
+
+        self.b.run()
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(4, 2, 6)
+        self.b.pause()
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(4, 2, 6)
+
+        self.b.run()
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(6, 4, 6)
+        self.b.pause()
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(6, 4, 6)
+
+        self.b.run()
+        self.checkState(self.ss.FINISHED)
+        self.b.pause()
+        self.checkState(self.ss.FINISHED)
+
     def test_pause_seek_resume_outside_limits(self):
         self.prepare_half_run()
         self.checkSteps(configured=2, completed=0, total=6)
@@ -936,6 +966,62 @@ class TestRunnableControllerBreakpoints(unittest.TestCase):
         self.checkState(self.ss.ARMED)
 
         self.b.run()
+        self.checkSteps(17, 17, 17)
+        self.checkState(self.ss.FINISHED)
+
+    def test_breakpoints_with_pause_at_boundaries_without_lastGoodStep(self):
+        # We expect the pause call to be successful but not to have an effect
+        # when called at a breakpoint or at the end of a scan.
+        line1 = LineGenerator("x", "mm", -10, -10, 5)
+        line2 = LineGenerator("x", "mm", 0, 180, 10)
+        line3 = LineGenerator("x", "mm", 190, 190, 2)
+        duration = 0.01
+        concat = ConcatGenerator([line1, line2, line3])
+        breakpoints = [2, 3, 10, 2]
+        self.b.configure(
+            generator=CompoundGenerator([concat], [], [], duration),
+            axesToMove=["x"],
+            breakpoints=breakpoints,
+        )
+
+        assert self.c.configure_params.generator.size == 17
+
+        self.checkSteps(2, 0, 17)
+        self.checkState(self.ss.ARMED)
+        # Pause
+        self.b.pause()
+        self.checkSteps(2, 0, 17)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(5, 2, 17)
+        self.checkState(self.ss.ARMED)
+        # Pause
+        self.b.pause()
+        self.checkSteps(5, 2, 17)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(15, 5, 17)
+        self.checkState(self.ss.ARMED)
+        # Pause
+        self.b.pause()
+        self.checkSteps(15, 5, 17)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(17, 15, 17)
+        self.checkState(self.ss.ARMED)
+        # Pause
+        self.b.pause()
+        self.checkSteps(17, 15, 17)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(17, 17, 17)
+        self.checkState(self.ss.FINISHED)
+        # Pause
+        self.b.pause()
         self.checkSteps(17, 17, 17)
         self.checkState(self.ss.FINISHED)
 
