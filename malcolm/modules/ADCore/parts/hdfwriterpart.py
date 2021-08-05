@@ -104,7 +104,7 @@ def create_dataset_infos(
             type=dataset_info.type,
             # All attributes share the same rank as the detector image
             rank=detector_rank + generator_rank,
-            path="/entry/%s/%s" % (dataset_info.name, dataset_info.name),
+            path=f"/entry/{dataset_info.name}/{dataset_info.name}",
             uniqueid=uniqueid,
         )
 
