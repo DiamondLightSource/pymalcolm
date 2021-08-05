@@ -649,15 +649,24 @@ class RunnableController(builtin.controllers.ManagerController):
         The original call to run() will not be interrupted by pause(), it will
         wait until the scan completes or is aborted.
 
-        Normally it will return in Paused state. If the user aborts then it will
-        return in Aborted state. If something goes wrong it will return in Fault
-        state. If the user disables then it will return in Disabled state.
+        Normally it will return in Paused state. If the scan is finished it
+        will return in Finished state. If the scan is armed it will return in
+        Armed state. If the user aborts then it will return in Aborted state.
+        If something goes wrong it will return in Fault state. If the user
+        disables then it will return in Disabled state.
         """
+
         total_steps = self.total_steps.value
 
-        # Always cap lastGoodStep to bounds of scan
+        # We need to decide where to go
         if lastGoodStep < 0:
-            lastGoodStep = self.completed_steps.value
+            # If we are finished we do not need to do anything
+            if self.state.value is ss.FINISHED:
+                return
+            # Otherwise set to number of completed steps
+            else:
+                lastGoodStep = self.completed_steps.value
+        # Otherwise make sure we are bound to the total steps of the scan
         elif lastGoodStep >= total_steps:
             lastGoodStep = total_steps - 1
 
@@ -700,6 +709,10 @@ class RunnableController(builtin.controllers.ManagerController):
         self.configured_steps.set_value(completed_steps + steps_to_do)
 
     def get_breakpoint_index(self, completed_steps: int) -> int:
+        # If the last point, then return the last index
+        if completed_steps == self.breakpoint_steps[-1]:
+            return len(self.breakpoint_steps) - 1
+        # Otherwise check which index we fall within
         index = 0
         while completed_steps >= self.breakpoint_steps[index]:
             index += 1
