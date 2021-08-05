@@ -565,6 +565,32 @@ class TestRunnableControllerBreakpoints(unittest.TestCase):
         assert self.b.completedSteps.value == completed
         assert self.b.totalSteps.value == total
 
+    def test_get_breakpoint_index(self):
+        line = LineGenerator("x", "mm", 0, 180, 100)
+        duration = 0.01
+        breakpoints = [10, 20, 30, 40]
+
+        self.b.configure(
+            generator=CompoundGenerator([line], [], [], duration),
+            axesToMove=["x"],
+            breakpoints=breakpoints,
+        )
+
+        test_steps = [0, 5, 10, 20, 30, 40, 60, 80, 100]
+
+        expected_indices = [0, 0, 1, 1, 2, 2, 3, 3, 3]
+
+        # Check the breakpoint_steps are set as expected
+        assert self.c.breakpoint_steps == [10, 30, 60, 100]
+
+        for step_num in range(len(test_steps)):
+            steps = test_steps[step_num]
+            index = expected_indices[step_num]
+            actual_index = self.c.get_breakpoint_index(steps)
+            assert (
+                actual_index == index
+            ), f"Expected index {index} for {steps} steps, got {actual_index}"
+
     def test_steps_per_run_one_axis(self):
         line = LineGenerator("x", "mm", 0, 180, 10)
         duration = 0.01
