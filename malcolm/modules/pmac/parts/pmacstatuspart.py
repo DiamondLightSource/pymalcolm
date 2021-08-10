@@ -21,9 +21,7 @@ class PmacStatusPart(builtin.parts.ChildPart):
 
     @add_call_types
     def servo_frequency(self, context: builtin.hooks.AContext) -> AServoFrequency:
-        child = context.block_view(self.mri)
-        freq = 8388608000.0 / child.i10.value
-        return freq
+        return context.block_view(self.mri).servoFreq.value
 
     @add_call_types
     def report_status(self, context: scanning.hooks.AContext) -> scanning.hooks.UInfos:
