@@ -11,7 +11,7 @@ class TestPmacStatusPart(ChildTestCase):
         child = self.create_child_block(
             pmac_status_block, self.process, mri="my_mri", pv_prefix="PV:PRE"
         )
-        self.set_attributes(child, i10=1705244)
+        self.set_attributes(child, servoFreq=2500.04)
         c = ManagerController("PMAC", "/tmp", use_git=False)
         self.o = PmacStatusPart(name="part", mri="my_mri", initial_visibility=True)
         c.add_part(self.o)
@@ -24,4 +24,4 @@ class TestPmacStatusPart(ChildTestCase):
 
     def test_servo_freq(self):
         freq = self.b.servoFrequency()
-        assert freq == 4919.300698316487
+        assert freq == 2500.04

@@ -3,6 +3,13 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
+`4.6`_
+--------------------------
+
+Fixed:
+- Servo interrupt frequency getter for PowerPMAC (needed at scan
+  configuring phase), this requires pmac version 2-5-5 or higher
+
 `4.5`_ - 2021-04-27
 --------------------------
 
