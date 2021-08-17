@@ -1,6 +1,6 @@
 import pytest
 from cothread import cothread
-from mock import call
+from mock import call, patch
 
 from malcolm.core import Process, TimeoutError
 from malcolm.modules.builtin.controllers import ManagerController
@@ -100,6 +100,8 @@ class TestPMACTrajectoryPart(ChildTestCase):
             call.when_value_matches("pointsScanned", 0, None),
         ]
 
+    # Patch DEFAULT_TIMEOUT so we do not wait too long for execution...
+    @patch("malcolm.modules.pmac.parts.pmactrajectorypart.DEFAULT_TIMEOUT", 0.1)
     def test_execute_profile_not_enough(self):
         def _handle_post(request):
             cothread.Sleep(1)
