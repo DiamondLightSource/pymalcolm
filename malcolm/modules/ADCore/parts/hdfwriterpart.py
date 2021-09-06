@@ -88,7 +88,7 @@ def create_dataset_infos(
                 name="%s.%s" % (name, calculated_info.name),
                 filename=filename,
                 type=scanning.util.DatasetType.SECONDARY,
-                rank=detector_rank + generator_rank,
+                rank=generator_rank,
                 path="/entry/%s/%s" % (calculated_info.name, calculated_info.name),
                 uniqueid=uniqueid,
             )
@@ -103,7 +103,7 @@ def create_dataset_infos(
             filename=filename,
             type=dataset_info.type,
             # All attributes share the same rank as the detector image
-            rank=detector_rank + generator_rank,
+            rank=generator_rank,
             path=f"/entry/{dataset_info.name}/{dataset_info.name}",
             uniqueid=uniqueid,
         )
