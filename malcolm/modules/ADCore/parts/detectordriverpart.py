@@ -31,6 +31,8 @@ from ..util import (
     make_xml_filename,
 )
 
+with Anno("Minimum acquire period the detector is capable of"):
+    AMinAcquirePeriod = float
 with Anno("Minimum required version for compatibility"):
     AVersionRequirement = str
 with Anno("Is main detector dataset useful to publish in DatasetTable?"):
@@ -61,9 +63,11 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         main_dataset_useful: AMainDatasetUseful = True,
         runs_on_windows: APartRunsOnWindows = False,
         required_version: AVersionRequirement = None,
+        min_acquire_period: AMinAcquirePeriod = 0.0,
     ) -> None:
         super().__init__(name, mri)
         self.required_version = required_version
+        self.min_acquire_period = min_acquire_period
         self.soft_trigger_modes = soft_trigger_modes
         self.is_hardware_triggered = True
         self.main_dataset_useful = main_dataset_useful
@@ -220,6 +224,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         super().setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
+        registrar.hook(scanning.hooks.ValidateHook, self.on_validate)
         registrar.hook(
             scanning.hooks.ConfigureHook,
             self.on_configure,
@@ -239,6 +244,17 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         registrar.add_attribute_model(
             "attributesToCapture", self.extra_attributes, self.set_extra_attributes
         )
+
+    @add_call_types
+    def on_validate(
+        self,
+        generator: scanning.hooks.AGenerator,
+    ) -> None:
+        if self.min_acquire_period > 0.0:
+            assert generator.duration >= self.min_acquire_period, (
+                f"Duration {generator.duration} is less than minimum acquire period"
+                f" {self.min_acquire_period}s"
+            )
 
     @add_call_types
     def on_reset(self, context: scanning.hooks.AContext) -> None:

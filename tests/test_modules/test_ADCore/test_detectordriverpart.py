@@ -45,7 +45,10 @@ class TestDetectorDriverPart(ChildTestCase):
         self.child = self.create_child_block(child_block, self.process)
         self.mock_when_value_matches(self.child)
         self.o = DetectorDriverPart(
-            name="m", mri="mri", soft_trigger_modes=["Internal"]
+            name="m",
+            mri="mri",
+            soft_trigger_modes=["Internal"],
+            min_acquire_period=0.01,
         )
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
@@ -219,6 +222,18 @@ class TestDetectorDriverPart(ChildTestCase):
             call.when_value_matches("acquiring", True, None),
         ]
         assert self.o.is_hardware_triggered
+
+    def test_validate(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
+
+        # 0.1 is fine
+        generator = CompoundGenerator([ys, xs], [], [], 0.1)
+        self.o.on_validate(generator)
+
+        # 0.005 < min_acquire_period
+        generator = CompoundGenerator([ys, xs], [], [], 0.005)
+        self.assertRaises(AssertionError, self.o.on_validate, generator)
 
     def test_version_check(self):
         block = self.context.block_view("mri")
