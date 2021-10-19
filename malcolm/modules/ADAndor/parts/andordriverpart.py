@@ -39,8 +39,10 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
         context: Context,
         completed_steps: scanning.hooks.ACompletedSteps,
         steps_to_do: scanning.hooks.AStepsToDo,
+        num_images: int,
         duration: float,
         part_info: scanning.hooks.APartInfo,
+        initial_configure: bool = True,
         **kwargs: Any,
     ):
         # Calculate the readout time
@@ -77,7 +79,14 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
         kwargs["exposure"] = exposure
 
         super().setup_detector(
-            context, completed_steps, steps_to_do, duration, part_info, **kwargs
+            context,
+            completed_steps,
+            steps_to_do,
+            num_images,
+            duration,
+            part_info,
+            initial_configure=initial_configure,
+            **kwargs,
         )
 
         child.acquirePeriod.put_value(period)

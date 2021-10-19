@@ -1,4 +1,5 @@
 import os
+import shutil
 from shutil import rmtree
 from tempfile import mkdtemp
 
@@ -10,6 +11,7 @@ from malcolm.core import Context, Process
 from malcolm.modules.ADPandABlocks.blocks import panda_kinematicssavu_block
 from malcolm.modules.ADPandABlocks.parts.kinematicssavupart import KinematicsSavuPart
 from malcolm.modules.builtin.controllers import ManagerController
+from malcolm.modules.builtin.defines import tmp_dir
 from malcolm.modules.scanning.hooks import AAxesToMove
 from malcolm.modules.scanning.infos import DatasetProducedInfo, DatasetType
 from malcolm.testutil import ChildTestCase
@@ -26,7 +28,7 @@ class TestKinematicsSavuPart(ChildTestCase):
         self.context = Context(self.process)
 
         # Create a fake PandA
-        self.panda = ManagerController("PANDA", "/tmp")
+        self.panda = ManagerController("PANDA", "/tmp", use_git=False)
         self.busses = PositionsPart("busses")
         self.panda.add_part(self.busses)
         self.process.add_controller(self.panda)
@@ -38,8 +40,12 @@ class TestKinematicsSavuPart(ChildTestCase):
             os.path.join(os.path.dirname(__file__), "..", "test_pmac", "blah"),
             "test_pmac_manager_block.yaml",
         )
+        self.config_dir = tmp_dir("config_dir")
         self.pmac = self.create_child_block(
-            pmac_block, self.process, mri_prefix="PMAC", config_dir="/tmp"
+            pmac_block,
+            self.process,
+            mri_prefix="PMAC",
+            config_dir=self.config_dir.value,
         )
         # These are the motors we are interested in
         self.child_x = self.process.get_controller("BL45P-ML-STAGE-01:X")
@@ -84,6 +90,7 @@ class TestKinematicsSavuPart(ChildTestCase):
 
     def tearDown(self):
         self.process.stop(timeout=1)
+        shutil.rmtree(self.config_dir.value)
 
     def set_motor_attributes(
         self,

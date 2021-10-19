@@ -185,19 +185,35 @@ class WebsocketServerPart(Part):
         # Hooks
         registrar.hook(ReportHandlersHook, self.on_report_handlers)
 
+    @staticmethod
+    def is_interface_up(ifname: str) -> bool:
+        with open(os.path.join(SYSNET, ifname, "operstate")) as f:
+            state = str(f.read())
+        if state != "down\n":
+            return True
+        else:
+            return False
+
     @add_call_types
     def on_report_handlers(self) -> UHandlerInfos:
         validators = []
         if self.subnet_validation:
-            # Create an ip validator for every interface that is up
+            # Try creating an ip validator for every interface that is up
             for ifname in os.listdir(SYSNET):
-                with open(os.path.join(SYSNET, ifname, "operstate")) as f:
-                    state = str(f.read())
-                if state != "down\n":
-                    # interface is up
-                    validators.append(get_ip_validator(ifname))
+                if self.is_interface_up(ifname):
+                    try:
+                        validators.append(get_ip_validator(ifname))
+                    except OSError as exception_message:
+                        # Ignore any interfaces that fail
+                        print(
+                            f"{self.name} - failed to create IP validator for {ifname}"
+                            f" (skipping): {exception_message}"
+                        )
+            # Check we have at least one created validator
+            assert len(validators) > 0, "Failed to create any IP validators!"
+
         info = HandlerInfo(
-            r"/%s" % self.name,
+            f"/{self.name}",
             MalcWebSocketHandler,
             registrar=self.registrar,
             validators=validators,

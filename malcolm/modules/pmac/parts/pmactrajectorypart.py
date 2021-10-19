@@ -3,7 +3,14 @@ from typing import Union
 import numpy as np
 from annotypes import Anno, Array, add_call_types
 
-from malcolm.core import Display, IncompatibleError, NumberMeta, PartRegistrar, Widget
+from malcolm.core import (
+    DEFAULT_TIMEOUT,
+    Display,
+    IncompatibleError,
+    NumberMeta,
+    PartRegistrar,
+    Widget,
+)
 from malcolm.modules import builtin
 
 from ..util import CS_AXIS_NAMES
@@ -179,7 +186,9 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
             child.executeProfile()
             # Now wait for up to 2*min_delta time to make sure any
             # update_completed_steps come in
-            child.when_value_matches("pointsScanned", self.total_points, timeout=0.1)
+            child.when_value_matches(
+                "pointsScanned", self.total_points, timeout=DEFAULT_TIMEOUT
+            )
         finally:
             context.unsubscribe(fs1)
             context.unsubscribe(fs2)

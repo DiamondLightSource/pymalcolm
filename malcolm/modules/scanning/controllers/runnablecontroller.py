@@ -1,6 +1,6 @@
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Type
 
-from annotypes import Anno, add_call_types, deserialize_object, json_encode
+from annotypes import Anno, add_call_types, deserialize_object
 from scanpointgenerator import CompoundGenerator
 
 from malcolm.compat import OrderedDict
@@ -12,7 +12,6 @@ from malcolm.core import (
     NumberMeta,
     Part,
     Queue,
-    Table,
     TimeoutError,
     Widget,
 )
@@ -55,23 +54,6 @@ AInitialDesign = builtin.controllers.AInitialDesign
 ADescription = builtin.controllers.ADescription
 AUseGit = builtin.controllers.AUseGit
 ATemplateDesigns = builtin.controllers.ATemplateDesigns
-
-
-def get_steps_per_run(generator: CompoundGenerator, axes_to_move: List[str]) -> int:
-    steps = 1
-    axes_set = set(axes_to_move)
-    for dim in reversed(generator.dimensions):
-        # If the axes_set is empty and the dimension has axes then we have done
-        # as many dimensions as we can, so return
-        if dim.axes and not axes_set:
-            break
-        # Consume the axes that this generator scans
-        for axis in dim.axes:
-            assert axis in axes_set, "Axis %s is not in %s" % (axis, axes_to_move)
-            axes_set.remove(axis)
-        # Now multiply by the dimensions to get the number of steps
-        steps *= dim.size
-    return steps
 
 
 def update_configure_model(
@@ -137,31 +119,6 @@ def update_configure_model(
     configure_model.set_defaults(defaults)
 
 
-def merge_non_writeable_table(
-    default: Table, supplied: Table, non_writeable: List[int]
-) -> Table:
-    default_rows = list(default.rows())
-    for supplied_row in supplied.rows():
-        key = [supplied_row[i] for i in non_writeable]
-        for default_row in default_rows:
-            if key == [default_row[i] for i in non_writeable]:
-                break
-        else:
-            d = OrderedDict()
-            for i, k in enumerate(supplied.call_types):
-                if i in non_writeable:
-                    d[k] = supplied_row[i]
-            raise ValueError(
-                "Table row with %s doesn't match a row in the default table"
-                % json_encode(d)
-            )
-        for i, v in enumerate(supplied_row):
-            if i not in non_writeable:
-                default_row[i] = v
-    table = default.from_rows(default_rows)
-    return table
-
-
 class RunnableController(builtin.controllers.ManagerController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
 
@@ -197,13 +154,13 @@ class RunnableController(builtin.controllers.ManagerController):
         # needed
         self.resume_queue: Optional[Queue] = None
         # Stored for pause. If using breakpoints, it is a list of steps
-        self.steps_per_run = []  # type: List[int]
+        self.steps_per_run: List[int] = []
         # If the list of breakpoints is not empty, this will be true
-        self.use_breakpoints = False  # type: bool
+        self.use_breakpoints: bool = False
         # Absolute steps where the run() returns
-        self.breakpoint_steps = []  # type: List[int]
+        self.breakpoint_steps: List[int] = []
         # Breakpoint index, modified in run() and pause()
-        self.breakpoint_index = 0
+        self.breakpoint_index: int = 0
         # Queue so we can wait for aborts to complete
         self.abort_queue: Optional[Queue] = None
         # Create sometimes writeable attribute for the current completed scan
@@ -275,8 +232,12 @@ class RunnableController(builtin.controllers.ManagerController):
             ConfigureParamsInfo, self.update_configure_params
         )
 
-    def get_steps_per_run(self, generator, axes_to_move, breakpoints):
-        # type: (CompoundGenerator, List[str], List[int]) -> List[int]
+    def get_steps_per_run(
+        self,
+        generator: CompoundGenerator,
+        axes_to_move: AAxesToMove,
+        breakpoints: List[int],
+    ) -> List[int]:
         self.use_breakpoints = False
         steps = [1]
         axes_set = set(axes_to_move)
@@ -399,7 +360,7 @@ class RunnableController(builtin.controllers.ManagerController):
         generator: AGenerator,
         axesToMove: AAxesToMove = None,
         breakpoints: ABreakpoints = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> AConfigureParams:
         """Validate configuration parameters and return validated parameters.
 
@@ -457,7 +418,7 @@ class RunnableController(builtin.controllers.ManagerController):
         generator: AGenerator,
         axesToMove: AAxesToMove = None,
         breakpoints: ABreakpoints = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> AConfigureParams:
         """Validate the params then configure the device ready for run().
 
@@ -535,7 +496,7 @@ class RunnableController(builtin.controllers.ManagerController):
         )
         # Update the completed and configured steps
         self.configured_steps.set_value(steps_to_do)
-        self.completed_steps.meta.display.set_limitHigh(steps_to_do)
+        self.completed_steps.meta.display.set_limitHigh(params.generator.size)
         # Reset the progress of all child parts
         self.progress_updates = {}
         self.resume_queue = Queue()
@@ -688,15 +649,24 @@ class RunnableController(builtin.controllers.ManagerController):
         The original call to run() will not be interrupted by pause(), it will
         wait until the scan completes or is aborted.
 
-        Normally it will return in Paused state. If the user aborts then it will
-        return in Aborted state. If something goes wrong it will return in Fault
-        state. If the user disables then it will return in Disabled state.
+        Normally it will return in Paused state. If the scan is finished it
+        will return in Finished state. If the scan is armed it will return in
+        Armed state. If the user aborts then it will return in Aborted state.
+        If something goes wrong it will return in Fault state. If the user
+        disables then it will return in Disabled state.
         """
+
         total_steps = self.total_steps.value
 
-        # Always cap lastGoodStep to bounds of scan
+        # We need to decide where to go
         if lastGoodStep < 0:
-            lastGoodStep = self.completed_steps.value
+            # If we are finished we do not need to do anything
+            if self.state.value is ss.FINISHED:
+                return
+            # Otherwise set to number of completed steps
+            else:
+                lastGoodStep = self.completed_steps.value
+        # Otherwise make sure we are bound to the total steps of the scan
         elif lastGoodStep >= total_steps:
             lastGoodStep = total_steps - 1
 
@@ -719,7 +689,7 @@ class RunnableController(builtin.controllers.ManagerController):
         self.run_hooks(PauseHook(p, c) for p, c in self.create_part_contexts().items())
 
         if self.use_breakpoints:
-            self.breakpoint_index -= 1
+            self.breakpoint_index = self.get_breakpoint_index(completed_steps)
             in_run_steps = (
                 completed_steps % self.breakpoint_steps[self.breakpoint_index]
             )
@@ -737,6 +707,16 @@ class RunnableController(builtin.controllers.ManagerController):
             for p, c, kwargs in self._part_params()
         )
         self.configured_steps.set_value(completed_steps + steps_to_do)
+
+    def get_breakpoint_index(self, completed_steps: int) -> int:
+        # If the last point, then return the last index
+        if completed_steps == self.breakpoint_steps[-1]:
+            return len(self.breakpoint_steps) - 1
+        # Otherwise check which index we fall within
+        index = 0
+        while completed_steps >= self.breakpoint_steps[index]:
+            index += 1
+        return index
 
     @add_call_types
     def resume(self) -> None:

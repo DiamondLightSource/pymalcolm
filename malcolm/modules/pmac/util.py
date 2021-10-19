@@ -92,7 +92,7 @@ def cs_axis_mapping(
         missing,
         axis_mapping,
     )
-    assert len(cs_ports) == 1, "Requested axes %s are in multiple CS numbers %s" % (
+    assert len(cs_ports) <= 1, "Requested axes %s are in multiple CS numbers %s" % (
         axes_to_move,
         list(cs_ports),
     )
@@ -201,7 +201,7 @@ def point_velocities(
         # where vlp = dlp / (t/2)
         velocity = 4 * d_half / point.duration - vp
         assert (
-            abs(velocity) < motor_info.max_velocity
+            abs(velocity) <= motor_info.max_velocity
         ), "Velocity %s invalid for %r with max_velocity %s" % (
             velocity,
             axis_name,

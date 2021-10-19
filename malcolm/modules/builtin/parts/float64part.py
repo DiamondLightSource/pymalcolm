@@ -1,16 +1,16 @@
 from annotypes import Anno
 
 from malcolm.core import (
-    ALimitHigh,
-    ALimitLow,
     AMetaDescription,
     APartName,
-    APrecision,
     AUnits,
     Display,
     NumberMeta,
     Part,
     PartRegistrar,
+    ULimitHigh,
+    ULimitLow,
+    UPrecision,
 )
 
 from ..util import AConfig, AGroup, AWidget, AWriteable, set_tags
@@ -21,10 +21,10 @@ with Anno("Initial value of the created attribute"):
 # Pull re-used annotypes into our namespace in case we are subclassed
 APartName = APartName
 AMetaDescription = AMetaDescription
-APrecision = APrecision
 AUnits = AUnits
-ALimitHigh = ALimitHigh
-ALimitLow = ALimitLow
+ULimitHigh = ULimitHigh
+ULimitLow = ULimitLow
+UPrecision = UPrecision
 AWriteable = AWriteable
 AConfig = AConfig
 AGroup = AGroup
@@ -43,9 +43,9 @@ class Float64Part(Part):
         group: AGroup = None,
         widget: AWidget = None,
         value: AValue = 0.0,
-        limit_low: ALimitLow = 0,
-        limit_high: ALimitHigh = 0,
-        precision: APrecision = 8,
+        limit_low: ULimitLow = 0,
+        limit_high: ULimitHigh = 0,
+        precision: UPrecision = 8,
         units: AUnits = "",
     ) -> None:
         super().__init__(name)

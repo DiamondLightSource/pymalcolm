@@ -344,17 +344,11 @@ Running the demo
 
 Let's run up the example and give it a go::
 
-    [me@mypc pymalcolm]$ ./malcolm/imalcolm.py malcolm/modules/demo/DEMO-DETECTOR.yaml
-    Loading...
-    Python 2.7.13 (default, Oct  3 2017, 11:17:53)
-    Type "copyright", "credits" or "license" for more information.
-
-    IPython 5.4.1 -- An enhanced Interactive Python.
-    ?         -> Introduction and overview of IPython's features.
-    %quickref -> Quick reference.
-    help      -> Python's own help system.
-    object?   -> Details about 'object', use 'object??' for extra details.
-
+    [me@mypc pymalcolm]$ pipenv run imalcolm malcolm/modules/demo/DEMO-DETECTOR.yaml
+    Loading malcolm...
+    Python 3.7.2 (default, Jan 20 2020, 11:03:41)
+    Type 'copyright', 'credits' or 'license' for more information
+    IPython 7.19.0 -- An enhanced Interactive Python. Type '?' for help.
 
     Welcome to iMalcolm.
 

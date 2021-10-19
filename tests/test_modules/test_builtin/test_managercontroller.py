@@ -19,6 +19,7 @@ from malcolm.modules.builtin.controllers import (
     StatefulController,
     check_git_version,
 )
+from malcolm.modules.builtin.defines import tmp_dir
 from malcolm.modules.builtin.parts import ChildPart
 from malcolm.modules.builtin.util import ExportTable, LayoutTable, ManagerStates
 
@@ -85,10 +86,10 @@ class TestManagerController(unittest.TestCase):
         self.c_child.add_part(self.c_part)
         self.p.add_controller(self.c_child)
 
-        # create a root block for the ManagerController block to reside in
-        if os.path.isdir("/tmp/mainBlock"):
-            shutil.rmtree("/tmp/mainBlock")
-        self.c = ManagerController("mainBlock", config_dir="/tmp")
+        # Create temporary config directory for ProcessController
+        self.config_dir = tmp_dir("config_dir")
+        self.main_block_name = "mainBlock"
+        self.c = ManagerController("mainBlock", config_dir=self.config_dir.value)
         self.c.add_part(MyPart("part1"))
         self.c.add_part(ChildPart("part2", mri="childBlock", initial_visibility=True))
         self.p.add_controller(self.c)
@@ -101,6 +102,7 @@ class TestManagerController(unittest.TestCase):
 
     def tearDown(self):
         self.p.stop(timeout=1)
+        shutil.rmtree(self.config_dir.value)
 
     def test_init(self):
         assert self.c.layout.value.name == ["part2"]
@@ -128,7 +130,12 @@ class TestManagerController(unittest.TestCase):
         assert self.b.mri.value == "mainBlock"
         assert self.b.mri.meta.tags == ["sourcePort:block:mainBlock"]
 
-    def check_expected_save(self, x=0.0, y=0.0, visible="true", attr="defaultv"):
+    def _get_design_filename(self, block_name, design_name):
+        return f"{self.config_dir.value}/{block_name}/{design_name}.json"
+
+    def check_expected_save(
+        self, design_name, x=0.0, y=0.0, visible="true", attr="defaultv"
+    ):
         expected = [
             x.strip()
             for x in (
@@ -153,7 +160,7 @@ class TestManagerController(unittest.TestCase):
                 % (x, y, visible, attr)
             ).splitlines()
         ]
-        with open("/tmp/mainBlock/testSaveLayout.json") as f:
+        with open(self._get_design_filename(self.main_block_name, design_name)) as f:
             actual = [x.strip() for x in f.readlines()]
         assert actual == expected
 
@@ -169,41 +176,43 @@ class TestManagerController(unittest.TestCase):
         assert len(li) == 1
         assert li.pop()["choices"] == [""]
         b = c.block_view("mainBlock")
-        b.save(designName="testSaveLayout")
+        design_name = "testSaveLayout"
+        b.save(designName=design_name)
         assert len(li) == 3
         assert li[0]["writeable"] is False
-        assert li[1]["choices"] == ["", "testSaveLayout"]
+        assert li[1]["choices"] == ["", design_name]
         assert li[2]["writeable"] is True
-        assert self.c.design.meta.choices == ["", "testSaveLayout"]
-        self.check_expected_save()
+        assert self.c.design.meta.choices == ["", design_name]
+        self.check_expected_save(design_name)
         assert self.c.state.value == "Ready"
-        assert self.c.design.value == "testSaveLayout"
+        assert self.c.design.value == design_name
         assert self.c.modified.value is False
-        os.remove("/tmp/mainBlock/testSaveLayout.json")
+        os.remove(self._get_design_filename(self.main_block_name, design_name))
         self.c_part.attr.set_value("newv")
         assert self.c.modified.value is True
         assert (
             self.c.modified.alarm.message == "part2.attr.value = 'newv' not 'defaultv'"
         )
         self.c.save(designName="")
-        self.check_expected_save(attr="newv")
+        self.check_expected_save(design_name, attr="newv")
+        design_filename = self._get_design_filename(self.main_block_name, design_name)
         assert self.c.design.value == "testSaveLayout"
         assert self.c._run_git_cmd.call_args_list == [
-            call("add", "/tmp/mainBlock/testSaveLayout.json"),
+            call("add", design_filename),
             call(
                 "commit",
                 "--allow-empty",
                 "-m",
                 "Saved mainBlock testSaveLayout",
-                "/tmp/mainBlock/testSaveLayout.json",
+                design_filename,
             ),
-            call("add", "/tmp/mainBlock/testSaveLayout.json"),
+            call("add", design_filename),
             call(
                 "commit",
                 "--allow-empty",
                 "-m",
                 "Saved mainBlock testSaveLayout",
-                "/tmp/mainBlock/testSaveLayout.json",
+                design_filename,
             ),
         ]
 
@@ -230,11 +239,12 @@ class TestManagerController(unittest.TestCase):
         assert self.c.modified.alarm.message == "layout changed"
 
         # save the layout, modify and restore it
-        self.b.save(designName="testSaveLayout")
+        design_name = "testSaveLayout"
+        self.b.save(designName=design_name)
         assert self.c.modified.value is False
-        self.check_expected_save(10.0, 20.0, "false")
+        self.check_expected_save(design_name, 10.0, 20.0, "false")
         self.c.parts["part2"].x = 30
-        self.c.set_design("testSaveLayout")
+        self.c.set_design(design_name)
         assert self.c.parts["part2"].x == 10
 
     def test_set_export_parts(self):

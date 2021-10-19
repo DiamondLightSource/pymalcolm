@@ -299,7 +299,7 @@ CounterMoveParts, ``x`` and ``y``, so the resulting Block should have ``xMove()`
 and ``yMove()`` Methods. The ``needs_context=True`` argument tells Malcolm that
 when the move Method is called, it should be passed a `context_` object as the
 first argument. This utility object makes us a `Block` view so we can interact
-with our child Block
+with our child Block.
 
 Finally we define the ``move()`` Method. As well as the `Context` we requested,
 it takes arguments ``demand`` and ``duration`` which are described by annotypes.
@@ -314,16 +314,11 @@ How it looks in the GUI
 
 Let's run up the demo and see how it looks in the GUI::
 
-    [me@mypc pymalcolm]$ ./malcolm/imalcolm.py malcolm/modules/demo/DEMO-MOTION.yaml
-    Loading...
-    Python 2.7.13 (default, Oct  3 2017, 11:17:53)
-    Type "copyright", "credits" or "license" for more information.
-
-    IPython 5.4.1 -- An enhanced Interactive Python.
-    ?         -> Introduction and overview of IPython's features.
-    %quickref -> Quick reference.
-    help      -> Python's own help system.
-    object?   -> Details about 'object', use 'object??' for extra details.
+    [me@mypc pymalcolm]$ pipenv run imalcolm malcolm/modules/demo/DEMO-MOTION.yaml
+    Loading malcolm...
+    Python 3.7.2 (default, Jan 20 2020, 11:03:41)
+    Type 'copyright', 'credits' or 'license' for more information
+    IPython 7.19.0 -- An enhanced Interactive Python. Type '?' for help.
 
 
     Welcome to iMalcolm.

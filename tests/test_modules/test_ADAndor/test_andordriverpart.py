@@ -115,6 +115,7 @@ class TestAndorDetectorDriverPart(ChildTestCase):
             self.context,
             completed_steps,
             steps_to_do,
+            steps_to_do,
             duration,
             part_info,
             exposure=0.05,
@@ -131,8 +132,10 @@ class TestAndorDetectorDriverPart(ChildTestCase):
             self.context,
             completed_steps,
             steps_to_do,
+            steps_to_do,
             duration,
             part_info,
+            initial_configure=True,
             exposure=actual_exposure,
         )
 
@@ -159,7 +162,7 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         )
 
         self.andor_driver_part.setup_detector(
-            self.context, completed_steps, steps_to_do, duration, part_info
+            self.context, completed_steps, steps_to_do, steps_to_do, duration, part_info
         )
 
         # Check method calls
@@ -173,8 +176,10 @@ class TestAndorDetectorDriverPart(ChildTestCase):
             self.context,
             completed_steps,
             steps_to_do,
+            steps_to_do,
             duration,
             part_info,
+            initial_configure=True,
             exposure=actual_exposure,
         )
 
@@ -204,6 +209,7 @@ class TestAndorDetectorDriverPart(ChildTestCase):
             self.context,
             completed_steps,
             steps_to_do,
+            steps_to_do,
             duration,
             part_info,
             exposure=0.25,
@@ -220,8 +226,10 @@ class TestAndorDetectorDriverPart(ChildTestCase):
             self.context,
             completed_steps,
             steps_to_do,
+            steps_to_do,
             duration,
             part_info,
+            initial_configure=True,
             exposure=actual_exposure,
         )
 
@@ -248,7 +256,7 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         )
 
         self.andor_driver_part.setup_detector(
-            self.context, completed_steps, steps_to_do, duration, part_info
+            self.context, completed_steps, steps_to_do, steps_to_do, duration, part_info
         )
 
         # Check method calls
@@ -262,8 +270,10 @@ class TestAndorDetectorDriverPart(ChildTestCase):
             self.context,
             completed_steps,
             steps_to_do,
+            steps_to_do,
             duration,
             part_info,
+            initial_configure=True,
             exposure=actual_exposure,
         )
 

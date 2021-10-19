@@ -137,7 +137,7 @@ class Subscribe(PathRequest):
     def delta_response(
         self, changes: List[List[Union[List[str], Any]]]
     ) -> Tuple[Callback, Delta]:
-        """"Create a Delta Response object to handle the request"""
+        """Create a Delta Response object to handle the request"""
         response = Delta(id=self.id, changes=changes)
         return self.callback, response
 

@@ -15,10 +15,10 @@
     rbv: $(pv_prefix):Port
     port_type: motor
 
-- ca.parts.CALongPart:
-    name: i10
-    description: Value of i10 (servo ticks)
-    rbv: $(pv_prefix):I10
+- ca.parts.CADoublePart:
+    name: servoFreq
+    description: Servo interrupt frequency (hz)
+    rbv: $(pv_prefix):SERVO_FREQ
 
 - ca.parts.CACharArrayPart:
     name: iVariables

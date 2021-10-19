@@ -104,7 +104,7 @@ def create_dataset_infos(
             type=dataset_info.type,
             # All attributes share the same rank as the detector image
             rank=detector_rank + generator_rank,
-            path="/entry/%s/%s" % (dataset_info.name, dataset_info.name),
+            path=f"/entry/{dataset_info.name}/{dataset_info.name}",
             uniqueid=uniqueid,
         )
 
@@ -516,7 +516,6 @@ class HDFWriterPart(builtin.parts.ChildPart):
     @add_call_types
     def on_seek(
         self,
-        context: scanning.hooks.AContext,
         completed_steps: scanning.hooks.ACompletedSteps,
         steps_to_do: scanning.hooks.AStepsToDo,
     ) -> None:
@@ -524,13 +523,6 @@ class HDFWriterPart(builtin.parts.ChildPart):
         # will skip to a uniqueID that has not been produced yet
         self.uniqueid_offset = completed_steps - self.done_when_reaches
         self.done_when_reaches += steps_to_do
-        child = context.block_view(self.mri)
-        # Just reset the array counter_block
-        child.arrayCounter.put_value(0)
-        # Start a future waiting for the first array
-        self.array_future = child.when_value_matches_async(
-            "arrayCounterReadback", greater_than_zero
-        )
 
     @add_call_types
     def on_run(self, context: scanning.hooks.AContext) -> None:
@@ -581,4 +573,7 @@ class HDFWriterPart(builtin.parts.ChildPart):
         completed_steps = value + self.uniqueid_offset
         self.last_id_update = time.time()
         assert self.registrar, "No registrar assigned"
-        self.registrar.report(scanning.infos.RunProgressInfo(completed_steps))
+        # Stop negative values being reported for first call when subscribing
+        # when we have a non-zero offset.
+        if completed_steps >= 0:
+            self.registrar.report(scanning.infos.RunProgressInfo(completed_steps))

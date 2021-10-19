@@ -12,7 +12,7 @@ mock = "*"
 nose = "*"
 coverage = "*"
 # Pinning black stops us having to allow pre-releases globally
-black = "==20.8b1"
+black = "==21.5b2"
 pytest = "*"
 pytest-cov = "*"
 pytest-black = "*"
@@ -22,7 +22,7 @@ pytest-timeout = "*"
 pylint = "*"
 codecov = "*"
 typing = "*"
-# Without these lines lockfile isn't usable on multiple Python versions and platforms
+types-mock = "*"
 mypy = "*"
 atomicwrites = "*"
 

@@ -1,8 +1,10 @@
+import shutil
 import unittest
 
 from scanpointgenerator import CompoundGenerator, LineGenerator, SquashingExcluder
 
 from malcolm.core import Process
+from malcolm.modules.builtin.defines import tmp_dir
 from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.modules.scanning.parts import UnrollingPart
 
@@ -23,16 +25,52 @@ def make_generator(squashed=False, include_z=False):
     return compound
 
 
-class TestUnrollingPart(unittest.TestCase):
+class TestUnrollingPartInitialVisibilityFalse(unittest.TestCase):
     def setUp(self):
-        self.o = UnrollingPart(name="Unroll")
+        self.o = UnrollingPart(name="Unroll", mri="mri", initial_visibility=False)
         self.process = Process("proc")
         self.process.start()
         self.addCleanup(self.process.stop, 2)
-        c = RunnableController("mri", "/tmp")
+        self.config_dir = tmp_dir("config_dir")
+        c = RunnableController("mri", self.config_dir.value)
         c.add_part(self.o)
         self.process.add_controller(c)
         self.b = c.block_view()
+
+    def tearDown(self):
+        shutil.rmtree(self.config_dir.value)
+
+    def test_2d_no_changes_when_initial_visibility_is_False(self):
+        generator_before = make_generator()
+        results = self.b.validate(generator_before, ["x", "y"])
+        generator_after = results["generator"]
+        generator_before.prepare()
+        generator_after.prepare()
+        assert generator_before == generator_after
+        assert len(generator_after.dimensions) == 2
+        assert len(generator_after.excluders) == 0
+
+    def test_on_validate_returns_None_when_not_visible(self):
+        generator_before = make_generator()
+        assert self.o.visible is False
+        results = self.o.on_validate(generator_before, ["x", "y"])
+        assert results is None
+
+
+class TestUnrollingPart(unittest.TestCase):
+    def setUp(self):
+        self.o = UnrollingPart(name="Unroll", mri="mri", initial_visibility=True)
+        self.process = Process("proc")
+        self.process.start()
+        self.addCleanup(self.process.stop, 2)
+        self.config_dir = tmp_dir("config_dir")
+        c = RunnableController("mri", self.config_dir.value)
+        c.add_part(self.o)
+        self.process.add_controller(c)
+        self.b = c.block_view()
+
+    def tearDown(self):
+        shutil.rmtree(self.config_dir.value)
 
     def test_2d_generator(self):
         generator = make_generator()

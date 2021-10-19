@@ -97,12 +97,14 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         context: Context,
         completed_steps: scanning.hooks.ACompletedSteps,
         steps_to_do: scanning.hooks.AStepsToDo,
+        num_images: int,
         duration: float,
         part_info: scanning.hooks.APartInfo,
+        initial_configure: bool = True,
         **kwargs: Any,
     ) -> None:
         child = context.block_view(self.mri)
-        if completed_steps == 0:
+        if initial_configure:
             # This is an initial configure, so reset arrayCounter to 0
             array_counter = 0
             self.done_when_reaches = steps_to_do
@@ -115,7 +117,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         for k, v in dict(
             arrayCounter=array_counter,
             imageMode="Multiple",
-            numImages=steps_to_do,
+            numImages=num_images,
             arrayCallbacks=True,
         ).items():
             if k not in kwargs and k in child:
@@ -149,13 +151,13 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         child.arrayCounterReadback.subscribe_value(
             self.update_completed_steps, registrar
         )
-        # If no new frames produced in event_timeout seconds, consider scan dead
-        context.wait_all_futures(self.start_future, event_timeout=event_timeout)
-        # Now wait to make sure any update_completed_steps come in. Give
-        # it 5 seconds to timeout just in case there are any stray frames that
-        # haven't made it through yet
+
+        # Wait for the array counter to reach the desired value. If any one frame takes
+        # more than event_timeout to appear, consider scan dead
         child.when_value_matches(
-            "arrayCounterReadback", self.done_when_reaches, timeout=DEFAULT_TIMEOUT
+            "arrayCounterReadback",
+            self.done_when_reaches,
+            event_timeout=event_timeout,
         )
 
     def abort_detector(self, context: Context) -> None:
@@ -219,15 +221,17 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         # Hooks
         registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
         registrar.hook(
-            (
-                scanning.hooks.ConfigureHook,
-                scanning.hooks.PostRunArmedHook,
-                scanning.hooks.SeekHook,
-            ),
+            scanning.hooks.ConfigureHook,
             self.on_configure,
             self.configure_args_with_exposure,
         )
+        registrar.hook(
+            scanning.hooks.SeekHook,
+            self.on_seek,
+            self.configure_args_with_exposure,
+        )
         registrar.hook(scanning.hooks.RunHook, self.on_run)
+        registrar.hook(scanning.hooks.PostRunArmedHook, self.on_post_run_armed)
         registrar.hook(
             (scanning.hooks.PauseHook, scanning.hooks.AbortHook), self.on_abort
         )
@@ -287,6 +291,46 @@ class DetectorDriverPart(builtin.parts.ChildPart):
     # Allow CamelCase as fileDir parameter will be serialized
     # noinspection PyPep8Naming
     @add_call_types
+    def on_seek(
+        self,
+        context: scanning.hooks.AContext,
+        completed_steps: scanning.hooks.ACompletedSteps,
+        steps_to_do: scanning.hooks.AStepsToDo,
+        part_info: scanning.hooks.APartInfo,
+        generator: scanning.hooks.AGenerator,
+        fileDir: scanning.hooks.AFileDir,
+        breakpoints: scanning.controllers.ABreakpoints = None,
+        **kwargs: Any,
+    ) -> None:
+        context.unsubscribe_all()
+
+        # If detector is hardware triggered, and we aren't using breakpoints, we can
+        # configure the detector for all frames now. This is instead of configuring and
+        # arming the detector for each inner scan, so we save some time
+        if self.is_hardware_triggered and not breakpoints:
+            num_images = generator.size - completed_steps
+        else:
+            num_images = steps_to_do
+
+        # Set up the detector
+        self.setup_detector(
+            context,
+            completed_steps,
+            steps_to_do,
+            num_images,
+            generator.duration,
+            part_info,
+            initial_configure=False,
+            **kwargs,
+        )
+
+        # Start now if we are hardware triggered
+        if self.is_hardware_triggered:
+            self.arm_detector(context)
+
+    # Allow CamelCase as fileDir parameter will be serialized
+    # noinspection PyPep8Naming
+    @add_call_types
     def on_configure(
         self,
         context: scanning.hooks.AContext,
@@ -295,25 +339,13 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         part_info: scanning.hooks.APartInfo,
         generator: scanning.hooks.AGenerator,
         fileDir: scanning.hooks.AFileDir,
+        breakpoints: scanning.controllers.ABreakpoints = None,
         **kwargs: Any,
     ) -> None:
         context.unsubscribe_all()
         child = context.block_view(self.mri)
         self.check_driver_version(child)
-        # If detector can be soft triggered, then we might need to defer
-        # starting it until run. Check triggerMode to find out
-        if self.soft_trigger_modes:
-            mode = child.triggerMode.value
-            self.is_hardware_triggered = mode not in self.soft_trigger_modes
-        # Set up the detector
-        self.setup_detector(
-            context,
-            completed_steps,
-            steps_to_do,
-            generator.duration,
-            part_info,
-            **kwargs,
-        )
+
         # Calculate how long to wait before marking this scan as stalled
         self.frame_timeout = FRAME_TIMEOUT
         if generator.duration > 0:
@@ -321,9 +353,32 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         else:
             # Double it to be safe
             self.frame_timeout += FRAME_TIMEOUT
-        if self.is_hardware_triggered:
-            # Start now if we are hardware triggered
-            self.arm_detector(context)
+
+        # If detector can be soft triggered, then we might need to defer
+        # starting it until run. Check triggerMode to find out
+        if self.soft_trigger_modes:
+            mode = child.triggerMode.value
+            self.is_hardware_triggered = mode not in self.soft_trigger_modes
+
+        # If detector is hardware triggered, and we aren't using breakpoints, we can
+        # configure the detector for all frames now. This is instead of configuring and
+        # arming the detector for each inner scan, so we save some time
+        if self.is_hardware_triggered and not breakpoints:
+            num_images = generator.size - completed_steps
+        else:
+            num_images = steps_to_do
+
+        # Set up the detector
+        self.setup_detector(
+            context,
+            completed_steps,
+            steps_to_do,
+            num_images,
+            generator.duration,
+            part_info,
+            **kwargs,
+        )
+
         # Tell detector to store NDAttributes if table given
         if len(self.extra_attributes.value.sourceId) > 0:
             attribute_xml = self.build_attribute_xml()
@@ -341,15 +396,54 @@ class DetectorDriverPart(builtin.parts.ChildPart):
                 )
             child.attributesFile.put_value(attributes_filename)
 
+        # Start now if we are hardware triggered
+        if self.is_hardware_triggered:
+            self.arm_detector(context)
+
     @add_call_types
     def on_run(self, context: scanning.hooks.AContext) -> None:
         if not self.is_hardware_triggered:
             # Start now if we are software triggered
             self.arm_detector(context)
         assert self.registrar, "No assigned registrar"
+
+        self.log.debug(f"{self.mri}: Done when reaches: {self.done_when_reaches}")
         self.wait_for_detector(
             context, self.registrar, event_timeout=self.frame_timeout
         )
+
+    @add_call_types
+    def on_post_run_armed(
+        self,
+        context: scanning.hooks.AContext,
+        completed_steps: scanning.hooks.ACompletedSteps,
+        steps_to_do: scanning.hooks.AStepsToDo,
+        part_info: scanning.hooks.APartInfo,
+        generator: scanning.hooks.AGenerator,
+        breakpoints: scanning.controllers.ABreakpoints = None,
+    ) -> None:
+        # We may need to set up the detector again based on two conditions:
+        #   - breakpoints can be an uneven number of steps
+        #   - if pause has been called for a software-triggered detector which
+        #     will set a different number of steps to do
+        if breakpoints or not self.is_hardware_triggered:
+            self.setup_detector(
+                context,
+                completed_steps,
+                steps_to_do,
+                steps_to_do,
+                generator.duration,
+                part_info,
+                initial_configure=False,
+            )
+            if self.is_hardware_triggered:
+                # We can now re-arm hardware-triggered detectors
+                self.arm_detector(context)
+        # Otherwise if we have hardware triggers and no breakpoints then
+        # seek should have set up the correct number of images for the
+        # remainder of the scan and we do not need to re-arm
+        else:
+            self.done_when_reaches += steps_to_do
 
     @add_call_types
     def on_abort(self, context: scanning.hooks.AContext) -> None:

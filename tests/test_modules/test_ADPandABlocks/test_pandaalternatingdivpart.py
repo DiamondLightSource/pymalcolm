@@ -12,7 +12,7 @@ class TestPandAAlternatingDivPart(ChildTestCase):
         self.context = Context(self.process)
 
         # Create a PandA to which this part communicates
-        self.panda = ManagerController("ML-PANDA-01", "/tmp")
+        self.panda = ManagerController("ML-PANDA-01", "/tmp", use_git=False)
 
         # Create a block for this part
         self.child = self.create_child_block(

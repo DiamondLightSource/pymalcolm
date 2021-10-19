@@ -1,3 +1,4 @@
+import shutil
 import unittest
 
 import cothread
@@ -19,11 +20,11 @@ from malcolm.core import (
     Process,
 )
 from malcolm.modules import builtin, scanning
+from malcolm.modules.builtin.defines import tmp_dir
 from malcolm.modules.demo.blocks import motion_block
 from malcolm.modules.demo.parts import MotionChildPart
 from malcolm.modules.demo.parts.motionchildpart import AExceptionStep
 from malcolm.modules.scanning.controllers import RunnableController
-from malcolm.modules.scanning.controllers.runnablecontroller import get_steps_per_run
 from malcolm.modules.scanning.hooks import (
     AAxesToMove,
     ABreakpoints,
@@ -99,57 +100,6 @@ class RunForeverPart(builtin.parts.ChildPart):
     def on_abort(self, context: scanning.hooks.AContext) -> None:
         # Sleep for 1s before returning
         context.sleep(1.0)
-
-
-class TestGetStepsPerRunMethod(unittest.TestCase):
-    def test_returns_single_step_for_no_moving_axes(self):
-        line1 = LineGenerator("y", "mm", 0, 2, 10)
-        line2 = LineGenerator("x", "mm", 0, 2, 50)
-        generator = CompoundGenerator([line1, line2], [], [], duration=0.001)
-        generator.prepare()
-
-        steps = get_steps_per_run(generator, list())
-
-        assert steps == 1
-
-    def test_returns_inner_steps_for_single_dimension_in_2d_scan(self):
-        line1 = LineGenerator("y", "mm", 0, 2, 30)
-        line2 = LineGenerator("x", "mm", 0, 2, 20)
-        generator = CompoundGenerator([line1, line2], [], [], duration=0.001)
-        generator.prepare()
-
-        steps = get_steps_per_run(generator, ["x"])
-
-        assert steps == 20
-
-    def test_raises_AssertionError_for_invalid_axes_to_move(self):
-        line1 = LineGenerator("y", "mm", 0, 2, 30)
-        line2 = LineGenerator("x", "mm", 0, 2, 20)
-        generator = CompoundGenerator([line1, line2], [], [], duration=0.001)
-        generator.prepare()
-
-        self.assertRaises(AssertionError, get_steps_per_run, generator, ["z"])
-
-    def test_returns_all_steps_for_both_dimensions_in_2d_scan(self):
-        line1 = LineGenerator("y", "mm", 0, 2, 30)
-        line2 = LineGenerator("x", "mm", 0, 2, 20)
-        generator = CompoundGenerator([line1, line2], [], [], duration=0.001)
-        generator.prepare()
-
-        steps = get_steps_per_run(generator, ["x", "y"])
-
-        assert steps == 600
-
-    def test_returns_inner_steps_for_two_dimensions_in_3d_scan(self):
-        line1 = LineGenerator("z", "mm", 0, 2, 15)
-        line2 = LineGenerator("y", "mm", 0, 2, 25)
-        line3 = LineGenerator("x", "mm", 0, 2, 20)
-        generator = CompoundGenerator([line1, line2, line3], [], [], duration=0.001)
-        generator.prepare()
-
-        steps = get_steps_per_run(generator, ["x", "y"])
-
-        assert steps == 500
 
 
 class TestRunnableStates(unittest.TestCase):
@@ -237,14 +187,15 @@ class TestRunnableController(unittest.TestCase):
         self.context = Context(self.p)
 
         # Make a motion block to act as our child
-        for c in motion_block(mri="childBlock", config_dir="/tmp"):
+        self.config_dir = tmp_dir("config_dir")
+        for c in motion_block(mri="childBlock", config_dir=self.config_dir.value):
             self.p.add_controller(c)
         self.b_child = self.context.block_view("childBlock")
 
         part = MisbehavingPart(mri="childBlock", name="part", initial_visibility=True)
 
         # create a root block for the RunnableController block to reside in
-        self.c = RunnableController(mri="mainBlock", config_dir="/tmp")
+        self.c = RunnableController(mri="mainBlock", config_dir=self.config_dir.value)
         self.c.add_part(part)
         self.p.add_controller(self.c)
         self.b = self.context.block_view("mainBlock")
@@ -257,6 +208,7 @@ class TestRunnableController(unittest.TestCase):
 
     def tearDown(self):
         self.p.stop(timeout=1)
+        shutil.rmtree(self.config_dir.value)
 
     def checkState(self, state):
         assert self.c.state.value == state
@@ -407,6 +359,36 @@ class TestRunnableController(unittest.TestCase):
         self.b.completedSteps.put_value(5)
         self.checkSteps(6, 5, 6)
         self.b.run()
+        self.checkState(self.ss.FINISHED)
+
+    def test_pause_seek_resume_at_boundaries_without_defined_lastGoodStep(self):
+        # When pausing at boundaries without lastGoodStep the scan should
+        # remain in the same state - Armed for the start of the next inner scan
+        # or Finished if the scan is complete.
+        self.prepare_half_run()
+        self.checkSteps(configured=2, completed=0, total=6)
+
+        self.b.pause()
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(2, 0, 6)
+
+        self.b.run()
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(4, 2, 6)
+        self.b.pause()
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(4, 2, 6)
+
+        self.b.run()
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(6, 4, 6)
+        self.b.pause()
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(6, 4, 6)
+
+        self.b.run()
+        self.checkState(self.ss.FINISHED)
+        self.b.pause()
         self.checkState(self.ss.FINISHED)
 
     def test_pause_seek_resume_outside_limits(self):
@@ -585,12 +567,13 @@ class TestRunnableControllerBreakpoints(unittest.TestCase):
         self.context2 = Context(self.p2)
 
         # Make a motion block to act as our child
-        for c in motion_block(mri="childBlock", config_dir="/tmp"):
+        self.config_dir = tmp_dir("config_dir")
+        for c in motion_block(mri="childBlock", config_dir=self.config_dir.value):
             self.p.add_controller(c)
         self.b_child = self.context.block_view("childBlock")
 
         # create a root block for the RunnableController block to reside in
-        self.c = RunnableController(mri="mainBlock", config_dir="/tmp")
+        self.c = RunnableController(mri="mainBlock", config_dir=self.config_dir.value)
         self.p.add_controller(self.c)
         self.b = self.context.block_view("mainBlock")
         self.ss = self.c.state_set
@@ -602,6 +585,7 @@ class TestRunnableControllerBreakpoints(unittest.TestCase):
 
     def tearDown(self):
         self.p.stop(timeout=1)
+        shutil.rmtree(self.config_dir.value)
 
     def checkState(self, state):
         assert self.c.state.value == state
@@ -610,6 +594,32 @@ class TestRunnableControllerBreakpoints(unittest.TestCase):
         assert self.b.configuredSteps.value == configured
         assert self.b.completedSteps.value == completed
         assert self.b.totalSteps.value == total
+
+    def test_get_breakpoint_index(self):
+        line = LineGenerator("x", "mm", 0, 180, 100)
+        duration = 0.01
+        breakpoints = [10, 20, 30, 40]
+
+        self.b.configure(
+            generator=CompoundGenerator([line], [], [], duration),
+            axesToMove=["x"],
+            breakpoints=breakpoints,
+        )
+
+        test_steps = [0, 5, 10, 20, 30, 40, 60, 80, 100]
+
+        expected_indices = [0, 0, 1, 1, 2, 2, 3, 3, 3]
+
+        # Check the breakpoint_steps are set as expected
+        assert self.c.breakpoint_steps == [10, 30, 60, 100]
+
+        for step_num in range(len(test_steps)):
+            steps = test_steps[step_num]
+            index = expected_indices[step_num]
+            actual_index = self.c.get_breakpoint_index(steps)
+            assert (
+                actual_index == index
+            ), f"Expected index {index} for {steps} steps, got {actual_index}"
 
     def test_steps_per_run_one_axis(self):
         line = LineGenerator("x", "mm", 0, 180, 10)
@@ -956,6 +966,62 @@ class TestRunnableControllerBreakpoints(unittest.TestCase):
         self.checkState(self.ss.ARMED)
 
         self.b.run()
+        self.checkSteps(17, 17, 17)
+        self.checkState(self.ss.FINISHED)
+
+    def test_breakpoints_with_pause_at_boundaries_without_lastGoodStep(self):
+        # We expect the pause call to be successful but not to have an effect
+        # when called at a breakpoint or at the end of a scan.
+        line1 = LineGenerator("x", "mm", -10, -10, 5)
+        line2 = LineGenerator("x", "mm", 0, 180, 10)
+        line3 = LineGenerator("x", "mm", 190, 190, 2)
+        duration = 0.01
+        concat = ConcatGenerator([line1, line2, line3])
+        breakpoints = [2, 3, 10, 2]
+        self.b.configure(
+            generator=CompoundGenerator([concat], [], [], duration),
+            axesToMove=["x"],
+            breakpoints=breakpoints,
+        )
+
+        assert self.c.configure_params.generator.size == 17
+
+        self.checkSteps(2, 0, 17)
+        self.checkState(self.ss.ARMED)
+        # Pause
+        self.b.pause()
+        self.checkSteps(2, 0, 17)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(5, 2, 17)
+        self.checkState(self.ss.ARMED)
+        # Pause
+        self.b.pause()
+        self.checkSteps(5, 2, 17)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(15, 5, 17)
+        self.checkState(self.ss.ARMED)
+        # Pause
+        self.b.pause()
+        self.checkSteps(15, 5, 17)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(17, 15, 17)
+        self.checkState(self.ss.ARMED)
+        # Pause
+        self.b.pause()
+        self.checkSteps(17, 15, 17)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(17, 17, 17)
+        self.checkState(self.ss.FINISHED)
+        # Pause
+        self.b.pause()
         self.checkSteps(17, 17, 17)
         self.checkState(self.ss.FINISHED)
 

@@ -23,15 +23,15 @@ from .choicepart import (
 from .float64part import (
     AConfig,
     AGroup,
-    ALimitHigh,
-    ALimitLow,
     AMetaDescription,
     APartName,
-    APrecision,
     AUnits,
     AWidget,
     AWriteable,
     Float64Part,
+    ULimitHigh,
+    ULimitLow,
+    UPrecision,
 )
 from .grouppart import AMetaDescription, APartName, GroupPart
 from .helppart import AHelpUrl, APartName, HelpPart

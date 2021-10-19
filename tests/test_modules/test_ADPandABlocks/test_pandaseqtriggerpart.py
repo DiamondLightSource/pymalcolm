@@ -1,4 +1,5 @@
 import os
+import shutil
 from datetime import datetime
 
 import pytest
@@ -34,6 +35,7 @@ from malcolm.modules.ADPandABlocks.util import (
 )
 from malcolm.modules.builtin.controllers import BasicController, ManagerController
 from malcolm.modules.builtin.hooks import ResetHook
+from malcolm.modules.builtin.defines import tmp_dir
 from malcolm.modules.builtin.parts import ChildPart
 from malcolm.modules.builtin.util import ExportTable
 from malcolm.modules.pandablocks.util import PositionCapture
@@ -117,7 +119,7 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         self.context = Context(self.process)
 
         # Create a fake PandA
-        self.panda = ManagerController("PANDA", "/tmp")
+        self.panda = ManagerController("PANDA", "/tmp", use_git=False)
         self.busses = PositionsPart("busses")
         self.panda.add_part(self.busses)
 
@@ -156,8 +158,12 @@ class TestPandaSeqTriggerPart(ChildTestCase):
             os.path.join(os.path.dirname(__file__), "..", "test_pmac", "blah"),
             "test_pmac_manager_block.yaml",
         )
+        self.config_dir = tmp_dir("config_dir")
         self.pmac = self.create_child_block(
-            pmac_block, self.process, mri_prefix="PMAC", config_dir="/tmp"
+            pmac_block,
+            self.process,
+            mri_prefix="PMAC",
+            config_dir=self.config_dir.value,
         )
         # These are the motors we are interested in
         self.child_x = self.process.get_controller("BL45P-ML-STAGE-01:X")
@@ -193,6 +199,7 @@ class TestPandaSeqTriggerPart(ChildTestCase):
 
     def tearDown(self):
         self.process.stop(timeout=2)
+        shutil.rmtree(self.config_dir.value)
 
     def set_motor_attributes(
         self,

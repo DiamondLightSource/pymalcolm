@@ -1,4 +1,16 @@
-from typing import Any, Dict, List, Mapping, Optional, Set, Tuple, Type, TypeVar, Union
+from typing import (
+    Any,
+    Dict,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
 from annotypes import Anno, add_call_types
 
@@ -55,6 +67,7 @@ with Anno(
     "means only if child Source/Sink Ports connect to another Block"
 ):
     AInitialVisibility = bool
+UInitialVisibility = Optional[AInitialVisibility]
 with Anno("If the child is a StatefulController then this should be True"):
     AStateful = bool
 
@@ -95,7 +108,7 @@ class ChildPart(Part):
         self,
         name: APartName,
         mri: AMri,
-        initial_visibility: AInitialVisibility = False,
+        initial_visibility: UInitialVisibility = None,
         stateful: AStateful = True,
     ) -> None:
         # For docs: after ChildPart init
@@ -104,7 +117,7 @@ class ChildPart(Part):
         self.mri = mri
         self.x: float = 0.0
         self.y: float = 0.0
-        self.visible: bool = initial_visibility
+        self.visible: Optional[bool] = initial_visibility
         # {part_name: visible} saying whether part_name is visible
         self.part_visibility: Dict[str, bool] = {}
         # {attr_name: attr_value} of last saved/loaded structure
@@ -189,6 +202,7 @@ class ChildPart(Part):
         # If not specified then take our own visibility from this same dict
         if self.visible is None:
             self.visible = self.part_visibility.get(self.name, False)
+        assert self.visible is not None
         ret = LayoutInfo(mri=self.mri, x=self.x, y=self.y, visible=self.visible)
         return [ret]
 
@@ -258,6 +272,7 @@ class ChildPart(Part):
         spawned = []
         if isinstance(response, Update):
             new_fields = response.value
+            assert isinstance(new_fields, Sequence), f"Bad field list {new_fields}"
         elif isinstance(response, Return):
             # We got a return with None, so clear out all of the
             # config_subscriptions
@@ -266,7 +281,6 @@ class ChildPart(Part):
             self.log.warning("Got unexpected response {response}")
             return
 
-        assert new_fields, "No new fields"
         # Remove any existing subscription that is not in the new fields
         for subscribe in self.config_subscriptions.values():
             attr_name = subscribe.path[-2]

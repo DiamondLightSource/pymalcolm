@@ -20,7 +20,7 @@ class TestSimultaneousAxesPart(unittest.TestCase):
         self.process = Process("proc")
         self.process.start()
         self.addCleanup(self.process.stop, 2)
-        c = RunnableController("mri", "/tmp")
+        c = RunnableController("mri", "/tmp", use_git=False)
         c.add_part(self.o)
         self.process.add_controller(c)
         self.b = c.block_view()

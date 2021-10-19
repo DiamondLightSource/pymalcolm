@@ -75,3 +75,7 @@ target/
 # Eclipse
 .project
 .pydevproject
+
+# Diamond Python 3 environment
+prefix/
+lightweight-venv/

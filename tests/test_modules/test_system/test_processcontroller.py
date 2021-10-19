@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 import time
 import unittest
@@ -9,6 +10,7 @@ from cothread import catools
 
 from malcolm import __version__
 from malcolm.core import Process
+from malcolm.modules.builtin.defines import tmp_dir
 from malcolm.modules.system.controllers import ProcessController
 from malcolm.modules.system.defines import redirector_iocs
 
@@ -17,14 +19,16 @@ class TestProcessController(unittest.TestCase):
     prefix = "unitTest:%s" % floor(time.time()).__repr__()[:-2]
 
     def setUp(self):
+        self.config_dir = tmp_dir("config_dir")
         self.process = Process("proc")
-        self.o = ProcessController("MyMRI", self.prefix, "/tmp")
+        self.o = ProcessController("MyMRI", self.prefix, self.config_dir.value)
         self.process.add_controller(self.o)
         self.process.start()
         self.b = self.process.block_view("MyMRI")
 
     def tearDown(self):
         self.process.stop(timeout=2)
+        shutil.rmtree(self.config_dir.value)
 
     def test_sets_stats(self):
         # In unit tests, this depends on where the test-runner is run from
@@ -55,12 +59,13 @@ class TestParseYamlVersion(unittest.TestCase):
         os.mkdir(self.testArea)
         self.cwd = os.getcwd()
 
-        self.obj = ProcessController("", "", "/tmp")
+        # Create temporary config directory for ProcessController
+        config_dir = tmp_dir("config_dir")
+        self.obj = ProcessController("", "", config_dir.value)
 
     def tearDown(self):
         os.chdir(self.cwd)
-        print(["rm", "-rf", self.testArea])
-        subprocess.call(["rm", "-rf", self.testArea])
+        shutil.rmtree(self.testArea)
         os.rmdir("/tmp/prod")
 
     def test_simple_path_parse(self):
@@ -128,7 +133,7 @@ class TestParseRedirectTable(unittest.TestCase):
 
     def tearDown(self):
         os.chdir(self.cwd)
-        subprocess.call(["rm", "-rf", self.testArea])
+        shutil.rmtree(self.testArea)
         os.rmdir("/tmp/redirector")
 
     def test_parse(self):
