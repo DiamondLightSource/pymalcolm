@@ -42,6 +42,7 @@ from malcolm.modules.pandablocks.util import PositionCapture
 from malcolm.modules.scanning.hooks import (
     AbortHook,
     ConfigureHook,
+    PauseHook,
     PostRunArmedHook,
     ReportStatusHook,
     RunHook,
@@ -244,7 +245,7 @@ class TestPandaSeqTriggerPart(ChildTestCase):
             call((ConfigureHook, SeekHook, PostRunArmedHook), self.o.on_configure),
             call(RunHook, self.o.on_run),
             call(ResetHook, self.o.on_reset),
-            call(AbortHook, self.o.on_abort),
+            call((AbortHook, PauseHook), self.o.on_abort),
         ]
 
         self.o.setup(mock_registrar)
