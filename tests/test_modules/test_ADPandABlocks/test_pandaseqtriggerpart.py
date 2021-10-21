@@ -34,8 +34,8 @@ from malcolm.modules.ADPandABlocks.util import (
     Trigger,
 )
 from malcolm.modules.builtin.controllers import BasicController, ManagerController
-from malcolm.modules.builtin.hooks import ResetHook
 from malcolm.modules.builtin.defines import tmp_dir
+from malcolm.modules.builtin.hooks import ResetHook
 from malcolm.modules.builtin.parts import ChildPart
 from malcolm.modules.builtin.util import ExportTable
 from malcolm.modules.pandablocks.util import PositionCapture
