@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Any, Dict, Optional
 
 from annotypes import add_call_types
-from ruamel import yaml
+from ruamel.yaml import YAML, YAMLError
 from scanpointgenerator import CompoundGenerator, LineGenerator
 
 from malcolm.core import (
@@ -155,9 +155,10 @@ class ScanRunnerPart(ChildPart):
 
     def parse_yaml(self, string: str) -> Any:
         try:
-            parsed_yaml = yaml.safe_load(string)
+            yaml = YAML(typ='safe', pure=True)
+            parsed_yaml = yaml.load(string)
             return parsed_yaml
-        except yaml.YAMLError:
+        except YAMLError:
             self.set_runner_state(RunnerStates.FAULT)
             self.runner_status_message.set_value("Could not parse scan file")
             raise

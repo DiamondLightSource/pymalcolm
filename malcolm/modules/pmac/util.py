@@ -342,6 +342,7 @@ class AlternatingDelayAfterMutator(Mutator):
         self.delays = [even_delay_after, odd_delay_after]
 
     def mutate(self, point: Point, idx: Union[int, List[int], Array[int]]) -> Point:
+        delay_after: Union[float, np.ndarray]
         if isinstance(point, Points):
             assert isinstance(
                 idx, (List, np.ndarray)
