@@ -1,9 +1,12 @@
 from typing import Optional
 
 from annotypes import Anno, add_call_types
+from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import CAMEL_RE, APartName, BadValueError, PartRegistrar
 from malcolm.modules import builtin, scanning
+
+from .pandaseqtriggerpart import TICK
 
 # Pull re-used annotypes into our namespace in case we are subclassed
 APartName = APartName
@@ -60,6 +63,25 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
         registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
         registrar.hook(scanning.hooks.ConfigureHook, self.on_configure)
         registrar.hook(scanning.hooks.PostConfigureHook, self.on_post_configure)
+        registrar.hook(scanning.hooks.ValidateHook, self.on_validate)
+
+    @add_call_types
+    def on_validate(
+        self, generator: scanning.hooks.AGenerator
+    ) -> scanning.hooks.UParameterTweakInfos:
+        duration = generator.duration
+        if duration == 0.0:
+            # We need to tweak the duration
+            serialized = generator.to_dict()
+            new_generator = CompoundGenerator.from_dict(serialized)
+            # Set the duration to 2 clock cycles
+            new_generator.duration = 2 * TICK
+            return scanning.infos.ParameterTweakInfo("generator", new_generator)
+        else:
+            assert (
+                duration > 0
+            ), f"Generator duration of {duration} must be > 0 to signify fixed exposure"
+            return None
 
     @add_call_types
     def on_report_status(
