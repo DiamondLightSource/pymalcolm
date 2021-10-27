@@ -159,6 +159,18 @@ class TestPMACChildPart(ChildTestCase):
         expected_duration = 0.24963
         assert ret.value.duration == expected_duration
 
+    def test_validate_tweaks_duration_for_continuous_scan_with_single_point(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 1, alternate=True)
+        generator = CompoundGenerator([xs], [], [], 0.0)
+        self.set_motor_attributes()
+        axesToMove = ["x"]
+        # servoFrequency() return value
+        self.child.handled_requests.post.return_value = 4919.300698316487
+        ret = self.o.on_validate(self.context, generator, axesToMove, {})
+        # Duration is calculated based on maximum velocity of stages
+        expected_duration = 0.001628
+        assert ret.value.duration == expected_duration
+
     def test_validate_tweaks_duration_for_step_scan(self):
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
         generator = CompoundGenerator([xs], [], [], 0.0, continuous=False)
