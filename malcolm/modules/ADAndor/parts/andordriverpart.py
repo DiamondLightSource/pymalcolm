@@ -60,7 +60,7 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
             # Calculate duration based on whether we have been given an exposure time
             if exposure == 0.0:
                 # Guess using a hard-coded readout time
-                duration = frames_per_step * self.initial_readout_time
+                duration = frames_per_step * self.minimum_acquire_period
             else:
                 # Use the minimum acquire period as an estimate of readout time
                 duration = frames_per_step * (exposure+self.minimum_acquire_period)

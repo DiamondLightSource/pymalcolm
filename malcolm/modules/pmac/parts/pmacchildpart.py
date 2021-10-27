@@ -156,10 +156,12 @@ class PmacChildPart(builtin.parts.ChildPart):
         assert duration >= 0.0, f"{self.name}: negative durations are not supported"
         if duration == 0.0:
             # We need to tweak the duration if we are going to take part
-            if self.taking_part_in_scan(generator, axesToMove, part_info, motion_axes):
+            if self.taking_part_in_scan(part_info, motion_axes):
                 duration = self.calculate_generator_duration(
-                    context, generator, axesToMove, part_info, motion_axes
+                    context, generator, part_info, motion_axes
                 )
+            else:
+                return None
         # If GPIO is demanded for every point we need to align to the servo
         # cycle
         trigger = get_motion_trigger(part_info)
@@ -190,8 +192,6 @@ class PmacChildPart(builtin.parts.ChildPart):
 
     def taking_part_in_scan(
         self,
-        generator: scanning.hooks.AGenerator,
-        axesToMove: scanning.hooks.AAxesToMove,
         part_info: scanning.hooks.APartInfo,
         motion_axes: List[str],
     ) -> bool:
@@ -206,7 +206,6 @@ class PmacChildPart(builtin.parts.ChildPart):
         self,
         context: scanning.hooks.AContext,
         generator: scanning.hooks.AGenerator,
-        axesToMove: scanning.hooks.AAxesToMove,
         part_info: scanning.hooks.APartInfo,
         motion_axes: List[str],
     ) -> float:
@@ -343,7 +342,7 @@ class PmacChildPart(builtin.parts.ChildPart):
 
         # Check if we should be taking part in the scan
         motion_axes = get_motion_axes(generator, axesToMove)
-        if self.taking_part_in_scan(generator, axesToMove, part_info, motion_axes):
+        if self.taking_part_in_scan(part_info, motion_axes):
             self.generator = generator
         else:
             self.generator = None
