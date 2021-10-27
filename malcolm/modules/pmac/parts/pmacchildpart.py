@@ -220,10 +220,10 @@ class PmacChildPart(builtin.parts.ChildPart):
             # the brick not matching the target config for the scan?
             axis_mapping = cs_axis_mapping(context, layout_table, motion_axes)
             # Step scans and fly scans behave differently
-            if generator.continuous:
+            generator.prepare()
+            if generator.continuous and generator.size > 1:
                 # Estimate the duration for fly scans using the distance between the
                 # first two points and max velocities of participating axes
-                generator.prepare()
                 first_point = generator.get_point(0)
                 second_point = generator.get_point(1)
                 return self.calculate_duration_from_first_two_points(
