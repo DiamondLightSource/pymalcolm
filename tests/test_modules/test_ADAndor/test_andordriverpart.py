@@ -1,6 +1,6 @@
 import pytest
 from mock import Mock, call, patch
-from scanpointgenerator import CompoundGenerator, LineGenerator
+from scanpointgenerator import CompoundGenerator, LineGenerator, StaticPointGenerator
 
 from malcolm.core import Context, Process
 from malcolm.modules.ADAndor.blocks import andor_driver_block
@@ -334,3 +334,95 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         )
 
         self.assertEqual(expected_readout_factor, actual_readout_factor)
+
+    def _get_static_generator(self, duration):
+        static = StaticPointGenerator(10)
+        generator = CompoundGenerator([static], [], [], duration)
+        return generator
+
+    def test_on_validate_raises_AssertionError_for_negative_duration(self):
+        generator = self._get_static_generator(-1.0)
+
+        self.assertRaises(AssertionError, self.andor_driver_part.on_validate, generator)
+
+    def test_on_validate_positive_duration_and_zero_exposure_does_not_tweak(self):
+        generator = self._get_static_generator(1.0)
+
+        tweaks = self.andor_driver_part.on_validate(generator)
+
+        self.assertEqual(tweaks, None)
+
+    def test_on_validate_positive_duration_and_exposure_does_not_tweak(self):
+        generator = self._get_static_generator(1.0)
+        exposure = 0.5
+
+        tweaks = self.andor_driver_part.on_validate(generator, exposure=exposure)
+
+        self.assertEqual(tweaks, None)
+
+    def test_on_validate_positive_duration_exposure_fps_does_not_tweak(
+        self,
+    ):
+        generator = self._get_static_generator(1.0)
+        exposure = 0.5
+        frames_per_step = 2
+
+        tweaks = self.andor_driver_part.on_validate(
+            generator, exposure=exposure, frames_per_step=frames_per_step
+        )
+
+        self.assertEqual(tweaks, None)
+
+    def test_on_validate_zero_duration_and_exposure_tweaks_duration(
+        self,
+    ):
+        generator = self._get_static_generator(0.0)
+        exposure = 0.0
+        expected_duration = 0.025
+
+        tweaks = self.andor_driver_part.on_validate(generator, exposure=exposure)
+
+        self.assertEqual(tweaks.parameter, "generator")
+        self.assertEqual(tweaks.value.duration, expected_duration)
+
+    def test_on_validate_zero_duration_exposure_with_fps_tweaks_duration(
+        self,
+    ):
+        generator = self._get_static_generator(0.0)
+        exposure = 0.0
+        frames_per_step = 2
+        expected_duration = 0.05
+
+        tweaks = self.andor_driver_part.on_validate(
+            generator, exposure=exposure, frames_per_step=frames_per_step
+        )
+
+        self.assertEqual(tweaks.parameter, "generator")
+        self.assertEqual(tweaks.value.duration, expected_duration)
+
+    def test_on_validate_zero_duration_positive_exposure_tweaks_duration(
+        self,
+    ):
+        generator = self._get_static_generator(0.0)
+        exposure = 0.5
+        expected_duration = 0.525
+
+        tweaks = self.andor_driver_part.on_validate(generator, exposure=exposure)
+
+        self.assertEqual(tweaks.parameter, "generator")
+        self.assertEqual(tweaks.value.duration, expected_duration)
+
+    def test_on_validate_zero_duration_positive_exposure_with_fps_tweaks_duration(
+        self,
+    ):
+        generator = self._get_static_generator(0.0)
+        exposure = 0.75
+        frames_per_step = 2
+        expected_duration = 1.55
+
+        tweaks = self.andor_driver_part.on_validate(
+            generator, exposure=exposure, frames_per_step=frames_per_step
+        )
+
+        self.assertEqual(tweaks.parameter, "generator")
+        self.assertEqual(tweaks.value.duration, expected_duration)

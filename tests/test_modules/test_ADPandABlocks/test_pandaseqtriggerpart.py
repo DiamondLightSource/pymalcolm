@@ -20,6 +20,7 @@ from malcolm.modules.builtin.defines import tmp_dir
 from malcolm.modules.builtin.parts import ChildPart
 from malcolm.modules.builtin.util import ExportTable
 from malcolm.modules.pandablocks.util import PositionCapture
+from malcolm.modules.scanning.infos import MotionTrigger
 from malcolm.testutil import ChildTestCase
 from malcolm.yamlutil import make_block_creator
 
@@ -548,3 +549,23 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         )
         elapsed = datetime.now() - start
         assert elapsed.total_seconds() < 3.0
+
+    def test_on_report_status_doing_pcomp(self):
+        mock_context = MagicMock(name="context_mock")
+        mock_child = MagicMock(name="child_mock")
+        mock_child.rowTrigger.value = "Position Compare"
+        mock_context.block_view.return_value = mock_child
+
+        info = self.o.on_report_status(mock_context)
+
+        assert info.trigger == MotionTrigger.NONE
+
+    def test_on_report_status_not_doing_pcomp_is_row_gate(self):
+        mock_context = MagicMock(name="context_mock")
+        mock_child = MagicMock(name="child_mock")
+        mock_child.rowTrigger.value = "Motion Controller"
+        mock_context.block_view.return_value = mock_child
+
+        info = self.o.on_report_status(mock_context)
+
+        assert info.trigger == MotionTrigger.ROW_GATE
