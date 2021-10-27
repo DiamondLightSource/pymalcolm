@@ -201,12 +201,10 @@ def point_velocities(
         # so vl = 2 * vlp - vp
         # where vlp = dlp / (t/2)
         velocity = 4 * d_half / point.duration - vp
-        assert (
-            abs(velocity) <= motor_info.max_velocity
-        ), "Velocity %s invalid for %r with max_velocity %s" % (
-            velocity,
-            axis_name,
-            motor_info.max_velocity,
+        max_velocity = motor_info.max_velocity
+        assert (abs(velocity) - max_velocity) / max_velocity < 1e-6, (
+            f"Velocity {velocity} invalid for {axis_name} with "
+            f"max_velocity {max_velocity}"
         )
         velocities[axis_name] = velocity
     return velocities
