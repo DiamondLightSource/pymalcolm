@@ -273,7 +273,7 @@ class Section:
         with open(yaml_path) as f:
             text = f.read()
         # First separate them into their relevant sections
-        yaml = YAML(typ='rt')
+        yaml = YAML(typ="rt")
         ds = yaml.load(text)
         docstring = None
         sections = []
