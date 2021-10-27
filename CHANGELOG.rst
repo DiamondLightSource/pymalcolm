@@ -3,8 +3,8 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
-`4.6`_
---------------------------
+`4.6`_ - 2021-08-17
+-------------------
 
 Changed:
 
@@ -20,6 +20,8 @@ Fixed:
 - OdinWriterPart cast data type to lower case for NumPy V1.2
 - Nexus templates for Savu Kinematics added to package data
 - Savu Kinematics now supports no axes to move
+- Scans with breakpoints and pausing are now working again after breaking in
+  the 4.5 release
 
 `4.5`_ - 2021-04-27
 --------------------------
@@ -43,7 +45,7 @@ Fixed:
   loaded
 
 `4.4`_ - 2021-03-02
---------------------------
+-------------------
 
 Added:
 
@@ -624,6 +626,7 @@ Added:
 
 - Initial release with hello world and websocket comms
 
+.. _4.6: https://github.com/dls-controls/pymalcolm/compare/4.5...4.6
 .. _4.5: https://github.com/dls-controls/pymalcolm/compare/4.4...4.5
 .. _4.4: https://github.com/dls-controls/pymalcolm/compare/4-3-1...4.4
 .. _4-3-1: https://github.com/dls-controls/pymalcolm/compare/4-2b8...4-3-1
