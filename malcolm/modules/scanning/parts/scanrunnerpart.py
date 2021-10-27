@@ -155,7 +155,7 @@ class ScanRunnerPart(ChildPart):
 
     def parse_yaml(self, string: str) -> Any:
         try:
-            yaml = YAML(typ='safe', pure=True)
+            yaml = YAML(typ="safe", pure=True)
             parsed_yaml = yaml.load(string)
             return parsed_yaml
         except YAMLError:
