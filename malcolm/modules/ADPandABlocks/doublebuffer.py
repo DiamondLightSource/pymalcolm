@@ -234,6 +234,8 @@ class DoubleBuffer:
         except StopIteration:
             self._finished = True
         else:
+            for table in self._table_map.values():
+                table.repeats.put_value(1)
             self._finished = False
 
     def _seq_active_handler(self, value: bool, table: str = "seqA") -> None:

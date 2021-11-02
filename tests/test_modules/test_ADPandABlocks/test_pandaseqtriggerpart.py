@@ -10,6 +10,7 @@ from scanpointgenerator import CompoundGenerator, LineGenerator, StaticPointGene
 from malcolm.core import (
     BooleanMeta,
     Context,
+    NumberMeta,
     Part,
     PartRegistrar,
     Process,
@@ -95,6 +96,9 @@ class SequencerPart(Part):
 
         attr = BooleanMeta("Active", (), True).create_attribute_model(False)
         registrar.add_attribute_model("active", attr, attr.set_value)
+
+        attr = NumberMeta("int16", "repeats", writeable=True).create_attribute_model(1)
+        registrar.add_attribute_model("repeats", attr, writeable_func=attr.set_value)
 
 
 class GatePart(Part):
