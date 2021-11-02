@@ -3,6 +3,15 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
+Unreleased
+----------
+
+Added:
+
+- DetectorDriverPart now has optional min_acquire_period argument. When set to a
+  non-zero value this is checked during validation against the generator
+  duration to ensure the detector can keep up during the acquisition.
+
 `4.6`_ - 2021-08-17
 -------------------
 
