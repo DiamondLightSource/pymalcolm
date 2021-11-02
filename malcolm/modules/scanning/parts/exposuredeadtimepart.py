@@ -88,7 +88,6 @@ class ExposureDeadtimePart(Part):
 
     @add_call_types
     def on_validate(self, generator: AGenerator, exposure: AExposure = 0.0) -> UInfos:
-        # TODO: handle multple frames per step for a detector
         info = self.on_report_status()
         if generator.duration == 0.0:
             # We need to calculate a new duration
