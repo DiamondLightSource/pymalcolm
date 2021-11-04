@@ -1,6 +1,7 @@
 import unittest
 
-from malcolm.modules.ADCore.util import make_xml_filename
+from malcolm.core import IncompatibleError
+from malcolm.modules.ADCore.util import check_driver_version, make_xml_filename
 
 
 class TestMakeXmlFilename(unittest.TestCase):
@@ -31,3 +32,19 @@ class TestMakeXmlFilename(unittest.TestCase):
         actual_filename = make_xml_filename(file_dir, mri)
 
         self.assertEqual(expected_filename, actual_filename)
+
+
+class TestCheckDriverVersion(unittest.TestCase):
+    def test_version_check(self):
+        required_version = "2.2"
+        self.assertRaises(
+            IncompatibleError, check_driver_version, "1.9", required_version
+        )
+        self.assertRaises(
+            IncompatibleError, check_driver_version, "2.1", required_version
+        )
+        self.assertRaises(
+            IncompatibleError, check_driver_version, "3.0", required_version
+        )
+        check_driver_version("2.2", required_version)
+        check_driver_version("2.2.3", required_version)

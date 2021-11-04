@@ -3,8 +3,9 @@ from enum import Enum
 from typing import Sequence, Union
 
 from annotypes import Anno, Array
+from packaging.version import Version
 
-from malcolm.core import Table
+from malcolm.core import IncompatibleError, Table
 
 # If things don't get new frames in this time (seconds), consider them
 # stalled and raise
@@ -82,6 +83,10 @@ UDataTypes = Union[ADataTypes, Sequence[DataType]]
 USourceTypes = Union[ASourceTypes, Sequence[SourceType]]
 
 
+with Anno("Minimum required version for compatibility"):
+    AVersionRequirement = str
+
+
 class ExtraAttributesTable(Table):
     # Allow CamelCase as arguments will be serialized
     # noinspection PyPep8Naming
@@ -105,3 +110,18 @@ class ExtraAttributesTable(Table):
 def make_xml_filename(file_dir, mri, suffix="attributes"):
     """Return a Block-specific filename for attribute or layout XML file"""
     return os.path.join(file_dir, "%s-%s.xml" % (mri.replace(":", "_"), suffix))
+
+
+def check_driver_version(driver: str, required: AVersionRequirement):
+    driver_version = Version(driver)
+    required_version = Version(required)
+    if (
+        required_version.major != driver_version.major
+        or driver_version.minor < required_version.minor
+    ):
+        raise (
+            IncompatibleError(
+                f"Detector driver v{driver_version} detected. "
+                f"Malcolm requires v{required_version}"
+            )
+        )
