@@ -1,9 +1,9 @@
 from xml.etree import ElementTree
 
-from mock import MagicMock, call
+from mock import MagicMock, call, patch
 from scanpointgenerator import CompoundGenerator, LineGenerator
 
-from malcolm.core import Context, IncompatibleError, Process
+from malcolm.core import Context, Process
 from malcolm.modules.ADCore.includes import adbase_parts
 from malcolm.modules.ADCore.infos import FilePathTranslatorInfo
 from malcolm.modules.ADCore.parts import DetectorDriverPart
@@ -228,7 +228,7 @@ class TestDetectorDriverPart(ChildTestCase):
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
         generator = CompoundGenerator([ys, xs], [], [], 1.0)
 
-        tweaks = self.o.on_validate(generator)
+        tweaks = self.o.on_validate(self.context, generator)
 
         assert tweaks is None, "Shouldn't have tweaked anything"
 
@@ -236,13 +236,13 @@ class TestDetectorDriverPart(ChildTestCase):
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
 
-        # 0.1 is fine
+        # duration = 0.1 is fine
         generator = CompoundGenerator([ys, xs], [], [], 0.1)
-        self.o.on_validate(generator)
+        self.o.on_validate(self.context, generator)
 
-        # 0.005 < min_acquire_period
+        # duration = 0.005 < min_acquire_period
         generator = CompoundGenerator([ys, xs], [], [], 0.005)
-        self.assertRaises(AssertionError, self.o.on_validate, generator)
+        self.assertRaises(AssertionError, self.o.on_validate, self.context, generator)
 
     def test_validate_with_zero_generator_duration_and_min_acquire_period(self):
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
@@ -250,31 +250,37 @@ class TestDetectorDriverPart(ChildTestCase):
 
         # 0.0 means we should guess and tweak
         generator = CompoundGenerator([ys, xs], [], [], 0.0)
-        tweaks = self.o.on_validate(generator)
+        tweaks = self.o.on_validate(self.context, generator)
 
         assert tweaks.parameter == "generator"
         assert tweaks.value["duration"] == 0.01
 
         # Now try with multiple frames per step
         frames_per_step = 5
-        tweaks = self.o.on_validate(generator, frames_per_step=frames_per_step)
+        tweaks = self.o.on_validate(
+            self.context, generator, frames_per_step=frames_per_step
+        )
 
         assert tweaks.parameter == "generator"
         assert tweaks.value["duration"] == 0.05
 
-    def test_version_check(self):
-        block = self.context.block_view("mri")
-        self.o.required_version = "2.2"
-        self.set_attributes(self.child, driverVersion="1.9")
-        self.assertRaises(IncompatibleError, self.o.check_driver_version, block)
-        self.set_attributes(self.child, driverVersion="2.1")
-        self.assertRaises(IncompatibleError, self.o.check_driver_version, block)
-        self.set_attributes(self.child, driverVersion="3.0")
-        self.assertRaises(IncompatibleError, self.o.check_driver_version, block)
-        self.set_attributes(self.child, driverVersion="2.2")
-        self.o.check_driver_version(block)
-        self.set_attributes(self.child, driverVersion="2.2.3")
-        self.o.check_driver_version(block)
+    @patch("malcolm.modules.ADCore.parts.detectordriverpart.check_driver_version")
+    def test_validate_version(self, check_mock):
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
+
+        # Version check should not be called with require_version None
+        self.o.require_version = None
+        self.set_attributes(self.child, driverVersion="1.1")
+
+        check_mock.assert_not_called()
+
+        # Test version check called if required_version not None
+        self.o.required_version = "1.0"
+        generator = CompoundGenerator([ys, xs], [], [], 0.1)
+        self.o.on_validate(self.context, generator)
+
+        check_mock.assert_called_once_with("1.1", "1.0")
 
     def test_run(self):
         self.o.registrar = MagicMock()

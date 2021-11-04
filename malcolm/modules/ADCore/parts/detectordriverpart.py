@@ -3,7 +3,6 @@ from typing import Any, List, Optional, Sequence, Union
 from xml.etree import cElementTree as ET
 
 from annotypes import Anno, Array, add_call_types
-from packaging.version import Version
 from scanpointgenerator import CompoundGenerator
 
 from malcolm.compat import et_to_string
@@ -13,7 +12,6 @@ from malcolm.core import (
     BadValueError,
     Context,
     Future,
-    IncompatibleError,
     Info,
     NumberMeta,
     PartRegistrar,
@@ -28,16 +26,16 @@ from ..infos import FilePathTranslatorInfo, NDArrayDatasetInfo, NDAttributeDatas
 from ..util import (
     FRAME_TIMEOUT,
     APartRunsOnWindows,
+    AVersionRequirement,
     DataType,
     ExtraAttributesTable,
     SourceType,
+    check_driver_version,
     make_xml_filename,
 )
 
 with Anno("Minimum acquire period the detector is capable of"):
     AMinAcquirePeriod = float
-with Anno("Minimum required version for compatibility"):
-    AVersionRequirement = str
 with Anno("Is main detector dataset useful to publish in DatasetTable?"):
     AMainDatasetUseful = bool
 with Anno("List of trigger modes that do not use hardware triggers"):
@@ -263,10 +261,15 @@ class DetectorDriverPart(builtin.parts.ChildPart):
     @add_call_types
     def on_validate(
         self,
+        context: scanning.hooks.AContext,
         generator: scanning.hooks.AGenerator,
         frames_per_step: ADetectorFramesPerStep = 1,
     ) -> scanning.hooks.UParameterTweakInfos:
         # Check if we have a minimum acquire period
+        if self.required_version is not None:
+            child = context.block_view(self.mri)
+            check_driver_version(child.driverVersion.value, self.required_version)
+
         if self.min_acquire_period > 0.0:
             duration = generator.duration
             # Check if we need to guess the generator duration
@@ -324,23 +327,6 @@ class DetectorDriverPart(builtin.parts.ChildPart):
             need_keys.append("exposure")
         return need_keys
 
-    def check_driver_version(self, child):
-        if self.required_version is not None:
-            required_version = Version(self.required_version)
-            running_version = Version(child.driverVersion.value)
-            if (
-                required_version.major != running_version.major
-                or running_version.minor < required_version.minor
-            ):
-                raise (
-                    IncompatibleError(
-                        "Detector driver v{} detected. "
-                        "Malcolm requires v{}".format(
-                            child.driverVersion.value, self.required_version
-                        )
-                    )
-                )
-
     # Allow CamelCase as fileDir parameter will be serialized
     # noinspection PyPep8Naming
     @add_call_types
@@ -397,7 +383,6 @@ class DetectorDriverPart(builtin.parts.ChildPart):
     ) -> None:
         context.unsubscribe_all()
         child = context.block_view(self.mri)
-        self.check_driver_version(child)
 
         # Calculate how long to wait before marking this scan as stalled
         self.frame_timeout = FRAME_TIMEOUT
