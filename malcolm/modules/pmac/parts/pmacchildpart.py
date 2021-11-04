@@ -171,6 +171,9 @@ class PmacChildPart(builtin.parts.ChildPart):
         # back to duration
         duration = 2 * float(micros) / 1e6
         if duration != generator.duration:
+            self.log.debug(
+                f"Calculated duration {duration} does not match {generator}"
+            )
             serialized = generator.to_dict()
             new_generator = CompoundGenerator.from_dict(serialized)
             new_generator.duration = duration

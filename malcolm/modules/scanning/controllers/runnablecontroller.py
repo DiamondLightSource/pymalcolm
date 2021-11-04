@@ -395,7 +395,7 @@ class RunnableController(builtin.controllers.ManagerController):
                         tweak.parameter
                     ].validate(tweak.value)
                     setattr(params, tweak.parameter, deserialized)
-                    self.log.debug("Tweaking {tweak.parameter} to {deserialized}")
+                    self.log.debug(f"Tweaking {tweak.parameter} to {deserialized}")
             else:
                 # Consistent set, just return the params
                 return params
