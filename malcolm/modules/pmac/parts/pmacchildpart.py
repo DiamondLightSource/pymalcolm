@@ -170,17 +170,9 @@ class PmacChildPart(builtin.parts.ChildPart):
         trigger = get_motion_trigger(part_info)
         if trigger == scanning.infos.MotionTrigger.EVERY_POINT:
             servo_freq = child.servoFrequency()
-            # convert half an exposure to multiple of servo ticks, rounding up
-            ticks = np.ceil(servo_freq * 0.5 * duration)
-            if not np.isclose(servo_freq, 3200):
-                # + 0.002 for some observed jitter in the servo frequency if I10
-                # isn't a whole number of 1/4 us move timer ticks
-                # (any frequency apart from 3.2 kHz)
-                ticks += 0.002
-            # convert to integer number of microseconds, rounding down
-            micros = np.floor(ticks / servo_freq * 1e6)
-            # back to duration
-            duration = 2 * float(micros) / 1e6
+            duration = self.get_aligned_duration_with_servo_frequency(
+                servo_freq, duration
+            )
 
         # Check if the duration was tweaked and return
         if duration != generator.duration:
@@ -194,6 +186,23 @@ class PmacChildPart(builtin.parts.ChildPart):
             return scanning.infos.ParameterTweakInfo("generator", new_generator)
         else:
             return None
+
+    @staticmethod
+    def get_aligned_duration_with_servo_frequency(
+        frequency: float, duration: float
+    ) -> float:
+        # convert half an exposure to multiple of servo ticks, rounding up
+        ticks = np.ceil(frequency * 0.5 * duration)
+        if not np.isclose(frequency, 3200):
+            # -0.002 for some observed jitter in the servo frequency if I10
+            # isn't a whole number of 1/4 us move timer ticks
+            # (any frequency apart from 3.2 kHz)
+            ticks -= 0.002
+        # convert to integer number of microseconds, rounding down
+        micros = np.floor(ticks / frequency * 1e6)
+        # back to duration
+        duration = 2 * float(micros) / 1e6
+        return duration
 
     def taking_part_in_scan(
         self,
