@@ -26,7 +26,13 @@ from ..infos import (
     NDArrayDatasetInfo,
     NDAttributeDatasetInfo,
 )
-from ..util import FRAME_TIMEOUT, APartRunsOnWindows, make_xml_filename
+from ..util import (
+    FRAME_TIMEOUT,
+    APartRunsOnWindows,
+    AVersionRequirement,
+    check_driver_version,
+    make_xml_filename,
+)
 
 PartInfo = Dict[str, List[Info]]
 
@@ -367,6 +373,7 @@ class HDFWriterPart(builtin.parts.ChildPart):
         mri: AMri,
         runs_on_windows: APartRunsOnWindows = False,
         write_all_nd_attributes: AWriteAllNDAttributes = True,
+        required_version: AVersionRequirement = None,
     ) -> None:
         super().__init__(name, mri)
         # Future for the start action
@@ -388,6 +395,16 @@ class HDFWriterPart(builtin.parts.ChildPart):
             writeable=True,
             tags=[Widget.CHECKBOX.tag(), config_tag()],
         ).create_attribute_model(write_all_nd_attributes)
+        self.required_version = required_version
+
+    @add_call_types
+    def on_validate(
+        self,
+        context: scanning.hooks.AContext,
+    ) -> None:
+        if self.required_version is not None:
+            child = context.block_view(self.mri)
+            check_driver_version(child.driverVersion.value, self.required_version)
 
     @add_call_types
     def on_reset(self, context: scanning.hooks.AContext) -> None:
@@ -406,6 +423,7 @@ class HDFWriterPart(builtin.parts.ChildPart):
     def setup(self, registrar: PartRegistrar) -> None:
         super().setup(registrar)
         # Hooks
+        registrar.hook(scanning.hooks.ValidateHook, self.on_validate)
         registrar.hook(scanning.hooks.ConfigureHook, self.on_configure)
         registrar.hook(
             (scanning.hooks.PostRunArmedHook, scanning.hooks.SeekHook), self.on_seek
