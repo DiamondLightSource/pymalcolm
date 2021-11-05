@@ -30,6 +30,8 @@ with Anno(frequency_accuracy_desc):
     AInitialAccuracy = float
 with Anno("The minimum exposure time this detector will accept"):
     AMinExposure = float
+with Anno("Frames per detector step"):
+    ADetectorFramesPerStep = int
 
 # Pull re-used annotypes into our namespace in case we are subclassed
 APartName = APartName
@@ -77,6 +79,8 @@ class ExposureDeadtimePart(Part):
         registrar.add_attribute_model("exposure", self.exposure)
         # Tell the controller to expose some extra configure parameters
         registrar.report(ConfigureHook.create_info(self.on_configure))
+        # Tell the controller to exposure some extra validate parameters
+        registrar.report(ConfigureHook.create_info(self.on_validate))
 
     @add_call_types
     def on_report_status(self) -> UInfos:
@@ -87,16 +91,24 @@ class ExposureDeadtimePart(Part):
         return info
 
     @add_call_types
-    def on_validate(self, generator: AGenerator, exposure: AExposure = 0.0) -> UInfos:
+    def on_validate(
+        self,
+        generator: AGenerator,
+        exposure: AExposure = 0.0,
+        frames_per_step: ADetectorFramesPerStep = 1,
+    ) -> UInfos:
         info = self.on_report_status()
         if generator.duration == 0.0:
             # We need to calculate a new duration
             if exposure > 0:
                 # Calculate the minimum acceptable duration
-                new_duration = info.calculate_minimum_duration(exposure)
+                new_duration = (
+                    info.calculate_minimum_duration(exposure) * frames_per_step
+                )
                 serialized = generator.to_dict()
                 new_generator = CompoundGenerator.from_dict(serialized)
                 new_generator.duration = new_duration
+                self.log.debug(f"{self.name}: tweaking duration to {new_duration}")
                 return ParameterTweakInfo("generator", new_generator)
             else:
                 # First calculate the minimum possible exposure time
@@ -107,6 +119,10 @@ class ExposureDeadtimePart(Part):
                 new_generator = CompoundGenerator.from_dict(serialized)
                 # Add a tiny fractional amount because of floats being floats
                 new_generator.duration = new_duration * (1 + 1e-12)
+                self.log.debug(
+                    f"{self.name}: tweaking exposure to {new_exposure}, duration to "
+                    f"{new_duration}"
+                )
                 # Return the tweaked parameters
                 return [
                     ParameterTweakInfo("generator", new_generator),

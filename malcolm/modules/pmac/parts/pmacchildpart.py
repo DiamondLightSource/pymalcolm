@@ -153,7 +153,7 @@ class PmacChildPart(builtin.parts.ChildPart):
         )
         # Find the duration
         duration = generator.duration
-        assert duration >= 0.0, f"{self.name}: negative durations are not supported"
+        assert duration >= 0.0, f"{self.name}: negative duration is not supported"
         if duration == 0.0:
             # We need to tweak the duration if we are going to take part
             if self.taking_part_in_scan(part_info, motion_axes):
@@ -181,7 +181,8 @@ class PmacChildPart(builtin.parts.ChildPart):
         # Check if the duration was tweaked and return
         if duration != generator.duration:
             self.log.debug(
-                f"Calculated duration {duration} does not match {generator}"
+                f"{self.name}: tweaking duration from {generator.duration} to "
+                f"{duration}"
             )
             serialized = generator.to_dict()
             new_generator = CompoundGenerator.from_dict(serialized)
