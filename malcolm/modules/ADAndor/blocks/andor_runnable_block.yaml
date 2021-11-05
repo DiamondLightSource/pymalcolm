@@ -10,6 +10,11 @@
     name: config_dir
     description: Where to store saved configs
 
+- builtin.parameters.float64:
+    name: min_acquire_period
+    description: Minimum acquire period for detector
+    default: 0.0  # Always pass validation
+
 - builtin.defines.docstring:
     value: |
       Device block corresponding to ADAndor + stat + pos + hdf writer.
@@ -31,6 +36,7 @@
 - ADAndor.parts.AndorDriverPart:
     name: DRV
     mri: $(mri_prefix):DRV
+    min_acquire_period: $(min_acquire_period)
 
 - ADCore.blocks.stats_plugin_block:
     mri: $(mri_prefix):STAT
