@@ -1,5 +1,5 @@
 from malcolm.core import PART_NAME_RE, Info
-from malcolm.modules import scanning
+from malcolm.modules.scanning.infos import DatasetType
 
 from .util import AttributeDatasetType
 
@@ -84,7 +84,7 @@ class NDAttributeDatasetInfo(Info):
         attr: NDAttribute name to get data from, e.g. "COUNTER1.Diff"
     """
 
-    def __init__(self, name: str, type: scanning.infos.DatasetType, attr: str) -> None:
+    def __init__(self, name: str, type: DatasetType, attr: str) -> None:
         self.name = name
         self.type = type
         self.attr = attr
@@ -107,15 +107,15 @@ class NDAttributeDatasetInfo(Info):
         if type is AttributeDatasetType.DETECTOR:
             # Something like I0
             name = "%s.data" % name
-            dtype = scanning.util.DatasetType.PRIMARY
+            dtype = DatasetType.PRIMARY
         elif type is AttributeDatasetType.MONITOR:
             # Something like Iref
             name = "%s.data" % name
-            dtype = scanning.util.DatasetType.MONITOR
+            dtype = DatasetType.MONITOR
         elif type is AttributeDatasetType.POSITION:
             # Something like x
             name = "%s.value" % name
-            dtype = scanning.util.DatasetType.POSITION_VALUE
+            dtype = DatasetType.POSITION_VALUE
         else:
             raise AttributeError(
                 "Bad dataset type %r, should be a %s" % (type, AttributeDatasetType)
