@@ -144,7 +144,7 @@ class TestPMACChildPart(ChildTestCase):
         # servoFrequency() return value
         self.child.handled_requests.post.return_value = 4919.300698316487
         ret = self.o.on_validate(self.context, generator, axesToMove, {})
-        expected_duration = 0.010166
+        expected_duration = 0.01057
         assert ret.value.duration == expected_duration
 
     def test_validate_tweaks_duration_for_continuous_scan(self):
@@ -156,7 +156,7 @@ class TestPMACChildPart(ChildTestCase):
         self.child.handled_requests.post.return_value = 4919.300698316487
         ret = self.o.on_validate(self.context, generator, axesToMove, {})
         # Duration is calculated based on maximum velocity of stages
-        expected_duration = 0.24963
+        expected_duration = 0.250036
         assert ret.value.duration == expected_duration
 
     def test_validate_tweaks_duration_for_continuous_scan_with_single_point(self):
@@ -167,8 +167,8 @@ class TestPMACChildPart(ChildTestCase):
         # servoFrequency() return value
         self.child.handled_requests.post.return_value = 4919.300698316487
         ret = self.o.on_validate(self.context, generator, axesToMove, {})
-        # Duration is calculated based on maximum velocity of stages
-        expected_duration = 0.001628
+        # Duration is calculated based on turnaround info
+        expected_duration = 0.002032
         assert ret.value.duration == expected_duration
 
     def test_validate_tweaks_duration_for_step_scan(self):
@@ -180,7 +180,7 @@ class TestPMACChildPart(ChildTestCase):
         self.child.handled_requests.post.return_value = 4919.300698316487
         ret = self.o.on_validate(self.context, generator, axesToMove, {})
         # Duration is calculated based on turnaround info
-        expected_duration = 0.001628
+        expected_duration = 0.002032
         assert ret.value.duration == expected_duration
 
     def test_validate_does_not_tweak_duration_if_not_taking_part(self):
