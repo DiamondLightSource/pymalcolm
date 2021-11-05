@@ -4,6 +4,7 @@ from xml.etree import cElementTree as ET
 
 from annotypes import Anno, Array, add_call_types
 from packaging.version import Version
+from scanpointgenerator import CompoundGenerator
 
 from malcolm.compat import et_to_string
 from malcolm.core import (
@@ -14,12 +15,14 @@ from malcolm.core import (
     Future,
     IncompatibleError,
     Info,
+    NumberMeta,
     PartRegistrar,
     TableMeta,
     config_tag,
 )
 from malcolm.modules import builtin, scanning
 from malcolm.modules.scanning.infos import ExposureDeadtimeInfo
+from malcolm.modules.scanning.parts import ADetectorFramesPerStep
 
 from ..infos import FilePathTranslatorInfo, NDArrayDatasetInfo, NDAttributeDatasetInfo
 from ..util import (
@@ -244,17 +247,49 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         registrar.add_attribute_model(
             "attributesToCapture", self.extra_attributes, self.set_extra_attributes
         )
+        # Tell the controller to pass "exposure" and "frames_per_step" to configure
+        info = scanning.infos.ConfigureParamsInfo(
+            metas=dict(
+                frames_per_step=NumberMeta.from_annotype(
+                    ADetectorFramesPerStep, writeable=False
+                ),
+            ),
+            required=[],
+            defaults=dict(frames_per_step=1),
+        )
+        registrar.report(info)
 
     @add_call_types
     def on_validate(
         self,
         generator: scanning.hooks.AGenerator,
-    ) -> None:
+        frames_per_step: ADetectorFramesPerStep = 1,
+    ) -> scanning.hooks.UParameterTweakInfos:
+        # Check if we have a minimum acquire period
         if self.min_acquire_period > 0.0:
-            assert generator.duration >= self.min_acquire_period, (
-                f"Duration {generator.duration} is less than minimum acquire period"
-                f" {self.min_acquire_period}s"
-            )
+            duration = generator.duration
+            # Check if we need to guess the generator duration
+            if duration == 0.0:
+                # Use the minimum acquire period as an estimate of readout time. We
+                # also need to multiple by frames_per_step as the DetectorChildPart
+                # divides the generator down to the duration for a single detector
+                # frame.
+                duration = self.min_acquire_period * frames_per_step
+                serialized = generator.to_dict()
+                new_generator = CompoundGenerator.from_dict(serialized)
+                new_generator.duration = duration
+                self.log.debug(
+                    f"{self.name}: tweaking generator duration to {duration}"
+                )
+                return scanning.hooks.ParameterTweakInfo("generator", new_generator)
+            # Otherwise check the provided duration is long enough
+            else:
+                assert generator.duration >= self.min_acquire_period, (
+                    f"Duration {generator.duration} per frame is less than minimum "
+                    f"acquire period {self.min_acquire_period}s"
+                )
+                return None
+        return None
 
     @add_call_types
     def on_reset(self, context: scanning.hooks.AContext) -> None:

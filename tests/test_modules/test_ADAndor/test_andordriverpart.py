@@ -1,6 +1,7 @@
 import pytest
 from mock import Mock, call, patch
 from scanpointgenerator import CompoundGenerator, LineGenerator, StaticPointGenerator
+import math
 
 from malcolm.core import Context, Process
 from malcolm.modules.ADAndor.blocks import andor_driver_block
@@ -17,7 +18,11 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         )
         self.mock_when_value_matches(self.child)
         # readoutTime used to be 0.002, not any more...
-        self.andor_driver_part = AndorDriverPart(name="m", mri="mri")
+        self.andor_driver_part = AndorDriverPart(
+            name="m",
+            mri="mri",
+            min_acquire_period=0.2,
+        )
         self.context.set_notify_dispatch_request(
             self.andor_driver_part.notify_dispatch_request
         )
@@ -340,89 +345,61 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         generator = CompoundGenerator([static], [], [], duration)
         return generator
 
-    def test_on_validate_raises_AssertionError_for_negative_duration(self):
+    def test_validate_raises_AssertionError_for_negative_duration(self):
         generator = self._get_static_generator(-1.0)
 
-        self.assertRaises(AssertionError, self.andor_driver_part.on_validate, generator)
-
-    def test_on_validate_positive_duration_and_zero_exposure_does_not_tweak(self):
-        generator = self._get_static_generator(1.0)
-
-        tweaks = self.andor_driver_part.on_validate(generator)
-
-        self.assertEqual(tweaks, None)
-
-    def test_on_validate_positive_duration_and_exposure_does_not_tweak(self):
-        generator = self._get_static_generator(1.0)
-        exposure = 0.5
-
-        tweaks = self.andor_driver_part.on_validate(generator, exposure=exposure)
-
-        self.assertEqual(tweaks, None)
-
-    def test_on_validate_positive_duration_exposure_fps_does_not_tweak(
-        self,
-    ):
-        generator = self._get_static_generator(1.0)
-        exposure = 0.5
-        frames_per_step = 2
-
-        tweaks = self.andor_driver_part.on_validate(
-            generator, exposure=exposure, frames_per_step=frames_per_step
+        self.assertRaises(
+            AssertionError, self.andor_driver_part.on_validate, self.context, generator
         )
 
-        self.assertEqual(tweaks, None)
+    @patch("malcolm.modules.ADCore.parts.DetectorDriverPart.on_validate")
+    def test_validate_calls_parent_method(self, mock_super_validate):
+        generator = self._get_static_generator(5.0)
+        generator_zero_duration = self._get_static_generator(0.0)
 
-    def test_on_validate_zero_duration_and_exposure_tweaks_duration(
-        self,
-    ):
-        generator = self._get_static_generator(0.0)
-        exposure = 0.0
-        expected_duration = 0.025
+        # For positive generator duration
+        self.andor_driver_part.on_validate(self.context, generator)
+        self.andor_driver_part.on_validate(self.context, generator, exposure=0.5)
+        self.andor_driver_part.on_validate(self.context, generator, frames_per_step=2)
 
-        tweaks = self.andor_driver_part.on_validate(generator, exposure=exposure)
-
-        self.assertEqual(tweaks.parameter, "generator")
-        self.assertEqual(tweaks.value.duration, expected_duration)
-
-    def test_on_validate_zero_duration_exposure_with_fps_tweaks_duration(
-        self,
-    ):
-        generator = self._get_static_generator(0.0)
-        exposure = 0.0
-        frames_per_step = 2
-        expected_duration = 0.05
-
-        tweaks = self.andor_driver_part.on_validate(
-            generator, exposure=exposure, frames_per_step=frames_per_step
+        # For zero exposure
+        self.andor_driver_part.on_validate(self.context, generator, exposure=0.0)
+        self.andor_driver_part.on_validate(
+            self.context, generator_zero_duration, exposure=0.0
+        )
+        self.andor_driver_part.on_validate(
+            self.context, generator_zero_duration, frames_per_step=2
         )
 
-        self.assertEqual(tweaks.parameter, "generator")
-        self.assertEqual(tweaks.value.duration, expected_duration)
+        # Check the mock method was called with the correct args
+        expected_calls = [
+            call(generator, frames_per_step=1),
+            call(generator, frames_per_step=1),
+            call(generator, frames_per_step=2),
+            call(generator, frames_per_step=1),
+            call(generator_zero_duration, frames_per_step=1),
+            call(generator_zero_duration, frames_per_step=2),
+        ]
+        mock_super_validate.assert_has_calls(expected_calls)
 
-    def test_on_validate_zero_duration_positive_exposure_tweaks_duration(
-        self,
-    ):
+    def test_validate_tweaks_generator_for_zero_duration_and_positive_exposure(self):
+        # Input parameters
         generator = self._get_static_generator(0.0)
-        exposure = 0.5
-        expected_duration = 0.525
+        exposure = 0.25
 
-        tweaks = self.andor_driver_part.on_validate(generator, exposure=exposure)
+        # Set the readout time
+        self.set_attributes(self.child, andorReadoutTime=0.1)
 
-        self.assertEqual(tweaks.parameter, "generator")
-        self.assertEqual(tweaks.value.duration, expected_duration)
-
-    def test_on_validate_zero_duration_positive_exposure_with_fps_tweaks_duration(
-        self,
-    ):
-        generator = self._get_static_generator(0.0)
-        exposure = 0.75
-        frames_per_step = 2
-        expected_duration = 1.55
-
+        # Single frame per step
         tweaks = self.andor_driver_part.on_validate(
-            generator, exposure=exposure, frames_per_step=frames_per_step
+            self.context, generator, exposure=exposure
         )
+        assert tweaks.parameter == "generator"
+        assert tweaks.value["duration"] == 0.35
 
-        self.assertEqual(tweaks.parameter, "generator")
-        self.assertEqual(tweaks.value.duration, expected_duration)
+        # Multiple frames per step
+        tweaks = self.andor_driver_part.on_validate(
+            self.context, generator, exposure=exposure, frames_per_step=3
+        )
+        assert tweaks.parameter == "generator"
+        assert math.isclose(tweaks.value["duration"], 1.05)

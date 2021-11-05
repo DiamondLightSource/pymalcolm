@@ -5,7 +5,7 @@ from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import NumberMeta, PartRegistrar
 from malcolm.modules import ADCore, builtin, scanning
-from malcolm.modules.scanning.infos import ParameterTweakInfo
+from malcolm.modules.ADCore.parts.detectordriverpart import AMinAcquirePeriod
 from malcolm.modules.scanning.util import AFramesPerStep, exposure_attribute
 
 # Pull re-used annotypes into our namespace in case we are subclassed
@@ -17,13 +17,16 @@ with Anno("Directory to write data to"):
 
 
 class AndorDriverPart(ADCore.parts.DetectorDriverPart):
-    def __init__(self, name: APartName, mri: AMri) -> None:
-        super().__init__(name, mri, soft_trigger_modes=["Internal", "Software"])
+    def __init__(
+        self, name: APartName, mri: AMri, min_acquire_period: AMinAcquirePeriod = 0.0
+    ) -> None:
+        super().__init__(
+            name,
+            mri,
+            soft_trigger_modes=["Internal", "Software"],
+            min_acquire_period=min_acquire_period,
+        )
         self.exposure = exposure_attribute(min_exposure=0.0)
-        # TODO: Implement rate limiting based on the following PR:
-        # https://github.com/dls-controls/pymalcolm/pull/351
-        # and also investigate using readout time PV
-        self.minimum_acquire_period: float = 0.025
 
     def setup(self, registrar: PartRegistrar) -> None:
         super().setup(registrar)
@@ -49,30 +52,32 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
     @add_call_types
     def on_validate(
         self,
+        context: scanning.hooks.AContext,
         generator: scanning.hooks.AGenerator,
         exposure: scanning.hooks.AExposure = 0.0,
         frames_per_step: AFramesPerStep = 1,
     ) -> scanning.hooks.UParameterTweakInfos:
         duration = generator.duration
-        # We need to tweak the generator duration here because Andor does not use an
-        # ExposureDeadtimePart with a fixed readout time
-        if duration == 0.0:
-            # Calculate duration based on whether we have been given an exposure time
-            if exposure == 0.0:
-                # Guess using a hard-coded readout time
-                duration = frames_per_step * self.minimum_acquire_period
-            else:
-                # Use the minimum acquire period as an estimate of readout time
-                duration = frames_per_step * (exposure+self.minimum_acquire_period)
+        assert (
+            duration >= 0
+        ), f"Generator duration of {duration} must be >= 0 to signify fixed exposure"
+        # As the Andor runnable block does not have an ExposureDeadTimePart, we handle
+        # the case where we have been given an exposure time here
+        if duration == 0.0 and exposure > 0:
+            # Grab the current value of the readout time and hope that the parameters
+            # will not change before we actually run configure...
+            child = context.block_view(self.mri)
+            driver_readout_time = child.andorReadoutTime.value
+            # Add the exposure time and multiply up to get the total generator duration
+            duration = frames_per_step * (exposure + driver_readout_time)
             serialized = generator.to_dict()
             new_generator = CompoundGenerator.from_dict(serialized)
             new_generator.duration = duration
-            return ParameterTweakInfo("generator", new_generator)
+            self.log.debug(f"{self.name}: tweaking generator duration to {duration}")
+            return scanning.hooks.ParameterTweakInfo("generator", new_generator)
+        # Otherwise just let the DetectorDriverPart validate for us
         else:
-            assert (
-                duration > 0
-            ), f"Generator duration of {duration} must be > 0 to signify fixed exposure"
-            return None
+            return super().on_validate(generator, frames_per_step=frames_per_step)
 
     def setup_detector(
         self,

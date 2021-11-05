@@ -63,6 +63,7 @@ class TestDetectorBlock(unittest.TestCase):
             "axesToMove",
             "breakpoints",
             "exposure",
+            "frames_per_step",
             "formatName",
             "fileTemplate",
         ]
