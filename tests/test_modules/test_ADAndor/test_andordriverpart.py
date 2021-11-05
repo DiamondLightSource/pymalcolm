@@ -1,7 +1,8 @@
+import math
+
 import pytest
 from mock import Mock, call, patch
 from scanpointgenerator import CompoundGenerator, LineGenerator, StaticPointGenerator
-import math
 
 from malcolm.core import Context, Process
 from malcolm.modules.ADAndor.blocks import andor_driver_block
