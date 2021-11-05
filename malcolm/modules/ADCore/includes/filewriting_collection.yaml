@@ -30,3 +30,4 @@
     name: HDF5
     mri: $(mri_prefix):HDF5
     runs_on_windows: $(runs_on_windows)
+    required_version: 3.12
