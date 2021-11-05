@@ -163,6 +163,24 @@ class TestHDFWriterPart(ChildTestCase):
             "fileTemplate",
         ]
 
+    @patch("malcolm.modules.ADCore.parts.hdfwriterpart.check_driver_version")
+    def test_validate(self, check_mock):
+        self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
+
+        # Version check should not be called with require_version None
+        self.o.require_version = None
+        self.set_attributes(self.child, driverVersion="1.1")
+
+        self.o.on_validate(self.context)
+
+        check_mock.assert_not_called()
+
+        # Test version check called if required_version not None
+        self.o.required_version = "1.0"
+        self.o.on_validate(self.context)
+
+        check_mock.assert_called_once_with("1.1", "1.0")
+
     def configure_and_check_output(self, on_windows=False):
         energy = LineGenerator("energy", "kEv", 13.0, 15.2, 2)
         spiral = SpiralGenerator(["x", "y"], ["mm", "mm"], [0.0, 0.0], 5.0, scale=2.0)
