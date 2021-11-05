@@ -1,6 +1,7 @@
 import shutil
 from datetime import datetime
 from os import environ
+from typing import List
 
 import numpy as np
 import pytest
@@ -144,7 +145,7 @@ class TestPMACChildPart(ChildTestCase):
         # servoFrequency() return value
         self.child.handled_requests.post.return_value = 4919.300698316487
         ret = self.o.on_validate(self.context, generator, axesToMove, {})
-        expected_duration = 0.01057
+        expected_duration = 0.010568
         assert ret.value.duration == expected_duration
 
     def test_validate_tweaks_duration_for_continuous_scan(self):
@@ -156,7 +157,7 @@ class TestPMACChildPart(ChildTestCase):
         self.child.handled_requests.post.return_value = 4919.300698316487
         ret = self.o.on_validate(self.context, generator, axesToMove, {})
         # Duration is calculated based on maximum velocity of stages
-        expected_duration = 0.250036
+        expected_duration = 0.250034
         assert ret.value.duration == expected_duration
 
     def test_validate_tweaks_duration_for_continuous_scan_with_single_point(self):
@@ -168,7 +169,7 @@ class TestPMACChildPart(ChildTestCase):
         self.child.handled_requests.post.return_value = 4919.300698316487
         ret = self.o.on_validate(self.context, generator, axesToMove, {})
         # Duration is calculated based on turnaround info
-        expected_duration = 0.002032
+        expected_duration = 0.00203
         assert ret.value.duration == expected_duration
 
     def test_validate_tweaks_duration_for_step_scan(self):
@@ -180,7 +181,7 @@ class TestPMACChildPart(ChildTestCase):
         self.child.handled_requests.post.return_value = 4919.300698316487
         ret = self.o.on_validate(self.context, generator, axesToMove, {})
         # Duration is calculated based on turnaround info
-        expected_duration = 0.002032
+        expected_duration = 0.00203
         assert ret.value.duration == expected_duration
 
     def test_validate_does_not_tweak_duration_if_not_taking_part(self):
@@ -1280,3 +1281,58 @@ class TestPMACChildPart(ChildTestCase):
         assert args["velocityMode"] == pytest.approx(
             [1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 3]
         )
+
+    def test_get_aligned_duration_with_servo_frequency(self):
+        # Use a class to store the failures
+        class FailedDurationTweak:
+            def __init__(
+                self, original: float, first: float, second: float, reason: str
+            ):
+                self.orginal = original
+                self.first = first
+                self.second = second
+                self.reason = reason
+
+            def __repr__(self) -> str:
+                return (
+                    f"DurationTweak(start: {self.orginal}, "
+                    f"1st: {self.first}, 2nd: {self.second}, "
+                    f"reason: {self.reason})"
+                )
+
+        # Test inputs
+        input_frequencies = [4909, 5000.20445229, 3200]
+        input_durations = [0.1, 0.25999, 1.0]
+
+        failed_list: List[FailedDurationTweak] = []
+        for freq in input_frequencies:
+            for duration in input_durations:
+                # First iteration may tweak
+                first_duration = self.o.get_aligned_duration_with_servo_frequency(
+                    freq, duration
+                )
+                # Second iteration should return the same duration
+                second_duration = self.o.get_aligned_duration_with_servo_frequency(
+                    freq, first_duration
+                )
+                # Check the duration is not modified on the second call
+                if first_duration != second_duration:
+                    failed_list.append(
+                        FailedDurationTweak(
+                            duration, first_duration, second_duration, "2nd tweak"
+                        )
+                    )
+                # Check that the duration doesn't shrink
+                elif first_duration < duration:
+                    failed_list.append(
+                        FailedDurationTweak(
+                            duration,
+                            first_duration,
+                            second_duration,
+                            "Duration decreased",
+                        )
+                    )
+        # Print out any failures
+        assert (
+            len(failed_list) == 0
+        ), f"Failed with tweaking a second time on following inputs: {failed_list}"
