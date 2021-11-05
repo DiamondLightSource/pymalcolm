@@ -73,7 +73,10 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
             serialized = generator.to_dict()
             new_generator = CompoundGenerator.from_dict(serialized)
             new_generator.duration = duration
-            self.log.debug(f"{self.name}: tweaking generator duration to {duration}")
+            self.log.debug(
+                f"{self.name}: tweaking generator duration from "
+                f"{generator.duration} to {duration}"
+            )
             return scanning.hooks.ParameterTweakInfo("generator", new_generator)
         # Otherwise just let the DetectorDriverPart validate for us
         else:

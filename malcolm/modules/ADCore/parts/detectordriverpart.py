@@ -279,7 +279,8 @@ class DetectorDriverPart(builtin.parts.ChildPart):
                 new_generator = CompoundGenerator.from_dict(serialized)
                 new_generator.duration = duration
                 self.log.debug(
-                    f"{self.name}: tweaking generator duration to {duration}"
+                    f"{self.name}: tweaking generator duration from "
+                    f"{generator.duration} to {duration}"
                 )
                 return scanning.hooks.ParameterTweakInfo("generator", new_generator)
             # Otherwise check the provided duration is long enough
