@@ -34,3 +34,8 @@
     name: attributesFile
     description: Filename for NDAttributes
     pv: $(prefix):NDAttributesFile
+
+- ca.parts.CAStringPart:
+    name: driverVersion
+    description: Version of EPICS AD Driver
+    rbv: $(prefix):DriverVersion_RBV
