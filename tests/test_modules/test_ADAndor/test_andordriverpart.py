@@ -423,3 +423,16 @@ class TestAndorDetectorDriverPart(ChildTestCase):
             exposure=exposure,
             frames_per_step=2,
         )
+
+    def test_validate_succeeds_without_tweaking_for_positive_exposure(self):
+        generator = self._get_static_generator(1.0)
+        exposure = 0.5
+
+        # Set the readout time
+        self.set_attributes(self.child, andorReadoutTime=0.1)
+
+        tweaks = self.andor_driver_part.on_validate(
+            self.context, generator, exposure=exposure
+        )
+
+        assert tweaks is None
