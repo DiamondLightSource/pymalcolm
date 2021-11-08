@@ -98,43 +98,42 @@ class ExposureDeadtimePart(Part):
         frames_per_step: ADetectorFramesPerStep = 1,
     ) -> UInfos:
         info = self.on_report_status()
+        # Check if we need to calculate a generator duration
         if generator.duration == 0.0:
-            # We need to calculate a new duration
-            if exposure > 0:
-                # Calculate the minimum acceptable duration
-                new_duration = (
-                    info.calculate_minimum_duration(exposure) * frames_per_step
-                )
-                serialized = generator.to_dict()
-                new_generator = CompoundGenerator.from_dict(serialized)
-                new_generator.duration = new_duration
-                self.log.debug(f"{self.name}: tweaking duration to {new_duration}")
-                return ParameterTweakInfo("generator", new_generator)
-            else:
-                # First calculate the minimum possible exposure time
-                new_exposure = info.calculate_exposure(generator.duration, exposure)
-                # Now calculate minimum generator duration
-                new_duration = info.calculate_minimum_duration(new_exposure)
-                serialized = generator.to_dict()
-                new_generator = CompoundGenerator.from_dict(serialized)
-                # Add a tiny fractional amount because of floats being floats
-                new_generator.duration = new_duration * (1 + 1e-12)
-                self.log.debug(
-                    f"{self.name}: tweaking exposure to {new_exposure}, duration to "
-                    f"{new_duration}"
-                )
-                # Return the tweaked parameters
-                return [
-                    ParameterTweakInfo("generator", new_generator),
-                    ParameterTweakInfo("exposure", new_exposure),
-                ]
+            if exposure == 0.0:
+                # Get minimum exposure time
+                exposure = info.calculate_exposure(generator.duration, exposure)
+            # Calculate generator duration
+            new_duration = info.calculate_minimum_duration(exposure) * frames_per_step
+            # Add a tiny fractional amount so we don't run into floating point
+            # comparison issues
+            new_duration *= 1 + 1e-12
+            serialized = generator.to_dict()
+            new_generator = CompoundGenerator.from_dict(serialized)
+            new_generator.duration = new_duration
+            self.log.debug(f"{self.name}: tweaking duration to {new_duration}")
+            # Only tweak the duration for now
+            return ParameterTweakInfo("generator", new_generator)
         else:
-            # Check if we need to tweak the exposure
-            new_exposure = info.calculate_exposure(generator.duration, exposure)
-            if new_exposure != exposure:
+            # Check if we need to tweak the exposure time
+            if exposure == 0.0:
+                new_exposure = info.calculate_exposure(generator.duration, exposure)
+                self.log.debug(f"{self.name}: tweaking exposure to {new_exposure}")
                 return ParameterTweakInfo("exposure", new_exposure)
+            # Otherwise check the provided parameters are compatible
             else:
-                return None
+                # Check provided exposure against minimum exposure
+                min_exposure = info.min_exposure
+                assert exposure >= info.min_exposure, (
+                    f"{self.name} given exposure {exposure} below min {min_exposure}"
+                )
+                # Check provided exposure against maximum possible exposure
+                max_exposure = info.calculate_maximum_exposure(generator.duration)
+                assert exposure <= max_exposure, (
+                    f"{self.name} given exposure {exposure} above max {max_exposure} "
+                    f"based on a duration per frame of {generator.duration}"
+                )
+            return None
 
     @add_call_types
     def on_configure(self, exposure: AExposure = 0.0) -> None:
