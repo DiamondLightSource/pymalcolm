@@ -3,6 +3,7 @@ import unittest
 from typing import Optional
 
 import cothread
+import numpy as np
 import pytest
 from annotypes import Anno, add_call_types
 from scanpointgenerator import (
@@ -47,8 +48,8 @@ AMri = builtin.parts.AMri
 AInitialVisibility = builtin.parts.AInitialVisibility
 AStateful = builtin.parts.AStateful
 
-with Anno("Minimum duration for tweaking duration in validate"):
-    AMinDuration = float
+with Anno("Value to tweak duration to in Validate"):
+    AValidateDuration = float
 
 
 class MisbehavingPauseException(Exception):
@@ -62,12 +63,12 @@ class MisbehavingPart(MotionChildPart):
         mri: AMri,
         initial_visibility: AInitialVisibility = False,
         stateful: AStateful = True,
-        min_duration: AMinDuration = 0.1,
+        validate_duration: AValidateDuration = 0.5,
     ) -> None:
         super().__init__(
             name, mri, initial_visibility=initial_visibility, stateful=stateful
         )
-        self.min_duration = min_duration
+        self.validate_duration = validate_duration
 
     def setup(self, registrar):
         super(MisbehavingPart, self).setup(registrar)
@@ -76,10 +77,11 @@ class MisbehavingPart(MotionChildPart):
 
     @add_call_types
     def validate(self, generator: AGenerator) -> UInfos:
-        if generator.duration < self.min_duration:
+        # Always tweak to the same value
+        if generator.duration != self.validate_duration:
             serialized = generator.to_dict()
             new_generator = CompoundGenerator.from_dict(serialized)
-            new_generator.duration = self.min_duration
+            new_generator.duration = self.validate_duration
             return ParameterTweakInfo("generator", new_generator)
         else:
             return None
@@ -1430,7 +1432,7 @@ class TestRunnableControllerValidation(unittest.TestCase):
         )
 
         # Check output
-        assert actual["generator"].duration == expected_duration
+        assert np.isclose(actual["generator"].duration, expected_duration)
         actual["generator"].duration = 0.0
         assert actual["generator"].to_dict() == compound_generator.to_dict()
         assert actual["axesToMove"] == ["x"]
@@ -1456,41 +1458,6 @@ class TestRunnableControllerValidation(unittest.TestCase):
             axesToMove=["x"],
             fileDir="/tmp",
             detectors=expected_detectors,
-        )
-
-        # Check output
-        assert actual["generator"].duration == duration
-        actual["generator"].duration = 0.0
-        assert actual["generator"].to_dict() == compound_generator.to_dict()
-        assert actual["axesToMove"] == ["x"]
-        assert actual["detectors"].to_dict() == expected_detectors.to_dict()
-
-    def test_validate_single_detector_shortens_exposure_with_exposure_and_duration(
-        self,
-    ):
-        # Set up a single detector
-        self._add_detector_block_and_part(
-            self.detector_one_mri, self.detector_one_part_name
-        )
-        self._start_process()
-        self.b_detectors[0].readoutTime.put_value(0.1)
-
-        # Config
-        duration = 0.4
-        det_one_exposure = 0.4
-        compound_generator = self._get_compound_generator(duration)
-        detectors = self._get_detector_table(det_one_exposure)
-
-        # Expected outputs
-        expected_det_one_exposure = 0.29998
-        expected_detectors = self._get_detector_table(expected_det_one_exposure)
-
-        # Validate
-        actual = self.b.validate(
-            generator=compound_generator,
-            axesToMove=["x"],
-            fileDir="/tmp",
-            detectors=detectors,
         )
 
         # Check output
@@ -1676,7 +1643,7 @@ class TestRunnableControllerValidation(unittest.TestCase):
         actual["generator"].duration = 0.0
         assert actual["generator"].to_dict() == compound_generator.to_dict()
         assert actual["axesToMove"] == ["x"]
-        assert actual["detectors"].to_dict() == expected_detectors.to_dict()
+        assert np.allclose(actual["detectors"].to_dict()["exposure"], [0.5, 0.4])
 
         # Validate with the detectors swapped around
         det_one_exposure = 0.0
@@ -1752,46 +1719,6 @@ class TestRunnableControllerValidation(unittest.TestCase):
         assert actual["axesToMove"] == ["x"]
         assert actual["detectors"].to_dict() == expected_detectors.to_dict()
 
-    def test_validate_two_detectors_shrinks_exposures_with_duration_and_exposures(self):
-        # Set up a single detector
-        self._add_detector_block_and_part(
-            self.detector_one_mri, self.detector_one_part_name
-        )
-        self._add_detector_block_and_part(
-            self.detector_two_mri, self.detector_two_part_name
-        )
-        self._start_process()
-        self.b_detectors[0].readoutTime.put_value(0.1)
-        self.b_detectors[1].readoutTime.put_value(0.2)
-
-        # Config
-        duration = 0.3
-        det_one_exposure = 0.3
-        det_two_exposure = 0.5
-        compound_generator = self._get_compound_generator(duration)
-        detectors = self._get_detector_table(det_one_exposure, det_two_exposure)
-
-        # Expected outputs
-        expected_det_one_exposure = pytest.approx(0.199985)
-        expected_det_two_exposure = pytest.approx(0.099985)
-        expected_detectors = self._get_detector_table(
-            expected_det_one_exposure, expected_det_two_exposure
-        )
-
-        # Validate
-        actual = self.b.validate(
-            generator=compound_generator,
-            axesToMove=["x"],
-            fileDir="/tmp",
-            detectors=detectors,
-        )
-
-        # Check output
-        assert actual["generator"].duration == duration
-        assert actual["generator"].to_dict() == compound_generator.to_dict()
-        assert actual["axesToMove"] == ["x"]
-        assert actual["detectors"].to_dict() == expected_detectors.to_dict()
-
     def test_validate_two_detectors_calculates_min_duration_for_no_duration_or_exposure(
         self,
     ):
@@ -1848,14 +1775,12 @@ class TestRunnableControllerValidation(unittest.TestCase):
         self._start_process()
 
         # Config
-        compound_generator = self._get_compound_generator(0.001)
+        compound_generator = self._get_compound_generator(0.1)
         self.b_detectors[0].readoutTime.put_value(0.1)
         self.b_detectors[0].frequencyAccuracy.put_value(50)
-        motion_part_min_duration = 0.5
-        self.motion_part.min_duration = motion_part_min_duration
 
         # Expected outputs
-        expected_duration = motion_part_min_duration
+        expected_duration = 0.5
         expected_det_one_exposure = 0.399975
         expected_det_two_exposure = 0.498975
         expected_table = self._get_detector_table(
@@ -1868,10 +1793,8 @@ class TestRunnableControllerValidation(unittest.TestCase):
         )
 
         # Check output
-
-        # Duration should be increased by the motion part to 0.5
         assert actual["generator"].duration == expected_duration
-        actual["generator"].duration = 0.001
-        assert actual["generator"].to_dict() == compound_generator.to_dict()
         assert actual["axesToMove"] == ["x"]
         assert actual["detectors"].to_dict() == expected_table.to_dict()
+        actual["generator"].duration = 0.1
+        assert actual["generator"].to_dict() == compound_generator.to_dict()

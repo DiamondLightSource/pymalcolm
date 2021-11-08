@@ -164,11 +164,7 @@ class ExposureDeadtimeInfo(Info):
         # If duration and exposure time are zero, return the minimum exposure time
         if exposure == 0.0 and duration == 0.0:
             return self.min_exposure
-        max_exposure = (
-            duration
-            - self.readout_time
-            - (self.frequency_accuracy * duration / 1000000.0)
-        )
+        max_exposure = self.calculate_maximum_exposure(duration)
         # If exposure time is 0, then use the max_exposure for this duration
         if exposure <= 0.0 or exposure > max_exposure:
             exposure = max_exposure
@@ -181,3 +177,14 @@ class ExposureDeadtimeInfo(Info):
         denominator = 1 - (self.frequency_accuracy / 1000000.0)
         min_duration = (exposure + self.readout_time) / denominator
         return min_duration
+
+    def calculate_maximum_exposure(self, duration: float) -> float:
+        """Calculate the maximum possible exposure based on a duration"""
+        exposure = (
+            duration
+            - self.readout_time
+            - (self.frequency_accuracy * duration / 1000000.0)
+        )
+        if exposure < self.min_exposure:
+            exposure = self.min_exposure
+        return exposure

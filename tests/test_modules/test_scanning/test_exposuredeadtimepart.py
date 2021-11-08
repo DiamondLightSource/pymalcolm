@@ -33,23 +33,12 @@ class TestExposureDeadtimePart(unittest.TestCase):
         ]
         assert self.o.exposure.value == 0.0
 
-    def test_validate_sets_exposure_to_minimum_value_when_below(self):
-        tweak = self.o.on_validate(
-            generator=make_generator(duration=0.1), exposure=0.001
-        )
-        assert tweak.parameter == "exposure"
-        assert tweak.value == 0.01
-
-    def test_validate_returns_min_exposure_and_duration_when_neither_given(
+    def test_validate_returns_min_duration_when_no_exposure_or_duration_given(
         self,
     ):
-        tweaks = self.o.on_validate(
-            generator=make_generator(duration=0.0), exposure=0.0
-        )
-        assert tweaks[0].parameter == "generator"
-        assert tweaks[0].value.duration == pytest.approx(0.0100005)
-        assert tweaks[1].parameter == "exposure"
-        assert tweaks[1].value == 0.01
+        tweak = self.o.on_validate(generator=make_generator(duration=0.0), exposure=0.0)
+        assert tweak.parameter == "generator"
+        assert tweak.value.duration == pytest.approx(0.0100005)
 
     def test_validate_returns_min_duration_when_given_exposure(
         self,
@@ -62,6 +51,19 @@ class TestExposureDeadtimePart(unittest.TestCase):
         tweak = self.o.on_validate(generator=make_generator(duration=0.1))
         assert tweak.parameter == "exposure"
         assert tweak.value == pytest.approx(0.099995)
+
+    def test_validate_raises_AssertionError_for_invalid_exposures(self):
+        # Exposures below the minimum allowed and above the generator duration
+        below_min_exposure = 0.005
+        above_max_exposure = 1.01
+        generator = make_generator(duration=1.0)
+
+        self.assertRaises(
+            AssertionError, self.o.on_validate, generator, exposure=below_min_exposure
+        )
+        self.assertRaises(
+            AssertionError, self.o.on_validate, generator, exposure=above_max_exposure
+        )
 
     def test_configure(self):
         self.o.on_configure(exposure=0.099995)
