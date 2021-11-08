@@ -165,6 +165,10 @@ class BeamSelectorPart(PmacChildPart):
         # See if we need to tweak the generator
         if generator.duration != cycle_duration:
             # Return the generator with our cycle duration
+            self.log.debug(
+                f"{self.name}: tweaking generator duration from {generator.duration} "
+                f"to {cycle_duration}"
+            )
             serialized = generator.to_dict()
             new_generator = CompoundGenerator.from_dict(serialized)
             new_generator.duration = cycle_duration
