@@ -705,6 +705,10 @@ class TestDoubleBuffer(ChildTestCase):
         extra.add_seq_entry(count=2, half_duration=min_ticks // 8 + 1000)
         self.db.configure(self.rows_generator([rows1, rows1, rows2, extra]))
 
+        # Check to ensure repeats is set correctly
+        for table in self.db._table_map.values():
+            assert table.repeats.value == 1
+
         self.seq_parts[1].table_set.assert_called_once()
         table1 = self.seq_parts[1].table_set.call_args[0][0]
         expected1 = SequencerRows()
