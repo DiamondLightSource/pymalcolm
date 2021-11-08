@@ -234,6 +234,9 @@ class DoubleBuffer:
         except StopIteration:
             self._finished = True
         else:
+            # More than 1 sequencer table is required so repeats must be 1.
+            # The template sets repeats to 1 however older designs may not have
+            # been updated.
             for table in self._table_map.values():
                 table.repeats.put_value(1)
             self._finished = False
