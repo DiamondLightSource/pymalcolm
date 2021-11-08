@@ -1,5 +1,6 @@
 from unittest import TestCase
 
+import numpy as np
 from scanpointgenerator import CompoundGenerator, LineGenerator
 
 from malcolm.modules.pmac.util import AlternatingDelayAfterMutator
@@ -83,3 +84,16 @@ class TestAlternatingDelayAfterMutator(TestCase):
         self.assertRaises(
             AssertionError, self.alternating_mutator.mutate, points, index
         )
+
+    def test_mutator_accepts_NumPy_indices(self):
+        # Single point
+        index = np.int64(5)
+        point = self.base_generator.get_point(0)
+
+        self.alternating_mutator.mutate(point, index)
+
+        # Multiple points
+        indices = np.array([2, 4, 6, 8], dtype=np.int64)
+        points = self.base_generator.get_points(0, 3)
+
+        self.alternating_mutator.mutate(points, indices)
