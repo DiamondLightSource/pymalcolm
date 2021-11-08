@@ -358,13 +358,8 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         generator = self._get_static_generator(5.0)
         generator_zero_duration = self._get_static_generator(0.0)
 
-        # For positive generator duration
         self.andor_driver_part.on_validate(self.context, generator)
-        self.andor_driver_part.on_validate(self.context, generator, exposure=0.5)
         self.andor_driver_part.on_validate(self.context, generator, frames_per_step=2)
-
-        # For zero exposure
-        self.andor_driver_part.on_validate(self.context, generator, exposure=0.0)
         self.andor_driver_part.on_validate(
             self.context, generator_zero_duration, exposure=0.0
         )
@@ -375,9 +370,7 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         # Check the mock method was called with the correct args
         expected_calls = [
             call(generator, frames_per_step=1),
-            call(generator, frames_per_step=1),
             call(generator, frames_per_step=2),
-            call(generator, frames_per_step=1),
             call(generator_zero_duration, frames_per_step=1),
             call(generator_zero_duration, frames_per_step=2),
         ]
@@ -404,3 +397,29 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         )
         assert tweaks.parameter == "generator"
         assert math.isclose(tweaks.value["duration"], 1.05)
+
+    def test_validate_raises_AssertionError_for_too_small_duration(self):
+        generator = self._get_static_generator(0.2)
+
+        # Set the readout time
+        self.set_attributes(self.child, andorReadoutTime=0.1)
+
+        # Single frame per step
+        exposure = 0.11
+        self.assertRaises(
+            AssertionError,
+            self.andor_driver_part.on_validate,
+            self.context,
+            generator,
+            exposure=exposure,
+        )
+
+        # Two frames per step (duration is already divided down before)
+        self.assertRaises(
+            AssertionError,
+            self.andor_driver_part.on_validate,
+            self.context,
+            generator,
+            exposure=exposure,
+            frames_per_step=2,
+        )
