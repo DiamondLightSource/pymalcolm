@@ -223,12 +223,14 @@ class TestDetectorDriverPart(ChildTestCase):
         ]
         assert self.o.is_hardware_triggered
 
-    def test_validate_with_no_min_acquire_period_passes(self):
+    def test_validate_with_no_min_acquire_period_does_not_tweak(self):
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
         generator = CompoundGenerator([ys, xs], [], [], 1.0)
 
-        self.o.on_validate(generator)
+        tweaks = self.o.on_validate(generator)
+
+        assert tweaks is None, "Shouldn't have tweaked anything"
 
     def test_validate_with_positive_generator_duration_and_min_acquire_period(self):
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
