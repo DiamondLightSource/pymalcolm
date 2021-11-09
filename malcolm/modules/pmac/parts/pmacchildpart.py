@@ -8,7 +8,6 @@ from scanpointgenerator import CompoundGenerator, Point
 
 from malcolm.core import Block, Future, PartRegistrar, Put, Request
 from malcolm.modules import builtin, scanning
-from malcolm.modules.pmac.util import get_motion_trigger
 from malcolm.modules.scanning.infos import MotionTrigger
 
 from ..infos import MotorInfo
@@ -22,6 +21,7 @@ from ..util import (
     cs_port_with_motors_in,
     get_min_turnaround_and_interval,
     get_motion_axes,
+    get_motion_trigger,
     point_velocities,
     profile_between_points,
 )
@@ -232,7 +232,15 @@ class PmacChildPart(builtin.parts.ChildPart):
         if motion_axes:
             # TODO: what happens if axes are not mapped due to the current config on
             # the brick not matching the target config for the scan?
-            axis_mapping = cs_axis_mapping(context, layout_table, motion_axes)
+            try:
+                axis_mapping = cs_axis_mapping(context, layout_table, motion_axes)
+            except AssertionError as e:
+                # For now we can just error - but should we just return a minimum value?
+                raise AssertionError(
+                    f"{self.name}: could not find axis mappings for {motion_axes} "
+                    f"as brick design is either not loaded or missing assignments "
+                    f"({e})"
+                )
             # Step scans and fly scans behave differently
             generator.prepare()
             if generator.continuous and generator.size > 1:
@@ -246,7 +254,7 @@ class PmacChildPart(builtin.parts.ChildPart):
                     second_point,
                 )
             else:
-                # Step scans have turnarounds at each point
+                # Step scans have turnarounds at each point so can use this value
                 min_turnaround, _ = get_min_turnaround_and_interval(part_info)
                 return min_turnaround
         else:
