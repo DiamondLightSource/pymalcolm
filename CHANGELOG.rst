@@ -6,11 +6,32 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 Unreleased
 ----------
 
+Changed:
+
+- BeamSelectorPart now supports holding at each position for different lengths
+  of time, allowing different exposures to be used for each detector.
+
 Added:
 
 - DetectorDriverPart now has optional min_acquire_period argument. When set to a
   non-zero value this is checked during validation against the generator
   duration to ensure the detector can keep up during the acquisition.
+- Calculate generator duration automatically. If a duration of 0.0 is given
+  then some parts will attempt to calculate a duration based on other parameters
+  combined with other information they have. The parts which tweak duration are:
+
+  - PmacChildPart
+  - PandAPulseTriggerPart
+  - DetectorDriverPart
+  - ExposureDeadtimePart
+  - AndorDriverPart
+  - ReframePluginPart
+  - BeamSelectorPart (based on a fixed move time)
+
+  The largest tweak to generator duration by any part will win, and then all
+  parts will validate with the new duration to check they are happy with the
+  tweaked value. This can happen iteratively with up to 10 attempts per
+  RunnableController.
 
 Fixed
 
