@@ -94,7 +94,7 @@ class TestBeamSelectorPart(ChildTestCase):
         )
 
         # First pass we should tweak
-        infos = self.o.on_validate({}, generator, detectors)
+        infos = self.o.on_validate(generator, {}, detectors)
 
         self.assertEqual(infos.parameter, "generator")
         assert infos.value.duration == pytest.approx(
@@ -102,7 +102,7 @@ class TestBeamSelectorPart(ChildTestCase):
         )
 
         # Now re-run with our tweaked generator
-        infos = self.o.on_validate({}, infos.value, detectors)
+        infos = self.o.on_validate(infos.value, {}, detectors)
         assert infos is None, "We shouldn't need to tweak again"
 
     def test_validate_raises_AssertionError_for_bad_generator_type(self):
@@ -114,7 +114,7 @@ class TestBeamSelectorPart(ChildTestCase):
             imaging_exposure_time, diffraction_exposure_time
         )
 
-        self.assertRaises(AssertionError, self.o.on_validate, {}, generator, detectors)
+        self.assertRaises(AssertionError, self.o.on_validate, generator, {}, detectors)
 
     def test_validate_raises_ValueError_for_detector_with_invalid_frames_per_step(self):
         nCycles = 1
@@ -140,13 +140,13 @@ class TestBeamSelectorPart(ChildTestCase):
         )
 
         self.assertRaises(
-            ValueError, self.o.on_validate, {}, generator, bad_imaging_frames_per_step
+            ValueError, self.o.on_validate, generator, {}, bad_imaging_frames_per_step
         )
         self.assertRaises(
             ValueError,
             self.o.on_validate,
-            {},
             generator,
+            {},
             bad_diffraction_frames_per_step,
         )
 
@@ -176,15 +176,15 @@ class TestBeamSelectorPart(ChildTestCase):
         self.assertRaises(
             ValueError,
             self.o.on_validate,
-            {},
             generator,
+            {},
             detectors_with_imaging_disabled,
         )
         self.assertRaises(
             ValueError,
             self.o.on_validate,
-            {},
             generator,
+            {},
             detectors_with_diffraction_disabled,
         )
 
@@ -205,15 +205,15 @@ class TestBeamSelectorPart(ChildTestCase):
         self.assertRaises(
             ValueError,
             self.o.on_validate,
-            {},
             generator,
+            {},
             detectors_with_zero_exposure_for_imaging,
         )
         self.assertRaises(
             ValueError,
             self.o.on_validate,
-            {},
             generator,
+            {},
             detectors_with_zero_exposure_for_diffraction,
         )
 
@@ -243,15 +243,15 @@ class TestBeamSelectorPart(ChildTestCase):
         self.assertRaises(
             ValueError,
             self.o.on_validate,
-            {},
             generator,
+            {},
             table_without_imaging_detector,
         )
         self.assertRaises(
             ValueError,
             self.o.on_validate,
-            {},
             generator,
+            {},
             table_without_diffraction_detector,
         )
 
@@ -269,7 +269,7 @@ class TestBeamSelectorPart(ChildTestCase):
             imaging_exposure_time, diffraction_exposure_time
         )
         # Update generator duration based on validate method
-        infos = self.o.on_validate({}, generator, detectors)
+        infos = self.o.on_validate(generator, {}, detectors)
         generator.duration = infos.value.duration
         generator.prepare()
 
@@ -337,7 +337,7 @@ class TestBeamSelectorPart(ChildTestCase):
         )
 
         # Update generator duration based on validate method
-        infos = self.o.on_validate({}, generator, detectors)
+        infos = self.o.on_validate(generator, {}, detectors)
         generator.duration = infos.value.duration
         generator.prepare()
 
@@ -436,7 +436,7 @@ class TestBeamSelectorPart(ChildTestCase):
             imaging_exposure_time, diffraction_exposure_time
         )
         # Update generator duration based on validate method
-        infos = self.o.on_validate({}, generator, detectors)
+        infos = self.o.on_validate(generator, {}, detectors)
         generator.duration = infos.value.duration
         generator.prepare()
 
@@ -520,7 +520,7 @@ class TestBeamSelectorPart(ChildTestCase):
             imaging_exposure_time, diffraction_exposure_time
         )
         # Update generator duration based on validate method
-        infos = self.o.on_validate({}, generator, detectors)
+        infos = self.o.on_validate(generator, {}, detectors)
         generator.duration = infos.value.duration
         generator.prepare()
 
@@ -642,7 +642,7 @@ class TestBeamSelectorPart(ChildTestCase):
             imaging_exposure_time, diffraction_exposure_time
         )
         # Update generator duration based on validate method
-        infos = self.o.on_validate({}, generator, detectors)
+        infos = self.o.on_validate(generator, {}, detectors)
         generator.duration = infos.value.duration
         generator.prepare()
 
