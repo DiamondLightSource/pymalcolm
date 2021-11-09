@@ -144,7 +144,9 @@ class TestPMACChildPart(ChildTestCase):
         axesToMove = ["x"]
         # servoFrequency() return value
         self.child.handled_requests.post.return_value = 4919.300698316487
+
         ret = self.o.on_validate(self.context, generator, axesToMove, {})
+
         expected_duration = 0.010568
         assert ret.value.duration == expected_duration
 
@@ -155,7 +157,9 @@ class TestPMACChildPart(ChildTestCase):
         axesToMove = ["x"]
         # servoFrequency() return value
         self.child.handled_requests.post.return_value = 4919.300698316487
+
         ret = self.o.on_validate(self.context, generator, axesToMove, {})
+
         # Duration is calculated based on maximum velocity of stages
         expected_duration = 0.250034
         assert ret.value.duration == expected_duration
@@ -167,7 +171,9 @@ class TestPMACChildPart(ChildTestCase):
         axesToMove = ["x"]
         # servoFrequency() return value
         self.child.handled_requests.post.return_value = 4919.300698316487
+
         ret = self.o.on_validate(self.context, generator, axesToMove, {})
+
         # Duration is calculated based on turnaround info
         expected_duration = 0.00203
         assert ret.value.duration == expected_duration
@@ -179,7 +185,9 @@ class TestPMACChildPart(ChildTestCase):
         axesToMove = ["x"]
         # servoFrequency() return value
         self.child.handled_requests.post.return_value = 4919.300698316487
+
         ret = self.o.on_validate(self.context, generator, axesToMove, {})
+
         # Duration is calculated based on turnaround info
         expected_duration = 0.00203
         assert ret.value.duration == expected_duration
@@ -191,7 +199,9 @@ class TestPMACChildPart(ChildTestCase):
         self.child.handled_requests.post.return_value = 4919.300698316487
         # Create a part info saying we are not providing any triggers
         part_info = {"motion_trigger": [MotionTriggerInfo(MotionTrigger.NONE)]}
+
         ret = self.o.on_validate(self.context, generator, [], part_info)
+
         # Duration should not be tweaked
         assert ret is None
 
@@ -200,6 +210,22 @@ class TestPMACChildPart(ChildTestCase):
         axesToMove = ["x"]
         # servoFrequency() return value
         self.child.handled_requests.post.return_value = 4919.300698316487
+
+        self.assertRaises(
+            AssertionError, self.o.on_validate, self.context, generator, axesToMove, {}
+        )
+
+    @patch("malcolm.modules.pmac.parts.pmacchildpart.cs_axis_mapping")
+    def test_validate_raises_AssertionError_for_bad_cs_axis_mapping(
+        self, cs_axis_mapping_mock
+    ):
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
+        generator = CompoundGenerator([xs], [], [], 0.0)
+        axesToMove = ["x"]
+
+        # Our mocked method should raise an AssertionError
+        cs_axis_mapping_mock.side_effect = AssertionError("Mock assertion")
+
         self.assertRaises(
             AssertionError, self.o.on_validate, self.context, generator, axesToMove, {}
         )
