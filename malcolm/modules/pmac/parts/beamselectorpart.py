@@ -35,6 +35,12 @@ with Anno("Minimum move time between the two positions in seconds"):
 
 
 class BeamSelectorPart(PmacChildPart):
+    """
+    This part is for the K11 beam selector scan.
+
+    It moves a motor between two positions, holding at each position for the exposure
+    time of a particular detector before moving.
+    """
     def __init__(
         self,
         name: APartName,
@@ -64,7 +70,7 @@ class BeamSelectorPart(PmacChildPart):
         self.diffraction_detector = diffraction_detector
         self.imaging_angle = float(imaging_angle)
         self.diffraction_angle = float(diffraction_angle)
-        self.move_time = float(move_time)
+        self.move_time = parsed_move_time
 
     def _get_error_message(self, name: str, mri: str, message: str) -> str:
         return f"{mri} (name {name}): {message}"
@@ -146,8 +152,8 @@ class BeamSelectorPart(PmacChildPart):
     @add_call_types
     def on_validate(
         self,
-        part_info: scanning.hooks.APartInfo,
         generator: scanning.hooks.AGenerator,
+        part_info: scanning.hooks.APartInfo,
         detectors: ADetectorTable,
     ) -> Optional[scanning.hooks.UParameterTweakInfos]:
         # Check the primary generator is static
