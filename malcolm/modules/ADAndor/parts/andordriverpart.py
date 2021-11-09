@@ -75,7 +75,7 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
             if duration == 0.0:
                 serialized = generator.to_dict()
                 new_generator = CompoundGenerator.from_dict(serialized)
-                # Multiple the duration per frame up
+                # Multiply the duration per frame up
                 duration_per_point = duration_per_frame * frames_per_step
                 new_generator.duration = duration_per_frame * frames_per_step
                 self.log.debug(
