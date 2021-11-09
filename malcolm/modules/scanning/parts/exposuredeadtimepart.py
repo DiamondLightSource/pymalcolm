@@ -124,9 +124,9 @@ class ExposureDeadtimePart(Part):
             else:
                 # Check provided exposure against minimum exposure
                 min_exposure = info.min_exposure
-                assert exposure >= info.min_exposure, (
-                    f"{self.name} given exposure {exposure} below min {min_exposure}"
-                )
+                assert (
+                    exposure >= info.min_exposure
+                ), f"{self.name} given exposure {exposure} below min {min_exposure}"
                 # Check provided exposure against maximum possible exposure
                 max_exposure = info.calculate_maximum_exposure(generator.duration)
                 assert exposure <= max_exposure, (
