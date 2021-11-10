@@ -216,7 +216,7 @@ class TestPMACChildPart(ChildTestCase):
         )
 
     @patch("malcolm.modules.pmac.parts.pmacchildpart.cs_axis_mapping")
-    def test_validate_raises_AssertionError_for_bad_cs_axis_mapping(
+    def test_validate_does_not_tweak_for_bad_cs_axis_mapping(
         self, cs_axis_mapping_mock
     ):
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
@@ -226,9 +226,10 @@ class TestPMACChildPart(ChildTestCase):
         # Our mocked method should raise an AssertionError
         cs_axis_mapping_mock.side_effect = AssertionError("Mock assertion")
 
-        self.assertRaises(
-            AssertionError, self.o.on_validate, self.context, generator, axesToMove, {}
-        )
+        # But the call should still work - we just don't get a tweak
+        tweaks = self.o.on_validate(self.context, generator, axesToMove, {})
+
+        assert tweaks is None
 
     def do_check_output_quantized(self):
         assert self.child.handled_requests.mock_calls[:4] == [
