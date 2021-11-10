@@ -162,6 +162,10 @@ class PmacChildPart(builtin.parts.ChildPart):
                 duration = self.calculate_generator_duration(
                     context, generator, part_info, motion_axes
                 )
+                # We may have not been able to tweak duration if axis mappings are
+                # missing.
+                if not duration:
+                    return None
             else:
                 return None
 
@@ -222,7 +226,7 @@ class PmacChildPart(builtin.parts.ChildPart):
         generator: scanning.hooks.AGenerator,
         part_info: scanning.hooks.APartInfo,
         motion_axes: List[str],
-    ) -> float:
+    ) -> Optional[float]:
         """
         Calculate a generator duration based on the generator and axes we are moving
         """
@@ -234,13 +238,14 @@ class PmacChildPart(builtin.parts.ChildPart):
             # the brick not matching the target config for the scan?
             try:
                 axis_mapping = cs_axis_mapping(context, layout_table, motion_axes)
-            except AssertionError as e:
-                # For now we can just error - but should we just return a minimum value?
-                raise AssertionError(
-                    f"{self.name}: could not find axis mappings for {motion_axes} "
-                    f"as brick design is either not loaded or missing assignments "
-                    f"({e})"
+            except AssertionError:
+                # We can't check the axes as they are not mapped, so don't tweak the
+                # generator and just return
+                self.log.warning(
+                    f"Warning: {self.name} can't guess generator duration during "
+                    f"validate as axis mappings are not loaded or missing."
                 )
+                return None
             # Step scans and fly scans behave differently
             generator.prepare()
             if generator.continuous and generator.size > 1:
