@@ -512,10 +512,6 @@ class RunnableController(builtin.controllers.ManagerController):
         Disabled state.
         """
 
-        # Run all PreRunHooks
-        hook = PreRunHook
-        self.do_pre_run(hook)
-
         if self.configured_steps.value < self.total_steps.value:
             next_state = ss.ARMED
         else:
@@ -548,10 +544,12 @@ class RunnableController(builtin.controllers.ManagerController):
             self.go_to_error_state(e)
             raise
 
-    def do_pre_run(self, hook: Type[ControllerHook]) -> None:
-        self.run_hooks(hook(p, c) for p, c in self.part_contexts.items())
+    def do_run(self, hook):
+        # type: (Type[ControllerHook]) -> None
 
-    def do_run(self, hook: Type[ControllerHook]) -> None:
+        # Run all PreRunHooks
+        self.run_hooks(PreRunHook(p, c) for p, c in self.part_contexts.items())
+
         self.run_hooks(hook(p, c) for p, c in self.part_contexts.items())
         self.abortable_transition(ss.POSTRUN)
         completed_steps = self.configured_steps.value
