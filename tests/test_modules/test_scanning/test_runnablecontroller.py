@@ -32,6 +32,7 @@ from malcolm.modules.scanning.hooks import (
     AContext,
     AGenerator,
     AStepsToDo,
+    PreRunHook,
     UInfos,
     ValidateHook,
 )
@@ -47,6 +48,7 @@ class MisbehavingPart(MotionChildPart):
     def setup(self, registrar):
         super(MisbehavingPart, self).setup(registrar)
         self.register_hooked(ValidateHook, self.validate)
+        self.register_hooked(PreRunHook, self.on_pre_run)
 
     @add_call_types
     def validate(self, generator: AGenerator) -> UInfos:
@@ -57,6 +59,10 @@ class MisbehavingPart(MotionChildPart):
             return ParameterTweakInfo("generator", new_generator)
         else:
             return None
+
+    @add_call_types
+    def on_pre_run(self):
+        self.pre_run_test = True
 
     # Allow CamelCase for arguments as they will be serialized by parent
     # noinspection PyPep8Naming
@@ -192,11 +198,13 @@ class TestRunnableController(unittest.TestCase):
             self.p.add_controller(c)
         self.b_child = self.context.block_view("childBlock")
 
-        part = MisbehavingPart(mri="childBlock", name="part", initial_visibility=True)
+        self.part = MisbehavingPart(
+            mri="childBlock", name="part", initial_visibility=True
+        )
 
         # create a root block for the RunnableController block to reside in
         self.c = RunnableController(mri="mainBlock", config_dir=self.config_dir.value)
-        self.c.add_part(part)
+        self.c.add_part(self.part)
         self.p.add_controller(self.c)
         self.b = self.context.block_view("mainBlock")
         self.ss = self.c.state_set
@@ -556,6 +564,11 @@ class TestRunnableController(unittest.TestCase):
         self.checkState(self.ss.FAULT)
         with self.assertRaises(AbortedError):
             f.result()
+
+    def test_prerun_gets_called(self):
+        self.prepare_half_run()
+        self.b.run()
+        assert self.part.pre_run_test
 
 
 class TestRunnableControllerBreakpoints(unittest.TestCase):
