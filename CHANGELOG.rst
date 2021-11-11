@@ -15,6 +15,8 @@ Added:
 Fixed
 
 - Malcolm designs will no longer overwrite XMAP energy values
+- The PreRunHook will now run at the beginning of do_run() so that it also runs
+  on a resume.
 
 `4.6`_ - 2021-08-17
 -------------------
