@@ -12,6 +12,10 @@ Added:
   non-zero value this is checked during validation against the generator
   duration to ensure the detector can keep up during the acquisition.
 
+Fixed
+
+- Malcolm designs will no longer overwrite XMAP energy values
+
 `4.6`_ - 2021-08-17
 -------------------
 
