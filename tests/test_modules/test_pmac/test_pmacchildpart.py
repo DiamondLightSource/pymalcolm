@@ -178,6 +178,22 @@ class TestPMACChildPart(ChildTestCase):
         expected_duration = 0.00203
         assert ret.value.duration == expected_duration
 
+    def test_validate_tweaks_duration_for_axes_that_do_not_move(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.0, 5, alternate=True)
+        generator = CompoundGenerator([xs], [], [], 0.0)
+        self.set_motor_attributes()
+        axesToMove = ["x"]
+        # servoFrequency() return value
+        self.child.handled_requests.post.return_value = 4919.300698316487
+        # Create a part info saying we are not providing any triggers
+        part_info = {"motion_trigger": [MotionTriggerInfo(MotionTrigger.NONE)]}
+
+        ret = self.o.on_validate(self.context, generator, axesToMove, part_info)
+
+        # Expected duration is one trajectory tick (as we are not aligning with servo)
+        expected_duration = 1e-6
+        assert ret.value.duration == expected_duration
+
     def test_validate_tweaks_duration_for_step_scan(self):
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
         generator = CompoundGenerator([xs], [], [], 0.0, continuous=False)
