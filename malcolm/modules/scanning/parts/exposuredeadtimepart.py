@@ -79,7 +79,7 @@ class ExposureDeadtimePart(Part):
         registrar.add_attribute_model("exposure", self.exposure)
         # Tell the controller to expose some extra configure parameters
         registrar.report(ConfigureHook.create_info(self.on_configure))
-        # Tell the controller to exposure some extra validate parameters
+        # Tell the controller to expose some extra validate parameters
         registrar.report(ConfigureHook.create_info(self.on_validate))
 
     @add_call_types
