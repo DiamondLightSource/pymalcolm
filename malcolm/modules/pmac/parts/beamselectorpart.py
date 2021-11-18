@@ -41,6 +41,7 @@ class BeamSelectorPart(PmacChildPart):
     It moves a motor between two positions, holding at each position for the exposure
     time of a particular detector before moving.
     """
+
     def __init__(
         self,
         name: APartName,

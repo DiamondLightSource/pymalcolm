@@ -241,8 +241,8 @@ class PmacChildPart(builtin.parts.ChildPart):
             except AssertionError:
                 # We can't check the axes as they are not mapped, so don't tweak the
                 # generator and just return
-                self.log.warning(
-                    f"Warning: {self.name} can't guess generator duration during "
+                self.log.debug(
+                    f"{self.name}: can't guess generator duration during "
                     f"validate as axis mappings are not loaded or missing."
                 )
                 return None
@@ -264,7 +264,6 @@ class PmacChildPart(builtin.parts.ChildPart):
                 return min_turnaround
         else:
             # Not moving axes so just return time of one tick
-            # TODO: check with Giles if this should use a whole profile time instead
             return TICK_S
 
     def calculate_duration_from_first_two_points(
@@ -287,9 +286,10 @@ class PmacChildPart(builtin.parts.ChildPart):
             # Tweak duration based on slowest axis to move between points
             if min_duration > duration:
                 duration = min_duration
-        assert (
-            duration > 0.0
-        ), "Failed to tweak duration. Are axes really moving in the scan?"
+        # If duration is zero, it means we don't have any axes moving during these
+        # points so just tweak duration to time of one tick.
+        if duration == 0.0:
+            duration = TICK_S
         return duration
 
     def move_to_start(self, child: Block, cs_port: str, completed_steps: int) -> Future:
