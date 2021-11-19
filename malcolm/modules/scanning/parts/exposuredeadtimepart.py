@@ -24,10 +24,10 @@ from ..util import exposure_attribute
 
 readout_desc = "Subtract this time from frame duration when calculating exposure"
 with Anno(readout_desc):
-    AInitialReadoutTime = float
+    AReadoutTime = float
 frequency_accuracy_desc = "In ppm. Subtract duration*this/1e6 when calculating exposure"
 with Anno(frequency_accuracy_desc):
-    AInitialAccuracy = float
+    AAccuracy = float
 with Anno("The minimum exposure time this detector will accept"):
     AMinExposure = float
 with Anno("Frames per detector step"):
@@ -41,23 +41,23 @@ class ExposureDeadtimePart(Part):
     def __init__(
         self,
         name: APartName,
-        initial_readout_time: AInitialReadoutTime = 0.0,
-        initial_frequency_accuracy: AInitialAccuracy = 50.0,
+        readout_time: AReadoutTime = 0.0,
+        frequency_accuracy: AAccuracy = 50.0,
         min_exposure: AMinExposure = 0.0,
     ) -> None:
         super().__init__(name)
         self.readout_time = NumberMeta(
             "float64",
             readout_desc,
-            tags=[Widget.TEXTINPUT.tag(), config_tag()],
+            tags=[Widget.TEXTUPDATE.tag(), config_tag()],
             display=Display(precision=6, units="s"),
-        ).create_attribute_model(initial_readout_time)
+        ).create_attribute_model(readout_time)
         self.frequency_accuracy = NumberMeta(
             "float64",
             frequency_accuracy_desc,
-            tags=[Widget.TEXTINPUT.tag(), config_tag()],
+            tags=[Widget.TEXTUPDATE.tag(), config_tag()],
             display=Display(precision=3, units="ppm"),
-        ).create_attribute_model(initial_frequency_accuracy)
+        ).create_attribute_model(frequency_accuracy)
         self.min_exposure = min_exposure
         self.exposure = exposure_attribute(min_exposure)
 
@@ -69,12 +69,11 @@ class ExposureDeadtimePart(Part):
         registrar.hook(ConfigureHook, self.on_configure)
         # Attributes
         registrar.add_attribute_model(
-            "readoutTime", self.readout_time, self.readout_time.set_value
+            "readoutTime", self.readout_time
         )
         registrar.add_attribute_model(
             "frequencyAccuracy",
-            self.frequency_accuracy,
-            self.frequency_accuracy.set_value,
+            self.frequency_accuracy
         )
         registrar.add_attribute_model("exposure", self.exposure)
         # Tell the controller to expose some extra configure parameters

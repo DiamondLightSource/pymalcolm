@@ -18,7 +18,12 @@
 - builtin.parameters.float64:
     name: min_acquire_period
     description: Minimum acquire period for detector
-    default: 0.0  # Always pass validation
+    default: 0.0
+
+- builtin.parameters.string:
+    name: readout_time
+    description: Readout time of the detector
+    default: 200e-6
 
 - builtin.defines.docstring:
     value: |
@@ -51,7 +56,7 @@
 
 - scanning.parts.ExposureDeadtimePart:
     name: DEADTIME
-    initial_readout_time: 200e-6
+    readout_time: $(readout_time)
 
 - ADCore.blocks.stats_plugin_block:
     mri: $(mri_prefix):STAT

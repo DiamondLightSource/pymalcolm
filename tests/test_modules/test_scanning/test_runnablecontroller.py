@@ -1344,9 +1344,11 @@ class TestRunnableControllerValidation(unittest.TestCase):
         self.motion_part = MisbehavingPart(mri=mri, name=name, initial_visibility=True)
         self.c.add_part(self.motion_part)
 
-    def _add_detector_block_and_part(self, mri, name):
+    def _add_detector_block_and_part(self, mri, name, readout_time=0.1):
         # Block
-        for c in detector_block(mri=mri, config_dir=self.config_dir.value):
+        for c in detector_block(
+            mri=mri, config_dir=self.config_dir.value, readout_time=readout_time
+        ):
             self.p.add_controller(c)
         # Append block view
         self.b_detectors.append(self.context.block_view(mri))
@@ -1387,7 +1389,6 @@ class TestRunnableControllerValidation(unittest.TestCase):
             self.detector_one_mri, self.detector_one_part_name
         )
         self._start_process()
-        self.b_detectors[0].readoutTime.put_value(0.1)
 
         # Config
         det_one_exposure = 0.89995
@@ -1413,7 +1414,6 @@ class TestRunnableControllerValidation(unittest.TestCase):
             self.detector_one_mri, self.detector_one_part_name
         )
         self._start_process()
-        self.b_detectors[0].readoutTime.put_value(0.1)
 
         # Config
         det_one_exposure = 0.89995
@@ -1444,7 +1444,6 @@ class TestRunnableControllerValidation(unittest.TestCase):
             self.detector_one_mri, self.detector_one_part_name
         )
         self._start_process()
-        self.b_detectors[0].readoutTime.put_value(0.1)
 
         # Config
         duration = 1.0
@@ -1475,7 +1474,6 @@ class TestRunnableControllerValidation(unittest.TestCase):
             self.detector_one_mri, self.detector_one_part_name
         )
         self._start_process()
-        self.b_detectors[0].readoutTime.put_value(0.1)
 
         # Config
         duration = 0.0
@@ -1504,16 +1502,14 @@ class TestRunnableControllerValidation(unittest.TestCase):
         assert actual["detectors"].to_dict() == expected_detectors.to_dict()
 
     def test_validate_two_detectors_set_exposure_of_both_with_duration(self):
-        # Set up a single detector
+        # Set up two detectors with different readout times
         self._add_detector_block_and_part(
             self.detector_one_mri, self.detector_one_part_name
         )
         self._add_detector_block_and_part(
-            self.detector_two_mri, self.detector_two_part_name
+            self.detector_two_mri, self.detector_two_part_name, readout_time=0.2
         )
         self._start_process()
-        self.b_detectors[0].readoutTime.put_value(0.1)
-        self.b_detectors[1].readoutTime.put_value(0.2)
 
         # Config
         duration = 1.0
@@ -1539,16 +1535,14 @@ class TestRunnableControllerValidation(unittest.TestCase):
     def test_validate_two_detectors_set_exposure_of_one_with_duration_and_one_exposure(
         self,
     ):
-        # Set up a single detector
+        # Set up two detectors with different readout times
         self._add_detector_block_and_part(
             self.detector_one_mri, self.detector_one_part_name
         )
         self._add_detector_block_and_part(
-            self.detector_two_mri, self.detector_two_part_name
+            self.detector_two_mri, self.detector_two_part_name, readout_time=0.2
         )
         self._start_process()
-        self.b_detectors[0].readoutTime.put_value(0.1)
-        self.b_detectors[1].readoutTime.put_value(0.2)
 
         # Config
         duration = 1.0
@@ -1605,16 +1599,14 @@ class TestRunnableControllerValidation(unittest.TestCase):
     def test_validate_two_detectors_set_duration_and_one_exposure_with_one_exposure(
         self,
     ):
-        # Set up a single detector
+        # Set up two detectors with different readout times
         self._add_detector_block_and_part(
             self.detector_one_mri, self.detector_one_part_name
         )
         self._add_detector_block_and_part(
-            self.detector_two_mri, self.detector_two_part_name
+            self.detector_two_mri, self.detector_two_part_name, readout_time=0.2
         )
         self._start_process()
-        self.b_detectors[0].readoutTime.put_value(0.1)
-        self.b_detectors[1].readoutTime.put_value(0.2)
 
         # Config
         duration = 0.0
@@ -1676,16 +1668,14 @@ class TestRunnableControllerValidation(unittest.TestCase):
         assert actual["detectors"].to_dict() == expected_detectors.to_dict()
 
     def test_validate_two_detectors_set_duration_with_both_exposures(self):
-        # Set up a single detector
+        # Set up two detectors with different readout times
         self._add_detector_block_and_part(
             self.detector_one_mri, self.detector_one_part_name
         )
         self._add_detector_block_and_part(
-            self.detector_two_mri, self.detector_two_part_name
+            self.detector_two_mri, self.detector_two_part_name, readout_time=0.2
         )
         self._start_process()
-        self.b_detectors[0].readoutTime.put_value(0.1)
-        self.b_detectors[1].readoutTime.put_value(0.2)
 
         # Config
         duration = 0.0
@@ -1722,16 +1712,14 @@ class TestRunnableControllerValidation(unittest.TestCase):
     def test_validate_two_detectors_calculates_min_duration_for_no_duration_or_exposure(
         self,
     ):
-        # Set up a single detector
+        # Set up two detectors with different readout times
         self._add_detector_block_and_part(
             self.detector_one_mri, self.detector_one_part_name
         )
         self._add_detector_block_and_part(
-            self.detector_two_mri, self.detector_two_part_name
+            self.detector_two_mri, self.detector_two_part_name, readout_time=0.3
         )
         self._start_process()
-        self.b_detectors[0].readoutTime.put_value(0.1)
-        self.b_detectors[1].readoutTime.put_value(0.3)
 
         # Config
         duration = 0.0
@@ -1770,19 +1758,17 @@ class TestRunnableControllerValidation(unittest.TestCase):
             self.detector_one_mri, self.detector_one_part_name
         )
         self._add_detector_block_and_part(
-            self.detector_two_mri, self.detector_two_part_name
+            self.detector_two_mri, self.detector_two_part_name, readout_time=0.25
         )
         self._start_process()
 
         # Config
         compound_generator = self._get_compound_generator(0.1)
-        self.b_detectors[0].readoutTime.put_value(0.1)
-        self.b_detectors[0].frequencyAccuracy.put_value(50)
 
         # Expected outputs
         expected_duration = 0.5
         expected_det_one_exposure = 0.399975
-        expected_det_two_exposure = 0.498975
+        expected_det_two_exposure = 0.249975
         expected_table = self._get_detector_table(
             expected_det_one_exposure, expected_det_two_exposure
         )
