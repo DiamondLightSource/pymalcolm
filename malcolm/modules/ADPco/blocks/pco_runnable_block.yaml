@@ -30,6 +30,11 @@
     description: Readout time of the detector
     default: 2e-3
 
+- builtin.parameters.string:
+    name: min_acquire_period
+    description: Minimum acquire period of the detector
+    default: 0.0
+
 - builtin.defines.docstring:
     value: |
       Device block corresponding to PCO + stat + pos + hdf writer.
@@ -58,6 +63,7 @@
     soft_trigger_modes:
         - Off
     runs_on_windows: True
+    min_acquire_period: $(min_acquire_period)
 
 - scanning.parts.ExposureDeadtimePart:
     name: DEADTIME
