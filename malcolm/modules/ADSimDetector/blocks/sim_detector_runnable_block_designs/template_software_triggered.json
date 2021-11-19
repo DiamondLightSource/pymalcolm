@@ -23,7 +23,6 @@
       }
     }, 
     "exports": {}, 
-    "frequencyAccuracy": 50.0, 
     "attributesToCapture": {
       "typeid": "malcolm:core/Table:1.0", 
       "name": [], 
@@ -34,7 +33,6 @@
       "datasetType": []
     }, 
     "label": "Ramping SimDetector",
-    "readoutTime": 4e-05, 
     "exposure": 0.0, 
     "writeAllNdAttributes": true
   }, 
