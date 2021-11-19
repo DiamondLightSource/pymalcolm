@@ -9,16 +9,18 @@ Unreleased
 Changed:
 
 - BeamSelectorPart now supports holding at each position for different lengths
-  of time, allowing different exposures to be used for each detector.
+  of time based on a mutator modifying delay_after, allowing different exposures
+  to be used for each detector.
 - ExposureDeadTimePart now has fixed values for readout time and frequency
   accuracy. These are configurable in the YAML but are then fixed at runtime.
   This fixes a bug in validate where the resulting exposure time is different if
   the target design is not loaded before you run validate/configure. Designs for
   detector runnable blocks which contain these entries should be removed (remove
-  the following lines from the JSON design files):
+  the following lines from the JSON design files)::
 
-    - "readoutTime": n.n,
-    - "frequencyAccuracy": n.n
+  - "readoutTime": n.n,
+  - "frequencyAccuracy": n.n
+
 
 Added:
 
