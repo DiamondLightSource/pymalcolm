@@ -1,6 +1,6 @@
 from collections import Counter
 from dataclasses import dataclass
-from typing import Dict, List, Set, Tuple, Union
+from typing import Dict, List, Set, Union
 
 import numpy as np
 from annotypes import Anno, Array, Sequence
