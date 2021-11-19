@@ -17,10 +17,12 @@ Changed:
   the target design is not loaded before you run validate/configure.
   
   Designs for detector runnable blocks which contain these entries should be
-  removed (remove the following lines from the JSON design files)::
+  removed (remove the following lines from the JSON design files):
 
-  - "readoutTime": n.n,
-  - "frequencyAccuracy": n.n
+  .. code-block:: json
+
+    - "readoutTime": n.n,
+    - "frequencyAccuracy": n.n
 
   You can then set the readout time when you instantiate the runnable block:
 
