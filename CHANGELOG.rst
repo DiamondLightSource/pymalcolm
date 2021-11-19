@@ -22,15 +22,17 @@ Changed:
   - "readoutTime": n.n,
   - "frequencyAccuracy": n.n
 
-  You can then set the readout time when you instantiate the runnable block::
+  You can then set the readout time when you instantiate the runnable block:
 
-  - ADPco.blocks.pco_runnable_block:
-    mri_prefix: BL11K-ML-PCO-01
-    pv_prefix: BL11K-EA-PCO-01
-    config_dir: $(config_dir)
-    windows_drive: G
-    path_prefix: /dls
-    readout_time: 0.005
+  .. code-block:: yaml
+
+    - ADPco.blocks.pco_runnable_block:
+      mri_prefix: BL11K-ML-PCO-01
+      pv_prefix: BL11K-EA-PCO-01
+      config_dir: $(config_dir)
+      windows_drive: G
+      path_prefix: /dls
+      readout_time: 0.005
 
 Added:
 
