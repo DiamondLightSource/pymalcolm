@@ -68,13 +68,8 @@ class ExposureDeadtimePart(Part):
         registrar.hook(ValidateHook, self.on_validate)
         registrar.hook(ConfigureHook, self.on_configure)
         # Attributes
-        registrar.add_attribute_model(
-            "readoutTime", self.readout_time
-        )
-        registrar.add_attribute_model(
-            "frequencyAccuracy",
-            self.frequency_accuracy
-        )
+        registrar.add_attribute_model("readoutTime", self.readout_time)
+        registrar.add_attribute_model("frequencyAccuracy", self.frequency_accuracy)
         registrar.add_attribute_model("exposure", self.exposure)
         # Tell the controller to expose some extra configure parameters
         registrar.report(ConfigureHook.create_info(self.on_configure))

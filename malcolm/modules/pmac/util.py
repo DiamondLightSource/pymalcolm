@@ -1,4 +1,5 @@
 from collections import Counter
+from dataclasses import dataclass
 from typing import Dict, List, Set, Tuple, Union
 
 import numpy as np
@@ -306,9 +307,21 @@ with Anno("Minimum interval between turnaround points"):
     AMinInterval = float
 
 
-def get_min_turnaround_and_interval(
+@dataclass
+class MinTurnaround:
+    """Dataclass for the Minimum turnaround information.
+
+    This may come from a MinTurnaroundInfo if the scan block has a MinTurnaroundPart
+    otherwise MIN_TIME and MIN_INTERVAL are used as default values.
+    """
+
+    time: AMinTurnaround
+    interval: AMinInterval
+
+
+def get_min_turnaround(
     part_info: scanning.hooks.APartInfo,
-) -> Tuple[AMinTurnaround, AMinInterval]:
+) -> MinTurnaround:
     # Use the part if it exists
     infos = scanning.infos.MinTurnaroundInfo.filter_values(part_info)
     if infos:
@@ -322,7 +335,7 @@ def get_min_turnaround_and_interval(
         min_turnaround = MIN_TIME
         min_interval = MIN_INTERVAL
 
-    return min_turnaround, min_interval
+    return MinTurnaround(min_turnaround, min_interval)
 
 
 with Anno("Delay after value to add to even points"):
