@@ -11,7 +11,7 @@ from scanpointgenerator import (
 from malcolm.modules import builtin, scanning
 from malcolm.modules.scanning.util import ADetectorTable
 
-from ..util import AlternatingDelayAfterMutator, get_min_turnaround_and_interval
+from ..util import AlternatingDelayAfterMutator, get_min_turnaround
 from .pmacchildpart import PmacChildPart, VelocityModes
 
 # 80 char line lengths...
@@ -130,11 +130,11 @@ class BeamSelectorPart(PmacChildPart):
         ) = self._get_detector_exposure_times(detectors)
 
         # Increase the time at each position to the minimum turnaround if necessary
-        min_turnaround = get_min_turnaround_and_interval(part_info)[0]
+        min_turnaround = get_min_turnaround(part_info)
         time_at_diffraction_position = max(
-            min_turnaround, diffraction_detector_exposure
+            min_turnaround.time, diffraction_detector_exposure
         )
-        time_at_imaging_position = max(min_turnaround, imaging_detector_exposure)
+        time_at_imaging_position = max(min_turnaround.time, imaging_detector_exposure)
 
         return time_at_diffraction_position, time_at_imaging_position
 

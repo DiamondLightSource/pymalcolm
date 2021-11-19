@@ -13,13 +13,12 @@ from malcolm.modules.scanning.infos import MotionTrigger
 from ..infos import MotorInfo
 from ..util import (
     MIN_TIME,
-    AMinInterval,
-    AMinTurnaround,
+    MinTurnaround,
     all_points_joined,
     all_points_same_velocities,
     cs_axis_mapping,
     cs_port_with_motors_in,
-    get_min_turnaround_and_interval,
+    get_min_turnaround,
     get_motion_axes,
     get_motion_trigger,
     point_velocities,
@@ -80,10 +79,8 @@ class PmacChildPart(builtin.parts.ChildPart):
         self.axis_mapping: Dict[str, MotorInfo] = {}
         # Lookup of the completed_step value for each point
         self.completed_steps_lookup: List[int] = []
-        # The minimum turnaround time for non-joined points
-        self.min_turnaround: AMinTurnaround = 0.0
-        # The minimum time between turnaround points
-        self.min_interval: AMinInterval = 0.0
+        # Minimum turnaround information
+        self.min_turnaround: Optional[MinTurnaround] = None
         # If we are currently loading then block loading more points
         self.loading = False
         # Where we have generated into profile
@@ -260,8 +257,8 @@ class PmacChildPart(builtin.parts.ChildPart):
                 )
             else:
                 # Step scans have turnarounds at each point so can use this value
-                min_turnaround, _ = get_min_turnaround_and_interval(part_info)
-                return min_turnaround
+                min_turnaround = get_min_turnaround(part_info)
+                return min_turnaround.time
         else:
             # Not moving axes so just return time of one tick
             return TICK_S
@@ -375,10 +372,8 @@ class PmacChildPart(builtin.parts.ChildPart):
             self.generator = None
             return
 
-        # Set minimum turnaround and interval
-        (self.min_turnaround, self.min_interval) = get_min_turnaround_and_interval(
-            part_info
-        )
+        # Set minimum turnaround information
+        self.min_turnaround = get_min_turnaround(part_info)
 
         # Work out the cs_port
         cs_port = self.get_cs_port(context, motion_axes)
@@ -769,7 +764,7 @@ class PmacChildPart(builtin.parts.ChildPart):
             point = self.generator.get_point(start_index)
 
             # Calculate how long to leave for the run-up (at least MIN_TIME)
-            run_up_time = self.min_interval
+            run_up_time = self.min_turnaround.interval
             axis_points = {}
             for axis_name, velocity in point_velocities(
                 self.axis_mapping, point
@@ -838,7 +833,7 @@ class PmacChildPart(builtin.parts.ChildPart):
         # Calculate how long to leave for the tail-off
         # #(at least MIN_TIME)
         axis_points = {}
-        tail_off_time = self.min_interval
+        tail_off_time = self.min_turnaround.interval
         for axis_name, velocity in point_velocities(
             self.axis_mapping, point, entry=False
         ).items():
@@ -861,9 +856,13 @@ class PmacChildPart(builtin.parts.ChildPart):
 
     def insert_gap(self, point, next_point, completed_steps):
         # Work out the velocity profiles of how to move to the start
-        min_turnaround = max(self.min_turnaround, point.delay_after)
+        min_turnaround = max(self.min_turnaround.time, point.delay_after)
         time_arrays, velocity_arrays = profile_between_points(
-            self.axis_mapping, point, next_point, min_turnaround, self.min_interval
+            self.axis_mapping,
+            point,
+            next_point,
+            min_turnaround,
+            self.min_turnaround.interval,
         )
 
         start_positions = {}

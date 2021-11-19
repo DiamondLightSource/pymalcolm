@@ -8,10 +8,9 @@ from scanpointgenerator import Point
 from malcolm.core import APartName, Attribute, Block, Context, PartRegistrar
 from malcolm.modules import builtin, pmac, scanning
 from malcolm.modules.pmac.util import (
-    AMinInterval,
-    AMinTurnaround,
+    MinTurnaround,
     all_points_joined,
-    get_min_turnaround_and_interval,
+    get_min_turnaround,
 )
 
 from ..util import SequencerTable, Trigger
@@ -172,9 +171,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         # What is the mapping of scannable name to MotorInfo
         self.axis_mapping: Dict[str, pmac.infos.MotorInfo] = {}
         # The minimum turnaround time for non-joined points
-        self.min_turnaround: AMinTurnaround = 0.0
-        # The minimum time between turnaround points
-        self.min_interval: AMinInterval = 0.0
+        self.min_turnaround: Optional[MinTurnaround] = None
         # {(scannable, increasing): trigger_enum}
         self.trigger_enums: Dict[Tuple[str, bool], str] = {}
         # The panda Block we will be prodding
@@ -284,9 +281,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         row_trigger = child.rowTrigger.value
 
         # See if there is a minimum turnaround
-        (self.min_turnaround, self.min_interval) = get_min_turnaround_and_interval(
-            part_info
-        )
+        self.min_turnaround = get_min_turnaround(part_info)
 
         # Get panda Block, and the sequencer Blocks so we can do some checking
         self.panda, seqa, seqb = _get_blocks(context, panda_mri)
@@ -327,9 +322,14 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         """Work out the turnaround for the axis with the given MotorInfo, and
         how long it is moving in the opposite direction from where we want it to
         be going for point"""
-        min_turnaround = max(self.min_turnaround, point.delay_after)
+        assert self.min_turnaround, f"{self.name}: no MinTurnaround assigned"
+        min_turnaround = max(self.min_turnaround.time, point.delay_after)
         time_arrays, velocity_arrays = pmac.util.profile_between_points(
-            self.axis_mapping, self.last_point, point, min_turnaround, self.min_interval
+            self.axis_mapping,
+            self.last_point,
+            point,
+            min_turnaround,
+            self.min_turnaround.interval,
         )
         info = self.axis_mapping[axis_name]
         time_array = time_arrays[info.scannable]
