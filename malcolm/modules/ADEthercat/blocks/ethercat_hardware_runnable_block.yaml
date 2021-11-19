@@ -68,7 +68,7 @@
 
 - scanning.parts.ExposureDeadtimePart:
     name: DEADTIME
-    readout_time: 1e-3
+    readout_time: 1.1e-3
 
 - builtin.parts.IconPart:
     svg: $(yamldir)/../icons/ethercat-logo.svg
