@@ -14,13 +14,23 @@ Changed:
 - ExposureDeadTimePart now has fixed values for readout time and frequency
   accuracy. These are configurable in the YAML but are then fixed at runtime.
   This fixes a bug in validate where the resulting exposure time is different if
-  the target design is not loaded before you run validate/configure. Designs for
-  detector runnable blocks which contain these entries should be removed (remove
-  the following lines from the JSON design files)::
+  the target design is not loaded before you run validate/configure.
+  
+  Designs for detector runnable blocks which contain these entries should be
+  removed (remove the following lines from the JSON design files)::
 
   - "readoutTime": n.n,
   - "frequencyAccuracy": n.n
 
+  You can then set the readout time when you instantiate the runnable block::
+
+  - ADPco.blocks.pco_runnable_block:
+    mri_prefix: BL11K-ML-PCO-01
+    pv_prefix: BL11K-EA-PCO-01
+    config_dir: $(config_dir)
+    windows_drive: G
+    path_prefix: /dls
+    readout_time: 0.005
 
 Added:
 
