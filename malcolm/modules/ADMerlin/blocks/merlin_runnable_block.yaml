@@ -43,7 +43,7 @@
 
 - scanning.parts.ExposureDeadtimePart:
     name: DEADTIME
-    initial_readout_time: 1e-3
+    readout_time: 1e-3
 
 - ADCore.blocks.stats_plugin_block:
     mri: $(mri_prefix):STAT

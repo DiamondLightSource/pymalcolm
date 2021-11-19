@@ -7,10 +7,10 @@ from .detectorchildpart import AInitialVisibility, AMri, APartName, DetectorChil
 from .directorymonitorpart import DirectoryMonitorPart
 from .doubletriggerpart import DoubleTriggerPart
 from .exposuredeadtimepart import (
+    AAccuracy,
     ADetectorFramesPerStep,
-    AInitialAccuracy,
-    AInitialReadoutTime,
     AMinExposure,
+    AReadoutTime,
     ExposureDeadtimePart,
 )
 from .minturnaroundpart import MinTurnaroundPart

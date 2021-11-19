@@ -23,12 +23,8 @@ class TestExposureDeadtimePart(unittest.TestCase):
         registrar = MagicMock(spec=PartRegistrar)
         self.o.setup(registrar)
         assert registrar.add_attribute_model.mock_calls == [
-            call("readoutTime", self.o.readout_time, self.o.readout_time.set_value),
-            call(
-                "frequencyAccuracy",
-                self.o.frequency_accuracy,
-                self.o.frequency_accuracy.set_value,
-            ),
+            call("readoutTime", self.o.readout_time),
+            call("frequencyAccuracy", self.o.frequency_accuracy),
             call("exposure", self.o.exposure),
         ]
         assert self.o.exposure.value == 0.0

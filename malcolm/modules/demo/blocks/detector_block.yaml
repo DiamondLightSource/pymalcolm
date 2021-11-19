@@ -21,6 +21,11 @@
     description: Beamline specific label for the detector
     default: DemoDetector
 
+- builtin.parameters.string:
+    name: readout_time
+    description: Readout time of the detector
+    default: 0.001
+
 - builtin.defines.docstring:
     value: |
       This block uses a demo FileWriter and exposes a Detector like interface
@@ -40,7 +45,7 @@
 
 - scanning.parts.ExposureDeadtimePart:
     name: EXPOSURE
-    initial_readout_time: 0.001
+    readout_time: $(readout_time)
     min_exposure: 0.0001
 
 - demo.parts.FileWritePart:

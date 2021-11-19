@@ -10,6 +10,11 @@
     name: config_dir
     description: Where to store saved configs
 
+- builtin.parameters.string:
+    name: readout_time
+    description: Readout time of the device
+    default: 1e-3
+
 - scanning.controllers.RunnableController:
     mri: $(mri_prefix)
     config_dir: $(config_dir)
@@ -24,7 +29,7 @@
 
 - scanning.parts.ExposureDeadtimePart:
     name: DEADTIME
-    initial_readout_time: 1e-3
+    readout_time: $(readout_time)
 
 - ADCore.includes.filewriting_collection:
     pv_prefix: $(pv_prefix)
