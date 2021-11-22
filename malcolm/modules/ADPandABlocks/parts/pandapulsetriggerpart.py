@@ -22,6 +22,7 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
     - $(name)Pulses: pulses Attribute of the PULSE block
 
     The Detector is required to have:
+
     - exposure: an Attribute that reports after configure() the exposure that
       is expected by the detector
     """

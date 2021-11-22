@@ -1,8 +1,13 @@
-name: GitHub Actions
+name: Code CI
 
 # When to trigger
 on:
   push:
+    branches:
+      - master
+      - main
+    tags:
+      - "*"
   pull_request:
 
 # Global environment
@@ -14,6 +19,7 @@ env:
 # Jobs
 jobs:
   build:
+    name: "Code CI"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -80,9 +86,6 @@ jobs:
       run: |
         set -o pipefail
         pipenv run tests
-
-    - name: Build docs
-      run: pipenv run docs
 
     - name: Coverage
       uses: codecov/codecov-action@v1
