@@ -19,7 +19,7 @@ Changed:
   Designs for detector runnable blocks which contain these entries should be
   removed (remove the following lines from the JSON design files):
 
-  .. code-block:: json
+  .. code-block::
 
     - "readoutTime": n.n,
     - "frequencyAccuracy": n.n
