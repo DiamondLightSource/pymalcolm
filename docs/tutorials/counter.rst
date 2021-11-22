@@ -3,8 +3,6 @@
 Counter Tutorial
 ================
 
-.. module:: malcolm.core
-
 You should already know how to run up a Malcolm `process_` with some `Blocks
 <block_>` that are each composed of `controller_` with `Parts <part_>`, and have
 seen a Part that exposes a `method_`. Now we will look at a Part that exposes an

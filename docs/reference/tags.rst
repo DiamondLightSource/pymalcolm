@@ -9,8 +9,6 @@ This page lists the currently supported tags, and how they are used.
 Widget Tag
 ----------
 
-.. module:: malcolm.core
-
 A widget tag can be used to tell a GUI which widget to use to display an
 Attribute. It is created by calling the :meth:`~Widget.tag` method on a
 `Widget` enum member, like ``Widget.TEXTINPUT.tag()`` as introduced in the

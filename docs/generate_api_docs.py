@@ -35,8 +35,17 @@ def generate_docs():
         dirs = sorted(os.listdir(os.path.join(modules_root, modulename)))
 
         # Make any parameters and defines docs
-        for fname in ["parameters.py", "defines.py", "infos.py", "util.py",
-                      "hooks.py", "blocks", "includes", "controllers", "parts"]:
+        for fname in [
+            "parameters.py",
+            "defines.py",
+            "infos.py",
+            "util.py",
+            "hooks.py",
+            "blocks",
+            "includes",
+            "controllers",
+            "parts",
+        ]:
             if fname in dirs:
                 if fname.endswith(".py"):
                     doc_name = fname[:-3]
@@ -89,7 +98,9 @@ def make_automodule_doc(section, rst_path):
 
 .. automodule:: %(section)s
     :members:
-""" % dict(section=section, underline="=" * len(section))
+""" % dict(
+        section=section, underline="=" * len(section)
+    )
 
     write_if_different(rst_path, text)
 
@@ -105,7 +116,9 @@ def make_index_doc(modulename, rst_path, documents):
     :maxdepth: 1
     :caption: malcolm.modules.%(modulename)s
 
-""" % dict(modulename=modulename, underline="=" * len(modulename))
+""" % dict(
+        modulename=modulename, underline="=" * len(modulename)
+    )
 
     for doc_name, rst_name in sorted(documents.items()):
         text += "    %s <%s>\n" % (doc_name, rst_name)
@@ -124,7 +137,7 @@ def write_if_different(path, text):
         if not os.path.exists(dirname):
             os.makedirs(dirname)
         with open(path, "w") as updated:
-            updated.write(text)    
+            updated.write(text)
 
 
 if __name__ == "__main__":

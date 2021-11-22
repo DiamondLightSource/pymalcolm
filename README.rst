@@ -1,8 +1,7 @@
 Malcolm
 =======
 
-
-|build_status| |coverage| |health| |pypi_version| |readthedocs|
+|code_ci| |docs_ci| |coverage| |health| |pypi_version|
 
 Malcolm is a middlelayer framework that implements high level configure/run
 behaviour of control system components like those used in continuous scans. 
@@ -12,7 +11,7 @@ Malcolm servers and clients.
 Documentation
 -------------
 
-Full documentation is available at http://pymalcolm.readthedocs.org
+Full documentation is available at https://dls-controls.github.io/pymalcolm
 
 Source Code
 -----------
@@ -44,9 +43,13 @@ License
 APACHE License. (see `LICENSE`_)
 
 
-.. |build_status| image:: https://github.com/dls-controls/pymalcolm/workflows/GitHub%20Actions/badge.svg?branch=master
-    :target: https://github.com/dls-controls/pymalcolm/actions
-    :alt: Build Status
+.. |code_ci| image:: https://github.com/dls-controls/pymalcolm/workflows/Code%20CI/badge.svg?branch=master
+    :target: https://github.com/dls-controls/pymalcolm/actions?query=workflow%3A%22Code+CI%22
+    :alt: Code CI
+
+.. |docs_ci| image:: https://github.com/dls-controls/pymalcolm/workflows/Docs%20CI/badge.svg?branch=master
+    :target: https://github.com/dls-controls/pymalcolm/actions?query=workflow%3A%22Docs+CI%22
+    :alt: Docs CI
 
 .. |coverage| image:: https://codecov.io/gh/dls-controls/pymalcolm/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/dls-controls/pymalcolm
@@ -55,10 +58,6 @@ APACHE License. (see `LICENSE`_)
 .. |pypi_version| image:: https://img.shields.io/pypi/v/malcolm.svg
     :target: https://pypi.python.org/pypi/malcolm/
     :alt: Latest PyPI version
-
-.. |readthedocs| image:: https://readthedocs.org/projects/pymalcolm/badge/?version=latest
-    :target: http://pymalcolm.readthedocs.org
-    :alt: Documentation
 
 .. |health| image:: https://api.codacy.com/project/badge/Grade/9b277852ec9347329f35dc41d068c151
    :target: https://app.codacy.com/app/dls-controls/pymalcolm?utm_source=github.com&utm_medium=referral&utm_content=dls-controls/pymalcolm&utm_campaign=Badge_Grade_Dashboard
