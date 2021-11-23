@@ -1,0 +1,417 @@
+<!-- https://stackoverflow.com/a/37843854 -->
+
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>malcolm.modules.pva.controllers.pvaclientcomms &mdash; malcolm 4.6+25.g37b44de1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/theme_overrides.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../../../../../_static/malcolm-logo.ico"/>
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../../contents.html" class="icon icon-home"> malcolm
+          
+
+          
+            
+            <img src="../../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                4.6
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+    
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/external_api.html">External modules</a></li>
+</ul>
+
+            
+          
+    <a href="genindex.html">Index</a>
+  
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../contents.html">malcolm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>malcolm.modules.pva.controllers.pvaclientcomms</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for malcolm.modules.pva.controllers.pvaclientcomms</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Set</span>
+
+<span class="kn">from</span> <span class="nn">p4p</span> <span class="kn">import</span> <span class="n">Value</span>
+<span class="kn">from</span> <span class="nn">p4p.client.cothread</span> <span class="kn">import</span> <span class="n">Context</span><span class="p">,</span> <span class="n">Subscription</span>
+<span class="kn">from</span> <span class="nn">p4p.client.raw</span> <span class="kn">import</span> <span class="n">Disconnected</span><span class="p">,</span> <span class="n">RemoteError</span>
+<span class="kn">from</span> <span class="nn">p4p.nt</span> <span class="kn">import</span> <span class="n">NTURI</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span> <span class="n">Alarm</span><span class="p">,</span> <span class="n">BlockMeta</span><span class="p">,</span> <span class="n">BlockModel</span><span class="p">,</span> <span class="n">Model</span><span class="p">,</span> <span class="n">Queue</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules</span> <span class="kn">import</span> <span class="n">builtin</span>
+
+<span class="kn">from</span> <span class="nn">.pvaconvert</span> <span class="kn">import</span> <span class="n">Type</span><span class="p">,</span> <span class="n">convert_to_type_tuple_value</span><span class="p">,</span> <span class="n">convert_value_to_dict</span>
+
+
+<div class="viewcode-block" id="PvaClientComms"><a class="viewcode-back" href="../../../../../build/pva/controllers_api.html#malcolm.modules.pva.controllers.PvaClientComms">[docs]</a><span class="k">class</span> <span class="nc">PvaClientComms</span><span class="p">(</span><span class="n">builtin</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">ClientComms</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A class for a client to communicate with the server&quot;&quot;&quot;</span>
+
+    <span class="n">_monitors</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_ctxt</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_queues</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Queue</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">do_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">do_init</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ctxt</span> <span class="o">=</span> <span class="n">Context</span><span class="p">(</span><span class="s2">&quot;pva&quot;</span><span class="p">,</span> <span class="n">unwrap</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_queues</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Queue</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">Subscription</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">do_disable</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">do_disable</span><span class="p">()</span>
+        <span class="c1"># Unsubscribe to all the monitors</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="p">:</span>
+            <span class="n">m</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ctxt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_update_settable_fields</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">update_fields</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">dotted_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ob</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ob</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">model_children</span> <span class="o">=</span> <span class="nb">all</span><span class="p">([</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">ob</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">Model</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">ob</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">model_children</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ob</span><span class="p">,</span> <span class="n">Model</span><span class="p">)</span> <span class="ow">or</span> <span class="n">model_children</span><span class="p">:</span>
+            <span class="c1"># Recurse down</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">ob</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_update_settable_fields</span><span class="p">(</span>
+                    <span class="n">update_fields</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dotted_path</span><span class="p">,</span> <span class="n">k</span><span class="p">),</span> <span class="n">ob</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># This is a terminal field, add to the set</span>
+            <span class="n">update_fields</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">dotted_path</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PvaClientComms.sync_proxy"><a class="viewcode-back" href="../../../../../build/pva/controllers_api.html#malcolm.modules.pva.controllers.PvaClientComms.sync_proxy">[docs]</a>    <span class="k">def</span> <span class="nf">sync_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mri</span><span class="p">,</span> <span class="n">block</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Abstract method telling the ClientComms to sync this proxy Block</span>
+<span class="sd">        with its remote counterpart. Should wait until it is connected</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            mri (str): The mri for the remote block</span>
+<span class="sd">            block (BlockModel): The local proxy Block to keep in sync</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">done_queue</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_queues</span><span class="p">[</span><span class="n">mri</span><span class="p">]</span> <span class="o">=</span> <span class="n">done_queue</span>
+        <span class="n">update_fields</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">):</span>
+                <span class="c1"># Disconnect or Cancelled or RemoteError</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Disconnected</span><span class="p">):</span>
+                    <span class="c1"># We will get a reconnect with a whole new structure</span>
+                    <span class="n">update_fields</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+                    <span class="n">block</span><span class="o">.</span><span class="n">health</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span>
+                        <span class="n">value</span><span class="o">=</span><span class="s2">&quot;pvAccess disconnected&quot;</span><span class="p">,</span>
+                        <span class="n">alarm</span><span class="o">=</span><span class="n">Alarm</span><span class="o">.</span><span class="n">disconnected</span><span class="p">(</span><span class="s2">&quot;pvAccess disconnected&quot;</span><span class="p">),</span>
+                    <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">block</span><span class="o">.</span><span class="n">notifier</span><span class="o">.</span><span class="n">changes_squashed</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">update_fields</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Regenerating from </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_regenerate_block</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">update_fields</span><span class="p">)</span>
+                        <span class="n">done_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_update_block</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">update_fields</span><span class="p">)</span>
+
+        <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctxt</span><span class="o">.</span><span class="n">monitor</span><span class="p">(</span><span class="n">mri</span><span class="p">,</span> <span class="n">callback</span><span class="p">,</span> <span class="n">notify_disconnect</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+        <span class="n">done_queue</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_regenerate_block</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">block</span><span class="p">:</span> <span class="n">BlockModel</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Value</span><span class="p">,</span> <span class="n">update_fields</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># This is an initial update, generate the list of all fields</span>
+        <span class="c1"># TODO: very similar to websocketclientcomms</span>
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">block</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">field</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;health&quot;</span><span class="p">,</span> <span class="s2">&quot;meta&quot;</span><span class="p">):</span>
+                <span class="n">block</span><span class="o">.</span><span class="n">remove_endpoint</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">&quot;health&quot;</span><span class="p">:</span>
+                <span class="c1"># Update health attribute</span>
+                <span class="n">block</span><span class="o">.</span><span class="n">health</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span>
+                    <span class="n">value</span><span class="o">=</span><span class="n">v</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">],</span>
+                    <span class="n">alarm</span><span class="o">=</span><span class="n">convert_value_to_dict</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="s2">&quot;alarm&quot;</span><span class="p">]),</span>
+                    <span class="n">ts</span><span class="o">=</span><span class="n">convert_value_to_dict</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="s2">&quot;timeStamp&quot;</span><span class="p">]),</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">&quot;meta&quot;</span><span class="p">:</span>
+                <span class="c1"># Update BlockMeta</span>
+                <span class="n">meta</span><span class="p">:</span> <span class="n">BlockMeta</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">meta</span>
+                <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">meta</span><span class="o">.</span><span class="n">call_types</span><span class="p">:</span>
+                    <span class="n">meta</span><span class="o">.</span><span class="n">apply_change</span><span class="p">([</span><span class="n">n</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Add new Attribute/Method</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="n">convert_value_to_dict</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                <span class="n">block</span><span class="o">.</span><span class="n">set_endpoint_data</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+            <span class="c1"># Update the list of fields</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_settable_fields</span><span class="p">(</span><span class="n">update_fields</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">block</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_update_block</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">block</span><span class="p">:</span> <span class="n">BlockModel</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Value</span><span class="p">,</span> <span class="n">update_fields</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># This is a subsequent update</span>
+        <span class="n">changed</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">changedSet</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">changed</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">update_fields</span><span class="p">):</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">Value</span><span class="p">):</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="n">convert_value_to_dict</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="n">block</span><span class="o">.</span><span class="n">apply_change</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">),</span> <span class="n">v</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PvaClientComms.send_put"><a class="viewcode-back" href="../../../../../build/pva/controllers_api.html#malcolm.modules.pva.controllers.PvaClientComms.send_put">[docs]</a>    <span class="k">def</span> <span class="nf">send_put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mri</span><span class="p">,</span> <span class="n">attribute_name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Abstract method to dispatch a Put to the server</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            mri (str): The mri of the Block</span>
+<span class="sd">            attribute_name (str): The name of the Attribute within the Block</span>
+<span class="sd">            value: The value to put</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">attribute_name</span> <span class="o">+</span> <span class="s2">&quot;.value&quot;</span>
+        <span class="n">typ</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">convert_to_type_tuple_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">typ</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="c1"># Structure, make into a Value</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">typeid</span><span class="p">,</span> <span class="n">fields</span> <span class="o">=</span> <span class="n">typ</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">Value</span><span class="p">(</span><span class="n">Type</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="n">typeid</span><span class="p">),</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ctxt</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">mri</span><span class="p">,</span> <span class="p">{</span><span class="n">path</span><span class="p">:</span> <span class="n">value</span><span class="p">},</span> <span class="n">path</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">RemoteError</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">attribute_name</span> <span class="o">==</span> <span class="s2">&quot;exports&quot;</span><span class="p">:</span>
+                <span class="c1"># TODO: use a tag instead of a name</span>
+                <span class="c1"># This will change the structure of the block</span>
+                <span class="c1"># Wait for reconnect</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_queues</span><span class="p">[</span><span class="n">mri</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Not expected, raise</span>
+                <span class="k">raise</span></div>
+
+<div class="viewcode-block" id="PvaClientComms.send_post"><a class="viewcode-back" href="../../../../../build/pva/controllers_api.html#malcolm.modules.pva.controllers.PvaClientComms.send_post">[docs]</a>    <span class="k">def</span> <span class="nf">send_post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mri</span><span class="p">,</span> <span class="n">method_name</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Abstract method to dispatch a Post to the server</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            mri (str): The mri of the Block</span>
+<span class="sd">            method_name (str): The name of the Method within the Block</span>
+<span class="sd">            params: The parameters to send</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The return results from the server</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">typ</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="n">convert_to_type_tuple_value</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">uri</span> <span class="o">=</span> <span class="n">NTURI</span><span class="p">(</span><span class="n">typ</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+        <span class="n">uri</span> <span class="o">=</span> <span class="n">uri</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mri</span><span class="p">,</span> <span class="n">method_name</span><span class="p">),</span> <span class="n">kws</span><span class="o">=</span><span class="n">parameters</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s2">&quot;pva&quot;</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctxt</span><span class="o">.</span><span class="n">rpc</span><span class="p">(</span><span class="n">mri</span><span class="p">,</span> <span class="n">uri</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">convert_value_to_dict</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2015, Diamond Light Source.
+
+    </p>
+  </div> 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+  
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

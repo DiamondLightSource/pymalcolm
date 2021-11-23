@@ -1,0 +1,11 @@
+
+dtacq
+=====
+
+.. module:: malcolm.modules.dtacq
+
+.. toctree::
+    :maxdepth: 1
+    :caption: malcolm.modules.dtacq
+
+    blocks <blocks_api.rst>

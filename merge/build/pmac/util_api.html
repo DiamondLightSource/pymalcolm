@@ -1,0 +1,369 @@
+<!-- https://stackoverflow.com/a/37843854 -->
+
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>malcolm.modules.pmac.util &mdash; malcolm 4.6+25.g37b44de1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/malcolm-logo.ico"/>
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="profiling" href="../profiling/index.html" />
+    <link rel="prev" title="malcolm.modules.pmac.parts" href="parts_api.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../contents.html" class="icon icon-home"> malcolm
+          
+
+          
+            
+            <img src="../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                4.6
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+    
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Introduction</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../modules_api.html">malcolm.modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../ADAndor/index.html">ADAndor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADCore/index.html">ADCore</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADEiger/index.html">ADEiger</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADEthercat/index.html">ADEthercat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADMerlin/index.html">ADMerlin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADOdin/index.html">ADOdin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADPandABlocks/index.html">ADPandABlocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADPco/index.html">ADPco</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADPilatus/index.html">ADPilatus</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADSimDetector/index.html">ADSimDetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADTetrAMM/index.html">ADTetrAMM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../adUtil/index.html">adUtil</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../aravisGigE/index.html">aravisGigE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../asyn/index.html">asyn</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../builtin/index.html">builtin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ca/index.html">ca</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demo/index.html">demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dtacq/index.html">dtacq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pandablocks/index.html">pandablocks</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">pmac</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="blocks_api.html">blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="includes_api.html">includes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="infos_api.html">infos</a></li>
+<li class="toctree-l3"><a class="reference internal" href="parts_api.html">parts</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../profiling/index.html">profiling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pva/index.html">pva</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../scanning/index.html">scanning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../system/index.html">system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../web/index.html">web</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../xmap/index.html">xmap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../xspress3/index.html">xspress3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../zebra/index.html">zebra</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/external_api.html">External modules</a></li>
+</ul>
+
+            
+          
+    <a href="genindex.html">Index</a>
+  
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../contents.html">malcolm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../contents.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../modules_api.html">malcolm.modules</a> &raquo;</li>
+        
+          <li><a href="index.html">pmac</a> &raquo;</li>
+        
+      <li>malcolm.modules.pmac.util</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../../_sources/build/pmac/util_api.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-malcolm.modules.pmac.util">
+<span id="malcolm-modules-pmac-util"></span><h1>malcolm.modules.pmac.util<a class="headerlink" href="#module-malcolm.modules.pmac.util" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.util.get_motion_axes">
+<span class="sig-prename descclassname"><span class="pre">malcolm.modules.pmac.util.</span></span><span class="sig-name descname"><span class="pre">get_motion_axes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">generator</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">scanpointgenerator.core.compoundgenerator.CompoundGenerator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes_to_move</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="../../api/external_api.html#List" title="List"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/util.html#get_motion_axes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.util.get_motion_axes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter axes_to_move to only contain motion axes</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.util.cs_axis_mapping">
+<span class="sig-prename descclassname"><span class="pre">malcolm.modules.pmac.util.</span></span><span class="sig-name descname"><span class="pre">cs_axis_mapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.context.Context"><span class="pre">malcolm.core.context.Context</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">layout_table</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../builtin/util_api.html#malcolm.modules.builtin.util.LayoutTable" title="malcolm.modules.builtin.util.LayoutTable"><span class="pre">malcolm.modules.builtin.util.LayoutTable</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes_to_move</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="../../api/external_api.html#Dict" title="Dict"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="infos_api.html#malcolm.modules.pmac.infos.MotorInfo" title="malcolm.modules.pmac.infos.MotorInfo"><span class="pre">malcolm.modules.pmac.infos.MotorInfo</span></a><span class="p"><span class="pre">]</span></span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/util.html#cs_axis_mapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.util.cs_axis_mapping" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given the layout table of a PMAC, create a MotorInfo for every axis in
+axes_to_move that isn’t generated by a StaticPointGenerator. Check that they
+are all in the same CS</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.util.cs_axis_numbers">
+<span class="sig-prename descclassname"><span class="pre">malcolm.modules.pmac.util.</span></span><span class="sig-name descname"><span class="pre">cs_axis_numbers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.context.Context"><span class="pre">malcolm.core.context.Context</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">layout_table</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../builtin/util_api.html#malcolm.modules.builtin.util.LayoutTable" title="malcolm.modules.builtin.util.LayoutTable"><span class="pre">malcolm.modules.builtin.util.LayoutTable</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cs_port</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="../../api/external_api.html#Dict" title="Dict"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/util.html#cs_axis_numbers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.util.cs_axis_numbers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given the layout table of a PMAC, get the axis number for each name
+in the table which is in the specified CS</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.util.all_points_same_velocities">
+<span class="sig-prename descclassname"><span class="pre">malcolm.modules.pmac.util.</span></span><span class="sig-name descname"><span class="pre">all_points_same_velocities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">scanpointgenerator.core.point.Points</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">annotypes._array.Array</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/util.html#all_points_same_velocities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.util.all_points_same_velocities" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a numpy array of bool where each element is true
+if the corresponding element is points has the same velocity as the
+next element (for all axes at this point)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.util.all_points_joined">
+<span class="sig-prename descclassname"><span class="pre">malcolm.modules.pmac.util.</span></span><span class="sig-name descname"><span class="pre">all_points_joined</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">scanpointgenerator.core.point.Points</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">annotypes._array.Array</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/util.html#all_points_joined"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.util.all_points_joined" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check for axes that need to move within the space between points
+this check is performed on all points and returns an array of
+bool where True implies that the point at this index is joined
+to the point at the next index</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.util.point_velocities">
+<span class="sig-prename descclassname"><span class="pre">malcolm.modules.pmac.util.</span></span><span class="sig-name descname"><span class="pre">point_velocities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axis_mapping</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../api/external_api.html#Dict" title="Dict"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="infos_api.html#malcolm.modules.pmac.infos.MotorInfo" title="malcolm.modules.pmac.infos.MotorInfo"><span class="pre">malcolm.modules.pmac.infos.MotorInfo</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">scanpointgenerator.core.point.Point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">entry</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="../../api/external_api.html#Dict" title="Dict"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/util.html#point_velocities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.util.point_velocities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the velocities of each axis over the entry/exit of current point</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.util.profile_between_points">
+<span class="sig-prename descclassname"><span class="pre">malcolm.modules.pmac.util.</span></span><span class="sig-name descname"><span class="pre">profile_between_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axis_mapping</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../api/external_api.html#Dict" title="Dict"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="infos_api.html#malcolm.modules.pmac.infos.MotorInfo" title="malcolm.modules.pmac.infos.MotorInfo"><span class="pre">malcolm.modules.pmac.infos.MotorInfo</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">scanpointgenerator.core.point.Point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">next_point</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">scanpointgenerator.core.point.Point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_time</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.002</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_interval</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.002</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/util.html#profile_between_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.util.profile_between_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make consistent time and velocity arrays for each axis</p>
+<p>Try to create velocity profiles for all axes that all arrive at
+‘distance’ in the same time period. The profiles will contain the
+following points:-</p>
+<p>in the following description acceleration can be -ve or +ve depending
+on the relative sign of v1 and v2. fabs(vm) is &lt;= maximum velocity
+- start point at 0 secs with velocity v1     start accelerating
+- middle velocity start                      reached speed vm
+- middle velocity end                        start accelerating
+- end point with velocity v2                 reached target speed</p>
+<p>Time at vm may be 0 in which case there are only 3 points and
+acceleration to v2 starts as soon as vm is reached.</p>
+<p>If the profile has to be stretched to achieve min_time then the
+the middle period at speed vm is extended accordingly.</p>
+<p>After generating all the profiles this function checks to ensure they
+have all achieved min_time. If not min_time is reset to the slowest
+profile and all profiles are recalculated.</p>
+<p>Note that for each profile the area under the velocity/time plot
+must equal ‘distance’. The class VelocityProfile implements the math
+to achieve this.</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="../profiling/index.html" class="btn btn-neutral float-right" title="profiling" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="parts_api.html" class="btn btn-neutral float-left" title="malcolm.modules.pmac.parts" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2015, Diamond Light Source.
+
+    </p>
+  </div> 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+  
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,12 @@
+
+ADAndor
+=======
+
+.. module:: malcolm.modules.ADAndor
+
+.. toctree::
+    :maxdepth: 1
+    :caption: malcolm.modules.ADAndor
+
+    blocks <blocks_api.rst>
+    parts <parts_api.rst>

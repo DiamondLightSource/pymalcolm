@@ -1,0 +1,15 @@
+
+ADCore
+======
+
+.. module:: malcolm.modules.ADCore
+
+.. toctree::
+    :maxdepth: 1
+    :caption: malcolm.modules.ADCore
+
+    blocks <blocks_api.rst>
+    includes <includes_api.rst>
+    infos <infos_api.rst>
+    parts <parts_api.rst>
+    util <util_api.rst>

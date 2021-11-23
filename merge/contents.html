@@ -1,0 +1,677 @@
+<!-- https://stackoverflow.com/a/37843854 -->
+
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Contents &mdash; malcolm 4.6+25.g37b44de1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="_static/malcolm-logo.ico"/>
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Malcolm" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="#" class="icon icon-home"> malcolm
+          
+
+          
+            
+            <img src="_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                4.6
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+    
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Introduction</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/external_api.html">External modules</a></li>
+</ul>
+
+            
+          
+    <a href="genindex.html">Index</a>
+  
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">malcolm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Contents</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/contents.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="contents">
+<h1>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="index.html#what-can-malcolm-do">What can Malcolm do?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#how-is-the-documentation-structured">How is the documentation structured?</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="index.html#configuring-malcolm-to-work-with-your-hardware">Configuring Malcolm to work with your hardware</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#controlling-malcolm-via-comms-protocols">Controlling Malcolm via comms protocols</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#installation-guide">Installation Guide</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="index.html#using-pipenv">Using pipenv</a></li>
+<li class="toctree-l3"><a class="reference internal" href="index.html#using-pip">Using pip</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound" id="tutorials-doc">
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/hello.html">Hello World Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/hello.html#launching-a-malcolm-process">Launching a Malcolm Process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/hello.html#connecting-a-second-malcolm-process">Connecting a second Malcolm Process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/hello.html#defining-a-block">Defining a Block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/hello.html#defining-a-part">Defining a Part</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/hello.html#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/counter.html">Counter Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/counter.html#creating-attributes-in-a-part">Creating Attributes in a Part</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/counter.html#visualising-the-block-with-the-gui">Visualising the Block with the GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/counter.html#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/motion.html">Motion Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/motion.html#creating-device-blocks">Creating Device Blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/motion.html#controller-for-device-blocks">Controller for Device Blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/motion.html#adding-functionality-to-a-managercontroller">Adding functionality to a ManagerController</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/motion.html#how-it-looks-in-the-gui">How it looks in the GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/motion.html#deleting-blocks">Deleting Blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/motion.html#load-save">Load/Save</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/motion.html#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/detector.html">Detector Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/detector.html#specifying-scan-points">Specifying Scan Points</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/detector.html#creating-runnable-device-blocks">Creating Runnable Device Blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/detector.html#controller-for-runnable-device-blocks">Controller for Runnable Device Blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/detector.html#adding-functionality-to-a-runnablecontroller">Adding functionality to a RunnableController</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/detector.html#hooking-into-configure">Hooking into configure()</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/detector.html#passing-infos-back-to-the-controller">Passing Infos back to the Controller</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/detector.html#hooking-into-run">Hooking into run()</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/detector.html#hooking-into-seek-abort-and-reset">Hooking into seek(), abort() and reset()</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/detector.html#running-the-demo">Running the demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/detector.html#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/scanning.html">Scanning Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/scanning.html#block-hierarchy">Block Hierarchy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/scanning.html#creating-the-blocks">Creating the Blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/scanning.html#scan-block">Scan Block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/scanning.html#hooking-a-simple-device-block-into-a-scan">Hooking a Simple Device Block into a Scan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/scanning.html#hooking-into-configure">Hooking into configure()</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/scanning.html#hooking-into-run">Hooking into run()</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/scanning.html#running-a-scan">Running a Scan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/scanning.html#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/areadetector.html">AreaDetector Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/areadetector.html#acquisition-strategy">Acquisition Strategy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/areadetector.html#creating-the-blocks">Creating the Blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/areadetector.html#device-block">Device Block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/areadetector.html#hardware-blocks">Hardware Blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/areadetector.html#template-designs">Template Designs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/areadetector.html#scan-block-design">Scan Block Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/areadetector.html#running-a-scan">Running a Scan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/areadetector.html#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/pmac.html">PMAC Master Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/pmac.html#strategy">Strategy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/pmac.html#epics-prerequisites">EPICS Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/pmac.html#make-a-malcolm-directory-for-a-beamline">Make a Malcolm directory for a beamline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/pmac.html#define-the-process-definition">Define the Process Definition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/pmac.html#define-a-pmac-block">Define a PMAC Block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/pmac.html#define-a-scan-block">Define a scan Block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/pmac.html#expose-blocks-in-a-module">Expose Blocks in a module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/pmac.html#setup-the-devices">Setup the Devices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/pmac.html#setup-the-scan">Setup the Scan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/pmac.html#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/panda.html">PandA Master Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/panda.html#strategy">Strategy</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/panda.html#position-compare">Position Compare</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/panda.html#motion-gate">Motion Gate</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/panda.html#adding-to-the-scan-block">Adding to the scan Block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/panda.html#setup-the-devices">Setup the Devices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/panda.html#setup-the-scan">Setup the Scan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/panda.html#conclusion">Conclusion</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound" id="reference-doc">
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="reference/glossary.html">Glossary</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference/glossary.html#attribute">Attribute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/glossary.html#block">Block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/glossary.html#clientcomms">ClientComms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/glossary.html#context">Context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/glossary.html#controller">Controller</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/glossary.html#design">Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/glossary.html#device-layer">Device Layer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/glossary.html#exports">Exports</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/glossary.html#future">Future</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/glossary.html#hardware-layer">Hardware Layer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/glossary.html#hook">Hook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/glossary.html#include">Include</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/glossary.html#info">Info</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/glossary.html#initial-design">Initial Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/glossary.html#method">Method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/glossary.html#mri">mri</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/glossary.html#part">Part</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/glossary.html#process">Process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/glossary.html#process-definition">Process Definition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/glossary.html#scan-layer">Scan Layer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/glossary.html#servercomms">ServerComms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/glossary.html#tags">Tags</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/glossary.html#template-design">Template Design</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/messages.html">Message Structure</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference/messages.html#get">Get</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/messages.html#put">Put</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/messages.html#post">Post</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/messages.html#subscribe">Subscribe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/messages.html#unsubscribe">Unsubscribe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/messages.html#return">Return</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/messages.html#error">Error</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/messages.html#update">Update</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/messages.html#delta">Delta</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference/tags.html">Supported Tags</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference/tags.html#widget-tag">Widget Tag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/tags.html#linked-value-tag">Linked Value Tag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/tags.html#badge-value-tag">Badge Value Tag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/tags.html#port-tag">Port Tag</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="reference/tags.html#port-types">Port types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/tags.html#source-port-tag">Source Port Tag</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/tags.html#sink-port-tag">Sink Port Tag</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="reference/tags.html#group-tag">Group Tag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/tags.html#config-tag">Config Tag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/tags.html#method-return-unpacked-tag">Method Return Unpacked Tag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/tags.html#version-tag">Version Tag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/tags.html#hidden-method-tag">Hidden Method Tag</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference/statesets.html">State Sets and Hooks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference/statesets.html#statefulcontroller">StatefulController</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/statesets.html#managercontroller">ManagerController</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/statesets.html#runnablecontroller">RunnableController</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference/infos.html">Infos</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference/infos.html#builtin-module-infos">builtin module Infos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/infos.html#scanning-module-infos">scanning module Infos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/infos.html#web-module-infos">web module Infos</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/triggering.html">Trajectory Scan Triggering</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference/triggering.html#pmac-based-triggering">PMAC-based Triggering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/triggering.html#using-the-panda-for-triggering">Using the PandA for Triggering</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference/contributing.html">Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference/contributing.html#setup">Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/contributing.html#running-the-tests">Running the tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/contributing.html#code-styling">Code Styling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/contributing.html#pipfile-lock">Pipfile.lock</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/contributing.html#documentation">Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="reference/contributing.html#building-the-docs">Building the docs</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="reference/contributing.html#coding-conventions">Coding Conventions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/contributing.html#release-checklist">Release Checklist</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference/release_notes.html">Change Log</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#unreleased">Unreleased</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#id1">4.6 - 2021-08-17</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#id2">4.5 - 2021-04-27</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#id3">4.4 - 2021-03-02</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#id4">4-3-1 - 2020-09-18</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#b8-2020-04-17">4-2b8 - 2020-04-17</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#b6-2020-02-10">4-2b6 - 2020-02-10</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#b5-2020-01-27">4-2b5 - 2020-01-27</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#b4-2019-12-04">4-2b4 - 2019-12-04</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#b3-2019-11-28">4-2b3 - 2019-11-28</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#b2-2019-11-27">4-2b2 - 2019-11-27</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#b1-2019-11-27">4-2b1 - 2019-11-27</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#id5">4-1-1 - 2019-11-18</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#id6">4-1 - 2019-09-26</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#id7">4-0 - 2019-07-05</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#b2-2019-06-20">4-0b2 - 2019-06-20</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#b1-2019-05-03">4-0b1 - 2019-05-03</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#id8">3-5-1 - 2019-07-26</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#id9">3-5 - 2019-06-17</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#id10">3-4-1 - 2019-05-08</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#id11">3-4 - 2019-03-28</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#id12">3-3 - 2019-02-19</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#id13">3-2 - 2019-01-21</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#id14">3-0 - 2019-01-04</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#b2-2018-12-05">3-0b2 - 2018-12-05</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#b1-2018-12-04">3-0b1 - 2018-12-04</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#a9-2018-12-03">3-0a9 - 2018-12-03</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#a8-2018-11-30">3-0a8 - 2018-11-30</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#a7-2018-11-27">3-0a7 - 2018-11-27</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#a6-2018-11-05">3-0a6 - 2018-11-05</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#a5-2018-10-17">3-0a5 - 2018-10-17</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#a4-2018-09-24">3-0a4 - 2018-09-24</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#a3-2018-07-25">3-0a3 - 2018-07-25</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#a2-2018-07-17">3-0a2 - 2018-07-17</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#a1-2018-07-16">3-0a1 - 2018-07-16</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#id15">2-3-1 - 2018-06-07</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#id16">2-3 - 2018-05-31</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#id17">2-2 - 2018-03-29</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#id18">2-1 - 2017-08-30</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#a6-2016-10-03">2-0a6 - 2016-10-03</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#a5-2016-10-03">2-0a5 - 2016-10-03</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#a4-2016-09-20">2-0a4 - 2016-09-20</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#a3-2016-08-31">2-0a3 - 2016-08-31</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#a2-2016-08-30">2-0a2 - 2016-08-30</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/release_notes.html#a1-2016-08-15">2-0a1 - 2016-08-15</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="build/modules_api.html">malcolm.modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="build/ADAndor/index.html">ADAndor</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/ADAndor/blocks_api.html">blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/ADAndor/parts_api.html">parts</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build/ADCore/index.html">ADCore</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/ADCore/blocks_api.html">blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/ADCore/includes_api.html">includes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/ADCore/infos_api.html">infos</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/ADCore/parts_api.html">parts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/ADCore/util_api.html">util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build/ADEiger/index.html">ADEiger</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/ADEiger/blocks_api.html">blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/ADEiger/parts_api.html">parts</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build/ADEthercat/index.html">ADEthercat</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/ADEthercat/blocks_api.html">blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/ADEthercat/parts_api.html">parts</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build/ADMerlin/index.html">ADMerlin</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/ADMerlin/blocks_api.html">blocks</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build/ADOdin/index.html">ADOdin</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/ADOdin/blocks_api.html">blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/ADOdin/parts_api.html">parts</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build/ADPandABlocks/index.html">ADPandABlocks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/ADPandABlocks/blocks_api.html">blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/ADPandABlocks/controllers_api.html">controllers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/ADPandABlocks/parts_api.html">parts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/ADPandABlocks/util_api.html">util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build/ADPco/index.html">ADPco</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/ADPco/blocks_api.html">blocks</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build/ADPilatus/index.html">ADPilatus</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/ADPilatus/blocks_api.html">blocks</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build/ADSimDetector/index.html">ADSimDetector</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/ADSimDetector/blocks_api.html">blocks</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build/ADTetrAMM/index.html">ADTetrAMM</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/ADTetrAMM/blocks_api.html">blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/ADTetrAMM/parts_api.html">parts</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build/adUtil/index.html">adUtil</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/adUtil/blocks_api.html">blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/adUtil/parts_api.html">parts</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build/aravisGigE/index.html">aravisGigE</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/aravisGigE/blocks_api.html">blocks</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build/asyn/index.html">asyn</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/asyn/parts_api.html">parts</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build/builtin/index.html">builtin</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/builtin/blocks_api.html">blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/builtin/controllers_api.html">controllers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/builtin/defines_api.html">defines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/builtin/hooks_api.html">hooks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/builtin/infos_api.html">infos</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/builtin/parameters_api.html">parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/builtin/parts_api.html">parts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/builtin/util_api.html">util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build/ca/index.html">ca</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/ca/parts_api.html">parts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/ca/util_api.html">util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build/demo/index.html">demo</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/demo/blocks_api.html">blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/demo/parts_api.html">parts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/demo/util_api.html">util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build/dtacq/index.html">dtacq</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/dtacq/blocks_api.html">blocks</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build/pandablocks/index.html">pandablocks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/pandablocks/blocks_api.html">blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/pandablocks/controllers_api.html">controllers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/pandablocks/parts_api.html">parts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/pandablocks/util_api.html">util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build/pmac/index.html">pmac</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/pmac/blocks_api.html">blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/pmac/includes_api.html">includes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/pmac/infos_api.html">infos</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/pmac/parts_api.html">parts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/pmac/util_api.html">util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build/profiling/index.html">profiling</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/profiling/blocks_api.html">blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/profiling/parts_api.html">parts</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build/pva/index.html">pva</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/pva/blocks_api.html">blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/pva/controllers_api.html">controllers</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build/scanning/index.html">scanning</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/scanning/blocks_api.html">blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/scanning/controllers_api.html">controllers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/scanning/hooks_api.html">hooks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/scanning/infos_api.html">infos</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/scanning/parts_api.html">parts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/scanning/util_api.html">util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build/system/index.html">system</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/system/blocks_api.html">blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/system/controllers_api.html">controllers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/system/defines_api.html">defines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/system/parts_api.html">parts</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build/web/index.html">web</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/web/blocks_api.html">blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/web/controllers_api.html">controllers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/web/hooks_api.html">hooks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/web/infos_api.html">infos</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/web/parts_api.html">parts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/web/util_api.html">util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build/xmap/index.html">xmap</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/xmap/blocks_api.html">blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/xmap/parts_api.html">parts</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build/xspress3/index.html">xspress3</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/xspress3/blocks_api.html">blocks</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build/zebra/index.html">zebra</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/zebra/blocks_api.html">blocks</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/external_api.html">External modules</a></li>
+</ul>
+</div>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+</ul>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="index.html" class="btn btn-neutral float-right" title="Malcolm" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2015, Diamond Light Source.
+
+    </p>
+  </div> 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+  
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

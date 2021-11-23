@@ -1,0 +1,663 @@
+<!-- https://stackoverflow.com/a/37843854 -->
+
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>malcolm.modules.ADPandABlocks.parts.kinematicssavupart &mdash; malcolm 4.6+25.g37b44de1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/theme_overrides.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../../../../../_static/malcolm-logo.ico"/>
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../../contents.html" class="icon icon-home"> malcolm
+          
+
+          
+            
+            <img src="../../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                4.6
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+    
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/external_api.html">External modules</a></li>
+</ul>
+
+            
+          
+    <a href="genindex.html">Index</a>
+  
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../contents.html">malcolm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>malcolm.modules.ADPandABlocks.parts.kinematicssavupart</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for malcolm.modules.ADPandABlocks.parts.kinematicssavupart</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">shutil</span> <span class="kn">import</span> <span class="n">copyfile</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">h5py</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">add_call_types</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="n">APartName</span><span class="p">,</span> <span class="n">Info</span><span class="p">,</span> <span class="n">PartRegistrar</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules</span> <span class="kn">import</span> <span class="n">builtin</span><span class="p">,</span> <span class="n">pandablocks</span><span class="p">,</span> <span class="n">pmac</span><span class="p">,</span> <span class="n">scanning</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules.builtin.util</span> <span class="kn">import</span> <span class="n">LayoutTable</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
+
+    <span class="n">PartInfo</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Info</span><span class="p">]]</span>
+
+<span class="c1"># Pull re-used annotypes into our namespace in case we are subclassed</span>
+<span class="n">APartName</span> <span class="o">=</span> <span class="n">APartName</span>
+<span class="n">AMri</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">AMri</span>
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;name of CS port&quot;</span><span class="p">):</span>
+    <span class="n">ACsPort</span> <span class="o">=</span> <span class="nb">str</span>
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;mri suffix of malcolm CS block [$(pmac_mri):$(suffix)]&quot;</span><span class="p">):</span>
+    <span class="n">ACsMriSuffix</span> <span class="o">=</span> <span class="nb">str</span>
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;mri suffix of malcolm Status block [$(pmac_mri):$(suffix)]&quot;</span><span class="p">):</span>
+    <span class="n">AStatusMriSuffix</span> <span class="o">=</span> <span class="nb">str</span>
+
+<span class="n">PVar</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;PVar&quot;</span><span class="p">,</span> <span class="s2">&quot;path file p_number&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">MRES_VAR</span><span class="p">(</span><span class="n">axis</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s2">&quot;P48</span><span class="si">%02d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">axis</span>
+
+
+<span class="k">def</span> <span class="nf">OFFSET_VAR</span><span class="p">(</span><span class="n">axis</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s2">&quot;P49</span><span class="si">%02d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">axis</span>
+
+
+<span class="c1"># We will set these attributes on the child block, so don&#39;t save them</span>
+<div class="viewcode-block" id="KinematicsSavuPart"><a class="viewcode-back" href="../../../../../build/ADPandABlocks/parts_api.html#malcolm.modules.ADPandABlocks.parts.KinematicsSavuPart">[docs]</a><span class="k">class</span> <span class="nc">KinematicsSavuPart</span><span class="p">(</span><span class="n">builtin</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">ChildPart</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Part for writing out files to send to Savu for post processing</span>
+<span class="sd">    of forward kinematics. Creates the following files:</span>
+
+<span class="sd">    - &lt;ID&gt;-savu.nxs - Input data file for Savu. Links to Panda data, and</span>
+<span class="sd">        datasets which contain the kinematics code and variables.</span>
+<span class="sd">    - &lt;ID&gt;-savu_pl.nxs - Savu process list, copied from /kinematics directory</span>
+<span class="sd">    - &lt;ID&gt;-vds.nxs - VDS file linking to Savu processed data (when processed)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">APartName</span><span class="p">,</span>
+        <span class="n">mri</span><span class="p">:</span> <span class="n">AMri</span><span class="p">,</span>
+        <span class="n">cs_port</span><span class="p">:</span> <span class="n">ACsPort</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cs_mri_suffix</span><span class="p">:</span> <span class="n">ACsMriSuffix</span> <span class="o">=</span> <span class="s2">&quot;:CS&quot;</span><span class="p">,</span>
+        <span class="n">status_mri_suffix</span><span class="p">:</span> <span class="n">AStatusMriSuffix</span> <span class="o">=</span> <span class="s2">&quot;:STATUS&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">KinematicsSavuPart</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">mri</span><span class="p">,</span> <span class="n">stateful</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nxs_full_filename</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vds_full_filename</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">savu_pl_filename</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">savu_full_filename</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">savu_code_lines</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">savu_variables</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q_value_mapping</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">p_vars</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">PVar</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_min_max</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">savu_file</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layout_table</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">LayoutTable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pos_table</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cs_port</span> <span class="o">=</span> <span class="n">cs_port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cs_mri_suffix</span> <span class="o">=</span> <span class="n">cs_mri_suffix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_mri_suffix</span> <span class="o">=</span> <span class="n">status_mri_suffix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pmac_mri</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">panda_mri</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axis_numbers</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generator</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="KinematicsSavuPart.setup"><a class="viewcode-back" href="../../../../../build/ADPandABlocks/parts_api.html#malcolm.modules.ADPandABlocks.parts.KinematicsSavuPart.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">registrar</span><span class="p">:</span> <span class="n">PartRegistrar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">KinematicsSavuPart</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">registrar</span><span class="p">)</span>
+        <span class="c1"># Tell the controller to expose some extra configure parameters</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ConfigureHook</span><span class="o">.</span><span class="n">create_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_configure</span><span class="p">))</span>
+        <span class="c1"># Hooks</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ConfigureHook</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_configure</span><span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">PostConfigureHook</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_post_configure</span><span class="p">)</span></div>
+
+    <span class="c1"># Allow CamelCase as these parameters will be serialized</span>
+    <span class="c1"># noinspection PyPep8Naming</span>
+<div class="viewcode-block" id="KinematicsSavuPart.on_configure"><a class="viewcode-back" href="../../../../../build/ADPandABlocks/parts_api.html#malcolm.modules.ADPandABlocks.parts.KinematicsSavuPart.on_configure">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_configure</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">,</span>
+        <span class="n">fileDir</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AFileDir</span><span class="p">,</span>
+        <span class="n">generator</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AGenerator</span><span class="p">,</span>
+        <span class="n">axesToMove</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AAxesToMove</span><span class="p">,</span>
+        <span class="n">part_info</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">APartInfo</span><span class="p">,</span>
+        <span class="n">fileTemplate</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AFileTemplate</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.nxs&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">UInfos</span><span class="p">:</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">p_vars</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_min_max</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">savu_variables</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">savu_code_lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q_value_mapping</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generator</span> <span class="o">=</span> <span class="n">generator</span>
+
+        <span class="c1"># On initial configure, expect to get the demanded number of frames</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pmac_mri</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">pmac</span><span class="o">.</span><span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">panda_mri</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">panda</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="c1"># Derive file path from template</span>
+        <span class="n">baseTemplate</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">fileTemplate</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># Create the various nexus files to pass to Savu and expected output</span>
+        <span class="n">fileName</span> <span class="o">=</span> <span class="p">(</span><span class="n">baseTemplate</span> <span class="o">%</span> <span class="s2">&quot;savu&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.nxs&quot;</span>
+        <span class="n">vds_fileName</span> <span class="o">=</span> <span class="p">(</span><span class="n">baseTemplate</span> <span class="o">%</span> <span class="s2">&quot;kinematics-vds&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.nxs&quot;</span>
+        <span class="n">savu_pl_fileName</span> <span class="o">=</span> <span class="p">(</span><span class="n">baseTemplate</span> <span class="o">%</span> <span class="s2">&quot;savu_pl&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.nxs&quot;</span>
+        <span class="n">savu_fileName</span> <span class="o">=</span> <span class="p">(</span><span class="n">baseTemplate</span> <span class="o">%</span> <span class="s2">&quot;savu_processed&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.nxs&quot;</span>
+
+        <span class="c1"># This is path to the file to pass to Savu</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nxs_full_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fileDir</span><span class="p">,</span> <span class="n">fileName</span><span class="p">)</span>
+
+        <span class="c1"># This is path to the process list file to pass to Savu</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">savu_pl_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fileDir</span><span class="p">,</span> <span class="n">savu_pl_fileName</span><span class="p">)</span>
+
+        <span class="c1"># This is the path to the VDS file which links to the processed Savu</span>
+        <span class="c1"># file with the output datasets</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vds_full_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fileDir</span><span class="p">,</span> <span class="n">vds_fileName</span><span class="p">)</span>
+
+        <span class="c1"># This is the path the the processed file created by Savu after having</span>
+        <span class="c1"># done the processing</span>
+        <span class="n">savu_rel_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">baseTemplate</span> <span class="o">%</span> <span class="s2">&quot;savuproc&quot;</span><span class="p">),</span> <span class="n">savu_fileName</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">savu_full_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fileDir</span><span class="p">,</span> <span class="n">savu_rel_path</span><span class="p">)</span>
+
+        <span class="c1"># Get the cs port mapping for this PMAC</span>
+        <span class="c1"># {scannable: MotorInfo}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layout_table</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pmac_mri</span><span class="p">)</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout_table</span><span class="p">,</span> <span class="s2">&quot;No layout table&quot;</span>
+        <span class="n">axis_mapping</span> <span class="o">=</span> <span class="n">pmac</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cs_axis_mapping</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout_table</span><span class="p">,</span> <span class="n">axesToMove</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs_port</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># All axes will be in the same cs_port so just use the first</span>
+            <span class="k">for</span> <span class="n">mapping</span> <span class="ow">in</span> <span class="n">axis_mapping</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cs_port</span> <span class="o">=</span> <span class="n">mapping</span><span class="o">.</span><span class="n">cs_port</span>
+                <span class="k">break</span>
+
+        <span class="c1"># Create the mapping of output q variables to axis names</span>
+        <span class="c1"># These correspond to the compound motors</span>
+        <span class="k">for</span> <span class="n">mapping</span> <span class="ow">in</span> <span class="n">axis_mapping</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">mapping</span><span class="o">.</span><span class="n">cs_axis</span> <span class="ow">in</span> <span class="n">pmac</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">CS_AXIS_NAMES</span><span class="p">:</span>
+                <span class="n">q_value</span> <span class="o">=</span> <span class="n">pmac</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">CS_AXIS_NAMES</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">mapping</span><span class="o">.</span><span class="n">cs_axis</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">q_value_mapping</span><span class="p">[</span><span class="n">q_value</span><span class="p">]</span> <span class="o">=</span> <span class="n">mapping</span><span class="o">.</span><span class="n">scannable</span>
+
+        <span class="k">assert</span> <span class="s2">&quot;.&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nxs_full_filename</span><span class="p">,</span> <span class="p">(</span>
+            <span class="s2">&quot;File extension for </span><span class="si">%r</span><span class="s2"> should be supplied&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">nxs_full_filename</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pos_table</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">panda_mri</span><span class="p">)</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos_table</span><span class="p">,</span> <span class="s2">&quot;No pos table&quot;</span>
+
+        <span class="c1"># Get the axis number for the inverse kinematics mapped in this cs_port</span>
+        <span class="c1"># These are raw motors</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs_port</span><span class="p">,</span> <span class="s2">&quot;No CS port&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axis_numbers</span> <span class="o">=</span> <span class="n">pmac</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cs_axis_numbers</span><span class="p">(</span>
+            <span class="n">context</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout_table</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs_port</span>
+        <span class="p">)</span>
+
+        <span class="n">produced_datasets</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">dtypes</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">DatasetType</span><span class="o">.</span><span class="n">POSITION_VALUE</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">scannable</span><span class="p">,</span> <span class="n">axis_num</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_numbers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">dataset_i</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pos_table</span><span class="o">.</span><span class="n">datasetName</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="n">scannable</span><span class="p">:</span>
+                    <span class="n">pos_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos_table</span><span class="o">.</span><span class="n">capture</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">pos_type</span> <span class="o">==</span> <span class="n">pandablocks</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">PositionCapture</span><span class="o">.</span><span class="n">MIN_MAX_MEAN</span><span class="p">:</span>
+                        <span class="n">dataset_i</span> <span class="o">=</span> <span class="n">ind</span>
+                    <span class="k">elif</span> <span class="p">(</span>
+                        <span class="n">pos_type</span> <span class="o">==</span> <span class="n">pandablocks</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">PositionCapture</span><span class="o">.</span><span class="n">MEAN</span>
+                        <span class="ow">or</span> <span class="n">pos_type</span> <span class="o">==</span> <span class="n">pandablocks</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">PositionCapture</span><span class="o">.</span><span class="n">VALUE</span>
+                    <span class="p">):</span>
+                        <span class="n">dataset_i</span> <span class="o">=</span> <span class="n">ind</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">use_min_max</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="c1"># Check there was a dataset for the axis</span>
+            <span class="k">assert</span> <span class="n">dataset_i</span><span class="p">,</span> <span class="s2">&quot;No value dataset for </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">scannable</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_min_max</span><span class="p">:</span>
+            <span class="n">dtypes</span><span class="p">[</span><span class="s2">&quot;min&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">DatasetType</span><span class="o">.</span><span class="n">POSITION_MIN</span>
+            <span class="n">dtypes</span><span class="p">[</span><span class="s2">&quot;max&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">DatasetType</span><span class="o">.</span><span class="n">POSITION_MAX</span>
+        <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_value_mapping</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">rank</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">generator</span><span class="o">.</span><span class="n">dimensions</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">dtypes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">PATH</span> <span class="o">=</span> <span class="s2">&quot;/entry/&quot;</span> <span class="o">+</span> <span class="n">axis</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">k</span>
+                <span class="n">produced_datasets</span> <span class="o">+=</span> <span class="p">[</span>
+                    <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">DatasetProducedInfo</span><span class="p">(</span>
+                        <span class="n">axis</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">k</span><span class="p">,</span> <span class="n">vds_fileName</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="n">PATH</span><span class="p">,</span> <span class="s2">&quot;&quot;</span>
+                    <span class="p">)</span>
+                <span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">produced_datasets</span></div>
+
+<div class="viewcode-block" id="KinematicsSavuPart.on_post_configure"><a class="viewcode-back" href="../../../../../build/ADPandABlocks/parts_api.html#malcolm.modules.ADPandABlocks.parts.KinematicsSavuPart.on_post_configure">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_post_configure</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">,</span> <span class="n">part_info</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">APartInfo</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="c1"># Map these in the file</span>
+        <span class="n">dataset_infos</span> <span class="o">=</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">DatasetProducedInfo</span><span class="o">.</span><span class="n">filter_values</span><span class="p">(</span><span class="n">part_info</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">scannable</span><span class="p">,</span> <span class="n">axis_num</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_numbers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">min_i</span><span class="p">,</span> <span class="n">max_i</span><span class="p">,</span> <span class="n">value_i</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+            <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">dataset_infos</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">scannable</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">DatasetType</span><span class="o">.</span><span class="n">POSITION_MIN</span><span class="p">:</span>
+                        <span class="n">min_i</span> <span class="o">=</span> <span class="n">info</span>
+                    <span class="k">elif</span> <span class="n">info</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">DatasetType</span><span class="o">.</span><span class="n">POSITION_MAX</span><span class="p">:</span>
+                        <span class="n">max_i</span> <span class="o">=</span> <span class="n">info</span>
+                    <span class="k">elif</span> <span class="n">info</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">DatasetType</span><span class="o">.</span><span class="n">POSITION_VALUE</span><span class="p">:</span>
+                        <span class="n">value_i</span> <span class="o">=</span> <span class="n">info</span>
+            <span class="c1"># Always make sure .value is there</span>
+            <span class="k">assert</span> <span class="n">value_i</span><span class="p">,</span> <span class="s2">&quot;No value dataset for </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">scannable</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">p_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">PVar</span><span class="p">(</span>
+                    <span class="n">path</span><span class="o">=</span><span class="n">value_i</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
+                    <span class="n">file</span><span class="o">=</span><span class="n">value_i</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span>
+                    <span class="n">p_number</span><span class="o">=</span><span class="s2">&quot;p</span><span class="si">%d</span><span class="s2">mean&quot;</span> <span class="o">%</span> <span class="n">axis_num</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">min_i</span> <span class="ow">and</span> <span class="n">max_i</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">p_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">PVar</span><span class="p">(</span>
+                        <span class="n">path</span><span class="o">=</span><span class="n">min_i</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
+                        <span class="n">file</span><span class="o">=</span><span class="n">min_i</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span>
+                        <span class="n">p_number</span><span class="o">=</span><span class="s2">&quot;p</span><span class="si">%d</span><span class="s2">min&quot;</span> <span class="o">%</span> <span class="n">axis_num</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">p_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">PVar</span><span class="p">(</span>
+                        <span class="n">path</span><span class="o">=</span><span class="n">max_i</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
+                        <span class="n">file</span><span class="o">=</span><span class="n">max_i</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span>
+                        <span class="n">p_number</span><span class="o">=</span><span class="s2">&quot;p</span><span class="si">%d</span><span class="s2">max&quot;</span> <span class="o">%</span> <span class="n">axis_num</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">use_min_max</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># Get Forward Kinematics code lines and I,P,M,Q input variables</span>
+        <span class="n">pmac_status_child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pmac_mri</span> <span class="o">+</span> <span class="s2">&quot;:STATUS&quot;</span><span class="p">)</span>
+
+        <span class="n">raw_input_vars</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">pmac_status_child</span><span class="o">.</span><span class="n">iVariables</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="n">pmac_status_child</span><span class="o">.</span><span class="n">pVariables</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="n">pmac_status_child</span><span class="o">.</span><span class="n">mVariables</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="n">pmac_cs_child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pmac_mri</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs_mri_suffix</span><span class="p">)</span>
+
+        <span class="n">raw_kinematics_program_code</span> <span class="o">=</span> <span class="n">pmac_cs_child</span><span class="o">.</span><span class="n">forwardKinematic</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">raw_input_vars</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">pmac_cs_child</span><span class="o">.</span><span class="n">qVariables</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">savu_code_lines</span> <span class="o">=</span> <span class="n">raw_kinematics_program_code</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parse_input_variables</span><span class="p">(</span><span class="n">raw_input_vars</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_files</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">check_mres_and_pos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">split_var</span><span class="p">):</span>
+        <span class="c1"># if PandA has MRES/Offset, clear P variable so it isn&#39;t applied twice</span>
+        <span class="k">for</span> <span class="n">scannable</span><span class="p">,</span> <span class="n">axis_num</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_numbers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">posbus_ind</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos_table</span><span class="o">.</span><span class="n">datasetName</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">scannable</span><span class="p">)</span>
+            <span class="n">panda_mres</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos_table</span><span class="o">.</span><span class="n">scale</span><span class="p">[</span><span class="n">posbus_ind</span><span class="p">]</span>
+            <span class="n">panda_offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos_table</span><span class="o">.</span><span class="n">offset</span><span class="p">[</span><span class="n">posbus_ind</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">split_var</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">MRES_VAR</span><span class="p">(</span><span class="n">axis_num</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">panda_mres</span> <span class="o">!=</span> <span class="mf">1.0</span><span class="p">:</span>
+                    <span class="n">split_var</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;1.0&quot;</span>
+            <span class="k">elif</span> <span class="n">split_var</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">OFFSET_VAR</span><span class="p">(</span><span class="n">axis_num</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">panda_offset</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">:</span>
+                    <span class="n">split_var</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;0.0&quot;</span>
+        <span class="k">return</span> <span class="n">split_var</span>
+
+    <span class="k">def</span> <span class="nf">parse_input_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw_input_vars</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">raw_input_vars</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">var</span><span class="p">:</span>
+                    <span class="n">split_var</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)</span>
+                    <span class="c1"># ignore any values in hex</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">split_var</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;$&quot;</span><span class="p">):</span>
+                        <span class="n">split_var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_mres_and_pos</span><span class="p">(</span><span class="n">split_var</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">savu_variables</span><span class="p">[</span><span class="n">split_var</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">split_var</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Error getting kinematic input variables from </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">raw_input_vars</span>
+            <span class="p">)</span>
+
+<div class="viewcode-block" id="KinematicsSavuPart.create_files"><a class="viewcode-back" href="../../../../../build/ADPandABlocks/parts_api.html#malcolm.modules.ADPandABlocks.parts.KinematicsSavuPart.create_files">[docs]</a>    <span class="k">def</span> <span class="nf">create_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create the files that will be used by Savu</span>
+
+<span class="sd">        - &lt;ID&gt;-savu.nxs - Input data file for Savu. Links to Panda data, and</span>
+<span class="sd">            datasets which contain the kinematics code and variables, and</span>
+<span class="sd">            whether to use min, mean and max datasets, or just the mean.</span>
+<span class="sd">        - &lt;ID&gt;-savu_pl.nxs - Savu process list</span>
+<span class="sd">        - &lt;ID&gt;-kinematics-vds.nxs - VDS file linking to Savu processed data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Create the -savu.nxs file which contains the input data for Savu</span>
+        <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nxs_full_filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">libver</span><span class="o">=</span><span class="s2">&quot;latest&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">savu_file</span><span class="p">:</span>
+            <span class="n">savu_file</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;entry&quot;</span>
+            <span class="n">nxentry</span> <span class="o">=</span> <span class="n">savu_file</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="s2">&quot;entry&quot;</span><span class="p">)</span>
+
+            <span class="n">nxentry</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;NX_class&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;NXentry&quot;</span>
+            <span class="n">nxentry</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;inputs&quot;</span>
+            <span class="n">nxcollection</span> <span class="o">=</span> <span class="n">nxentry</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="s2">&quot;inputs&quot;</span><span class="p">)</span>
+            <span class="n">nxcollection</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;NX_class&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;NXcollection&quot;</span>
+
+            <span class="c1"># Program code lines dataset</span>
+            <span class="n">program_dset</span> <span class="o">=</span> <span class="n">nxcollection</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span>
+                <span class="s2">&quot;program&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">savu_code_lines</span><span class="p">),),</span> <span class="n">h5py</span><span class="o">.</span><span class="n">special_dtype</span><span class="p">(</span><span class="n">vlen</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">program_dset</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">savu_code_lines</span>
+            <span class="n">program_dset</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;long_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Kinematic Program lines&quot;</span>
+
+            <span class="c1"># Fixed variables dataset</span>
+            <span class="n">comp_type</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span>
+                <span class="p">[(</span><span class="s2">&quot;Name&quot;</span><span class="p">,</span> <span class="n">h5py</span><span class="o">.</span><span class="n">special_dtype</span><span class="p">(</span><span class="n">vlen</span><span class="o">=</span><span class="nb">str</span><span class="p">)),</span> <span class="p">(</span><span class="s2">&quot;Value&quot;</span><span class="p">,</span> <span class="s2">&quot;f&quot;</span><span class="p">)]</span>
+            <span class="p">)</span>
+
+            <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">savu_variables</span><span class="o">.</span><span class="n">items</span><span class="p">()),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">comp_type</span><span class="p">)</span>
+
+            <span class="n">variables_dset</span> <span class="o">=</span> <span class="n">nxcollection</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span>
+                <span class="s2">&quot;variables&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),),</span> <span class="n">comp_type</span>
+            <span class="p">)</span>
+            <span class="n">variables_dset</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;long_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Fixed program variables&quot;</span>
+            <span class="n">variables_dset</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+
+            <span class="c1"># Use MinMax dataset</span>
+            <span class="n">minmax_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">use_min_max</span><span class="p">])</span>
+            <span class="n">minmax_dset</span> <span class="o">=</span> <span class="n">nxcollection</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;use_minmax&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">minmax_data</span><span class="p">)</span>
+            <span class="n">minmax_dset</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;long_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Use min and max dataset&quot;</span>
+
+            <span class="c1"># Link to external P values</span>
+            <span class="k">for</span> <span class="n">p_var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">p_vars</span><span class="p">:</span>
+                <span class="n">savu_file</span><span class="p">[</span><span class="sa">u</span><span class="s2">&quot;/entry/inputs/&quot;</span> <span class="o">+</span> <span class="n">p_var</span><span class="o">.</span><span class="n">p_number</span><span class="p">]</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">ExternalLink</span><span class="p">(</span>
+                    <span class="n">p_var</span><span class="o">.</span><span class="n">file</span><span class="p">,</span> <span class="n">p_var</span><span class="o">.</span><span class="n">path</span>
+                <span class="p">)</span>
+
+        <span class="c1"># Create Savu plugin list file</span>
+        <span class="n">src</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
+        <span class="n">src</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_min_max</span><span class="p">:</span>
+            <span class="n">kinematics_file</span> <span class="o">=</span> <span class="s2">&quot;min_mean_max.nxs&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">kinematics_file</span> <span class="o">=</span> <span class="s2">&quot;only_mean.nxs&quot;</span>
+
+        <span class="n">src</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="s2">&quot;..&quot;</span><span class="p">,</span> <span class="s2">&quot;kinematics&quot;</span><span class="p">,</span> <span class="n">kinematics_file</span><span class="p">)</span>
+
+        <span class="n">copyfile</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">savu_pl_filename</span><span class="p">)</span>
+
+        <span class="c1"># Create the finished VDS file which links to the processed Savu data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_vds_file</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="KinematicsSavuPart.create_vds_file"><a class="viewcode-back" href="../../../../../build/ADPandABlocks/parts_api.html#malcolm.modules.ADPandABlocks.parts.KinematicsSavuPart.create_vds_file">[docs]</a>    <span class="k">def</span> <span class="nf">create_vds_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create the VDS file that points to the processed savu files.</span>
+<span class="sd">        Assumes that savu is called with the argument to specify the location</span>
+<span class="sd">        of the processed data is in a data folder with the suffix &#39;-savuproc&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">virtual_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">9</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vds_full_filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">libver</span><span class="o">=</span><span class="s2">&quot;latest&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">require_group</span><span class="p">(</span><span class="s2">&quot;/entry/&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_min_max</span><span class="p">:</span>
+                <span class="n">datatypes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">datatypes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">]</span>
+
+            <span class="k">for</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="n">datatypes</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">9</span><span class="p">):</span>
+                    <span class="n">layout</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">VirtualLayout</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+                    <span class="n">v_source</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">VirtualSource</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">savu_full_filename</span><span class="p">,</span>
+                        <span class="s2">&quot;/entry/final_result_q</span><span class="si">%s</span><span class="s2">/data&quot;</span> <span class="o">%</span> <span class="n">datatype</span><span class="p">,</span>
+                        <span class="n">shape</span><span class="o">=</span><span class="n">virtual_shape</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="n">layout</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">v_source</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+                    <span class="c1"># Use axis name if have it, otherwise use raw Q number</span>
+                    <span class="k">if</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_value_mapping</span><span class="p">:</span>
+                        <span class="n">f</span><span class="o">.</span><span class="n">create_virtual_dataset</span><span class="p">(</span>
+                            <span class="s2">&quot;/entry/&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_value_mapping</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">datatype</span><span class="p">,</span>
+                            <span class="n">layout</span><span class="p">,</span>
+                            <span class="n">fillvalue</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">f</span><span class="o">.</span><span class="n">create_virtual_dataset</span><span class="p">(</span>
+                            <span class="s2">&quot;/entry/rawQ&quot;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="si">%02d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">datatype</span><span class="p">,</span>
+                            <span class="n">layout</span><span class="p">,</span>
+                            <span class="n">fillvalue</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                        <span class="p">)</span>
+
+            <span class="c1"># Add any setpoint dimensions</span>
+            <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">dimensions</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">dim</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span>
+                        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;/entry/</span><span class="si">%s</span><span class="s2">_set/</span><span class="si">%s</span><span class="s2">.value_set&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="n">axis</span><span class="p">),</span>
+                        <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
+                        <span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">dim</span><span class="o">.</span><span class="n">get_positions</span><span class="p">(</span><span class="n">axis</span><span class="p">)],</span>
+                    <span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2015, Diamond Light Source.
+
+    </p>
+  </div> 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+  
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

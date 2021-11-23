@@ -1,0 +1,6 @@
+
+malcolm.modules.profiling.parts
+===============================
+
+.. automodule:: malcolm.modules.profiling.parts
+    :members:

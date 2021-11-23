@@ -1,0 +1,355 @@
+<!-- https://stackoverflow.com/a/37843854 -->
+
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>malcolm.modules.ADEiger.parts &mdash; malcolm 4.6+25.g37b44de1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/malcolm-logo.ico"/>
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="ADEthercat" href="../ADEthercat/index.html" />
+    <link rel="prev" title="malcolm.modules.ADEiger.blocks" href="blocks_api.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../contents.html" class="icon icon-home"> malcolm
+          
+
+          
+            
+            <img src="../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                4.6
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+    
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Introduction</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../modules_api.html">malcolm.modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../ADAndor/index.html">ADAndor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADCore/index.html">ADCore</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">ADEiger</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="blocks_api.html">blocks</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">parts</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../ADEthercat/index.html">ADEthercat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADMerlin/index.html">ADMerlin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADOdin/index.html">ADOdin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADPandABlocks/index.html">ADPandABlocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADPco/index.html">ADPco</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADPilatus/index.html">ADPilatus</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADSimDetector/index.html">ADSimDetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADTetrAMM/index.html">ADTetrAMM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../adUtil/index.html">adUtil</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../aravisGigE/index.html">aravisGigE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../asyn/index.html">asyn</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../builtin/index.html">builtin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ca/index.html">ca</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demo/index.html">demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dtacq/index.html">dtacq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pandablocks/index.html">pandablocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pmac/index.html">pmac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../profiling/index.html">profiling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pva/index.html">pva</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../scanning/index.html">scanning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../system/index.html">system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../web/index.html">web</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../xmap/index.html">xmap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../xspress3/index.html">xspress3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../zebra/index.html">zebra</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/external_api.html">External modules</a></li>
+</ul>
+
+            
+          
+    <a href="genindex.html">Index</a>
+  
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../contents.html">malcolm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../contents.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../modules_api.html">malcolm.modules</a> &raquo;</li>
+        
+          <li><a href="index.html">ADEiger</a> &raquo;</li>
+        
+      <li>malcolm.modules.ADEiger.parts</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../../_sources/build/ADEiger/parts_api.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-malcolm.modules.ADEiger.parts">
+<span id="malcolm-modules-adeiger-parts"></span><h1>malcolm.modules.ADEiger.parts<a class="headerlink" href="#module-malcolm.modules.ADEiger.parts" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.ADEiger.parts.EigerDriverPart">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADEiger.parts.</span></span><span class="sig-name descname"><span class="pre">EigerDriverPart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name:</span> <span class="pre">Anno(name='APartName'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></em>, <em class="sig-param"><span class="pre">description='The</span> <span class="pre">name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Part</span> <span class="pre">within</span> <span class="pre">the</span> <span class="pre">Controller')</span></em>, <em class="sig-param"><span class="pre">mri:</span> <span class="pre">Anno(name='AMri'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Malcolm</span> <span class="pre">resource</span> <span class="pre">id</span> <span class="pre">of</span> <span class="pre">child</span> <span class="pre">object')</span></em>, <em class="sig-param"><span class="pre">soft_trigger_modes:</span> <span class="pre">Optional[Union[Anno(name='ASoftTriggerModes'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></em>, <em class="sig-param"><span class="pre">description='List</span> <span class="pre">of</span> <span class="pre">trigger</span> <span class="pre">modes</span> <span class="pre">that</span> <span class="pre">do</span> <span class="pre">not</span> <span class="pre">use</span> <span class="pre">hardware</span> <span class="pre">triggers')</span></em>, <em class="sig-param"><span class="pre">Sequence[str]]]</span> <span class="pre">=</span> <span class="pre">None</span></em>, <em class="sig-param"><span class="pre">main_dataset_useful:</span> <span class="pre">Anno(name='AMainDatasetUseful'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Is</span> <span class="pre">main</span> <span class="pre">detector</span> <span class="pre">dataset</span> <span class="pre">useful</span> <span class="pre">to</span> <span class="pre">publish</span> <span class="pre">in</span> <span class="pre">DatasetTable?')</span> <span class="pre">=</span> <span class="pre">True</span></em>, <em class="sig-param"><span class="pre">runs_on_windows:</span> <span class="pre">Anno(name='APartRunsOnWindows'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Is</span> <span class="pre">the</span> <span class="pre">IOC</span> <span class="pre">this</span> <span class="pre">part</span> <span class="pre">connects</span> <span class="pre">to</span> <span class="pre">running</span> <span class="pre">on</span> <span class="pre">Windows?')</span> <span class="pre">=</span> <span class="pre">False</span></em>, <em class="sig-param"><span class="pre">required_version:</span> <span class="pre">Optional[Anno(name='AVersionRequirement'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Minimum</span> <span class="pre">required</span> <span class="pre">version</span> <span class="pre">for</span> <span class="pre">compatibility')]</span> <span class="pre">=</span> <span class="pre">None</span></em>, <em class="sig-param"><span class="pre">min_acquire_period:</span> <span class="pre">Anno(name='AMinAcquirePeriod'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Minimum</span> <span class="pre">acquire</span> <span class="pre">period</span> <span class="pre">the</span> <span class="pre">detector</span> <span class="pre">is</span> <span class="pre">capable</span> <span class="pre">of')</span> <span class="pre">=</span> <span class="pre">0.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/ADEiger/parts/eigerdriverpart.html#EigerDriverPart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADEiger.parts.EigerDriverPart" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overrides default AD behaviour because the Eiger AD support
+does not count frames when Odin is consuming the frames.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – The name of the Part within the Controller</p></li>
+<li><p><strong>mri</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Malcolm resource id of child object</p></li>
+<li><p><strong>soft_trigger_modes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – List of trigger modes that do not use hardware triggers</p></li>
+<li><p><strong>main_dataset_useful</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Is main detector dataset useful to publish in DatasetTable?</p></li>
+<li><p><strong>runs_on_windows</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Is the IOC this part connects to running on Windows?</p></li>
+<li><p><strong>required_version</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Minimum required version for compatibility</p></li>
+<li><p><strong>min_acquire_period</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Minimum acquire period the detector is capable of</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.ADEiger.parts.EigerDriverPart.setup">
+<span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">registrar</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../api/core_api.html#malcolm.core.PartRegistrar" title="malcolm.core.part.PartRegistrar"><span class="pre">malcolm.core.part.PartRegistrar</span></a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><a class="reference internal" href="../../_modules/malcolm/modules/ADEiger/parts/eigerdriverpart.html#EigerDriverPart.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADEiger.parts.EigerDriverPart.setup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use the given <a class="reference internal" href="../../api/core_api.html#malcolm.core.PartRegistrar" title="malcolm.core.PartRegistrar"><code class="xref any py py-class docutils literal notranslate"><span class="pre">PartRegistrar</span></code></a> to populate the hooks and fields.
+This function is called for all parts in a block when the block’s
+<a class="reference internal" href="../../api/core_api.html#malcolm.core.Controller" title="malcolm.core.Controller"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Controller</span></code></a> is added to a <a class="reference internal" href="../../api/core_api.html#malcolm.core.Process" title="malcolm.core.Process"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Process</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.ADEiger.parts.EigerDriverPart.on_run">
+<span class="sig-name descname"><span class="pre">on_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><a class="reference internal" href="../../_modules/malcolm/modules/ADEiger/parts/eigerdriverpart.html#EigerDriverPart.on_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADEiger.parts.EigerDriverPart.on_run" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.ADEiger.parts.EigerDriverPart.on_post_run_ready">
+<span class="sig-name descname"><span class="pre">on_post_run_ready</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><a class="reference internal" href="../../_modules/malcolm/modules/ADEiger/parts/eigerdriverpart.html#EigerDriverPart.on_post_run_ready"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADEiger.parts.EigerDriverPart.on_post_run_ready" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.ADEiger.parts.EigerDriverPart.on_post_run_armed">
+<span class="sig-name descname"><span class="pre">on_post_run_armed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><a class="reference internal" href="../../_modules/malcolm/modules/ADEiger/parts/eigerdriverpart.html#EigerDriverPart.on_post_run_armed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADEiger.parts.EigerDriverPart.on_post_run_armed" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="../ADEthercat/index.html" class="btn btn-neutral float-right" title="ADEthercat" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="blocks_api.html" class="btn btn-neutral float-left" title="malcolm.modules.ADEiger.blocks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2015, Diamond Light Source.
+
+    </p>
+  </div> 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+  
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,551 @@
+<!-- https://stackoverflow.com/a/37843854 -->
+
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>malcolm.modules.pandablocks.controllers.pandamanagercontroller &mdash; malcolm 4.6+25.g37b44de1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/theme_overrides.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../../../../../_static/malcolm-logo.ico"/>
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../../contents.html" class="icon icon-home"> malcolm
+          
+
+          
+            
+            <img src="../../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                4.6
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+    
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/external_api.html">External modules</a></li>
+</ul>
+
+            
+          
+    <a href="genindex.html">Index</a>
+  
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../contents.html">malcolm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>malcolm.modules.pandablocks.controllers.pandamanagercontroller</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for malcolm.modules.pandablocks.controllers.pandamanagercontroller</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span>
+<span class="kn">from</span> <span class="nn">cothread.cosocket</span> <span class="kn">import</span> <span class="n">socket</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="n">Display</span><span class="p">,</span> <span class="n">NumberMeta</span><span class="p">,</span> <span class="n">Queue</span><span class="p">,</span> <span class="ne">TimeoutError</span><span class="p">,</span> <span class="n">TimeStamp</span><span class="p">,</span> <span class="n">Widget</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules</span> <span class="kn">import</span> <span class="n">builtin</span>
+
+<span class="kn">from</span> <span class="nn">..pandablocksclient</span> <span class="kn">import</span> <span class="n">PandABlocksClient</span>
+<span class="kn">from</span> <span class="nn">..parts.pandaactionpart</span> <span class="kn">import</span> <span class="n">PandAActionPart</span>
+<span class="kn">from</span> <span class="nn">..parts.pandabussespart</span> <span class="kn">import</span> <span class="n">PandABussesPart</span>
+<span class="kn">from</span> <span class="nn">..util</span> <span class="kn">import</span> <span class="n">DOC_URL_BASE</span><span class="p">,</span> <span class="n">ADocUrlBase</span>
+<span class="kn">from</span> <span class="nn">.pandablockcontroller</span> <span class="kn">import</span> <span class="n">PandABlockController</span>
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Hostname of the box&quot;</span><span class="p">):</span>
+    <span class="n">AHostname</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Port number of the TCP server control port&quot;</span><span class="p">):</span>
+    <span class="n">APort</span> <span class="o">=</span> <span class="nb">int</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Time between polls of PandA current value changes&quot;</span><span class="p">):</span>
+    <span class="n">APollPeriod</span> <span class="o">=</span> <span class="nb">float</span>
+
+
+<span class="n">AMri</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">AMri</span>
+<span class="n">AConfigDir</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">AConfigDir</span>
+<span class="n">ATemplateDesigns</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">ATemplateDesigns</span>
+<span class="n">AInitialDesign</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">AInitialDesign</span>
+<span class="n">AUseGit</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">AUseGit</span>
+<span class="n">ADescription</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">ADescription</span>
+
+
+<span class="c1"># Minimum period in seconds between updates of the last poll period attribute</span>
+<span class="n">POLL_PERIOD_REPORT</span> <span class="o">=</span> <span class="mi">1</span>
+
+
+<div class="viewcode-block" id="PandAManagerController"><a class="viewcode-back" href="../../../../../build/pandablocks/controllers_api.html#malcolm.modules.pandablocks.controllers.PandAManagerController">[docs]</a><span class="k">class</span> <span class="nc">PandAManagerController</span><span class="p">(</span><span class="n">builtin</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">ManagerController</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">mri</span><span class="p">:</span> <span class="n">AMri</span><span class="p">,</span>
+        <span class="n">config_dir</span><span class="p">:</span> <span class="n">AConfigDir</span><span class="p">,</span>
+        <span class="n">hostname</span><span class="p">:</span> <span class="n">AHostname</span> <span class="o">=</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+        <span class="n">port</span><span class="p">:</span> <span class="n">APort</span> <span class="o">=</span> <span class="mi">8888</span><span class="p">,</span>
+        <span class="n">doc_url_base</span><span class="p">:</span> <span class="n">ADocUrlBase</span> <span class="o">=</span> <span class="n">DOC_URL_BASE</span><span class="p">,</span>
+        <span class="n">poll_period</span><span class="p">:</span> <span class="n">APollPeriod</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">template_designs</span><span class="p">:</span> <span class="n">ATemplateDesigns</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">initial_design</span><span class="p">:</span> <span class="n">AInitialDesign</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">use_git</span><span class="p">:</span> <span class="n">AUseGit</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">description</span><span class="p">:</span> <span class="n">ADescription</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">mri</span><span class="o">=</span><span class="n">mri</span><span class="p">,</span>
+            <span class="n">config_dir</span><span class="o">=</span><span class="n">config_dir</span><span class="p">,</span>
+            <span class="n">template_designs</span><span class="o">=</span><span class="n">template_designs</span><span class="p">,</span>
+            <span class="n">initial_design</span><span class="o">=</span><span class="n">initial_design</span><span class="p">,</span>
+            <span class="n">use_git</span><span class="o">=</span><span class="n">use_git</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_poll_period</span> <span class="o">=</span> <span class="n">poll_period</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_doc_url_base</span> <span class="o">=</span> <span class="n">doc_url_base</span>
+        <span class="c1"># All the bit_out fields and their values</span>
+        <span class="c1"># {block_name.field_name: value}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bit_outs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># The bit_out field values that need toggling since the last handle</span>
+        <span class="c1"># {block_name.field_name: value}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bit_out_changes</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># The fields that busses needs to know about</span>
+        <span class="c1"># {block_name.field_name[.subfield_name]}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bus_fields</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="c1"># The child controllers we have created</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_child_controllers</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PandABlockController</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># The PandABlock client that does the comms</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">PandABlocksClient</span><span class="p">(</span><span class="n">hostname</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">Queue</span><span class="p">)</span>
+        <span class="c1"># Filled in on reset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop_queue</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_poll_spawned</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Poll period reporting</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_poll_period</span> <span class="o">=</span> <span class="n">NumberMeta</span><span class="p">(</span>
+            <span class="s2">&quot;float64&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;The time between the last 2 polls of the hardware&quot;</span><span class="p">,</span>
+            <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">Widget</span><span class="o">.</span><span class="n">TEXTUPDATE</span><span class="o">.</span><span class="n">tag</span><span class="p">()],</span>
+            <span class="n">display</span><span class="o">=</span><span class="n">Display</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">(</span><span class="n">poll_period</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span><span class="s2">&quot;lastPollPeriod&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_poll_period</span><span class="p">)</span>
+        <span class="c1"># Bus tables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">busses</span><span class="p">:</span> <span class="n">PandABussesPart</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_busses</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_part</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">busses</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">do_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># start the poll loop and make block parts first to fill in our parts</span>
+        <span class="c1"># before calling _set_block_children()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_poll_loop</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">do_init</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">start_poll_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># queue to listen for stop events</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">started</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_stop_queue</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">started</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">spawn</span><span class="p">,</span> <span class="n">socket</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_child_controllers</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_make_child_controllers</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_poll_spawned</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_poll_spawned</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_poll_loop</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">do_disable</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">do_disable</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop_poll_loop</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">do_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_poll_loop</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">do_reset</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_poll_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;At self.poll_period poll for changes&quot;&quot;&quot;</span>
+        <span class="n">last_poll_update</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">next_poll</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_poll_period</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="c1"># Need to make sure we don&#39;t consume all the CPU, allow us to be</span>
+                <span class="c1"># active for 50% of the poll period, so we must sleep at least</span>
+                <span class="c1"># 50% of the poll period</span>
+                <span class="n">min_sleep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_poll_period</span> <span class="o">*</span> <span class="mf">0.5</span>
+                <span class="n">sleep_for</span> <span class="o">=</span> <span class="n">next_poll</span> <span class="o">-</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">sleep_for</span> <span class="o">&lt;</span> <span class="n">min_sleep</span><span class="p">:</span>
+                    <span class="c1"># Going too fast, slow down a bit</span>
+                    <span class="n">last_poll_period</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_poll_period</span> <span class="o">+</span> <span class="n">min_sleep</span> <span class="o">-</span> <span class="n">sleep_for</span>
+                    <span class="n">sleep_for</span> <span class="o">=</span> <span class="n">min_sleep</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">last_poll_period</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_poll_period</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="c1"># If told to stop, we will get something here and return</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_queue</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">sleep_for</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">TimeoutError</span><span class="p">:</span>
+                    <span class="c1"># No stop, no problem</span>
+                    <span class="k">pass</span>
+                <span class="c1"># Poll for changes</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">handle_changes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">get_changes</span><span class="p">())</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="n">last_poll_period</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_poll_period</span><span class="o">.</span><span class="n">value</span>
+                    <span class="ow">and</span> <span class="n">next_poll</span> <span class="o">-</span> <span class="n">last_poll_update</span> <span class="o">&gt;</span> <span class="n">POLL_PERIOD_REPORT</span>
+                <span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">last_poll_period</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">last_poll_period</span><span class="p">)</span>
+                    <span class="n">last_poll_update</span> <span class="o">=</span> <span class="n">next_poll</span>
+                <span class="n">next_poll</span> <span class="o">+=</span> <span class="n">last_poll_period</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">go_to_error_state</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">raise</span>
+
+    <span class="k">def</span> <span class="nf">stop_poll_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_poll_spawned</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_stop_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_poll_spawned</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_poll_spawned</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">started</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_make_child_controllers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_child_controllers</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">controllers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">child_parts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">pos_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">blocks_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">get_blocks_data</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">block_rootname</span><span class="p">,</span> <span class="n">block_data</span> <span class="ow">in</span> <span class="n">blocks_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">block_names</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">if</span> <span class="n">block_data</span><span class="o">.</span><span class="n">number</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">block_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">block_rootname</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">block_data</span><span class="o">.</span><span class="n">number</span><span class="p">):</span>
+                    <span class="n">block_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">block_rootname</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">block_name</span> <span class="ow">in</span> <span class="n">block_names</span><span class="p">:</span>
+                <span class="c1"># Look through the BlockData for things we are interested in</span>
+                <span class="k">for</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">field_data</span> <span class="ow">in</span> <span class="n">block_data</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">field_data</span><span class="o">.</span><span class="n">field_type</span> <span class="o">==</span> <span class="s2">&quot;pos_out&quot;</span><span class="p">:</span>
+                        <span class="n">pos_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">block_name</span><span class="p">,</span> <span class="n">field_name</span><span class="p">))</span>
+
+                <span class="c1"># Make the child controller and add it to the process</span>
+                <span class="n">controller</span><span class="p">,</span> <span class="n">child_part</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_child_block</span><span class="p">(</span><span class="n">block_name</span><span class="p">,</span> <span class="n">block_data</span><span class="p">)</span>
+                <span class="n">controllers</span> <span class="o">+=</span> <span class="p">[</span><span class="n">controller</span><span class="p">]</span>
+                <span class="n">child_parts</span> <span class="o">+=</span> <span class="p">[</span><span class="n">child_part</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_child_controllers</span><span class="p">[</span><span class="n">block_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">controller</span>
+                <span class="c1"># If there is only one, make an alias with &quot;1&quot; appended for</span>
+                <span class="c1"># *METADATA.LABEL lookup</span>
+                <span class="k">if</span> <span class="n">block_data</span><span class="o">.</span><span class="n">number</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_child_controllers</span><span class="p">[</span><span class="n">block_name</span> <span class="o">+</span> <span class="s2">&quot;1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">controller</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">add_controllers</span><span class="p">(</span><span class="n">controllers</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">child_parts</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_part</span><span class="p">(</span><span class="n">part</span><span class="p">)</span>
+
+        <span class="c1"># Create the busses from their initial sets of values</span>
+        <span class="n">pcap_bit_fields</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">get_pcap_bits_fields</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">busses</span><span class="o">.</span><span class="n">create_busses</span><span class="p">(</span><span class="n">pcap_bit_fields</span><span class="p">,</span> <span class="n">pos_names</span><span class="p">)</span>
+        <span class="c1"># Handle the pos_names that busses needs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bus_fields</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">pos_names</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">pos_name</span> <span class="ow">in</span> <span class="n">pos_names</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">suffix</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;CAPTURE&quot;</span><span class="p">,</span> <span class="s2">&quot;UNITS&quot;</span><span class="p">,</span> <span class="s2">&quot;SCALE&quot;</span><span class="p">,</span> <span class="s2">&quot;OFFSET&quot;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_bus_fields</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pos_name</span><span class="p">,</span> <span class="n">suffix</span><span class="p">))</span>
+        <span class="c1"># Handle the bit_outs, keeping a list for toggling and adding them</span>
+        <span class="c1"># to the set of things that the busses need</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bit_outs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">busses</span><span class="o">.</span><span class="n">bits</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">name</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bit_out_changes</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bus_fields</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bit_outs</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">capture_field</span> <span class="ow">in</span> <span class="n">pcap_bit_fields</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bus_fields</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">capture_field</span><span class="p">)</span>
+        <span class="c1"># Handle the initial set of changes to get an initial value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">handle_changes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">get_changes</span><span class="p">())</span>
+        <span class="c1"># Then once more to let bit_outs toggle back</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">handle_changes</span><span class="p">(())</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bit_out_changes</span><span class="p">,</span> <span class="p">(</span>
+            <span class="s2">&quot;There are still bit_out changes </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bit_out_changes</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_make_busses</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PandABussesPart</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">PandABussesPart</span><span class="p">(</span><span class="s2">&quot;busses&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_make_child_block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">block_name</span><span class="p">,</span> <span class="n">block_data</span><span class="p">):</span>
+        <span class="n">controller</span> <span class="o">=</span> <span class="n">PandABlockController</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">,</span> <span class="n">block_name</span><span class="p">,</span> <span class="n">block_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_doc_url_base</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">block_name</span> <span class="o">==</span> <span class="s2">&quot;PCAP&quot;</span><span class="p">:</span>
+            <span class="n">controller</span><span class="o">.</span><span class="n">add_part</span><span class="p">(</span>
+                <span class="n">PandAActionPart</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">,</span> <span class="s2">&quot;*PCAP&quot;</span><span class="p">,</span> <span class="s2">&quot;ARM&quot;</span><span class="p">,</span> <span class="s2">&quot;Arm position capture&quot;</span><span class="p">,</span> <span class="p">[]</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">controller</span><span class="o">.</span><span class="n">add_part</span><span class="p">(</span>
+                <span class="n">PandAActionPart</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">,</span> <span class="s2">&quot;*PCAP&quot;</span><span class="p">,</span> <span class="s2">&quot;DISARM&quot;</span><span class="p">,</span> <span class="s2">&quot;Disarm position capture&quot;</span><span class="p">,</span> <span class="p">[]</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="n">child_part</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">ChildPart</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">block_name</span><span class="p">,</span> <span class="n">mri</span><span class="o">=</span><span class="n">controller</span><span class="o">.</span><span class="n">mri</span><span class="p">,</span> <span class="n">stateful</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">controller</span><span class="p">,</span> <span class="n">child_part</span>
+
+    <span class="k">def</span> <span class="nf">_handle_change</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">bus_changes</span><span class="p">,</span> <span class="n">block_changes</span><span class="p">,</span> <span class="n">bit_out_changes</span><span class="p">):</span>
+        <span class="c1"># Handle bit changes</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">current_v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bit_outs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="c1"># Not a bit</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Convert to a boolean</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">changed_to</span> <span class="o">=</span> <span class="n">bit_out_changes</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="c1"># We didn&#39;t already make a change</span>
+                <span class="k">if</span> <span class="n">v</span> <span class="o">==</span> <span class="n">current_v</span><span class="p">:</span>
+                    <span class="c1"># Value is the same, store the negation, and set it</span>
+                    <span class="c1"># back next time</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_bit_out_changes</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+                    <span class="n">v</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">v</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Already made a change, defer this value til next time</span>
+                <span class="c1"># if it is different</span>
+                <span class="k">if</span> <span class="n">changed_to</span> <span class="o">!=</span> <span class="n">v</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_bit_out_changes</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+                <span class="k">return</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bit_outs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+        <span class="c1"># Notify the bus tables if they need to know</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bus_fields</span><span class="p">:</span>
+            <span class="n">bus_changes</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+        <span class="c1"># Add to the relevant Block changes dict</span>
+        <span class="n">block_name</span><span class="p">,</span> <span class="n">field_name</span> <span class="o">=</span> <span class="n">k</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">block_name</span> <span class="o">==</span> <span class="s2">&quot;*METADATA&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">field_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;LABEL_&quot;</span><span class="p">):</span>
+                <span class="n">field_name</span><span class="p">,</span> <span class="n">block_name</span> <span class="o">=</span> <span class="n">field_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Don&#39;t support any non-label metadata fields at the moment</span>
+                <span class="k">return</span>
+        <span class="n">block_changes</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">block_name</span><span class="p">,</span> <span class="p">{})[</span><span class="n">field_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="k">def</span> <span class="nf">handle_changes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">changes</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">TimeStamp</span><span class="p">()</span>
+        <span class="c1"># {block_name: {field_name: field_value}}</span>
+        <span class="n">block_changes</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># {full_field: field_value}</span>
+        <span class="n">bus_changes</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># Process bit outs that need changing</span>
+        <span class="n">bit_out_changes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bit_out_changes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bit_out_changes</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">bit_out_changes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bit_outs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="n">bus_changes</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="n">block_name</span><span class="p">,</span> <span class="n">field_name</span> <span class="o">=</span> <span class="n">k</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+            <span class="n">block_changes</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">block_name</span><span class="p">,</span> <span class="p">{})[</span><span class="n">field_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+        <span class="c1"># Work out which change is needed for which block</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">changes</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_handle_change</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">bus_changes</span><span class="p">,</span> <span class="n">block_changes</span><span class="p">,</span> <span class="n">bit_out_changes</span><span class="p">)</span>
+
+        <span class="c1"># Notify the Blocks that they need to handle these changes</span>
+        <span class="k">if</span> <span class="n">bus_changes</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">busses</span><span class="o">.</span><span class="n">handle_changes</span><span class="p">(</span><span class="n">bus_changes</span><span class="p">,</span> <span class="n">ts</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">block_name</span><span class="p">,</span> <span class="n">block_changes_values</span> <span class="ow">in</span> <span class="n">block_changes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_child_controllers</span><span class="p">[</span><span class="n">block_name</span><span class="p">]</span><span class="o">.</span><span class="n">handle_changes</span><span class="p">(</span><span class="n">block_changes_values</span><span class="p">,</span> <span class="n">ts</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2015, Diamond Light Source.
+
+    </p>
+  </div> 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+  
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,508 @@
+<!-- https://stackoverflow.com/a/37843854 -->
+
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>malcolm.modules.scanning.hooks &mdash; malcolm 4.6+25.g37b44de1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/theme_overrides.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../../../../_static/malcolm-logo.ico"/>
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../contents.html" class="icon icon-home"> malcolm
+          
+
+          
+            
+            <img src="../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                4.6
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+    
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/external_api.html">External modules</a></li>
+</ul>
+
+            
+          
+    <a href="genindex.html">Index</a>
+  
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../contents.html">malcolm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>malcolm.modules.scanning.hooks</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for malcolm.modules.scanning.hooks</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">NO_DEFAULT</span><span class="p">,</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">Array</span>
+<span class="kn">from</span> <span class="nn">scanpointgenerator</span> <span class="kn">import</span> <span class="n">CompoundGenerator</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.compat</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="n">VMeta</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules</span> <span class="kn">import</span> <span class="n">builtin</span>
+
+<span class="kn">from</span> <span class="nn">.infos</span> <span class="kn">import</span> <span class="n">ConfigureParamsInfo</span><span class="p">,</span> <span class="n">Info</span><span class="p">,</span> <span class="n">ParameterTweakInfo</span>
+
+<span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;The Infos returned from other Parts&quot;</span><span class="p">):</span>
+    <span class="n">APartInfo</span> <span class="o">=</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Array</span><span class="p">[</span><span class="n">Info</span><span class="p">]]</span>
+<span class="n">UPartInfo</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">APartInfo</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Info</span><span class="p">]]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Infos about current Part status to be passed to other parts&quot;</span><span class="p">):</span>
+    <span class="n">AInfos</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="n">Info</span><span class="p">]]</span>
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Generator instance providing specification for scan&quot;</span><span class="p">):</span>
+    <span class="n">AGenerator</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">CompoundGenerator</span><span class="p">]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;List of axes in inner dimension of generator that should be moved&quot;</span><span class="p">):</span>
+    <span class="n">AAxesToMove</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="n">UAxesToMove</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">AAxesToMove</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;List of points at which the run will return in Armed state&quot;</span><span class="p">):</span>
+    <span class="n">ABreakpoints</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">]]</span>
+<span class="n">UBreakpoints</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">ABreakpoints</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Parameters that need to be changed to make them compatible&quot;</span><span class="p">):</span>
+    <span class="n">AParameterTweakInfos</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="n">ParameterTweakInfo</span><span class="p">]]</span>
+<span class="n">UInfos</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">AInfos</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Info</span><span class="p">],</span> <span class="n">Info</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+<span class="n">UParameterTweakInfos</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span>
+    <span class="n">AParameterTweakInfos</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">ParameterTweakInfo</span><span class="p">],</span> <span class="n">ParameterTweakInfo</span><span class="p">,</span> <span class="kc">None</span>
+<span class="p">]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Directory to write data to&quot;</span><span class="p">):</span>
+    <span class="n">AFileDir</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Argument for fileTemplate, normally filename without extension&quot;</span><span class="p">):</span>
+    <span class="n">AFormatName</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span>
+    <span class="sd">&quot;&quot;&quot;Printf style template to generate filename relative to fileDir.</span>
+<span class="sd">Arguments are:</span>
+<span class="sd">  1) %s: the value of formatName&quot;&quot;&quot;</span>
+<span class="p">):</span>
+    <span class="n">AFileTemplate</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;The demand exposure time of this scan, 0 for the maximum possible&quot;</span><span class="p">):</span>
+    <span class="n">AExposure</span> <span class="o">=</span> <span class="nb">float</span>
+
+<span class="c1"># Pull re-used annotypes into our namespace in case we are subclassed</span>
+<span class="n">APart</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">APart</span>
+<span class="n">AContext</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span>
+<span class="c1"># also bring in superclass which a subclasses may refer to</span>
+<span class="n">ControllerHook</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ControllerHook</span>
+
+
+<span class="k">def</span> <span class="nf">check_array_info</span><span class="p">(</span><span class="n">anno</span><span class="p">:</span> <span class="n">Array</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+    <span class="k">assert</span> <span class="n">anno</span><span class="o">.</span><span class="n">is_array</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">anno</span><span class="o">.</span><span class="n">typ</span><span class="p">,</span> <span class="n">Info</span><span class="p">),</span> <span class="p">(</span>
+        <span class="s2">&quot;Expected Anno wrapping Array[something], got </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">anno</span>
+    <span class="p">)</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">anno</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="n">bad</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">ret</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">anno</span><span class="o">.</span><span class="n">typ</span><span class="p">)]</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">bad</span><span class="p">,</span> <span class="s2">&quot;Passed objects </span><span class="si">%s</span><span class="s2"> that are not of type </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">bad</span><span class="p">,</span> <span class="n">anno</span><span class="o">.</span><span class="n">typ</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ret</span>
+
+
+<div class="viewcode-block" id="ValidateHook"><a class="viewcode-back" href="../../../../reference/statesets.html#malcolm.modules.scanning.hooks.ValidateHook">[docs]</a><span class="k">class</span> <span class="nc">ValidateHook</span><span class="p">(</span><span class="n">ControllerHook</span><span class="p">[</span><span class="n">UParameterTweakInfos</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;Called at validate() to check parameters are valid&quot;&quot;&quot;</span>
+
+    <span class="c1"># Allow CamelCase for axesToMove as it must match ConfigureParams which</span>
+    <span class="c1"># will become a configure argument, so must be camelCase to match EPICS</span>
+    <span class="c1"># normative types conventions</span>
+    <span class="c1"># noinspection PyPep8Naming</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">part</span><span class="p">:</span> <span class="n">APart</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="n">AContext</span><span class="p">,</span>
+        <span class="n">part_info</span><span class="p">:</span> <span class="n">UPartInfo</span><span class="p">,</span>
+        <span class="n">generator</span><span class="p">:</span> <span class="n">AGenerator</span><span class="p">,</span>
+        <span class="n">axesToMove</span><span class="p">:</span> <span class="n">AAxesToMove</span><span class="p">,</span>
+        <span class="n">breakpoints</span><span class="p">:</span> <span class="n">ABreakpoints</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">part</span><span class="p">,</span>
+            <span class="n">context</span><span class="p">,</span>
+            <span class="n">part_info</span><span class="o">=</span><span class="n">part_info</span><span class="p">,</span>
+            <span class="n">generator</span><span class="o">=</span><span class="n">generator</span><span class="p">,</span>
+            <span class="n">axesToMove</span><span class="o">=</span><span class="n">axesToMove</span><span class="p">,</span>
+            <span class="n">breakpoints</span><span class="o">=</span><span class="n">breakpoints</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="ValidateHook.validate_return"><a class="viewcode-back" href="../../../../reference/statesets.html#malcolm.modules.scanning.hooks.ValidateHook.validate_return">[docs]</a>    <span class="k">def</span> <span class="nf">validate_return</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ret</span><span class="p">:</span> <span class="n">UParameterTweakInfos</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AParameterTweakInfos</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Check that all returned infos are ParameterTweakInfo that list</span>
+<span class="sd">        the parameters that need to be changed to make them compatible with</span>
+<span class="sd">        this part. ValidateHook will be re-run with the modified parameters.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">check_array_info</span><span class="p">(</span><span class="n">AParameterTweakInfos</span><span class="p">,</span> <span class="n">ret</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ReportStatusHook"><a class="viewcode-back" href="../../../../reference/statesets.html#malcolm.modules.scanning.hooks.ReportStatusHook">[docs]</a><span class="k">class</span> <span class="nc">ReportStatusHook</span><span class="p">(</span><span class="n">ControllerHook</span><span class="p">[</span><span class="n">UInfos</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;Called before Validate, Configure, PostRunArmed and Seek hooks to report</span>
+<span class="sd">    the current configuration of all parts&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ReportStatusHook.validate_return"><a class="viewcode-back" href="../../../../reference/statesets.html#malcolm.modules.scanning.hooks.ReportStatusHook.validate_return">[docs]</a>    <span class="k">def</span> <span class="nf">validate_return</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ret</span><span class="p">:</span> <span class="n">UInfos</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AInfos</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Check that all parts return Info objects relevant to other parts&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">check_array_info</span><span class="p">(</span><span class="n">AInfos</span><span class="p">,</span> <span class="n">ret</span><span class="p">)</span></div></div>
+
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Number of steps already completed&quot;</span><span class="p">):</span>
+    <span class="n">ACompletedSteps</span> <span class="o">=</span> <span class="nb">int</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Number of steps we should configure for&quot;</span><span class="p">):</span>
+    <span class="n">AStepsToDo</span> <span class="o">=</span> <span class="nb">int</span>
+
+
+<div class="viewcode-block" id="PreConfigureHook"><a class="viewcode-back" href="../../../../tutorials/scanning.html#malcolm.modules.scanning.hooks.PreConfigureHook">[docs]</a><span class="k">class</span> <span class="nc">PreConfigureHook</span><span class="p">(</span><span class="n">ControllerHook</span><span class="p">[</span><span class="kc">None</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;Called before configure() to get the device into a suitable state to</span>
+<span class="sd">    report status and run configure. Typically will load a saved design.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="ConfigureHook"><a class="viewcode-back" href="../../../../tutorials/detector.html#malcolm.modules.scanning.hooks.ConfigureHook">[docs]</a><span class="k">class</span> <span class="nc">ConfigureHook</span><span class="p">(</span><span class="n">ControllerHook</span><span class="p">[</span><span class="n">UInfos</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;Called at configure() to configure child block for a run&quot;&quot;&quot;</span>
+
+    <span class="c1"># Allow CamelCase for axesToMove as it must match ConfigureParams which</span>
+    <span class="c1"># will become a configure argument, so must be camelCase to match EPICS</span>
+    <span class="c1"># normative types conventions</span>
+    <span class="c1"># noinspection PyPep8Naming</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">part</span><span class="p">:</span> <span class="n">APart</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="n">AContext</span><span class="p">,</span>
+        <span class="n">completed_steps</span><span class="p">:</span> <span class="n">ACompletedSteps</span><span class="p">,</span>
+        <span class="n">steps_to_do</span><span class="p">:</span> <span class="n">AStepsToDo</span><span class="p">,</span>
+        <span class="n">part_info</span><span class="p">:</span> <span class="n">APartInfo</span><span class="p">,</span>
+        <span class="n">generator</span><span class="p">:</span> <span class="n">AGenerator</span><span class="p">,</span>
+        <span class="n">axesToMove</span><span class="p">:</span> <span class="n">AAxesToMove</span><span class="p">,</span>
+        <span class="n">breakpoints</span><span class="p">:</span> <span class="n">ABreakpoints</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">part</span><span class="p">,</span>
+            <span class="n">context</span><span class="p">,</span>
+            <span class="n">completed_steps</span><span class="o">=</span><span class="n">completed_steps</span><span class="p">,</span>
+            <span class="n">steps_to_do</span><span class="o">=</span><span class="n">steps_to_do</span><span class="p">,</span>
+            <span class="n">part_info</span><span class="o">=</span><span class="n">part_info</span><span class="p">,</span>
+            <span class="n">generator</span><span class="o">=</span><span class="n">generator</span><span class="p">,</span>
+            <span class="n">axesToMove</span><span class="o">=</span><span class="n">axesToMove</span><span class="p">,</span>
+            <span class="n">breakpoints</span><span class="o">=</span><span class="n">breakpoints</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="ConfigureHook.create_info"><a class="viewcode-back" href="../../../../reference/statesets.html#malcolm.modules.scanning.hooks.ConfigureHook.create_info">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create_info</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">configure_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigureParamsInfo</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Create a `ConfigureParamsInfo` describing the extra parameters</span>
+<span class="sd">        that should be passed at configure&quot;&quot;&quot;</span>
+        <span class="n">call_types</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Anno</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">configure_func</span><span class="p">,</span> <span class="s2">&quot;call_types&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">metas</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="n">required</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">defaults</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">anno</span> <span class="ow">in</span> <span class="n">call_types</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">call_types</span><span class="p">:</span>
+                <span class="n">scls</span> <span class="o">=</span> <span class="n">VMeta</span><span class="o">.</span><span class="n">lookup_annotype_converter</span><span class="p">(</span><span class="n">anno</span><span class="p">)</span>
+                <span class="n">metas</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">scls</span><span class="o">.</span><span class="n">from_annotype</span><span class="p">(</span><span class="n">anno</span><span class="p">,</span> <span class="n">writeable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">anno</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="n">NO_DEFAULT</span><span class="p">:</span>
+                    <span class="n">required</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">anno</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">defaults</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">anno</span><span class="o">.</span><span class="n">default</span>
+        <span class="k">return</span> <span class="n">ConfigureParamsInfo</span><span class="p">(</span><span class="n">metas</span><span class="p">,</span> <span class="n">required</span><span class="p">,</span> <span class="n">defaults</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ConfigureHook.validate_return"><a class="viewcode-back" href="../../../../reference/statesets.html#malcolm.modules.scanning.hooks.ConfigureHook.validate_return">[docs]</a>    <span class="k">def</span> <span class="nf">validate_return</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ret</span><span class="p">:</span> <span class="n">UInfos</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AInfos</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Check that all parts return Info objects for storing as attributes&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">check_array_info</span><span class="p">(</span><span class="n">AInfos</span><span class="p">,</span> <span class="n">ret</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="PostConfigureHook"><a class="viewcode-back" href="../../../../reference/statesets.html#malcolm.modules.scanning.hooks.PostConfigureHook">[docs]</a><span class="k">class</span> <span class="nc">PostConfigureHook</span><span class="p">(</span><span class="n">ControllerHook</span><span class="p">[</span><span class="kc">None</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;Called at the end of configure() to store configuration info calculated</span>
+<span class="sd">    in the Configure hook&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">part</span><span class="p">:</span> <span class="n">APart</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">AContext</span><span class="p">,</span> <span class="n">part_info</span><span class="p">:</span> <span class="n">APartInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">part_info</span><span class="o">=</span><span class="n">part_info</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PreRunHook"><a class="viewcode-back" href="../../../../reference/statesets.html#malcolm.modules.scanning.hooks.PreRunHook">[docs]</a><span class="k">class</span> <span class="nc">PreRunHook</span><span class="p">(</span><span class="n">ControllerHook</span><span class="p">[</span><span class="kc">None</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;Called at the start of run()&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="RunHook"><a class="viewcode-back" href="../../../../tutorials/detector.html#malcolm.modules.scanning.hooks.RunHook">[docs]</a><span class="k">class</span> <span class="nc">RunHook</span><span class="p">(</span><span class="n">ControllerHook</span><span class="p">[</span><span class="kc">None</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;Called at run() to start the configured steps running&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="PostRunArmedHook"><a class="viewcode-back" href="../../../../tutorials/detector.html#malcolm.modules.scanning.hooks.PostRunArmedHook">[docs]</a><span class="k">class</span> <span class="nc">PostRunArmedHook</span><span class="p">(</span><span class="n">ControllerHook</span><span class="p">[</span><span class="kc">None</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;Called at the end of run() when there are more steps to be run&quot;&quot;&quot;</span>
+
+    <span class="c1"># Allow CamelCase for axesToMove as it must match ConfigureParams which</span>
+    <span class="c1"># will become a configure argument, so must be camelCase to match EPICS</span>
+    <span class="c1"># normative types conventions</span>
+    <span class="c1"># noinspection PyPep8Naming</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">part</span><span class="p">:</span> <span class="n">APart</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="n">AContext</span><span class="p">,</span>
+        <span class="n">completed_steps</span><span class="p">:</span> <span class="n">ACompletedSteps</span><span class="p">,</span>
+        <span class="n">steps_to_do</span><span class="p">:</span> <span class="n">AStepsToDo</span><span class="p">,</span>
+        <span class="n">part_info</span><span class="p">:</span> <span class="n">UPartInfo</span><span class="p">,</span>
+        <span class="n">generator</span><span class="p">:</span> <span class="n">AGenerator</span><span class="p">,</span>
+        <span class="n">axesToMove</span><span class="p">:</span> <span class="n">AAxesToMove</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">part</span><span class="p">,</span>
+            <span class="n">context</span><span class="p">,</span>
+            <span class="n">completed_steps</span><span class="o">=</span><span class="n">completed_steps</span><span class="p">,</span>
+            <span class="n">steps_to_do</span><span class="o">=</span><span class="n">steps_to_do</span><span class="p">,</span>
+            <span class="n">part_info</span><span class="o">=</span><span class="n">part_info</span><span class="p">,</span>
+            <span class="n">generator</span><span class="o">=</span><span class="n">generator</span><span class="p">,</span>
+            <span class="n">axesToMove</span><span class="o">=</span><span class="n">axesToMove</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PostRunReadyHook"><a class="viewcode-back" href="../../../../reference/statesets.html#malcolm.modules.scanning.hooks.PostRunReadyHook">[docs]</a><span class="k">class</span> <span class="nc">PostRunReadyHook</span><span class="p">(</span><span class="n">ControllerHook</span><span class="p">[</span><span class="kc">None</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;Called at the end of run() when there are no more steps to be run&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="PauseHook"><a class="viewcode-back" href="../../../../reference/statesets.html#malcolm.modules.scanning.hooks.PauseHook">[docs]</a><span class="k">class</span> <span class="nc">PauseHook</span><span class="p">(</span><span class="n">ControllerHook</span><span class="p">[</span><span class="kc">None</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;Called at pause() to pause the current scan before Seek is called&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="SeekHook"><a class="viewcode-back" href="../../../../tutorials/detector.html#malcolm.modules.scanning.hooks.SeekHook">[docs]</a><span class="k">class</span> <span class="nc">SeekHook</span><span class="p">(</span><span class="n">ControllerHook</span><span class="p">[</span><span class="kc">None</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;Called at seek() or at the end of pause() to reconfigure for a different</span>
+<span class="sd">    number of completed_steps&quot;&quot;&quot;</span>
+
+    <span class="c1"># Allow CamelCase for axesToMove as it must match ConfigureParams which</span>
+    <span class="c1"># will become a configure argument, so must be camelCase to match EPICS</span>
+    <span class="c1"># normative types conventions</span>
+    <span class="c1"># noinspection PyPep8Naming</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">part</span><span class="p">:</span> <span class="n">APart</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="n">AContext</span><span class="p">,</span>
+        <span class="n">completed_steps</span><span class="p">:</span> <span class="n">ACompletedSteps</span><span class="p">,</span>
+        <span class="n">steps_to_do</span><span class="p">:</span> <span class="n">AStepsToDo</span><span class="p">,</span>
+        <span class="n">part_info</span><span class="p">:</span> <span class="n">APartInfo</span><span class="p">,</span>
+        <span class="n">generator</span><span class="p">:</span> <span class="n">AGenerator</span><span class="p">,</span>
+        <span class="n">axesToMove</span><span class="p">:</span> <span class="n">AAxesToMove</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">part</span><span class="p">,</span>
+            <span class="n">context</span><span class="p">,</span>
+            <span class="n">completed_steps</span><span class="o">=</span><span class="n">completed_steps</span><span class="p">,</span>
+            <span class="n">steps_to_do</span><span class="o">=</span><span class="n">steps_to_do</span><span class="p">,</span>
+            <span class="n">part_info</span><span class="o">=</span><span class="n">part_info</span><span class="p">,</span>
+            <span class="n">generator</span><span class="o">=</span><span class="n">generator</span><span class="p">,</span>
+            <span class="n">axesToMove</span><span class="o">=</span><span class="n">axesToMove</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AbortHook"><a class="viewcode-back" href="../../../../tutorials/detector.html#malcolm.modules.scanning.hooks.AbortHook">[docs]</a><span class="k">class</span> <span class="nc">AbortHook</span><span class="p">(</span><span class="n">ControllerHook</span><span class="p">[</span><span class="kc">None</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;Called at abort() to stop the current scan&quot;&quot;&quot;</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2015, Diamond Light Source.
+
+    </p>
+  </div> 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+  
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>
