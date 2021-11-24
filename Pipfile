@@ -4,27 +4,7 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-flake8-isort = "*"
-sphinx = ">=1.4.9"
-sphinx-rtd-theme = "*"
-doc8 = "*"
-mock = "*"
-nose = "*"
-coverage = "*"
-# Pinning black stops us having to allow pre-releases globally
-black = "==21.5b2"
-pytest = "*"
-pytest-cov = "*"
-pytest-black = "*"
-pytest-flake8 = "*"
-pytest-mypy = "*"
-pytest-timeout = "*"
-pylint = "*"
-codecov = "*"
-typing = "*"
-types-mock = "*"
-mypy = "*"
-atomicwrites = "*"
+pymalcolm = { editable = true, extras = ["dev"], path = "." }
 
 [packages]
 pymalcolm = { editable = true, path = "." }
