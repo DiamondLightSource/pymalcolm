@@ -27,6 +27,16 @@ def setup(app):
 
 # -- General configuration ------------------------------------------------
 
+# General information about the project.
+project = u"malcolm"
+copyright = u"2015, Diamond Light Source"
+author = u"Tom Cobb"
+
+# The short X.Y version.
+version = malcolm.__version__.split("+")[0]
+# The full version, including alpha/beta/rc tags.
+release = malcolm.__version__
+
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
@@ -47,6 +57,19 @@ graphviz_output_format = "svg"
 # If true, Sphinx will warn about all references where the target can't be found
 nitpicky = True
 
+# Both the class’ and the __init__ method’s docstring are concatenated and
+# inserted into the main body of the autoclass directive
+autoclass_content = "both"
+
+# Order the members by the order they appear in the source code
+autodoc_member_order = "bysource"
+
+# Don't inherit docstrings from baseclasses
+autodoc_inherit_docstrings = False
+
+# Output graphviz directive produced images in a scalable format
+graphviz_output_format = "svg"
+
 # The name of a reST role (builtin or Sphinx extension) to use as the default
 # role, that is, for text marked up `like this`
 default_role = "any"
@@ -54,22 +77,16 @@ default_role = "any"
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
+
 # The suffix of source filenames.
 source_suffix = ".rst"
 
 # The master toctree document.
 master_doc = "contents"
 
-# General information about the project.
-project = u"malcolm"
-copyright = u"2015, Diamond Light Source"
-author = u"Tom Cobb"
-
-# The short X.Y version.
-version = malcolm.__version__.split("+")[0]
-# The full version, including alpha/beta/rc tags.
-release = malcolm.__version__
-
+# List of patterns, relative to source directory, that match files and
+# directories to ignore when looking for source files.
+# These patterns also affect html_static_path and html_extra_path
 exclude_patterns = ["_build"]
 
 # The name of the Pygments (syntax highlighting) style to use.
@@ -86,20 +103,15 @@ intersphinx_mapping = dict(
 # A dictionary of graphviz graph attributes for inheritance diagrams.
 inheritance_graph_attrs = dict(rankdir="TB")
 
-# -- Options for HTML output ----------------------------------------------
+# -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-# on_rtd is whether we are on readthedocs.org
-on_rtd = os.environ.get("READTHEDOCS", None) == "True"
+#
+html_theme = "sphinx_rtd_theme_github_versions"
 
-if not on_rtd:  # only import and set the theme if we're building docs locally
-    import sphinx_rtd_theme
-
-    html_context = dict(css_files=[])
-    html_theme = "sphinx_rtd_theme"
-    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
-
+# Options for the sphinx rtd theme, use DLS blue
+html_theme_options = dict(style_nav_header_background="rgb(7, 43, 93)")
 
 # Add any paths that contain custom themes here, relative to this directory.
 # html_theme_path = []
@@ -128,91 +140,3 @@ htmlhelp_basename = "malcolmdoc"
 # Logo
 html_logo = "malcolm-logo.svg"
 html_favicon = "malcolm-logo.ico"
-
-
-# -- Options for LaTeX output ---------------------------------------------
-
-latex_elements = {
-    # The paper size ('letterpaper' or 'a4paper').
-    #'papersize': 'letterpaper',
-    # The font size ('10pt', '11pt' or '12pt').
-    #'pointsize': '10pt',
-    # Additional stuff for the LaTeX preamble.
-    #'preamble': '',
-}
-
-# Grouping the document tree into LaTeX files. List of tuples
-# (source start file, target name, title,
-#  author, documentclass [howto, manual, or own class]).
-latex_documents = [
-    ("contents", "malcolm.tex", u"malcolm Documentation", u"Tom Cobb", "manual"),
-]
-
-# -- Options for manual page output ---------------------------------------
-
-# One entry per manual page. List of tuples
-# (source start file, name, description, authors, manual section).
-man_pages = [("contents", "malcolm", u"malcolm Documentation", [u"Tom Cobb"], 1)]
-
-# -- Options for Texinfo output -------------------------------------------
-
-# Grouping the document tree into Texinfo files. List of tuples
-# (source start file, target name, title, author,
-#  dir menu entry, description, category)
-texinfo_documents = [
-    (
-        "contents",
-        "malcolm",
-        u"malcolm Documentation",
-        u"Tom Cobb",
-        "malcolm",
-        "A short description",
-        "Miscellaneous",
-    ),
-]
-
-# Common links that should be available on every page
-rst_epilog = """
-.. _Mapping project:
-    https://indico.esss.lu.se/event/357/session/8/contribution/63
-
-.. _EPICS:
-    http://www.aps.anl.gov/epics/
-
-.. _PVs:
-    https://ics-web.sns.ornl.gov/kasemir/train_2006/1_3_CA_Overview.pdf
-
-.. _GDA:
-    http://www.opengda.org/
-
-.. _pvAccess:
-    http://epics-pvdata.sourceforge.net/arch.html#Network
-
-.. _websockets:
-    https://en.wikipedia.org/wiki/WebSocket
-
-.. _Diamond Light Source:
-    http://www.diamond.ac.uk
-
-.. _JSON:
-    http://www.json.org/
-
-.. _areaDetector:
-    http://cars.uchicago.edu/software/epics/areaDetector.html
-
-.. _YAML:
-    https://en.wikipedia.org/wiki/YAML
-
-.. _IPython:
-    https://ipython.org
-
-.. _Scan Point Generator:
-    http://scanpointgenerator.readthedocs.org/en/latest/writing.html
-
-.. _NeXus:
-    http://www.nexusformat.org/
-
-.. _HDF5:
-    https://support.hdfgroup.org/HDF5/
-
-"""
