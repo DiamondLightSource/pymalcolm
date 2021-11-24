@@ -1,0 +1,6 @@
+
+malcolm.modules.builtin.defines
+===============================
+
+.. automodule:: malcolm.modules.builtin.defines
+    :members:

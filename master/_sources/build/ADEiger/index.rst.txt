@@ -1,0 +1,12 @@
+
+ADEiger
+=======
+
+.. module:: malcolm.modules.ADEiger
+
+.. toctree::
+    :maxdepth: 1
+    :caption: malcolm.modules.ADEiger
+
+    blocks <blocks_api.rst>
+    parts <parts_api.rst>

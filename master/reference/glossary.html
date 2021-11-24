@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Glossary &mdash; malcolm 4.6+17.g0a844295 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Block Structure" href="structure.html" />
+    <link rel="prev" title="PandA Master Tutorial" href="../tutorials/panda.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../contents.html" class="icon icon-home"> malcolm
+            <img src="../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                4.6
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Glossary</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#attribute">Attribute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#block">Block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#clientcomms">ClientComms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#context">Context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#controller">Controller</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#design">Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#device-layer">Device Layer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#exports">Exports</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#future">Future</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hardware-layer">Hardware Layer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hook">Hook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#include">Include</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#info">Info</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#initial-design">Initial Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#method">Method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mri">mri</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#part">Part</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#process">Process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#process-definition">Process Definition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#scan-layer">Scan Layer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#servercomms">ServerComms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tags">Tags</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#template-design">Template Design</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+  <!-- Add versions for selected branches + tags -->
+  <p class="caption">
+    <span class="caption-text">Versions</span>
+  </p>
+  <ul id="versions"/>
+  <script>
+    // Add any branches to appear in the side pane here, tags will be added below
+    // Will only appear if docs are built and pushed in gh-pages
+    var versions = ['main', 'master'];
+    var dirs = new Set();
+    function addVersion(name) {
+      if (dirs.has(name)) {
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        a.href = 'https://dls-controls.github.io/malcolm/' + name;
+        a.innerText = name;
+        li.appendChild(a)
+        document.getElementById('versions').appendChild(li);
+      }
+    }
+    Promise.all([
+      // Find gh-pages directories and populate `dirs`
+      fetch("https://api.github.com/repos/dls-controls/malcolm/contents?ref=gh-pages")
+      .then(response => response.json())
+      .then(data => data.forEach(function(e) {
+        if (e.type == "dir") dirs.add(e.name);
+      })),
+      // Add tags to `versions`
+      fetch('https://api.github.com/repos/dls-controls/malcolm/tags')
+        .then(response => response.json())
+        .then(data => data.forEach(function(e) {
+          versions.push(e.name);
+        }))
+      ]).then(_ => versions.forEach(addVersion))
+  </script>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../contents.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Glossary</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/reference/glossary.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="glossary">
+<span id="id1"></span><h1>Glossary<a class="headerlink" href="#glossary" title="Permalink to this headline"></a></h1>
+<p>Here are some commonly used Malcolm terms.</p>
+<section id="attribute">
+<span id="id2"></span><h2>Attribute<a class="headerlink" href="#attribute" title="Permalink to this headline"></a></h2>
+<p>An <a class="reference internal" href="../api/core_api.html#malcolm.core.Attribute" title="malcolm.core.Attribute"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Attribute</span></code></a> is the interface to an object attached to a <a class="reference internal" href="#block"><span class="std std-ref">Block</span></a> that holds a
+current value with alarm and timeStamp and some meta information. If writeable
+it can accept <a class="reference internal" href="../api/core_api.html#malcolm.core.Put" title="malcolm.core.Put"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Put</span></code></a> requests to run a remote procedure. It is a user centred
+view, backed by an <a class="reference internal" href="../api/core_api.html#malcolm.core.AttributeModel" title="malcolm.core.AttributeModel"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AttributeModel</span></code></a> to hold the data.</p>
+<p>Introduced in the <a class="reference internal" href="../tutorials/counter.html#counter-tutorial"><span class="std std-ref">Counter Tutorial</span></a>.</p>
+</section>
+<section id="block">
+<span id="id3"></span><h2>Block<a class="headerlink" href="#block" title="Permalink to this headline"></a></h2>
+<p>A <a class="reference internal" href="../api/core_api.html#malcolm.core.Block" title="malcolm.core.Block"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Block</span></code></a> is the interface to a single object with <a class="reference internal" href="#method"><span class="std std-ref">Methods</span></a> and
+<a class="reference internal" href="#attribute"><span class="std std-ref">Attributes</span></a>. It is a user centred view, backed by a <a class="reference internal" href="../api/core_api.html#malcolm.core.BlockModel" title="malcolm.core.BlockModel"><code class="xref any py py-class docutils literal notranslate"><span class="pre">BlockModel</span></code></a>
+to hold the data.</p>
+<p>Introduced in the <a class="reference internal" href="../tutorials/hello.html#hello-tutorial"><span class="std std-ref">Hello World Tutorial</span></a>.</p>
+</section>
+<section id="clientcomms">
+<span id="id4"></span><h2>ClientComms<a class="headerlink" href="#clientcomms" title="Permalink to this headline"></a></h2>
+<p>A <a class="reference internal" href="../build/builtin/controllers_api.html#malcolm.modules.builtin.controllers.ClientComms" title="malcolm.modules.builtin.controllers.ClientComms"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ClientComms</span></code></a> is a special <a class="reference internal" href="#controller"><span class="std std-ref">Controller</span></a> that provides access to remote
+<a class="reference internal" href="#block"><span class="std std-ref">Blocks</span></a> hosted by another Malcolm <a class="reference internal" href="#process"><span class="std std-ref">Process</span></a> with a <a class="reference internal" href="#servercomms"><span class="std std-ref">ServerComms</span></a>.</p>
+<p>Introduced in the <a class="reference internal" href="../tutorials/hello.html#hello-tutorial"><span class="std std-ref">Hello World Tutorial</span></a>.</p>
+</section>
+<section id="context">
+<span id="id5"></span><h2>Context<a class="headerlink" href="#context" title="Permalink to this headline"></a></h2>
+<p>A <a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Context</span></code></a> is a utility object that can make a <a class="reference internal" href="#block"><span class="std std-ref">Block</span></a> View for any
+<a class="reference internal" href="#controller"><span class="std std-ref">Controller</span></a> in the current Malcolm <a class="reference internal" href="#process"><span class="std std-ref">Process</span></a>. It is also used by these Views
+for calling Methods and Putting to Attributes in a synchronous and asynchronous
+fashion, and managing the returns from these requests in an ordered fashion.</p>
+<p>Introduced breifly in the <a class="reference internal" href="../tutorials/hello.html#hello-tutorial"><span class="std std-ref">Hello World Tutorial</span></a>, then in more depth in the
+<a class="reference internal" href="../tutorials/motion.html#motion-tutorial"><span class="std std-ref">Motion Tutorial</span></a>.</p>
+</section>
+<section id="controller">
+<span id="id6"></span><h2>Controller<a class="headerlink" href="#controller" title="Permalink to this headline"></a></h2>
+<p>A <a class="reference internal" href="../api/core_api.html#malcolm.core.Controller" title="malcolm.core.Controller"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Controller</span></code></a> is responsible for making a <a class="reference internal" href="#block"><span class="std std-ref">Block</span></a> View on request, possibly
+synchronizing its state with some hardware.</p>
+<p>Introduced in the <a class="reference internal" href="../tutorials/hello.html#hello-tutorial"><span class="std std-ref">Hello World Tutorial</span></a>.</p>
+</section>
+<section id="design">
+<span id="id7"></span><h2>Design<a class="headerlink" href="#design" title="Permalink to this headline"></a></h2>
+<p>A <a class="reference external" href="https://www.json.org/">JSON</a> file that describes the settings of a Block in the <a class="reference internal" href="#device-layer"><span class="std std-ref">Device Layer</span></a> or
+the <a class="reference internal" href="#scan-layer"><span class="std std-ref">Scan Layer</span></a>. It is generated by storing the values of all config tagged
+Attributes of each child Block.</p>
+<p>Introduced in the <a class="reference internal" href="../tutorials/motion.html#motion-tutorial"><span class="std std-ref">Motion Tutorial</span></a>.</p>
+</section>
+<section id="device-layer">
+<span id="id8"></span><h2>Device Layer<a class="headerlink" href="#device-layer" title="Permalink to this headline"></a></h2>
+<p>Middle level of <a class="reference internal" href="#block"><span class="std std-ref">Block</span></a>, corresponding to a simple device like a Motion
+Controller, exposing a few <a class="reference internal" href="#method"><span class="std std-ref">Methods</span></a>, or more complex device like a
+Detector, exposing a configure/run interface. They manage a number of Blocks
+in the <a class="reference internal" href="#hardware-layer"><span class="std std-ref">Hardware Layer</span></a>.</p>
+<p>Introduced in the <a class="reference internal" href="../tutorials/motion.html#motion-tutorial"><span class="std std-ref">Motion Tutorial</span></a> and expanded on in the <a class="reference internal" href="../tutorials/detector.html#detector-tutorial"><span class="std std-ref">Detector Tutorial</span></a>.</p>
+</section>
+<section id="exports">
+<span id="id9"></span><h2>Exports<a class="headerlink" href="#exports" title="Permalink to this headline"></a></h2>
+<p>An <a class="reference internal" href="#attribute"><span class="std std-ref">Attribute</span></a> of a <a class="reference internal" href="../build/builtin/controllers_api.html#malcolm.modules.builtin.controllers.ManagerController" title="malcolm.modules.builtin.controllers.ManagerController"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ManagerController</span></code></a>, this allows promoting of child
+<a class="reference internal" href="#attribute"><span class="std std-ref">Attributes</span></a> and <a class="reference internal" href="#method"><span class="std std-ref">Methods</span></a> to the parent. It can be used
+to define an interface for a top level part like the <code class="xref any docutils literal notranslate"><span class="pre">PandAPcompPart</span></code> to use,
+while allowing flexibility of the exact layout of the <a class="reference internal" href="#block"><span class="std std-ref">Block</span></a> design.</p>
+<p>Introduced in the <a class="reference internal" href="../tutorials/panda.html#panda-tutorial"><span class="std std-ref">PandA Master Tutorial</span></a>.</p>
+</section>
+<section id="future">
+<span id="id10"></span><h2>Future<a class="headerlink" href="#future" title="Permalink to this headline"></a></h2>
+<p>A <a class="reference internal" href="../api/core_api.html#malcolm.core.Future" title="malcolm.core.Future"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Future</span></code></a> represents the result of an asynchronous computation. It is typically
+returned by a <a class="reference internal" href="#context"><span class="std std-ref">Context</span></a> or a <a class="reference internal" href="#block"><span class="std std-ref">Block</span></a> View when using one of its <code class="docutils literal notranslate"><span class="pre">_async</span></code>
+methods to call a <a class="reference internal" href="#method"><span class="std std-ref">Method</span></a> or Put to an <a class="reference internal" href="#attribute"><span class="std std-ref">Attribute</span></a> without waiting for it
+to complete.</p>
+<p>Introduced in the <a class="reference internal" href="../tutorials/scanning.html#scanning-tutorial"><span class="std std-ref">Scanning Tutorial</span></a>.</p>
+</section>
+<section id="hardware-layer">
+<span id="id11"></span><h2>Hardware Layer<a class="headerlink" href="#hardware-layer" title="Permalink to this headline"></a></h2>
+<p>Contains the lowest level of <a class="reference internal" href="#block"><span class="std std-ref">Block</span></a>, providing an interface that directly
+exposes the <a class="reference internal" href="#attribute"><span class="std std-ref">Attributes</span></a> that the hardware provides.</p>
+<p>Introduced in the <a class="reference internal" href="../tutorials/motion.html#motion-tutorial"><span class="std std-ref">Motion Tutorial</span></a>.</p>
+</section>
+<section id="hook">
+<span id="id12"></span><h2>Hook<a class="headerlink" href="#hook" title="Permalink to this headline"></a></h2>
+<p>A <a class="reference internal" href="../api/core_api.html#malcolm.core.Hook" title="malcolm.core.Hook"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Hook</span></code></a> is an object created by a <a class="reference internal" href="#controller"><span class="std std-ref">Controller</span></a> that <a class="reference internal" href="#part"><span class="std std-ref">Parts</span></a> can
+register with so that arbitrary logic is run concurrently during specific times
+in Controller <a class="reference internal" href="#method"><span class="std std-ref">Methods</span></a>.</p>
+<p>Introduced in the <a class="reference internal" href="../tutorials/detector.html#detector-tutorial"><span class="std std-ref">Detector Tutorial</span></a>.</p>
+</section>
+<section id="include">
+<span id="id13"></span><h2>Include<a class="headerlink" href="#include" title="Permalink to this headline"></a></h2>
+<p>A <a class="reference external" href="https://en.wikipedia.org/wiki/YAML">YAML</a> file containing a number of <a class="reference internal" href="#part"><span class="std std-ref">Part</span></a> and child <a class="reference internal" href="#block"><span class="std std-ref">Block</span></a> definitions that
+can be used in the creation of a new Block. Typically used when there is a
+repeated pattern of components that are used in the construction of many
+different Block types.</p>
+<p>Introduced in the <a class="reference internal" href="../tutorials/areadetector.html#areadetector-tutorial"><span class="std std-ref">AreaDetector Tutorial</span></a>.</p>
+</section>
+<section id="info">
+<span id="id14"></span><h2>Info<a class="headerlink" href="#info" title="Permalink to this headline"></a></h2>
+<p>An <a class="reference internal" href="../api/core_api.html#malcolm.core.Info" title="malcolm.core.Info"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Info</span></code></a> is an object created by a <a class="reference internal" href="#part"><span class="std std-ref">Part</span></a> that is passed up to its parent
+<a class="reference internal" href="#controller"><span class="std std-ref">Controller</span></a> in response to a <a class="reference internal" href="#hook"><span class="std std-ref">Hook</span></a> or asynchronously by the call of
+<a class="reference internal" href="../api/core_api.html#malcolm.core.PartRegistrar.report" title="malcolm.core.PartRegistrar.report"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">PartRegistrar.report()</span></code></a>. These may they be passed back down to all the
+children of the Controller via another Hook.</p>
+<p>Introduced in the <a class="reference internal" href="../tutorials/detector.html#detector-tutorial"><span class="std std-ref">Detector Tutorial</span></a>.</p>
+</section>
+<section id="initial-design">
+<span id="id15"></span><h2>Initial Design<a class="headerlink" href="#initial-design" title="Permalink to this headline"></a></h2>
+<p>This is the <a class="reference internal" href="#design"><span class="std std-ref">Design</span></a> that will be loaded to a <a class="reference internal" href="#block"><span class="std std-ref">Block</span></a> in the <a class="reference internal" href="#device-layer"><span class="std std-ref">Device Layer</span></a>
+or <a class="reference internal" href="#scan-layer"><span class="std std-ref">Scan Layer</span></a> when Malcolm starts up.</p>
+<p>Introduced in the <a class="reference internal" href="../tutorials/areadetector.html#areadetector-tutorial"><span class="std std-ref">AreaDetector Tutorial</span></a>.</p>
+</section>
+<section id="method">
+<span id="id16"></span><h2>Method<a class="headerlink" href="#method" title="Permalink to this headline"></a></h2>
+<p>A <a class="reference internal" href="../api/core_api.html#malcolm.core.Method" title="malcolm.core.Method"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Method</span></code></a> is the interface to an object attached to a <a class="reference internal" href="#block"><span class="std std-ref">Block</span></a> that holds meta
+information about what arguments it takes and receives, and can accept <a class="reference internal" href="../api/core_api.html#malcolm.core.Post" title="malcolm.core.Post"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Post</span></code></a>
+requests to run a remote procedure. It is a user centred view, backed by a
+<a class="reference internal" href="../api/core_api.html#malcolm.core.MethodModel" title="malcolm.core.MethodModel"><code class="xref any py py-class docutils literal notranslate"><span class="pre">MethodModel</span></code></a> to hold the data.</p>
+<p>Introduced in the <a class="reference internal" href="../tutorials/hello.html#hello-tutorial"><span class="std std-ref">Hello World Tutorial</span></a>.</p>
+</section>
+<section id="mri">
+<span id="id17"></span><h2>mri<a class="headerlink" href="#mri" title="Permalink to this headline"></a></h2>
+<p>Malcolm Resource Identifier. A unique name for a <a class="reference internal" href="#controller"><span class="std std-ref">Controller</span></a> within a
+<a class="reference internal" href="#process"><span class="std std-ref">Process</span></a> that becomes the way clients ask for a particular <a class="reference internal" href="#block"><span class="std std-ref">Block</span></a>.</p>
+<p>Introduced in the <a class="reference internal" href="../tutorials/hello.html#hello-tutorial"><span class="std std-ref">Hello World Tutorial</span></a>.</p>
+</section>
+<section id="part">
+<span id="id18"></span><h2>Part<a class="headerlink" href="#part" title="Permalink to this headline"></a></h2>
+<p>A <a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Part</span></code></a> is attached to a <a class="reference internal" href="#controller"><span class="std std-ref">Controller</span></a>, and is also able to contribute
+<a class="reference internal" href="#method"><span class="std std-ref">Methods</span></a> and <a class="reference internal" href="#attribute"><span class="std std-ref">Attributes</span></a> to the Controller’s <a class="reference internal" href="#block"><span class="std std-ref">Block</span></a>.
+It can also register to be run at specific times during Controller Methods to
+contribute logic.</p>
+<p>Introduced in the <a class="reference internal" href="../tutorials/hello.html#hello-tutorial"><span class="std std-ref">Hello World Tutorial</span></a>.</p>
+</section>
+<section id="process">
+<span id="id19"></span><h2>Process<a class="headerlink" href="#process" title="Permalink to this headline"></a></h2>
+<p>A Malcolm <a class="reference internal" href="../api/core_api.html#malcolm.core.Process" title="malcolm.core.Process"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Process</span></code></a> hosts a number of <a class="reference internal" href="#controller"><span class="std std-ref">Controller</span></a> instances that can handle
+requests meant for a particular <a class="reference internal" href="#block"><span class="std std-ref">Block</span></a>.</p>
+<p>Introduced in the <a class="reference internal" href="../tutorials/hello.html#hello-tutorial"><span class="std std-ref">Hello World Tutorial</span></a>.</p>
+</section>
+<section id="process-definition">
+<span id="id20"></span><h2>Process Definition<a class="headerlink" href="#process-definition" title="Permalink to this headline"></a></h2>
+<p>The top level YAML file which defines the Blocks that will be hosted by
+a single Malcolm Process. This will only
+instantiate blocks defined in other YAML files and optionally provide
+one or more defines. This file may not contain controllers or parts.</p>
+<p>A process definition file is passed to imalcolm.py at startup via a
+command line parameter.</p>
+<p>Introduced in the <a class="reference internal" href="../tutorials/hello.html#hello-tutorial"><span class="std std-ref">Hello World Tutorial</span></a>.</p>
+</section>
+<section id="scan-layer">
+<span id="id21"></span><h2>Scan Layer<a class="headerlink" href="#scan-layer" title="Permalink to this headline"></a></h2>
+<p>Top level of <a class="reference internal" href="#block"><span class="std std-ref">Block</span></a>, corresponding to a combination of Devices making up a
+scan.</p>
+<p>Introduced in the <a class="reference internal" href="../tutorials/scanning.html#scanning-tutorial"><span class="std std-ref">Scanning Tutorial</span></a>.</p>
+</section>
+<section id="servercomms">
+<span id="id22"></span><h2>ServerComms<a class="headerlink" href="#servercomms" title="Permalink to this headline"></a></h2>
+<p>A <a class="reference internal" href="../build/builtin/controllers_api.html#malcolm.modules.builtin.controllers.ServerComms" title="malcolm.modules.builtin.controllers.ServerComms"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ServerComms</span></code></a> is a special <a class="reference internal" href="#controller"><span class="std std-ref">Controller</span></a> that provides access to the <a class="reference internal" href="#block"><span class="std std-ref">Blocks</span></a> hosted by the current Malcolm <a class="reference internal" href="#process"><span class="std std-ref">Process</span></a>.</p>
+<p>Introduced in the <a class="reference internal" href="../tutorials/hello.html#hello-tutorial"><span class="std std-ref">Hello World Tutorial</span></a>.</p>
+</section>
+<section id="tags">
+<span id="id23"></span><h2>Tags<a class="headerlink" href="#tags" title="Permalink to this headline"></a></h2>
+<p>Freeform text strings that can be used to pass particular information about an
+<a class="reference internal" href="#attribute"><span class="std std-ref">Attribute</span></a> or <a class="reference internal" href="#method"><span class="std std-ref">Method</span></a> to users of a <a class="reference internal" href="#block"><span class="std std-ref">Block</span></a> like the GUI widget, or
+whether the Attribute should be loaded/saved by a parent block. The meaning
+of individual tags is outlined in the <a class="reference internal" href="tags.html#supported-tags"><span class="std std-ref">Supported Tags</span></a> page.</p>
+<p>Introduced in the <a class="reference internal" href="../tutorials/counter.html#counter-tutorial"><span class="std std-ref">Counter Tutorial</span></a>.</p>
+</section>
+<section id="template-design">
+<span id="id24"></span><h2>Template Design<a class="headerlink" href="#template-design" title="Permalink to this headline"></a></h2>
+<p>A read-only <a class="reference internal" href="#design"><span class="std std-ref">Design</span></a> that is provide by Malcolm itself. It always starts
+with the string <code class="docutils literal notranslate"><span class="pre">template_</span></code>. It can either be a sensible set of defaults for a
+particular Block that can be used as is (like <code class="docutils literal notranslate"><span class="pre">template_hardware_gate</span></code> for a
+detector) or act as a starting point for a user design (like <code class="docutils literal notranslate"><span class="pre">template_pcomp</span></code>
+for a PandA).</p>
+<p>Introduced in the <a class="reference internal" href="../tutorials/areadetector.html#areadetector-tutorial"><span class="std std-ref">AreaDetector Tutorial</span></a>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../tutorials/panda.html" class="btn btn-neutral float-left" title="PandA Master Tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="structure.html" class="btn btn-neutral float-right" title="Block Structure" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

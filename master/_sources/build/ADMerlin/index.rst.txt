@@ -1,0 +1,11 @@
+
+ADMerlin
+========
+
+.. module:: malcolm.modules.ADMerlin
+
+.. toctree::
+    :maxdepth: 1
+    :caption: malcolm.modules.ADMerlin
+
+    blocks <blocks_api.rst>

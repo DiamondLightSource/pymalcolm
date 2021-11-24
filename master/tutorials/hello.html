@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hello World Tutorial &mdash; malcolm 4.6+17.g0a844295 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Counter Tutorial" href="counter.html" />
+    <link rel="prev" title="Malcolm" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../contents.html" class="icon icon-home"> malcolm
+            <img src="../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                4.6
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Hello World Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#launching-a-malcolm-process">Launching a Malcolm Process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#connecting-a-second-malcolm-process">Connecting a second Malcolm Process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#defining-a-block">Defining a Block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#defining-a-part">Defining a Part</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+  <!-- Add versions for selected branches + tags -->
+  <p class="caption">
+    <span class="caption-text">Versions</span>
+  </p>
+  <ul id="versions"/>
+  <script>
+    // Add any branches to appear in the side pane here, tags will be added below
+    // Will only appear if docs are built and pushed in gh-pages
+    var versions = ['main', 'master'];
+    var dirs = new Set();
+    function addVersion(name) {
+      if (dirs.has(name)) {
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        a.href = 'https://dls-controls.github.io/malcolm/' + name;
+        a.innerText = name;
+        li.appendChild(a)
+        document.getElementById('versions').appendChild(li);
+      }
+    }
+    Promise.all([
+      // Find gh-pages directories and populate `dirs`
+      fetch("https://api.github.com/repos/dls-controls/malcolm/contents?ref=gh-pages")
+      .then(response => response.json())
+      .then(data => data.forEach(function(e) {
+        if (e.type == "dir") dirs.add(e.name);
+      })),
+      // Add tags to `versions`
+      fetch('https://api.github.com/repos/dls-controls/malcolm/tags')
+        .then(response => response.json())
+        .then(data => data.forEach(function(e) {
+          versions.push(e.name);
+        }))
+      ]).then(_ => versions.forEach(addVersion))
+  </script>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../contents.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Hello World Tutorial</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorials/hello.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="hello-world-tutorial">
+<span id="hello-tutorial"></span><h1>Hello World Tutorial<a class="headerlink" href="#hello-world-tutorial" title="Permalink to this headline"></a></h1>
+<p>If you have followed the <a class="reference internal" href="../index.html#installation-guide"><span class="std std-ref">Installation Guide</span></a> using pipenv you will have a
+checked out a copy of pymalcolm, which includes some example code, and a
+virtual environment ready for running Malcolm.</p>
+<p>So now would be a good time for a “Hello World” tutorial.</p>
+<p>Let’s start with some terminology. A Malcolm application consists of a
+<a class="reference internal" href="../reference/glossary.html#process"><span class="std std-ref">Process</span></a> which hosts a number of <a class="reference internal" href="../reference/glossary.html#block"><span class="std std-ref">Blocks</span></a>. Each Block has a number of
+<a class="reference internal" href="../reference/glossary.html#attribute"><span class="std std-ref">Attributes</span></a> and <a class="reference internal" href="../reference/glossary.html#method"><span class="std std-ref">Methods</span></a> that can be used to interact
+with it. The Process may also contain <a class="reference internal" href="../reference/glossary.html#servercomms"><span class="std std-ref">ServerComms</span></a> that allow it to expose its
+Blocks to the outside world, and it may also contain <a class="reference internal" href="../reference/glossary.html#clientcomms"><span class="std std-ref">ClientComms</span></a> that link it
+to another Malcolm Process and allow access to its Blocks.</p>
+<section id="launching-a-malcolm-process">
+<h2>Launching a Malcolm Process<a class="headerlink" href="#launching-a-malcolm-process" title="Permalink to this headline"></a></h2>
+<p>So how do we launch a Malcolm process?</p>
+<p>The simplest way is to use the imalcolm application. It will be installed on the
+system as <code class="docutils literal notranslate"><span class="pre">imalcolm</span></code>, but you can use it from your checked out copy of
+pymalcolm by running <code class="docutils literal notranslate"><span class="pre">pipenv</span> <span class="pre">run</span> <span class="pre">imalcolm</span></code>. You also need to tell imalcolm
+what Blocks it should instantiate and what Comms modules it should use by
+writing a <a class="reference external" href="https://en.wikipedia.org/wiki/YAML">YAML</a> <a class="reference internal" href="../reference/glossary.html#process-definition"><span class="std std-ref">Process Definition</span></a> file.</p>
+<p>Let’s look at <code class="docutils literal notranslate"><span class="pre">./malcolm/modules/demo/DEMO-HELLO.yaml</span></code> now:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create some Blocks</span>
+<span class="p p-Indicator">-</span> <span class="nt">demo.blocks.hello_block</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">HELLO</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">demo.blocks.hello_block</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">HELLO2</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">demo.blocks.counter_block</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">COUNTER</span>
+
+<span class="c1"># Add a webserver</span>
+<span class="p p-Indicator">-</span> <span class="nt">web.blocks.web_server_block</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">WEB</span>
+</pre></div>
+</div>
+<p>You will see 4 entries in the file. The first 3 entries are instantiating Blocks
+that have already been defined. These Blocks each take a single <a class="reference internal" href="../reference/glossary.html#mri"><span class="std std-ref">mri</span></a> (Malcolm
+Resource Identifier) argument which tells the Process how clients will address
+that Block. The last entry creates a ServerComms Block which starts an HTTP
+server on port 8008 and listen for websocket connections from another Malcolm
+process or a web GUI.</p>
+<p>Let’s run it now:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="go">[me@mypc pymalcolm]$ pipenv run imalcolm malcolm/modules/demo/DEMO-HELLO.yaml</span>
+<span class="go">Loading malcolm...</span>
+<span class="go">Python 3.7.2 (default, Jan 20 2020, 11:03:41)</span>
+<span class="go">Type &#39;copyright&#39;, &#39;credits&#39; or &#39;license&#39; for more information</span>
+<span class="go">IPython 7.19.0 -- An enhanced Interactive Python. Type &#39;?&#39; for help.</span>
+
+
+<span class="go">Welcome to iMalcolm.</span>
+
+<span class="go">self.mri_list:</span>
+<span class="go">    [&#39;HELLO&#39;, &#39;HELLO2&#39;, &#39;COUNTER&#39;, &#39;WEB&#39;]</span>
+
+<span class="go"># To create a view of an existing Block</span>
+<span class="go">block = self.block_view(&quot;&lt;mri&gt;&quot;)</span>
+
+<span class="go"># To create a proxy of a Block in another Malcolm</span>
+<span class="go">self.make_proxy(&quot;&lt;client_comms_mri&gt;&quot;, &quot;&lt;mri&gt;&quot;)</span>
+<span class="go">block = self.block_view(&quot;&lt;mri&gt;&quot;)</span>
+
+<span class="go"># To view state of Blocks in a GUI</span>
+<span class="go">!firefox localhost:8008</span>
+
+<span class="gp">In [1]:</span>
+</pre></div>
+</div>
+<p>We are presented with an <a class="reference external" href="https://ipython.org">IPython</a> interactive console with a <a class="reference internal" href="../reference/glossary.html#context"><span class="std std-ref">Context</span></a> object
+as <code class="docutils literal notranslate"><span class="pre">self</span></code>. This is a utility object that makes us a Block view so we can
+interact with it. Let’s try to get a view of one of the Blocks we created and
+call a Method on it:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="n">hello</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="s2">&quot;HELLO&quot;</span><span class="p">)</span>
+
+<span class="gp">In [2]: </span><span class="n">hello</span><span class="o">.</span><span class="n">greet</span><span class="p">(</span><span class="s2">&quot;me&quot;</span><span class="p">)</span>
+<span class="go">Manufacturing greeting...</span>
+<span class="gh">Out[2]: </span><span class="go">&#39;Hello me&#39;</span>
+
+<span class="gp">In [3]:</span>
+</pre></div>
+</div>
+<p>So what happened there?</p>
+<p>Well we called a Method on a Block, which printed
+“Manufacturing greeting…” to stdout, then returned the promised greeting.
+You can also specify an optional argument “sleep” to make it sleep for a bit
+before returning the greeting:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [3]: </span><span class="n">hello</span><span class="o">.</span><span class="n">greet</span><span class="p">(</span><span class="s2">&quot;me again&quot;</span><span class="p">,</span> <span class="n">sleep</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">Manufacturing greeting...</span>
+<span class="gh">Out[3]: </span><span class="go">&#39;Hello me again&#39;</span>
+
+<span class="gp">In [4]:</span>
+</pre></div>
+</div>
+</section>
+<section id="connecting-a-second-malcolm-process">
+<h2>Connecting a second Malcolm Process<a class="headerlink" href="#connecting-a-second-malcolm-process" title="Permalink to this headline"></a></h2>
+<p>So how about accessing this object from outside the Process we just ran?</p>
+<p>Well if we start a second imalcolm session we can tell it to connect to the
+first session, get the HELLO block from the first Process, and run a Method
+on it:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="go">[me@mypc pymalcolm]$ pipenv run imalcolm -c ws://localhost:8008</span>
+<span class="go">Loading malcolm...</span>
+<span class="go">Python 3.7.2 (default, Jan 20 2020, 11:03:41)</span>
+<span class="go">Type &#39;copyright&#39;, &#39;credits&#39; or &#39;license&#39; for more information</span>
+<span class="go">IPython 7.19.0 -- An enhanced Interactive Python. Type &#39;?&#39; for help.</span>
+
+
+<span class="go">Welcome to iMalcolm.</span>
+
+<span class="go">self.mri_list:</span>
+<span class="go">    [&#39;localhost:8008&#39;]</span>
+
+<span class="go"># To create a view of an existing Block</span>
+<span class="go">block = self.block_view(&quot;&lt;mri&gt;&quot;)</span>
+
+<span class="go"># To create a proxy of a Block in another Malcolm</span>
+<span class="go">self.make_proxy(&quot;&lt;client_comms_mri&gt;&quot;, &quot;&lt;mri&gt;&quot;)</span>
+<span class="go">block = self.block_view(&quot;&lt;mri&gt;&quot;)</span>
+
+<span class="go"># To view state of Blocks in a GUI</span>
+<span class="go">!firefox localhost:8008</span>
+
+<span class="gp">In [1]: </span><span class="bp">self</span><span class="o">.</span><span class="n">make_proxy</span><span class="p">(</span><span class="s2">&quot;localhost:8008&quot;</span><span class="p">,</span> <span class="s2">&quot;HELLO&quot;</span><span class="p">)</span>
+
+<span class="gp">In [2]: </span><span class="bp">self</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="s2">&quot;HELLO&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">greet</span><span class="p">(</span><span class="s2">&quot;me&quot;</span><span class="p">)</span>
+<span class="gh">Out[2]: </span><span class="go">u&#39;Hello me&#39;</span>
+
+<span class="gp">In [3]:</span>
+</pre></div>
+</div>
+<p>So how do we know it actually worked?</p>
+<p>Well if you look closely, you’ll see
+that the printed statement <code class="docutils literal notranslate"><span class="pre">Manufacturing</span> <span class="pre">greeting...</span></code> came out on the console
+of the first session rather than the second session (you can get your prompt
+back on the first session by pressing return). This means that the Block in the
+first session was doing the actual “work”, while the Block in the second session
+was just firing off a request and waiting for the response as shown in the
+diagram below.</p>
+<div class="graphviz"><object data="../_images/graphviz-65c00ed530301efae8083d31300191bd800b54b6.svg" type="image/svg+xml" class="graphviz">
+<p class="warning">digraph distributed_object_usage {
+bgcolor=transparent
+node [fontname=Arial fontsize=10 shape=box style=filled fillcolor=&quot;#8BC4E9&quot;]
+graph [fontname=Arial fontsize=11 fillcolor=&quot;#DDDDDD&quot;]
+edge [fontname=Arial fontsize=10 arrowhead=vee]
+
+subgraph cluster_p2 {
+    label=&quot;Second Process&quot;
+    subgraph cluster_h2 {
+        label=&quot;Hello Block&quot;
+        style=filled
+        g2 [label=&quot;greet()&quot;]
+        e2 [label=&quot;error()&quot;]
+    }
+}
+
+subgraph cluster_p1 {
+    label=&quot;First Process&quot;
+    subgraph cluster_c1 {
+        label=&quot;Counter Block&quot;
+        style=filled
+        counter &quot;zero()&quot; &quot;increment()&quot;
+    }
+    subgraph cluster_h1 {
+        label=&quot;Hello Block&quot;
+        style=filled
+        g1 [label=&quot;greet()&quot;]
+        e1 [label=&quot;error()&quot;]
+    }
+}
+
+g2 -&gt; g1 [style=dashed label=&quot;Post\n{name:'me'}&quot;]
+g1 -&gt; g2 [style=dashed label=&quot;Return\n'Hello me'&quot;]
+}</p></object></div>
+<p>You can quit those imalcolm sessions now by pressing CTRL-D or typing exit.</p>
+</section>
+<section id="defining-a-block">
+<h2>Defining a Block<a class="headerlink" href="#defining-a-block" title="Permalink to this headline"></a></h2>
+<p>We have already seen that a <a class="reference internal" href="../reference/glossary.html#block"><span class="std std-ref">Block</span></a> is made up of <a class="reference internal" href="../reference/glossary.html#method"><span class="std std-ref">Methods</span></a> and
+<a class="reference internal" href="../reference/glossary.html#attribute"><span class="std std-ref">Attributes</span></a>, but how do we define one? Well, although Methods and
+Attributes make a good interface to the outside world, they aren’t the right
+size unit to divide our Block into re-usable chunks of code. What we actually
+need is something to co-ordinate our Block and provide a framework for the logic
+we will write, and plugins that can extend and customize this logic. The object
+that plays a co-ordinating role is called a <a class="reference internal" href="../reference/glossary.html#controller"><span class="std std-ref">Controller</span></a> and each plugin is
+called a <a class="reference internal" href="../reference/glossary.html#part"><span class="std std-ref">Part</span></a>. This is how they fit together:</p>
+<div class="graphviz"><object data="../_images/graphviz-00c5cb7f6df1cdd1c7b0d0c8d88f7b85e281d6a9.svg" type="image/svg+xml" class="graphviz">
+<p class="warning">digraph controllers_and_parts {
+newrank=true;  // Sensible ranking of clusters
+bgcolor=transparent
+node [fontname=Arial fontsize=10 shape=rect style=filled fillcolor=&quot;#8BC4E9&quot;]
+graph [fontname=Arial fontsize=11]
+edge [fontname=Arial fontsize=10 arrowhead=none]
+
+subgraph cluster_control {
+    label=&quot;Control&quot;
+    labelloc=&quot;b&quot;
+    Controller -&gt; Parts
+}
+
+subgraph cluster_view {
+    label=&quot;View&quot;
+    labelloc=&quot;b&quot;
+    Block -&gt; Methods
+    Block -&gt; Attributes
+}
+
+{rank=same;Controller Block}
+
+Process -&gt; Controller
+Controller -&gt; Block [arrowhead=vee dir=from style=dashed label=produces]
+}</p></object></div>
+<p>The <a class="reference internal" href="../reference/glossary.html#controller"><span class="std std-ref">Controller</span></a> is responsible for making a Block View on request that we can
+interact with. It populates it with Methods and Attributes that it has created
+as well as those created by <a class="reference internal" href="../reference/glossary.html#part"><span class="std std-ref">Parts</span></a> attached to it. Parts are also
+called at specific times during Controller Methods to allow them to contribute
+logic.</p>
+<p>Lets take a look at how the Hello Block of the last example is created. It is
+defined in the <code class="docutils literal notranslate"><span class="pre">./malcolm/modules/demo/blocks/hello_block.yaml</span></code> file:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># The mri parameters should be passed when instantiating this Block. It is</span>
+<span class="c1"># available for use in this file as $(mri)</span>
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mri</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Malcolm resource id of the Block</span>
+
+<span class="c1"># Define the docstring that appears in the docs for this Block, and put it in</span>
+<span class="c1"># the $(docstring) variable for use in this file</span>
+<span class="p p-Indicator">-</span> <span class="nt">builtin.defines.docstring</span><span class="p">:</span>
+    <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Hardware Block with a greet() Method</span>
+
+<span class="c1"># The Controller will create the Block for us</span>
+<span class="p p-Indicator">-</span> <span class="nt">builtin.controllers.BasicController</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(mri)</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(docstring)</span>
+
+<span class="c1"># The Part will add a Method to the Block</span>
+<span class="p p-Indicator">-</span> <span class="nt">demo.parts.HelloPart</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">hello</span>
+</pre></div>
+</div>
+<p>The first item in the YAML file is a <a class="reference internal" href="../build/builtin/parameters_api.html#malcolm.modules.builtin.parameters.string" title="malcolm.modules.builtin.parameters.string"><code class="xref any py py-func docutils literal notranslate"><span class="pre">builtin.parameters.string</span></code></a>. This defines a
+parameter that must be defined when instantiating the Block. It’s value is then
+available throughout the YAML file by using the <code class="docutils literal notranslate"><span class="pre">$(&lt;name&gt;)</span></code> syntax.</p>
+<p>The second item is a <a class="reference internal" href="../build/builtin/controllers_api.html#malcolm.modules.builtin.controllers.BasicController" title="malcolm.modules.builtin.controllers.BasicController"><code class="xref any py py-class docutils literal notranslate"><span class="pre">BasicController</span></code></a> that just acts as a container for Parts.
+It only contributes a <code class="docutils literal notranslate"><span class="pre">health</span></code> Attribute to the Block.</p>
+<p>The third item is a <a class="reference internal" href="../build/demo/parts_api.html#malcolm.modules.demo.parts.HelloPart" title="malcolm.modules.demo.parts.HelloPart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">HelloPart</span></code></a>. It contributes the <code class="docutils literal notranslate"><span class="pre">greet()</span></code> and <code class="docutils literal notranslate"><span class="pre">error()</span></code>
+Methods to the Block.</p>
+<p>Here’s a diagram showing who created those Methods and Attributes:</p>
+<div class="graphviz"><object data="../_images/graphviz-c4b26264fd3c95f4c39c1aa988ddbc836f4f18a0.svg" type="image/svg+xml" class="graphviz">
+<p class="warning">digraph hello_controllers_and_parts {
+newrank=true;  // Sensible ranking of clusters
+bgcolor=transparent
+node [fontname=Arial fontsize=10 shape=rect style=filled fillcolor=&quot;#8BC4E9&quot;]
+graph [fontname=Arial fontsize=11]
+edge [fontname=Arial fontsize=10 arrowhead=none]
+
+subgraph cluster_control {
+    label=&quot;Control&quot;
+    controller [label=&lt;BasicController&lt;BR/&gt;mri: 'HELLO'&gt;]
+    hello [label=&lt;HelloPart&lt;BR/&gt;name: 'hello'&gt;]
+    controller -&gt; hello
+}
+
+subgraph cluster_view {
+    label=&quot;View&quot;
+    block [label=&lt;Block&lt;BR/&gt;mri: 'HELLO'&gt;]
+    greet [label=&lt;Method&lt;BR/&gt;name: 'greet'&gt;]
+    error [label=&lt;Method&lt;BR/&gt;name: 'error'&gt;]
+    health [label=&lt;Attribute&lt;BR/&gt;name: 'health'&gt;]
+    block -&gt; greet
+    block -&gt; error
+    block -&gt; health
+}
+
+{rank=same;controller block}
+{rank=same;hello greet error health}
+
+controller -&gt; health [style=dashed]
+hello -&gt; greet [style=dashed]
+hello -&gt; error [style=dashed]
+controller -&gt; block [arrowhead=vee dir=from style=dashed label=produces]
+}</p></object></div>
+<p>The outside world only sees the View side, but whenever a Method is called or
+an Attribute set, something on the Control side is responsible for actioning
+the request.</p>
+</section>
+<section id="defining-a-part">
+<h2>Defining a Part<a class="headerlink" href="#defining-a-part" title="Permalink to this headline"></a></h2>
+<p>We’ve seen that we don’t write any code to define a Block, we compose it from a
+Controller and the Parts that contribute Methods and Attributes to it. We will
+normally use one of the builtin Controllers, so the only place we write code is
+when we define a Part. Let’s take a look at our
+<code class="docutils literal notranslate"><span class="pre">./malcolm/modules/demo/parts/hellopart.py</span></code> now:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">add_call_types</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="n">Part</span><span class="p">,</span> <span class="n">PartRegistrar</span>
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="n">sleep</span> <span class="k">as</span> <span class="n">sleep_for</span>
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;The name of the person to greet&quot;</span><span class="p">):</span>
+    <span class="n">AName</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Time to wait before returning&quot;</span><span class="p">):</span>
+    <span class="n">ASleep</span> <span class="o">=</span> <span class="nb">float</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;The manufactured greeting&quot;</span><span class="p">):</span>
+    <span class="n">AGreeting</span> <span class="o">=</span> <span class="nb">str</span>
+
+
+<span class="k">class</span> <span class="nc">HelloPart</span><span class="p">(</span><span class="n">Part</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Defines greet and error `Method` objects on a `Block`&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">registrar</span><span class="p">:</span> <span class="n">PartRegistrar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">registrar</span><span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">add_method_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">greet</span><span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">add_method_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
+
+    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">greet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">AName</span><span class="p">,</span> <span class="n">sleep</span><span class="p">:</span> <span class="n">ASleep</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AGreeting</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Optionally sleep &lt;sleep&gt; seconds, then return a greeting to &lt;name&gt;&quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Manufacturing greeting...&quot;</span><span class="p">)</span>
+        <span class="n">sleep_for</span><span class="p">(</span><span class="n">sleep</span><span class="p">)</span>
+        <span class="n">greeting</span> <span class="o">=</span> <span class="s2">&quot;Hello </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">name</span>
+        <span class="k">return</span> <span class="n">greeting</span>
+
+    <span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Raise an error&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You called method error()&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>After the imports, you will see three <code class="docutils literal notranslate"><span class="pre">with</span> <span class="pre">Anno()</span></code> statements. Each of these
+defines a named type variable that can be used by the <code class="docutils literal notranslate"><span class="pre">annotypes</span></code> library to
+infer runtime types of various parameters. The first argument to <code class="docutils literal notranslate"><span class="pre">Anno()</span></code>
+gives a description that can be used for documentation, and the body of the
+<code class="docutils literal notranslate"><span class="pre">with</span></code> statement defines a single variable (starting with <code class="docutils literal notranslate"><span class="pre">A</span></code> by convention)
+that will be used to give a type to some code below. These annotypes can be
+imported and used between files to make sure that the description only has
+to be defined once.</p>
+<p>The class we define is called <code class="docutils literal notranslate"><span class="pre">HelloPart</span></code> and it subclasses from <a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Part</span></code></a>. It
+implements <a class="reference internal" href="../api/core_api.html#malcolm.core.Part.setup" title="malcolm.core.Part.setup"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Part.setup</span></code></a> so that it can register two methods with the
+<a class="reference internal" href="../api/core_api.html#malcolm.core.PartRegistrar" title="malcolm.core.PartRegistrar"><code class="xref any py py-class docutils literal notranslate"><span class="pre">PartRegistrar</span></code></a> object passed to it by it’s <a class="reference internal" href="../api/core_api.html#malcolm.core.Controller" title="malcolm.core.Controller"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Controller</span></code></a>.</p>
+<p>It has a a method called <code class="docutils literal notranslate"><span class="pre">greet</span></code> that has a <a class="reference external" href="https://realpython.com/blog/python/primer-on-python-decorators/">decorator</a> on it and contains
+the actual business logic. In Python, decorators can be stacked many deep and
+can modify the function or class they are attached to. It also has a special
+<a class="reference external" href="https://www.python.org/dev/peps/pep-0484/#suggested-syntax-for-python-2-7-and-straddling-code">type comment</a> that tells some IDEs like PyCharm what type the arguments and
+return value are.</p>
+<p>The decorator and type comment work together to annotate the function at runtime
+with a special <code class="docutils literal notranslate"><span class="pre">call_types</span></code> variable that Malcolm uses to validate and
+provide introspection information about the Method.</p>
+<p>Inside the actual function, we print a message just so we can see what is
+happening, then sleep for a bit to simulate doing some work, then return the
+greeting.</p>
+<p>There is also a second method called <code class="docutils literal notranslate"><span class="pre">error</span></code> that just raises an error. This
+doesn’t need a decorator as it doesn’t take any arguments or return anything
+(although adding one would be harmless).</p>
+</section>
+<section id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline"></a></h2>
+<p>This first tutorial has taken us through running up a Process with some
+Blocks and shown us how those Blocks are specified by instantiating Parts and
+placing them within a Controller. The HelloPart we have seen encapsulates the
+functionality required to add a <code class="docutils literal notranslate"><span class="pre">greet()</span></code> function to a Block. It means
+that we could now add “greeting” functionality to another Block just by
+adding it to the instantiated parts. In the next tutorial we will read more
+about adding functionality using Parts.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="Malcolm" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="counter.html" class="btn btn-neutral float-right" title="Counter Tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

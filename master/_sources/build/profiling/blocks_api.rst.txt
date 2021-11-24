@@ -1,0 +1,6 @@
+
+malcolm.modules.profiling.blocks
+================================
+
+.. automodule:: malcolm.modules.profiling.blocks
+    :members:

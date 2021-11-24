@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>util &mdash; malcolm 4.6+17.g0a844295 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="ca" href="../ca/index.html" />
+    <link rel="prev" title="malcolm.modules.builtin.parts" href="parts_api.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                4.6
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../modules_api.html">malcolm.modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../ADAndor/index.html">ADAndor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADCore/index.html">ADCore</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADEiger/index.html">ADEiger</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADEthercat/index.html">ADEthercat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADMerlin/index.html">ADMerlin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADOdin/index.html">ADOdin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADPandABlocks/index.html">ADPandABlocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADPco/index.html">ADPco</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADPilatus/index.html">ADPilatus</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADSimDetector/index.html">ADSimDetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADTetrAMM/index.html">ADTetrAMM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../adUtil/index.html">adUtil</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../aravisGigE/index.html">aravisGigE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../asyn/index.html">asyn</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">builtin</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="blocks_api.html">blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="controllers_api.html">controllers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="defines_api.html">defines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="hooks_api.html">hooks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="infos_api.html">infos</a></li>
+<li class="toctree-l3"><a class="reference internal" href="parameters_api.html">parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="parts_api.html">parts</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../ca/index.html">ca</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demo/index.html">demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dtacq/index.html">dtacq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pandablocks/index.html">pandablocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pmac/index.html">pmac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../profiling/index.html">profiling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pva/index.html">pva</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../scanning/index.html">scanning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../system/index.html">system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../web/index.html">web</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../xmap/index.html">xmap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../xspress3/index.html">xspress3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../zebra/index.html">zebra</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+  <!-- Add versions for selected branches + tags -->
+  <p class="caption">
+    <span class="caption-text">Versions</span>
+  </p>
+  <ul id="versions"/>
+  <script>
+    // Add any branches to appear in the side pane here, tags will be added below
+    // Will only appear if docs are built and pushed in gh-pages
+    var versions = ['main', 'master'];
+    var dirs = new Set();
+    function addVersion(name) {
+      if (dirs.has(name)) {
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        a.href = 'https://dls-controls.github.io/malcolm/' + name;
+        a.innerText = name;
+        li.appendChild(a)
+        document.getElementById('versions').appendChild(li);
+      }
+    }
+    Promise.all([
+      // Find gh-pages directories and populate `dirs`
+      fetch("https://api.github.com/repos/dls-controls/malcolm/contents?ref=gh-pages")
+      .then(response => response.json())
+      .then(data => data.forEach(function(e) {
+        if (e.type == "dir") dirs.add(e.name);
+      })),
+      // Add tags to `versions`
+      fetch('https://api.github.com/repos/dls-controls/malcolm/tags')
+        .then(response => response.json())
+        .then(data => data.forEach(function(e) {
+          versions.push(e.name);
+        }))
+      ]).then(_ => versions.forEach(addVersion))
+  </script>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../modules_api.html">malcolm.modules</a> &raquo;</li>
+          <li><a href="index.html">builtin</a> &raquo;</li>
+      <li>util</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/build/builtin/util_api.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-malcolm.modules.builtin.util">
+<span id="util"></span><h1>util<a class="headerlink" href="#module-malcolm.modules.builtin.util" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.util.LayoutTable">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.builtin.util.</span></span><span class="sig-name descname"><span class="pre">LayoutTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name:</span> <span class="pre">Union[Anno(name='ANameArray',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='Names</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">layout</span> <span class="pre">parts'),</span> <span class="pre">Sequence[str]],</span> <span class="pre">mri:</span> <span class="pre">Union[Anno(name='AMriArray',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='Malcolm</span> <span class="pre">full</span> <span class="pre">names</span> <span class="pre">of</span> <span class="pre">child</span> <span class="pre">blocks'),</span> <span class="pre">Sequence[str]],</span> <span class="pre">x:</span> <span class="pre">Union[Anno(name='AXArray',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;,</span> <span class="pre">description='X</span> <span class="pre">Coordinates</span> <span class="pre">of</span> <span class="pre">child</span> <span class="pre">blocks'),</span> <span class="pre">Sequence[float]],</span> <span class="pre">y:</span> <span class="pre">Union[Anno(name='AYArray',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;,</span> <span class="pre">description='Y</span> <span class="pre">Coordinates</span> <span class="pre">of</span> <span class="pre">child</span> <span class="pre">blocks'),</span> <span class="pre">Sequence[float]],</span> <span class="pre">visible:</span> <span class="pre">Union[Anno(name='AVisibleArray',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;,</span> <span class="pre">description='Whether</span> <span class="pre">child</span> <span class="pre">blocks</span> <span class="pre">are</span> <span class="pre">visible'),</span> <span class="pre">Sequence[bool]]</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/builtin/util.html#LayoutTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.builtin.util.LayoutTable" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Names of the layout parts</p></li>
+<li><p><strong>mri</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Malcolm full names of child blocks</p></li>
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – X Coordinates of child blocks</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Y Coordinates of child blocks</p></li>
+<li><p><strong>visible</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Whether child blocks are visible</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.util.ExportTable">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.builtin.util.</span></span><span class="sig-name descname"><span class="pre">ExportTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">source:</span> <span class="pre">Union[Anno(name='ASourceNameArray',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='Name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">block.field</span> <span class="pre">to</span> <span class="pre">export'),</span> <span class="pre">Sequence[str]],</span> <span class="pre">export:</span> <span class="pre">Union[Anno(name='AExportNameArray',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='Name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">field</span> <span class="pre">to</span> <span class="pre">export</span> <span class="pre">as'),</span> <span class="pre">Sequence[str]]</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/builtin/util.html#ExportTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.builtin.util.ExportTable" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Name of the block.field to export</p></li>
+<li><p><strong>export</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Name of the field to export as</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.util.wait_for_stateful_block_init">
+<span class="sig-prename descclassname"><span class="pre">malcolm.modules.builtin.util.</span></span><span class="sig-name descname"><span class="pre">wait_for_stateful_block_init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mri</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/builtin/util.html#wait_for_stateful_block_init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.builtin.util.wait_for_stateful_block_init" title="Permalink to this definition"></a></dt>
+<dd><p>Wait until a Block backed by a StatefulController has initialized</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – The context to use to make the child block</p></li>
+<li><p><strong>mri</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – The mri of the child block</p></li>
+<li><p><strong>timeout</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – The maximum time to wait</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.util.no_save">
+<span class="sig-prename descclassname"><span class="pre">malcolm.modules.builtin.util.</span></span><span class="sig-name descname"><span class="pre">no_save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">attribute_names</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/builtin/util.html#no_save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.builtin.util.no_save" title="Permalink to this definition"></a></dt>
+<dd><p>Helper for defining ChildPart.no_save_attribute_names.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>attribute_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – The Attributes of the child Block that shouldn’t
+be saved</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.util.SVGIcon">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.builtin.util.</span></span><span class="sig-name descname"><span class="pre">SVGIcon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">svg_text</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/builtin/util.html#SVGIcon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.builtin.util.SVGIcon" title="Permalink to this definition"></a></dt>
+<dd><p>Helper object for working with SVG icons</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.util.StatefulStates">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.builtin.util.</span></span><span class="sig-name descname"><span class="pre">StatefulStates</span></span><a class="reference internal" href="../../_modules/malcolm/modules/builtin/util.html#StatefulStates"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.builtin.util.StatefulStates" title="Permalink to this definition"></a></dt>
+<dd><p>This state set covers controllers and parts that can be disabled and have
+faults, but otherwise have no state.</p>
+<div class="graphviz"><object data="../../_images/graphviz-1eb6f2ae625dc68251f37c176f169d7971e2c5e0.svg" type="image/svg+xml" class="graphviz">
+<p class="warning">digraph {
+    newrank=true;  // Sensible ranking of clusters
+    bgcolor=transparent
+    compound=true
+    rankdir=LR
+    node [fontname=Arial fontsize=10 shape=rect style=filled fillcolor=&quot;#8BC4E9&quot;]
+    graph [fontname=Arial fontsize=11]
+    edge [fontname=Arial fontsize=10 arrowhead=vee]
+    Fault [fillcolor=&quot;#F03232&quot;]
+    Disabled [fillcolor=&quot;#AAAAAA&quot;]
+
+    subgraph cluster_normal {
+        Ready [fillcolor=&quot;#BBE7BB&quot;]
+        Resetting -&gt; Ready
+    }
+    Resetting -&gt; Disabling [ltail=cluster_normal label=&quot;disable()&quot;]
+    Resetting -&gt; Fault [ltail=cluster_normal label=&quot;on_error&quot;]
+
+    Fault -&gt; Resetting [label=&quot;reset()&quot;]
+    Fault -&gt; Disabling [label=&quot;disable()&quot;]
+    Disabling -&gt; Fault [label=&quot;on_error&quot;]
+    Disabling -&gt; Disabled
+    Disabled -&gt; Resetting [label=&quot;reset()&quot;]
+
+    label=&quot;Unlabelled transitions take place in response to internal actions\n
+           Labelled transitions are triggered externally.&quot;;
+    labelloc=bottom;
+}</p></object></div>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.util.ManagerStates">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.builtin.util.</span></span><span class="sig-name descname"><span class="pre">ManagerStates</span></span><a class="reference internal" href="../../_modules/malcolm/modules/builtin/util.html#ManagerStates"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.builtin.util.ManagerStates" title="Permalink to this definition"></a></dt>
+<dd><p>This state set covers controllers and parts that have loadable and
+savable child state.</p>
+<div class="graphviz"><object data="../../_images/graphviz-9ab8ca1d952c22f70a6c78ad8c08b05441f10022.svg" type="image/svg+xml" class="graphviz">
+<p class="warning">digraph {
+    newrank=true;  // Sensible ranking of clusters
+    bgcolor=transparent
+    compound=true
+    rankdir=LR
+    node [fontname=Arial fontsize=10 shape=rect style=filled fillcolor=&quot;#8BC4E9&quot;]
+    graph [fontname=Arial fontsize=11]
+    edge [fontname=Arial fontsize=10 arrowhead=vee]
+    Fault [fillcolor=&quot;#F03232&quot;]
+    Disabled [fillcolor=&quot;#AAAAAA&quot;]
+
+    subgraph cluster_normal {
+        Ready [fillcolor=&quot;#BBE7BB&quot;]
+        Ready -&gt; Saving [label=&quot;save()&quot;]
+        Saving -&gt; Ready [weight=0]
+        Ready -&gt; Loading [label=&quot;put\ndesign&quot;]
+        Loading -&gt; Ready [weight=0]
+        Resetting -&gt; Ready
+    }
+    Resetting -&gt; Disabling [ltail=cluster_normal label=&quot;disable()&quot;]
+    Resetting -&gt; Fault [ltail=cluster_normal label=&quot;on_error&quot;]
+
+    Fault -&gt; Resetting [label=&quot;reset()&quot;]
+    Fault -&gt; Disabling [label=&quot;disable()&quot;]
+    Disabling -&gt; Fault [label=&quot;on_error&quot;]
+    Disabling -&gt; Disabled
+    Disabled -&gt; Resetting [label=&quot;reset()&quot;]
+
+    label=&quot;Unlabelled transitions take place in response to internal actions\n
+           Labelled transitions are triggered externally.&quot;;
+    labelloc=bottom;
+}</p></object></div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="parts_api.html" class="btn btn-neutral float-left" title="malcolm.modules.builtin.parts" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../ca/index.html" class="btn btn-neutral float-right" title="ca" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

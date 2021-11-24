@@ -1,0 +1,6 @@
+
+malcolm.modules.builtin.blocks
+==============================
+
+.. automodule:: malcolm.modules.builtin.blocks
+    :members:

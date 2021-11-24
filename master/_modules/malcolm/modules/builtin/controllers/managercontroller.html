@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.modules.builtin.controllers.managercontroller &mdash; malcolm 4.6+17.g0a844295 documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../../../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                4.6
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+  <!-- Add versions for selected branches + tags -->
+  <p class="caption">
+    <span class="caption-text">Versions</span>
+  </p>
+  <ul id="versions"/>
+  <script>
+    // Add any branches to appear in the side pane here, tags will be added below
+    // Will only appear if docs are built and pushed in gh-pages
+    var versions = ['main', 'master'];
+    var dirs = new Set();
+    function addVersion(name) {
+      if (dirs.has(name)) {
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        a.href = 'https://dls-controls.github.io/malcolm/' + name;
+        a.innerText = name;
+        li.appendChild(a)
+        document.getElementById('versions').appendChild(li);
+      }
+    }
+    Promise.all([
+      // Find gh-pages directories and populate `dirs`
+      fetch("https://api.github.com/repos/dls-controls/malcolm/contents?ref=gh-pages")
+      .then(response => response.json())
+      .then(data => data.forEach(function(e) {
+        if (e.type == "dir") dirs.add(e.name);
+      })),
+      // Add tags to `versions`
+      fetch('https://api.github.com/repos/dls-controls/malcolm/tags')
+        .then(response => response.json())
+        .then(data => data.forEach(function(e) {
+          versions.push(e.name);
+        }))
+      ]).then(_ => versions.forEach(addVersion))
+  </script>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+      <li>malcolm.modules.builtin.controllers.managercontroller</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for malcolm.modules.builtin.controllers.managercontroller</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">add_call_types</span><span class="p">,</span> <span class="n">deserialize_object</span><span class="p">,</span> <span class="n">json_decode</span><span class="p">,</span> <span class="n">json_encode</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.compat</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CAMEL_RE</span><span class="p">,</span>
+    <span class="n">Alarm</span><span class="p">,</span>
+    <span class="n">AlarmSeverity</span><span class="p">,</span>
+    <span class="n">AlarmStatus</span><span class="p">,</span>
+    <span class="n">AttributeModel</span><span class="p">,</span>
+    <span class="n">BooleanMeta</span><span class="p">,</span>
+    <span class="n">ChoiceArrayMeta</span><span class="p">,</span>
+    <span class="n">ChoiceMeta</span><span class="p">,</span>
+    <span class="n">Context</span><span class="p">,</span>
+    <span class="n">Delta</span><span class="p">,</span>
+    <span class="n">Part</span><span class="p">,</span>
+    <span class="n">StringMeta</span><span class="p">,</span>
+    <span class="n">Subscribe</span><span class="p">,</span>
+    <span class="n">TableMeta</span><span class="p">,</span>
+    <span class="n">Unsubscribe</span><span class="p">,</span>
+    <span class="n">Widget</span><span class="p">,</span>
+    <span class="n">camel_to_title</span><span class="p">,</span>
+    <span class="n">config_tag</span><span class="p">,</span>
+    <span class="n">get_config_tag</span><span class="p">,</span>
+    <span class="n">without_config_tags</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">malcolm.core.tags</span> <span class="kn">import</span> <span class="n">Port</span><span class="p">,</span> <span class="n">without_group_tags</span>
+
+<span class="kn">from</span> <span class="nn">..hooks</span> <span class="kn">import</span> <span class="n">LayoutHook</span><span class="p">,</span> <span class="n">LoadHook</span><span class="p">,</span> <span class="n">SaveHook</span>
+<span class="kn">from</span> <span class="nn">..infos</span> <span class="kn">import</span> <span class="n">LayoutInfo</span><span class="p">,</span> <span class="n">PartExportableInfo</span><span class="p">,</span> <span class="n">PartModifiedInfo</span><span class="p">,</span> <span class="n">PortInfo</span>
+<span class="kn">from</span> <span class="nn">..util</span> <span class="kn">import</span> <span class="n">ExportTable</span><span class="p">,</span> <span class="n">LayoutTable</span><span class="p">,</span> <span class="n">ManagerStates</span>
+<span class="kn">from</span> <span class="nn">.statefulcontroller</span> <span class="kn">import</span> <span class="n">ADescription</span><span class="p">,</span> <span class="n">AMri</span><span class="p">,</span> <span class="n">StatefulController</span>
+
+<span class="n">ss</span> <span class="o">=</span> <span class="n">ManagerStates</span>
+
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Directory to write save/load config to&quot;</span><span class="p">):</span>
+    <span class="n">AConfigDir</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Design to load at init&quot;</span><span class="p">):</span>
+    <span class="n">AInitialDesign</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Use git to manage to saved config files&quot;</span><span class="p">):</span>
+    <span class="n">AUseGit</span> <span class="o">=</span> <span class="nb">bool</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Name of design to save, if different from current design&quot;</span><span class="p">):</span>
+    <span class="n">ASaveDesign</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span>
+    <span class="s2">&quot;A directory of templates with which to initially populate designs &quot;</span>
+    <span class="s2">&quot;Attribute. These cannot be saved over.&quot;</span>
+<span class="p">):</span>
+    <span class="n">ATemplateDesigns</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Name of part&quot;</span><span class="p">):</span>
+    <span class="n">APartName</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Name of attribute&quot;</span><span class="p">):</span>
+    <span class="n">AAttributeName</span> <span class="o">=</span> <span class="nb">str</span>
+
+<span class="c1"># Pull re-used annotypes into our namespace in case we are subclassed</span>
+<span class="n">AMri</span> <span class="o">=</span> <span class="n">AMri</span>
+<span class="n">ADescription</span> <span class="o">=</span> <span class="n">ADescription</span>
+
+
+<span class="k">def</span> <span class="nf">check_git_version</span><span class="p">(</span><span class="n">required_version</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">packaging.version</span> <span class="kn">import</span> <span class="n">parse</span>
+
+    <span class="n">output</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span>
+        <span class="p">(</span>
+            <span class="s2">&quot;git&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;--version&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">version</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;git version &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">parse</span><span class="p">(</span><span class="n">version</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">parse</span><span class="p">(</span><span class="n">required_version</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ManagerController"><a class="viewcode-back" href="../../../../../build/builtin/controllers_api.html#malcolm.modules.builtin.controllers.ManagerController">[docs]</a><span class="k">class</span> <span class="nc">ManagerController</span><span class="p">(</span><span class="n">StatefulController</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;RunnableDevice implementer that also exposes GUI for child parts&quot;&quot;&quot;</span>
+
+    <span class="n">state_set</span> <span class="o">=</span> <span class="n">ss</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">mri</span><span class="p">:</span> <span class="n">AMri</span><span class="p">,</span>
+        <span class="n">config_dir</span><span class="p">:</span> <span class="n">AConfigDir</span><span class="p">,</span>
+        <span class="n">template_designs</span><span class="p">:</span> <span class="n">ATemplateDesigns</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">initial_design</span><span class="p">:</span> <span class="n">AInitialDesign</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">use_git</span><span class="p">:</span> <span class="n">AUseGit</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">description</span><span class="p">:</span> <span class="n">ADescription</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">mri</span><span class="o">=</span><span class="n">mri</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">config_dir</span><span class="p">),</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> is not a directory&quot;</span> <span class="o">%</span> <span class="n">config_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_dir</span> <span class="o">=</span> <span class="n">config_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initial_design</span> <span class="o">=</span> <span class="n">initial_design</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_git</span> <span class="o">=</span> <span class="n">use_git</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">template_designs</span> <span class="o">=</span> <span class="n">template_designs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">git_config</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">use_git</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">check_git_version</span><span class="p">(</span><span class="s2">&quot;1.7.2&quot;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">git_email</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;USER&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;@&quot;</span> <span class="o">+</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">git_name</span> <span class="o">=</span> <span class="s2">&quot;Malcolm&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">git_config</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">&quot;-c&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;user.name=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">git_name</span><span class="p">,</span>
+                    <span class="s2">&quot;-c&quot;</span><span class="p">,</span>
+                    <span class="s1">&#39;user.email=&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">git_email</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">git_config</span> <span class="o">=</span> <span class="p">()</span>
+        <span class="c1"># last saved layout and exports</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_visibility</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_exports</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># ((name, AttributeModel/MethodModel, setter, needs_context))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_part_fields</span> <span class="o">=</span> <span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_subscriptions</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Subscribe</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">port_info</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">APartName</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">PortInfo</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">part_exportable</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Part</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">AAttributeName</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># TODO: turn this into &quot;exported attribute modified&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context_modified</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Part</span><span class="p">,</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">part_modified</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Part</span><span class="p">,</span> <span class="n">PartModifiedInfo</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># The attributes our part has published</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">our_config_attributes</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">AttributeModel</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># The reportable infos we are listening for</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info_registry</span><span class="o">.</span><span class="n">add_reportable</span><span class="p">(</span><span class="n">PartModifiedInfo</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_modified</span><span class="p">)</span>
+        <span class="c1"># Update queue of exportable fields</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info_registry</span><span class="o">.</span><span class="n">add_reportable</span><span class="p">(</span><span class="n">PartExportableInfo</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_exportable</span><span class="p">)</span>
+        <span class="c1"># Create a port for ourself</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span>
+            <span class="s2">&quot;mri&quot;</span><span class="p">,</span>
+            <span class="n">StringMeta</span><span class="p">(</span>
+                <span class="s2">&quot;A port for giving our MRI to things that might use us&quot;</span><span class="p">,</span>
+                <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">Port</span><span class="o">.</span><span class="n">BLOCK</span><span class="o">.</span><span class="n">source_port_tag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)],</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="c1"># Create a layout table attribute for setting block positions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layout</span> <span class="o">=</span> <span class="n">TableMeta</span><span class="o">.</span><span class="n">from_table</span><span class="p">(</span>
+            <span class="n">LayoutTable</span><span class="p">,</span>
+            <span class="s2">&quot;Layout of child blocks&quot;</span><span class="p">,</span>
+            <span class="n">Widget</span><span class="o">.</span><span class="n">FLOWGRAPH</span><span class="p">,</span>
+            <span class="n">writeable</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;visible&quot;</span><span class="p">],</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_writeable_in</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">,</span> <span class="n">ss</span><span class="o">.</span><span class="n">READY</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span><span class="s2">&quot;layout&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_layout</span><span class="p">)</span>
+        <span class="c1"># Create a design attribute for loading an existing layout</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">design</span> <span class="o">=</span> <span class="n">ChoiceMeta</span><span class="p">(</span>
+            <span class="s2">&quot;Design name to load&quot;</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">config_tag</span><span class="p">(),</span> <span class="n">Widget</span><span class="o">.</span><span class="n">COMBO</span><span class="o">.</span><span class="n">tag</span><span class="p">()]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span><span class="s2">&quot;design&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">design</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_design</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_writeable_in</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">design</span><span class="p">,</span> <span class="n">ss</span><span class="o">.</span><span class="n">READY</span><span class="p">)</span>
+        <span class="c1"># Create an export table for mirroring exported fields</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exports</span> <span class="o">=</span> <span class="n">TableMeta</span><span class="o">.</span><span class="n">from_table</span><span class="p">(</span>
+            <span class="n">ExportTable</span><span class="p">,</span>
+            <span class="s2">&quot;Exported fields of child blocks&quot;</span><span class="p">,</span>
+            <span class="n">writeable</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">ExportTable</span><span class="o">.</span><span class="n">call_types</span><span class="p">),</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">()</span>
+        <span class="c1"># Overwrite the sources meta to be a ChoiceArrayMeta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ChoiceArrayMeta</span><span class="p">(</span>
+            <span class="s2">&quot;Name of the block.field to export&quot;</span><span class="p">,</span>
+            <span class="n">writeable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">Widget</span><span class="o">.</span><span class="n">COMBO</span><span class="o">.</span><span class="n">tag</span><span class="p">()],</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_writeable_in</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exports</span><span class="p">,</span> <span class="n">ss</span><span class="o">.</span><span class="n">READY</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span>
+            <span class="s2">&quot;exports&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">exports</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_exports</span>
+        <span class="p">)</span>
+        <span class="c1"># Create read-only indicator for when things are modified</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">modified</span> <span class="o">=</span> <span class="n">BooleanMeta</span><span class="p">(</span>
+            <span class="s2">&quot;Whether the design is modified&quot;</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">Widget</span><span class="o">.</span><span class="n">LED</span><span class="o">.</span><span class="n">tag</span><span class="p">()]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span><span class="s2">&quot;modified&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">modified</span><span class="p">)</span>
+        <span class="c1"># Create the save method</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_writeable_in</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">add_method_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">),</span> <span class="n">ss</span><span class="o">.</span><span class="n">READY</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_run_git_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># Run git command, don&#39;t care if it fails, logging the output</span>
+        <span class="n">cwd</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cwd&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_dir</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_git</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">output</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span>
+                    <span class="p">(</span><span class="s2">&quot;git&quot;</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">git_config</span> <span class="o">+</span> <span class="n">args</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Git command failed: </span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Git command completed: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">output</span>
+
+    <span class="k">def</span> <span class="nf">do_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">do_init</span><span class="p">()</span>
+        <span class="c1"># Try and make it a git repo, don&#39;t care if it fails</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_run_git_cmd</span><span class="p">(</span><span class="s2">&quot;init&quot;</span><span class="p">)</span>
+        <span class="c1"># List the config_dir and add to choices</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_layout_names</span><span class="p">()</span>
+        <span class="c1"># If given a default config, load this</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_design</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">do_load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_design</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># This will trigger all parts to report their layout, making sure</span>
+            <span class="c1"># the layout table has a valid value. This will also call</span>
+            <span class="c1"># self._update_block_endpoints()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_default_layout</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">set_default_layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_layout</span><span class="p">(</span><span class="n">LayoutTable</span><span class="p">([],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]))</span>
+
+<div class="viewcode-block" id="ManagerController.set_layout"><a class="viewcode-back" href="../../../../../build/builtin/controllers_api.html#malcolm.modules.builtin.controllers.ManagerController.set_layout">[docs]</a>    <span class="k">def</span> <span class="nf">set_layout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set the layout table value. Called on attribute put&quot;&quot;&quot;</span>
+        <span class="c1"># Can&#39;t do this with changes_squashed as it will call update_modified</span>
+        <span class="c1"># from another thread and deadlock. Need RLock.is_owned() from update_*</span>
+        <span class="n">part_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_hooks</span><span class="p">(</span>
+            <span class="n">LayoutHook</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port_info</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_part_contexts</span><span class="p">(</span><span class="n">only_visible</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">changes_squashed</span><span class="p">:</span>
+            <span class="n">layout_parts</span> <span class="o">=</span> <span class="n">LayoutInfo</span><span class="o">.</span><span class="n">filter_parts</span><span class="p">(</span><span class="n">part_info</span><span class="p">)</span>
+            <span class="n">name</span><span class="p">,</span> <span class="n">mri</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">visible</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">part_name</span><span class="p">,</span> <span class="n">layout_infos</span> <span class="ow">in</span> <span class="n">layout_parts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">layout_info</span> <span class="ow">in</span> <span class="n">layout_infos</span><span class="p">:</span>
+                    <span class="n">name</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">part_name</span><span class="p">)</span>
+                    <span class="n">mri</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">layout_info</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+                    <span class="n">x</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">layout_info</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+                    <span class="n">y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">layout_info</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+                    <span class="n">visible</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">layout_info</span><span class="o">.</span><span class="n">visible</span><span class="p">)</span>
+            <span class="n">layout_table</span> <span class="o">=</span> <span class="n">LayoutTable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">mri</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">visible</span><span class="p">)</span>
+            <span class="n">visibility_changed</span> <span class="o">=</span> <span class="n">layout_table</span><span class="o">.</span><span class="n">visible</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">visible</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">layout_table</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_visibility</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># First write of table, set layout and exports saves</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">saved_visibility</span> <span class="o">=</span> <span class="n">layout_table</span><span class="o">.</span><span class="n">visible</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">saved_exports</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">value</span>
+                <span class="c1"># Force visibility changed so we update_block_endpoints</span>
+                <span class="c1"># even if there weren&#39;t any visible</span>
+                <span class="n">visibility_changed</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">visibility_changed</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">update_modified</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">update_exportable</span><span class="p">()</span>
+                <span class="c1"># Part visibility changed, might have attributes or methods</span>
+                <span class="c1"># that we need to hide or show</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">update_block_endpoints</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">set_exports</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="c1"># Validate</span>
+        <span class="k">for</span> <span class="n">export_name</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">export</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">CAMEL_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">export_name</span><span class="p">),</span> <span class="p">(</span>
+                <span class="s2">&quot;Field </span><span class="si">%r</span><span class="s2"> is not camelCase&quot;</span> <span class="o">%</span> <span class="n">export_name</span>
+            <span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">changes_squashed</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_modified</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_block_endpoints</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">update_modified</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">part</span><span class="p">:</span> <span class="n">Part</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">info</span><span class="p">:</span> <span class="n">PartModifiedInfo</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">changes_squashed</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">part</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">info</span><span class="p">,</span> <span class="s2">&quot;No info to update part&quot;</span>
+                <span class="c1"># Update the alarm for the given part</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">part_modified</span><span class="p">[</span><span class="n">part</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span>
+            <span class="c1"># Find the modified alarms for each visible part</span>
+            <span class="n">message_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">only_modified_by_us</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">for</span> <span class="n">part_name</span><span class="p">,</span> <span class="n">visible</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">visible</span>
+            <span class="p">):</span>
+                <span class="n">part</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="n">part_name</span><span class="p">]</span>
+                <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">part_modified</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">visible</span> <span class="ow">and</span> <span class="n">info</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">message</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">modified</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+                        <span class="c1"># Attribute flagged as been modified, is it by the</span>
+                        <span class="c1"># context we passed to the part?</span>
+                        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">context_modified</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="p">{}):</span>
+                            <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;(We modified) </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">message</span><span class="p">,)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">only_modified_by_us</span> <span class="o">=</span> <span class="kc">False</span>
+                        <span class="n">message_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="c1"># Add in any modification messages from the layout and export tables</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">visible</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_visibility</span><span class="p">:</span>
+                <span class="n">message_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;layout changed&quot;</span><span class="p">)</span>
+                <span class="n">only_modified_by_us</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">value</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_exports</span><span class="p">:</span>
+                <span class="n">message_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;exports changed&quot;</span><span class="p">)</span>
+                <span class="n">only_modified_by_us</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="n">message_list</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">only_modified_by_us</span><span class="p">:</span>
+                    <span class="n">severity</span> <span class="o">=</span> <span class="n">AlarmSeverity</span><span class="o">.</span><span class="n">NO_ALARM</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">severity</span> <span class="o">=</span> <span class="n">AlarmSeverity</span><span class="o">.</span><span class="n">MINOR_ALARM</span>
+                <span class="n">alarm</span> <span class="o">=</span> <span class="n">Alarm</span><span class="p">(</span>
+                    <span class="n">severity</span><span class="p">,</span> <span class="n">AlarmStatus</span><span class="o">.</span><span class="n">CONF_STATUS</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">message_list</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">modified</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alarm</span><span class="o">=</span><span class="n">alarm</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">modified</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">update_exportable</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">part</span><span class="p">:</span> <span class="n">Part</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">info</span><span class="p">:</span> <span class="n">PartExportableInfo</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">changes_squashed</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">part</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">info</span><span class="p">,</span> <span class="s2">&quot;No info to update part&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">part_exportable</span><span class="p">[</span><span class="n">part</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">names</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">port_info</span><span class="p">[</span><span class="n">part</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">port_infos</span>
+            <span class="c1"># If we haven&#39;t saved visibility yet these have been called</span>
+            <span class="c1"># during do_init, so don&#39;t update block endpoints yet, this will</span>
+            <span class="c1"># be done as a batch at the end of do_init</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_visibility</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># Find the exportable fields for each visible part</span>
+                <span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                    <span class="n">fields</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">part_exportable</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="p">[])</span>
+                    <span class="k">for</span> <span class="n">attr_name</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">:</span>
+                        <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">part</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">))</span>
+                <span class="n">changed_names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">names</span><span class="p">)</span><span class="o">.</span><span class="n">symmetric_difference</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span>
+                <span class="p">)</span>
+                <span class="n">changed_exports</span> <span class="o">=</span> <span class="n">changed_names</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">source</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">set_choices</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
+                <span class="c1"># Update the block endpoints if anything currently exported is</span>
+                <span class="c1"># added or deleted</span>
+                <span class="k">if</span> <span class="n">changed_exports</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">update_block_endpoints</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">update_block_endpoints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_part_fields</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_part_fields</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_block</span><span class="o">.</span><span class="n">remove_endpoint</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">state</span><span class="p">,</span> <span class="n">state_writeable</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_children_writeable</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">state_writeable</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_part_fields</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_current_part_fields</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="n">writeable_func</span><span class="p">,</span> <span class="n">needs_context</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_part_fields</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_block_field</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="n">writeable_func</span><span class="p">,</span> <span class="n">needs_context</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">add_part</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">part</span><span class="p">:</span> <span class="n">Part</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">add_part</span><span class="p">(</span><span class="n">part</span><span class="p">)</span>
+        <span class="c1"># Strip out the config tags of what we just added, as we will be</span>
+        <span class="c1"># saving them ourself</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">AttributeModel</span><span class="p">):</span>
+                <span class="n">tags</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">tags</span>
+                <span class="k">if</span> <span class="n">get_config_tag</span><span class="p">(</span><span class="n">tags</span><span class="p">):</span>
+                    <span class="c1"># Strip off the &quot;config&quot; tags from attributes</span>
+                    <span class="n">field</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">set_tags</span><span class="p">(</span><span class="n">without_config_tags</span><span class="p">(</span><span class="n">tags</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">our_config_attributes</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span>
+
+    <span class="k">def</span> <span class="nf">add_initial_part_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Only add our own fields to start with, the rest will be added on load</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="n">writeable_func</span><span class="p">,</span> <span class="n">needs_context</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span>
+            <span class="kc">None</span>
+        <span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_block_field</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="n">writeable_func</span><span class="p">,</span> <span class="n">needs_context</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_current_part_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Clear out the current subscriptions</span>
+        <span class="k">for</span> <span class="n">subscription</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subscriptions</span><span class="p">:</span>
+            <span class="n">controller</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">get_controller</span><span class="p">(</span><span class="n">subscription</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">unsubscribe</span> <span class="o">=</span> <span class="n">Unsubscribe</span><span class="p">(</span><span class="n">subscription</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="n">unsubscribe</span><span class="o">.</span><span class="n">set_callback</span><span class="p">(</span><span class="n">subscription</span><span class="o">.</span><span class="n">callback</span><span class="p">)</span>
+            <span class="n">controller</span><span class="o">.</span><span class="n">handle_request</span><span class="p">(</span><span class="n">unsubscribe</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_subscriptions</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Find the mris of parts</span>
+        <span class="n">mris</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">invisible</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">part_name</span><span class="p">,</span> <span class="n">mri</span><span class="p">,</span> <span class="n">visible</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">mri</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">visible</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="n">visible</span><span class="p">:</span>
+                <span class="n">mris</span><span class="p">[</span><span class="n">part_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">mri</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">invisible</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">part_name</span><span class="p">)</span>
+
+        <span class="c1"># Add fields from parts that aren&#39;t invisible</span>
+        <span class="k">for</span> <span class="n">part_name</span><span class="p">,</span> <span class="n">part</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">part_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">invisible</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="p">[]):</span>
+                    <span class="k">yield</span> <span class="n">data</span>
+
+        <span class="c1"># Add exported fields from visible parts</span>
+        <span class="k">for</span> <span class="n">source</span><span class="p">,</span> <span class="n">export_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">rows</span><span class="p">():</span>
+            <span class="n">part_name</span><span class="p">,</span> <span class="n">attr_name</span> <span class="o">=</span> <span class="n">source</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">part</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="n">part_name</span><span class="p">]</span>
+            <span class="c1"># If part is visible, get its mri</span>
+            <span class="n">mri</span> <span class="o">=</span> <span class="n">mris</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">part_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">mri</span> <span class="ow">and</span> <span class="n">attr_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">part_exportable</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="p">[]):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">export_name</span><span class="p">:</span>
+                    <span class="n">export_name</span> <span class="o">=</span> <span class="n">attr_name</span>
+                <span class="n">export</span><span class="p">,</span> <span class="n">setter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_export_field</span><span class="p">(</span><span class="n">mri</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">export_name</span><span class="p">)</span>
+                <span class="k">yield</span> <span class="n">export_name</span><span class="p">,</span> <span class="n">export</span><span class="p">,</span> <span class="n">setter</span><span class="p">,</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">_make_export_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mri</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">export_name</span><span class="p">):</span>
+        <span class="n">controller</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">get_controller</span><span class="p">(</span><span class="n">mri</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="p">[</span><span class="n">mri</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">]</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">camel_to_title</span><span class="p">(</span><span class="n">export_name</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">def</span> <span class="nf">update_field</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">Delta</span><span class="p">):</span>
+                <span class="c1"># Return or Error is the end of our subscription, log and ignore</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Export got response </span><span class="si">%r</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
+                <span class="k">return</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">ret</span><span class="p">:</span>
+                <span class="c1"># First call, create the initial object</span>
+                <span class="n">export</span> <span class="o">=</span> <span class="n">deserialize_object</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">changes</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">export</span><span class="p">,</span> <span class="n">AttributeModel</span><span class="p">):</span>
+
+                    <span class="k">def</span> <span class="nf">setter</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+                        <span class="n">context</span> <span class="o">=</span> <span class="n">Context</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">)</span>
+                        <span class="n">context</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+                    <span class="c1"># Strip out tags that we shouldn&#39;t export</span>
+                    <span class="c1"># TODO: need to strip out port tags too...</span>
+                    <span class="n">export</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">set_tags</span><span class="p">(</span>
+                        <span class="n">without_config_tags</span><span class="p">(</span><span class="n">without_group_tags</span><span class="p">(</span><span class="n">export</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">tags</span><span class="p">))</span>
+                    <span class="p">)</span>
+
+                    <span class="n">ret</span><span class="p">[</span><span class="s2">&quot;setter&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">setter</span>
+                <span class="k">else</span><span class="p">:</span>
+
+                    <span class="k">def</span> <span class="nf">setter_star_args</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+                        <span class="n">context</span> <span class="o">=</span> <span class="n">Context</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">)</span>
+                        <span class="n">context</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+
+                    <span class="n">ret</span><span class="p">[</span><span class="s2">&quot;setter&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">setter_star_args</span>
+
+                <span class="c1"># Regenerate label</span>
+                <span class="n">export</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+                <span class="n">ret</span><span class="p">[</span><span class="s2">&quot;export&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">export</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Subsequent calls, update it</span>
+                <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">changes_squashed</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">change</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">changes</span><span class="p">:</span>
+                        <span class="n">ret</span><span class="p">[</span><span class="s2">&quot;export&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply_change</span><span class="p">(</span><span class="o">*</span><span class="n">change</span><span class="p">)</span>
+
+        <span class="n">subscription</span> <span class="o">=</span> <span class="n">Subscribe</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">subscription</span><span class="o">.</span><span class="n">set_callback</span><span class="p">(</span><span class="n">update_field</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_subscriptions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">subscription</span><span class="p">)</span>
+        <span class="c1"># When we have waited for the subscription, the first update_field</span>
+        <span class="c1"># will have been called</span>
+        <span class="n">controller</span><span class="o">.</span><span class="n">handle_request</span><span class="p">(</span><span class="n">subscription</span><span class="p">)</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">ret</span><span class="p">[</span><span class="s2">&quot;export&quot;</span><span class="p">],</span> <span class="n">ret</span><span class="p">[</span><span class="s2">&quot;setter&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">create_part_contexts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">only_visible</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">part_contexts</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">create_part_contexts</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">only_visible</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">part_name</span><span class="p">,</span> <span class="n">visible</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">visible</span>
+            <span class="p">):</span>
+                <span class="n">part</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="n">part_name</span><span class="p">]</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">visible</span><span class="p">:</span>
+                    <span class="n">part_contexts</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">part</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">part_contexts</span><span class="p">[</span><span class="n">part</span><span class="p">]</span><span class="o">.</span><span class="n">set_notify_dispatch_request</span><span class="p">(</span>
+                        <span class="n">part</span><span class="o">.</span><span class="n">notify_dispatch_request</span>
+                    <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">part_contexts</span>
+
+    <span class="c1"># Allow CamelCase for arguments as they will be exposed in the Block Method</span>
+    <span class="c1"># noinspection PyPep8Naming</span>
+<div class="viewcode-block" id="ManagerController.save"><a class="viewcode-back" href="../../../../../build/builtin/controllers_api.html#malcolm.modules.builtin.controllers.ManagerController.save">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">designName</span><span class="p">:</span> <span class="n">ASaveDesign</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Save the current design to file&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">try_stateful_function</span><span class="p">(</span><span class="n">ss</span><span class="o">.</span><span class="n">SAVING</span><span class="p">,</span> <span class="n">ss</span><span class="o">.</span><span class="n">READY</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_save</span><span class="p">,</span> <span class="n">designName</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">do_save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">design</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">design</span><span class="p">:</span>
+            <span class="n">design</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">design</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">assert</span> <span class="n">design</span><span class="p">,</span> <span class="s2">&quot;Please specify save design name when saving from new&quot;</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">design</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;template_&quot;</span><span class="p">),</span> <span class="s2">&quot;Cannot save over a template&quot;</span>
+        <span class="n">structure</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="n">attributes</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;attributes&quot;</span><span class="p">,</span> <span class="n">OrderedDict</span><span class="p">())</span>
+        <span class="c1"># Add the layout table</span>
+        <span class="n">layout</span> <span class="o">=</span> <span class="n">attributes</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;layout&quot;</span><span class="p">,</span> <span class="n">OrderedDict</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">mri</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">visible</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">rows</span><span class="p">():</span>
+            <span class="n">layout_structure</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+            <span class="n">layout_structure</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
+            <span class="n">layout_structure</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span>
+            <span class="n">layout_structure</span><span class="p">[</span><span class="s2">&quot;visible&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">visible</span>
+            <span class="n">layout</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">layout_structure</span>
+        <span class="c1"># Add the exports table</span>
+        <span class="n">exports</span> <span class="o">=</span> <span class="n">attributes</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;exports&quot;</span><span class="p">,</span> <span class="n">OrderedDict</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">source</span><span class="p">,</span> <span class="n">export</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">rows</span><span class="p">():</span>
+            <span class="n">exports</span><span class="p">[</span><span class="n">source</span><span class="p">]</span> <span class="o">=</span> <span class="n">export</span>
+        <span class="c1"># Add other attributes</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">our_config_attributes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">attributes</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">attribute</span><span class="o">.</span><span class="n">value</span>
+        <span class="c1"># Add any structure that a child part wants to save</span>
+        <span class="n">structure</span><span class="p">[</span><span class="s2">&quot;children&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_hooks</span><span class="p">(</span>
+            <span class="n">SaveHook</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_part_contexts</span><span class="p">(</span><span class="n">only_visible</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">json_encode</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validated_config_filename</span><span class="p">(</span><span class="n">design</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;/tmp&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Saving to tmp directory </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="c1"># Run a sync command to make sure we flush this file to disk</span>
+        <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s2">&quot;sync&quot;</span><span class="p">)</span>
+        <span class="c1"># Try and commit the file to git, don&#39;t care if it fails</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_run_git_cmd</span><span class="p">(</span><span class="s2">&quot;add&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Saved </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">,</span> <span class="n">design</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_run_git_cmd</span><span class="p">(</span><span class="s2">&quot;commit&quot;</span><span class="p">,</span> <span class="s2">&quot;--allow-empty&quot;</span><span class="p">,</span> <span class="s2">&quot;-m&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mark_clean</span><span class="p">(</span><span class="n">design</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_set_layout_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extra_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">]</span>
+        <span class="n">dir_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_config_dir</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">dir_name</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dir_name</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span> <span class="ow">and</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.json&quot;</span><span class="p">):</span>
+                <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.json&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">extra_name</span> <span class="ow">and</span> <span class="nb">str</span><span class="p">(</span><span class="n">extra_name</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+            <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">extra_name</span><span class="p">))</span>
+        <span class="n">names</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template_designs</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template_designs</span><span class="p">)):</span>
+                <span class="k">assert</span> <span class="n">f</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;template_&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.json&quot;</span><span class="p">),</span> <span class="p">(</span>
+                    <span class="s2">&quot;Template design </span><span class="si">%s</span><span class="s2">/</span><span class="si">%s</span><span class="s2"> should start with &#39;template_&#39; &quot;</span>
+                    <span class="s2">&quot;and end with .json&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template_designs</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">t_name</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.json&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">t_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+                    <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">design</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">set_choices</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_validated_config_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Make config dir and return full file path and extension</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): Filename without dir or extension</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: Full path including extension</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;template_&quot;</span><span class="p">):</span>
+            <span class="c1"># Load from templates dir</span>
+            <span class="n">dir_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_designs</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Load from config dir</span>
+            <span class="n">dir_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_config_dir</span><span class="p">()</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dir_name</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.json&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;.json&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">filename</span>
+
+    <span class="k">def</span> <span class="nf">_make_config_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">dir_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">dir_name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="c1"># OK if already exists, if not then it will fail on write anyway</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">dir_name</span>
+
+    <span class="k">def</span> <span class="nf">set_design</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">design</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">try_stateful_function</span><span class="p">(</span><span class="n">ss</span><span class="o">.</span><span class="n">LOADING</span><span class="p">,</span> <span class="n">ss</span><span class="o">.</span><span class="n">READY</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_load</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ManagerController.do_load"><a class="viewcode-back" href="../../../../../build/builtin/controllers_api.html#malcolm.modules.builtin.controllers.ManagerController.do_load">[docs]</a>    <span class="k">def</span> <span class="nf">do_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">design</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">init</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Load a design name, running the child LoadHooks.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            design: Name of the design json file, without extension</span>
+<span class="sd">            init: Passed to the LoadHook to tell the children if this is being</span>
+<span class="sd">                run at Init or not</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">design</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validated_config_filename</span><span class="p">(</span><span class="n">design</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="n">structure</span> <span class="o">=</span> <span class="n">json_decode</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">structure</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># Attributes and Children used to be merged, support this</span>
+        <span class="n">attributes</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;attributes&quot;</span><span class="p">,</span> <span class="n">structure</span><span class="p">)</span>
+        <span class="n">children</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;children&quot;</span><span class="p">,</span> <span class="n">structure</span><span class="p">)</span>
+        <span class="c1"># Set the layout table</span>
+        <span class="n">name</span><span class="p">,</span> <span class="n">mri</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">visible</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">part_name</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;layout&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">name</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">part_name</span><span class="p">)</span>
+            <span class="n">mri</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">x</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">])</span>
+            <span class="n">y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">])</span>
+            <span class="n">visible</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;visible&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_layout</span><span class="p">(</span><span class="n">LayoutTable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">mri</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">visible</span><span class="p">))</span>
+        <span class="c1"># Set the exports table</span>
+        <span class="n">source</span><span class="p">,</span> <span class="n">export</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">source_name</span><span class="p">,</span> <span class="n">export_name</span> <span class="ow">in</span> <span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;exports&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">source</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">source_name</span><span class="p">)</span>
+            <span class="n">export</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">export_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">ExportTable</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">export</span><span class="p">))</span>
+        <span class="c1"># Set other attributes</span>
+        <span class="n">our_values</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">attributes</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">our_config_attributes</span>
+        <span class="p">}</span>
+        <span class="n">block</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_view</span><span class="p">()</span>
+        <span class="n">block</span><span class="o">.</span><span class="n">put_attribute_values</span><span class="p">(</span><span class="n">our_values</span><span class="p">)</span>
+        <span class="c1"># Run the load hook to get parts to load their own structure</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_hooks</span><span class="p">(</span>
+            <span class="n">LoadHook</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">children</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="p">{}),</span> <span class="n">init</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_part_contexts</span><span class="p">(</span><span class="n">only_visible</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mark_clean</span><span class="p">(</span><span class="n">design</span><span class="p">,</span> <span class="n">init</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_mark_clean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">design</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">changes_squashed</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">saved_visibility</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">visible</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">saved_exports</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">value</span>
+            <span class="c1"># Now we are clean, modified should clear</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">init</span><span class="p">:</span>
+                <span class="c1"># Don&#39;t clear at init, because some things may not be</span>
+                <span class="c1"># clean at init</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">part_modified</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_modified</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_layout_names</span><span class="p">(</span><span class="n">design</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">design</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">design</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_block_endpoints</span><span class="p">()</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

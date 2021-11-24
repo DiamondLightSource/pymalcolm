@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>External modules &mdash; malcolm 4.6+17.g0a844295 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="malcolm.modules.zebra.blocks" href="../build/zebra/blocks_api.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../contents.html" class="icon icon-home"> malcolm
+            <img src="../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                4.6
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+  <!-- Add versions for selected branches + tags -->
+  <p class="caption">
+    <span class="caption-text">Versions</span>
+  </p>
+  <ul id="versions"/>
+  <script>
+    // Add any branches to appear in the side pane here, tags will be added below
+    // Will only appear if docs are built and pushed in gh-pages
+    var versions = ['main', 'master'];
+    var dirs = new Set();
+    function addVersion(name) {
+      if (dirs.has(name)) {
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        a.href = 'https://dls-controls.github.io/malcolm/' + name;
+        a.innerText = name;
+        li.appendChild(a)
+        document.getElementById('versions').appendChild(li);
+      }
+    }
+    Promise.all([
+      // Find gh-pages directories and populate `dirs`
+      fetch("https://api.github.com/repos/dls-controls/malcolm/contents?ref=gh-pages")
+      .then(response => response.json())
+      .then(data => data.forEach(function(e) {
+        if (e.type == "dir") dirs.add(e.name);
+      })),
+      // Add tags to `versions`
+      fetch('https://api.github.com/repos/dls-controls/malcolm/tags')
+        .then(response => response.json())
+        .then(data => data.forEach(function(e) {
+          versions.push(e.name);
+        }))
+      ]).then(_ => versions.forEach(addVersion))
+  </script>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../contents.html" class="icon icon-home"></a> &raquo;</li>
+      <li>External modules</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/external_api.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="external-modules">
+<h1>External modules<a class="headerlink" href="#external-modules" title="Permalink to this headline"></a></h1>
+<p>Some modules do not have external documentation, link them here.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="Array">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Array</span></span><a class="headerlink" href="#Array" title="Permalink to this definition"></a></dt>
+<dd><p>Container for typed immutable array, defined in
+<a class="reference external" href="https://github.com/dls-controls/annotypes/blob/master/annotypes/_array.py">https://github.com/dls-controls/annotypes/blob/master/annotypes/_array.py</a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="Anno">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Anno</span></span><a class="headerlink" href="#Anno" title="Permalink to this definition"></a></dt>
+<dd><p>Annotated type declaration, defined in
+<a class="reference external" href="https://github.com/dls-controls/annotypes/blob/master/annotypes/_anno.py">https://github.com/dls-controls/annotypes/blob/master/annotypes/_anno.py</a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="List">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">List</span></span><a class="headerlink" href="#List" title="Permalink to this definition"></a></dt>
+<dd><p>List[typ] is a <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><code class="xref any docutils literal notranslate"><span class="pre">list</span></code></a> with elements of typ. See <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><code class="xref any docutils literal notranslate"><span class="pre">typing.List</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="Dict">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Dict</span></span><a class="headerlink" href="#Dict" title="Permalink to this definition"></a></dt>
+<dd><p>Dict[ktyp, vtyp] is a <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><code class="xref any docutils literal notranslate"><span class="pre">dict</span></code></a> with keys of ktyp and values of vtyp. See
+<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><code class="xref any docutils literal notranslate"><span class="pre">typing.Dict</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="Any">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Any</span></span><a class="headerlink" href="#Any" title="Permalink to this definition"></a></dt>
+<dd><p>Any Python object. See <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><code class="xref any docutils literal notranslate"><span class="pre">typing.Any</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="Callable">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Callable</span></span><a class="headerlink" href="#Callable" title="Permalink to this definition"></a></dt>
+<dd><p>A callable function or method. See <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.10)"><code class="xref any docutils literal notranslate"><span class="pre">typing.Callable</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="Union">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Union</span></span><a class="headerlink" href="#Union" title="Permalink to this definition"></a></dt>
+<dd><p>Union[typ1, typ2, typ3] means one of those types. See <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><code class="xref any docutils literal notranslate"><span class="pre">typing.Union</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="Tuple">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Tuple</span></span><a class="headerlink" href="#Tuple" title="Permalink to this definition"></a></dt>
+<dd><p>Tuple[typ1, typ2, typ3] means a 3 element <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)"><code class="xref any docutils literal notranslate"><span class="pre">tuple</span></code></a> with the given types. See
+<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.10)"><code class="xref any docutils literal notranslate"><span class="pre">typing.Tuple</span></code></a></p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../build/zebra/blocks_api.html" class="btn btn-neutral float-left" title="malcolm.modules.zebra.blocks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>
