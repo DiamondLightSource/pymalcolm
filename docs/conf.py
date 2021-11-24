@@ -93,11 +93,11 @@ exclude_patterns = ["_build"]
 pygments_style = "sphinx"
 
 intersphinx_mapping = dict(
-    python=("http://docs.python.org/3/", None),
-    scanpointgenerator=("http://scanpointgenerator.readthedocs.io/en/latest/", None),
-    numpy=("http://docs.scipy.org/doc/numpy/", None),
-    tornado=("http://www.tornadoweb.org/en/stable/", None),
-    p4p=("http://mdavidsaver.github.io/p4p-dev/", None),
+    python=("https://docs.python.org/3/", None),
+    scanpointgenerator=("https://scanpointgenerator.readthedocs.io/en/latest/", None),
+    numpy=("https://numpy.org/doc/stable", None),
+    tornado=("https://www.tornadoweb.org/en/stable/", None),
+    p4p=("https://mdavidsaver.github.io/p4p-dev/", None),
 )
 
 # A dictionary of graphviz graph attributes for inheritance diagrams.
@@ -140,3 +140,35 @@ htmlhelp_basename = "malcolmdoc"
 # Logo
 html_logo = "malcolm-logo.svg"
 html_favicon = "malcolm-logo.ico"
+
+# Common links that should be available on every page
+rst_epilog = """
+.. _Mapping project:
+    https://indico.esss.lu.se/event/357/session/8/contribution/63
+.. _EPICS:
+    https://epics.anl.gov/
+.. _PVs:
+    https://docs.epics-controls.org/en/latest/specs/ca_protocol.html#process-variables
+.. _GDA:
+    http://www.opengda.org/
+.. _pvAccess:
+    http://epics-pvdata.sourceforge.net/arch.html#Network
+.. _websockets:
+    https://en.wikipedia.org/wiki/WebSocket
+.. _Diamond Light Source:
+    https://www.diamond.ac.uk/
+.. _JSON:
+    https://www.json.org/
+.. _areaDetector:
+    https://cars9.uchicago.edu/software/epics/areaDetector.html
+.. _YAML:
+    https://en.wikipedia.org/wiki/YAML
+.. _IPython:
+    https://ipython.org
+.. _Scan Point Generator:
+    https://scanpointgenerator.readthedocs.io
+.. _NeXus:
+    https://www.nexusformat.org/
+.. _HDF5:
+    http://portal.hdfgroup.org/display/support
+"""
