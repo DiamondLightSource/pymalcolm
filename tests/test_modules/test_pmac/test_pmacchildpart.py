@@ -9,6 +9,7 @@ from mock import ANY, Mock, call, patch
 from scanpointgenerator import CompoundGenerator, LineGenerator, StaticPointGenerator
 
 from malcolm.core import Context, Process
+from malcolm.modules import scanning
 from malcolm.modules.builtin.defines import tmp_dir
 from malcolm.modules.pmac.parts import PmacChildPart
 from malcolm.modules.scanning.infos import (
@@ -705,6 +706,21 @@ class TestPMACChildPart(ChildTestCase):
         assert self.o.end_index == 3
         assert len(self.o.completed_steps_lookup) == 11
         assert len(self.o.profile["timeArray"]) == 3
+
+    def test_update_step_does_not_report_when_trigger_not_every_point(self):
+        # Need to configure so we don't error
+        self.do_configure(axes_to_scan=[])
+        # Registrar mock to check we weren't called
+        self.o.registrar = Mock()
+
+        self.o.output_triggers == scanning.infos.MotionTrigger.NONE
+        self.o.update_step(1, self.context.block_view("PMAC"))
+
+        self.o.output_triggers == scanning.infos.MotionTrigger.ROW_GATE
+        self.o.update_step(2, self.context.block_view("PMAC"))
+
+        # Ensure the mock did not get called
+        self.o.registrar.assert_not_called()
 
     def test_run(self):
         self.o.generator = ANY
