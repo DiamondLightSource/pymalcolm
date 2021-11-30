@@ -433,7 +433,9 @@ class PmacChildPart(builtin.parts.ChildPart):
         # scan step
         if scanned > 0:
             completed_steps = self.completed_steps_lookup[scanned - 1]
-            self.registrar.report(scanning.infos.RunProgressInfo(completed_steps))
+            # Only report progress if we are triggering for every point
+            if self.output_triggers == scanning.infos.MotionTrigger.EVERY_POINT:
+                self.registrar.report(scanning.infos.RunProgressInfo(completed_steps))
             # Keep PROFILE_POINTS trajectory points in front
             if (
                 not self.loading
