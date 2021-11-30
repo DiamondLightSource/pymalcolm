@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Detector Tutorial &mdash; malcolm 4.6+17.g0a844295 documentation</title>
+  <title>Detector Tutorial &mdash; malcolm 4.6+88.g3125a99a documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -239,6 +239,11 @@ will make our Detector Block understand these generators.</p>
     <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Beamline specific label for the detector</span>
     <span class="nt">default</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">DemoDetector</span>
 
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">readout_time</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Readout time of the detector</span>
+    <span class="nt">default</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.001</span>
+
 <span class="p p-Indicator">-</span> <span class="nt">builtin.defines.docstring</span><span class="p">:</span>
     <span class="nt">value</span><span class="p">:</span> <span class="p p-Indicator">|</span>
       <span class="no">This block uses a demo FileWriter and exposes a Detector like interface</span>
@@ -258,7 +263,7 @@ will make our Detector Block understand these generators.</p>
 
 <span class="p p-Indicator">-</span> <span class="nt">scanning.parts.ExposureDeadtimePart</span><span class="p">:</span>
     <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">EXPOSURE</span>
-    <span class="nt">initial_readout_time</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.001</span>
+    <span class="nt">readout_time</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(readout_time)</span>
     <span class="nt">min_exposure</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.0001</span>
 
 <span class="p p-Indicator">-</span> <span class="nt">demo.parts.FileWritePart</span><span class="p">:</span>

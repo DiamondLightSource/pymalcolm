@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.scanning.parts.scanrunnerpart &mdash; malcolm 4.6+17.g0a844295 documentation</title>
+  <title>malcolm.modules.scanning.parts.scanrunnerpart &mdash; malcolm 4.6+88.g3125a99a documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -149,7 +149,7 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">add_call_types</span>
-<span class="kn">from</span> <span class="nn">ruamel</span> <span class="kn">import</span> <span class="n">yaml</span>
+<span class="kn">from</span> <span class="nn">ruamel.yaml</span> <span class="kn">import</span> <span class="n">YAML</span><span class="p">,</span> <span class="n">YAMLError</span>
 <span class="kn">from</span> <span class="nn">scanpointgenerator</span> <span class="kn">import</span> <span class="n">CompoundGenerator</span><span class="p">,</span> <span class="n">LineGenerator</span>
 
 <span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="p">(</span>
@@ -300,9 +300,10 @@
 
     <span class="k">def</span> <span class="nf">parse_yaml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">parsed_yaml</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+            <span class="n">yaml</span> <span class="o">=</span> <span class="n">YAML</span><span class="p">(</span><span class="n">typ</span><span class="o">=</span><span class="s2">&quot;safe&quot;</span><span class="p">,</span> <span class="n">pure</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">parsed_yaml</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">parsed_yaml</span>
-        <span class="k">except</span> <span class="n">yaml</span><span class="o">.</span><span class="n">YAMLError</span><span class="p">:</span>
+        <span class="k">except</span> <span class="n">YAMLError</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_runner_state</span><span class="p">(</span><span class="n">RunnerStates</span><span class="o">.</span><span class="n">FAULT</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">runner_status_message</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s2">&quot;Could not parse scan file&quot;</span><span class="p">)</span>
             <span class="k">raise</span>

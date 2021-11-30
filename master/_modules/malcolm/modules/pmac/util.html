@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.pmac.util &mdash; malcolm 4.6+17.g0a844295 documentation</title>
+  <title>malcolm.modules.pmac.util &mdash; malcolm 4.6+88.g3125a99a documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
@@ -144,11 +144,12 @@
              
   <h1>Source code for malcolm.modules.pmac.util</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Set</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Array</span><span class="p">,</span> <span class="n">Sequence</span>
-<span class="kn">from</span> <span class="nn">scanpointgenerator</span> <span class="kn">import</span> <span class="n">CompoundGenerator</span><span class="p">,</span> <span class="n">Point</span><span class="p">,</span> <span class="n">StaticPointGenerator</span>
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">Array</span><span class="p">,</span> <span class="n">Sequence</span>
+<span class="kn">from</span> <span class="nn">scanpointgenerator</span> <span class="kn">import</span> <span class="n">CompoundGenerator</span><span class="p">,</span> <span class="n">Mutator</span><span class="p">,</span> <span class="n">Point</span><span class="p">,</span> <span class="n">StaticPointGenerator</span>
 <span class="kn">from</span> <span class="nn">scanpointgenerator.core.point</span> <span class="kn">import</span> <span class="n">Points</span>
 
 <span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="n">Context</span>
@@ -346,12 +347,10 @@
         <span class="c1"># so vl = 2 * vlp - vp</span>
         <span class="c1"># where vlp = dlp / (t/2)</span>
         <span class="n">velocity</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">d_half</span> <span class="o">/</span> <span class="n">point</span><span class="o">.</span><span class="n">duration</span> <span class="o">-</span> <span class="n">vp</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="nb">abs</span><span class="p">(</span><span class="n">velocity</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">motor_info</span><span class="o">.</span><span class="n">max_velocity</span>
-        <span class="p">),</span> <span class="s2">&quot;Velocity </span><span class="si">%s</span><span class="s2"> invalid for </span><span class="si">%r</span><span class="s2"> with max_velocity </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
-            <span class="n">velocity</span><span class="p">,</span>
-            <span class="n">axis_name</span><span class="p">,</span>
-            <span class="n">motor_info</span><span class="o">.</span><span class="n">max_velocity</span><span class="p">,</span>
+        <span class="n">max_velocity</span> <span class="o">=</span> <span class="n">motor_info</span><span class="o">.</span><span class="n">max_velocity</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">velocity</span><span class="p">)</span> <span class="o">-</span> <span class="n">max_velocity</span><span class="p">)</span> <span class="o">/</span> <span class="n">max_velocity</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Velocity </span><span class="si">{</span><span class="n">velocity</span><span class="si">}</span><span class="s2"> invalid for </span><span class="si">{</span><span class="n">axis_name</span><span class="si">}</span><span class="s2"> with &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;max_velocity </span><span class="si">{</span><span class="n">max_velocity</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">)</span>
         <span class="n">velocities</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">velocity</span>
     <span class="k">return</span> <span class="n">velocities</span></div>
@@ -445,6 +444,79 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">trigger</span> <span class="o">=</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">MotionTrigger</span><span class="o">.</span><span class="n">EVERY_POINT</span>
     <span class="k">return</span> <span class="n">trigger</span>
+
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Minimum turnaround time for non-joined points&quot;</span><span class="p">):</span>
+    <span class="n">AMinTurnaround</span> <span class="o">=</span> <span class="nb">float</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Minimum interval between turnaround points&quot;</span><span class="p">):</span>
+    <span class="n">AMinInterval</span> <span class="o">=</span> <span class="nb">float</span>
+
+
+<div class="viewcode-block" id="MinTurnaround"><a class="viewcode-back" href="../../../../build/pmac/util_api.html#malcolm.modules.pmac.util.MinTurnaround">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">MinTurnaround</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Dataclass for the Minimum turnaround information.</span>
+
+<span class="sd">    This may come from a MinTurnaroundInfo if the scan block has a MinTurnaroundPart</span>
+<span class="sd">    otherwise MIN_TIME and MIN_INTERVAL are used as default values.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">time</span><span class="p">:</span> <span class="n">AMinTurnaround</span>
+    <span class="n">interval</span><span class="p">:</span> <span class="n">AMinInterval</span></div>
+
+
+<span class="k">def</span> <span class="nf">get_min_turnaround</span><span class="p">(</span>
+    <span class="n">part_info</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">APartInfo</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MinTurnaround</span><span class="p">:</span>
+    <span class="c1"># Use the part if it exists</span>
+    <span class="n">infos</span> <span class="o">=</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">MinTurnaroundInfo</span><span class="o">.</span><span class="n">filter_values</span><span class="p">(</span><span class="n">part_info</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">infos</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">infos</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Expected 0 or 1 MinTurnaroundInfos, got </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span>
+            <span class="n">infos</span>
+        <span class="p">)</span>
+        <span class="n">min_turnaround</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">MIN_TIME</span><span class="p">,</span> <span class="n">infos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">gap</span><span class="p">)</span>
+        <span class="n">min_interval</span> <span class="o">=</span> <span class="n">infos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">interval</span>
+    <span class="c1"># Otherwise use the defaults</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">min_turnaround</span> <span class="o">=</span> <span class="n">MIN_TIME</span>
+        <span class="n">min_interval</span> <span class="o">=</span> <span class="n">MIN_INTERVAL</span>
+
+    <span class="k">return</span> <span class="n">MinTurnaround</span><span class="p">(</span><span class="n">min_turnaround</span><span class="p">,</span> <span class="n">min_interval</span><span class="p">)</span>
+
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Delay after value to add to even points&quot;</span><span class="p">):</span>
+    <span class="n">AEvenDelayAfter</span> <span class="o">=</span> <span class="nb">float</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Delay after value to add to odd points&quot;</span><span class="p">):</span>
+    <span class="n">AOddDelayAfter</span> <span class="o">=</span> <span class="nb">float</span>
+
+
+<div class="viewcode-block" id="AlternatingDelayAfterMutator"><a class="viewcode-back" href="../../../../build/pmac/util_api.html#malcolm.modules.pmac.util.AlternatingDelayAfterMutator">[docs]</a><span class="k">class</span> <span class="nc">AlternatingDelayAfterMutator</span><span class="p">(</span><span class="n">Mutator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Mutator to add alternating delay_after values based on the index of each point&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">even_delay_after</span><span class="p">:</span> <span class="n">AEvenDelayAfter</span><span class="p">,</span> <span class="n">odd_delay_after</span><span class="p">:</span> <span class="n">AOddDelayAfter</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delays</span> <span class="o">=</span> <span class="p">[</span><span class="n">even_delay_after</span><span class="p">,</span> <span class="n">odd_delay_after</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">mutate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">Array</span><span class="p">[</span><span class="nb">int</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Point</span><span class="p">:</span>
+        <span class="n">delay_after</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">Points</span><span class="p">):</span>
+            <span class="c1"># We have multiple points, so we should have multiple indices in a list</span>
+            <span class="c1"># or array</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
+                <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">List</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+            <span class="p">),</span> <span class="s2">&quot;Indices needs to be list or array for multiple points&quot;</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
+            <span class="n">delay_after</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
+                <span class="n">delay_after</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">delays</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">%</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># We should only have a single point</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
+                <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">)</span>
+            <span class="p">),</span> <span class="s2">&quot;Indices needs to be list or array for multiple points&quot;</span>
+            <span class="n">delay_after</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">delays</span><span class="p">[</span><span class="n">idx</span> <span class="o">%</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="n">point</span><span class="o">.</span><span class="n">delay_after</span> <span class="o">+=</span> <span class="n">delay_after</span>
+        <span class="k">return</span> <span class="n">point</span></div>
 </pre></div>
 
            </div>

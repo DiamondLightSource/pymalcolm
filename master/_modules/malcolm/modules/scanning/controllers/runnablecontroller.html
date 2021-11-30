@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.scanning.controllers.runnablecontroller &mdash; malcolm 4.6+17.g0a844295 documentation</title>
+  <title>malcolm.modules.scanning.controllers.runnablecontroller &mdash; malcolm 4.6+88.g3125a99a documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -181,7 +181,7 @@
     <span class="n">ValidateHook</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">..infos</span> <span class="kn">import</span> <span class="n">ConfigureParamsInfo</span><span class="p">,</span> <span class="n">ParameterTweakInfo</span><span class="p">,</span> <span class="n">RunProgressInfo</span>
-<span class="kn">from</span> <span class="nn">..util</span> <span class="kn">import</span> <span class="n">AGenerator</span><span class="p">,</span> <span class="n">ConfigureParams</span><span class="p">,</span> <span class="n">RunnableStates</span>
+<span class="kn">from</span> <span class="nn">..util</span> <span class="kn">import</span> <span class="n">AGenerator</span><span class="p">,</span> <span class="n">ConfigureParams</span><span class="p">,</span> <span class="n">RunnableStates</span><span class="p">,</span> <span class="n">resolve_generator_tweaks</span>
 
 <span class="n">PartContextParams</span> <span class="o">=</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Part</span><span class="p">,</span> <span class="n">Context</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span>
 <span class="n">PartConfigureParams</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Part</span><span class="p">,</span> <span class="n">ConfigureParamsInfo</span><span class="p">]</span>
@@ -535,12 +535,30 @@
                 <span class="n">validate_part_info</span>
             <span class="p">)</span>
             <span class="k">if</span> <span class="n">tweaks</span><span class="p">:</span>
+                <span class="c1"># Check if we need to resolve generator tweaks first</span>
+                <span class="n">generator_tweaks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ParameterTweakInfo</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="k">for</span> <span class="n">tweak</span> <span class="ow">in</span> <span class="n">tweaks</span><span class="p">:</span>
+                    <span class="c1"># Collect all generator tweaks</span>
+                    <span class="k">if</span> <span class="n">tweak</span><span class="o">.</span><span class="n">parameter</span> <span class="o">==</span> <span class="s2">&quot;generator&quot;</span><span class="p">:</span>
+                        <span class="n">generator_tweaks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tweak</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">generator_tweaks</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="c1"># Resolve multiple tweaks to the generator</span>
+                    <span class="n">generator_tweak</span> <span class="o">=</span> <span class="n">resolve_generator_tweaks</span><span class="p">(</span><span class="n">generator_tweaks</span><span class="p">)</span>
                     <span class="n">deserialized</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_block</span><span class="o">.</span><span class="n">configure</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">takes</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span>
-                        <span class="n">tweak</span><span class="o">.</span><span class="n">parameter</span>
-                    <span class="p">]</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">tweak</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-                    <span class="nb">setattr</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">tweak</span><span class="o">.</span><span class="n">parameter</span><span class="p">,</span> <span class="n">deserialized</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tweaking </span><span class="si">{</span><span class="n">tweak</span><span class="o">.</span><span class="n">parameter</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">deserialized</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="n">generator_tweak</span><span class="o">.</span><span class="n">parameter</span>
+                    <span class="p">]</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">generator_tweak</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">generator_tweak</span><span class="o">.</span><span class="n">parameter</span><span class="p">,</span> <span class="n">deserialized</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="si">}</span><span class="s2">: tweaking generator to </span><span class="si">{</span><span class="n">deserialized</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Other tweaks can be applied at the same time</span>
+                    <span class="k">for</span> <span class="n">tweak</span> <span class="ow">in</span> <span class="n">tweaks</span><span class="p">:</span>
+                        <span class="n">deserialized</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_block</span><span class="o">.</span><span class="n">configure</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">takes</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span>
+                            <span class="n">tweak</span><span class="o">.</span><span class="n">parameter</span>
+                        <span class="p">]</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">tweak</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                        <span class="nb">setattr</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">tweak</span><span class="o">.</span><span class="n">parameter</span><span class="p">,</span> <span class="n">deserialized</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="si">}</span><span class="s2">: tweaking </span><span class="si">{</span><span class="n">tweak</span><span class="o">.</span><span class="n">parameter</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">deserialized</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># Consistent set, just return the params</span>
                 <span class="k">return</span> <span class="n">params</span>

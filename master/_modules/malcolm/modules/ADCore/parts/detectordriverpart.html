@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.ADCore.parts.detectordriverpart &mdash; malcolm 4.6+17.g0a844295 documentation</title>
+  <title>malcolm.modules.ADCore.parts.detectordriverpart &mdash; malcolm 4.6+88.g3125a99a documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -149,6 +149,7 @@
 
 <span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">Array</span><span class="p">,</span> <span class="n">add_call_types</span>
 <span class="kn">from</span> <span class="nn">packaging.version</span> <span class="kn">import</span> <span class="n">Version</span>
+<span class="kn">from</span> <span class="nn">scanpointgenerator</span> <span class="kn">import</span> <span class="n">CompoundGenerator</span>
 
 <span class="kn">from</span> <span class="nn">malcolm.compat</span> <span class="kn">import</span> <span class="n">et_to_string</span>
 <span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="p">(</span>
@@ -159,12 +160,14 @@
     <span class="n">Future</span><span class="p">,</span>
     <span class="n">IncompatibleError</span><span class="p">,</span>
     <span class="n">Info</span><span class="p">,</span>
+    <span class="n">NumberMeta</span><span class="p">,</span>
     <span class="n">PartRegistrar</span><span class="p">,</span>
     <span class="n">TableMeta</span><span class="p">,</span>
     <span class="n">config_tag</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">malcolm.modules</span> <span class="kn">import</span> <span class="n">builtin</span><span class="p">,</span> <span class="n">scanning</span>
 <span class="kn">from</span> <span class="nn">malcolm.modules.scanning.infos</span> <span class="kn">import</span> <span class="n">ExposureDeadtimeInfo</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules.scanning.parts</span> <span class="kn">import</span> <span class="n">ADetectorFramesPerStep</span>
 
 <span class="kn">from</span> <span class="nn">..infos</span> <span class="kn">import</span> <span class="n">FilePathTranslatorInfo</span><span class="p">,</span> <span class="n">NDArrayDatasetInfo</span><span class="p">,</span> <span class="n">NDAttributeDatasetInfo</span>
 <span class="kn">from</span> <span class="nn">..util</span> <span class="kn">import</span> <span class="p">(</span>
@@ -389,17 +392,50 @@
         <span class="n">registrar</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span>
             <span class="s2">&quot;attributesToCapture&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra_attributes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_extra_attributes</span>
         <span class="p">)</span>
+        <span class="c1"># Tell the controller to pass &quot;exposure&quot; and &quot;frames_per_step&quot; to configure</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">ConfigureParamsInfo</span><span class="p">(</span>
+            <span class="n">metas</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                <span class="n">frames_per_step</span><span class="o">=</span><span class="n">NumberMeta</span><span class="o">.</span><span class="n">from_annotype</span><span class="p">(</span>
+                    <span class="n">ADetectorFramesPerStep</span><span class="p">,</span> <span class="n">writeable</span><span class="o">=</span><span class="kc">False</span>
+                <span class="p">),</span>
+            <span class="p">),</span>
+            <span class="n">required</span><span class="o">=</span><span class="p">[],</span>
+            <span class="n">defaults</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">frames_per_step</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
 
 <div class="viewcode-block" id="DetectorDriverPart.on_validate"><a class="viewcode-back" href="../../../../../build/ADCore/parts_api.html#malcolm.modules.ADCore.parts.DetectorDriverPart.on_validate">[docs]</a>    <span class="nd">@add_call_types</span>
     <span class="k">def</span> <span class="nf">on_validate</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">generator</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AGenerator</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">frames_per_step</span><span class="p">:</span> <span class="n">ADetectorFramesPerStep</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">UParameterTweakInfos</span><span class="p">:</span>
+        <span class="c1"># Check if we have a minimum acquire period</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_acquire_period</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="n">generator</span><span class="o">.</span><span class="n">duration</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_acquire_period</span><span class="p">,</span> <span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Duration </span><span class="si">{</span><span class="n">generator</span><span class="o">.</span><span class="n">duration</span><span class="si">}</span><span class="s2"> is less than minimum acquire period&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">min_acquire_period</span><span class="si">}</span><span class="s2">s&quot;</span>
-            <span class="p">)</span></div>
+            <span class="n">duration</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">duration</span>
+            <span class="c1"># Check if we need to guess the generator duration</span>
+            <span class="k">if</span> <span class="n">duration</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                <span class="c1"># Use the minimum acquire period as an estimate of readout time. We</span>
+                <span class="c1"># also need to multiple by frames_per_step as the DetectorChildPart</span>
+                <span class="c1"># divides the generator down to the duration for a single detector</span>
+                <span class="c1"># frame.</span>
+                <span class="n">duration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_acquire_period</span> <span class="o">*</span> <span class="n">frames_per_step</span>
+                <span class="n">serialized</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+                <span class="n">new_generator</span> <span class="o">=</span> <span class="n">CompoundGenerator</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">serialized</span><span class="p">)</span>
+                <span class="n">new_generator</span><span class="o">.</span><span class="n">duration</span> <span class="o">=</span> <span class="n">duration</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: tweaking generator duration from &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">generator</span><span class="o">.</span><span class="n">duration</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+                <span class="k">return</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ParameterTweakInfo</span><span class="p">(</span><span class="s2">&quot;generator&quot;</span><span class="p">,</span> <span class="n">new_generator</span><span class="p">)</span>
+            <span class="c1"># Otherwise check the provided duration is long enough</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">generator</span><span class="o">.</span><span class="n">duration</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_acquire_period</span><span class="p">,</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Duration </span><span class="si">{</span><span class="n">generator</span><span class="o">.</span><span class="n">duration</span><span class="si">}</span><span class="s2"> per frame is less than minimum &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;acquire period </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">min_acquire_period</span><span class="si">}</span><span class="s2">s&quot;</span>
+                <span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
 
 <div class="viewcode-block" id="DetectorDriverPart.on_reset"><a class="viewcode-back" href="../../../../../build/ADCore/parts_api.html#malcolm.modules.ADCore.parts.DetectorDriverPart.on_reset">[docs]</a>    <span class="nd">@add_call_types</span>
     <span class="k">def</span> <span class="nf">on_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>

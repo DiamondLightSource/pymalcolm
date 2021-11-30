@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.scanning.infos &mdash; malcolm 4.6+17.g0a844295 documentation</title>
+  <title>malcolm.modules.scanning.infos &mdash; malcolm 4.6+88.g3125a99a documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
@@ -306,19 +306,31 @@
 <div class="viewcode-block" id="ExposureDeadtimeInfo.calculate_exposure"><a class="viewcode-back" href="../../../../reference/infos.html#malcolm.modules.scanning.infos.ExposureDeadtimeInfo.calculate_exposure">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_exposure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">exposure</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Calculate the exposure to set the detector to given the duration of</span>
 <span class="sd">        the frame and the readout_time and frequency_accuracy&quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="n">duration</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span>
-            <span class="s2">&quot;Duration </span><span class="si">%s</span><span class="s2"> for generator must be &gt;0 to signify constant &quot;</span>
-            <span class="s2">&quot;exposure&quot;</span> <span class="o">%</span> <span class="n">duration</span>
-        <span class="p">)</span>
-        <span class="n">max_exposure</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">duration</span>
-            <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">readout_time</span>
-            <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency_accuracy</span> <span class="o">*</span> <span class="n">duration</span> <span class="o">/</span> <span class="mf">1000000.0</span><span class="p">)</span>
-        <span class="p">)</span>
+        <span class="c1"># If duration and exposure time are zero, return the minimum exposure time</span>
+        <span class="k">if</span> <span class="n">exposure</span> <span class="o">==</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">duration</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_exposure</span>
+        <span class="n">max_exposure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_maximum_exposure</span><span class="p">(</span><span class="n">duration</span><span class="p">)</span>
         <span class="c1"># If exposure time is 0, then use the max_exposure for this duration</span>
         <span class="k">if</span> <span class="n">exposure</span> <span class="o">&lt;=</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">exposure</span> <span class="o">&gt;</span> <span class="n">max_exposure</span><span class="p">:</span>
             <span class="n">exposure</span> <span class="o">=</span> <span class="n">max_exposure</span>
         <span class="k">elif</span> <span class="n">exposure</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_exposure</span><span class="p">:</span>
+            <span class="n">exposure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_exposure</span>
+        <span class="k">return</span> <span class="n">exposure</span></div>
+
+<div class="viewcode-block" id="ExposureDeadtimeInfo.calculate_minimum_duration"><a class="viewcode-back" href="../../../../reference/infos.html#malcolm.modules.scanning.infos.ExposureDeadtimeInfo.calculate_minimum_duration">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_minimum_duration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposure</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Calculate the minimum frame duration required for the frame&quot;&quot;&quot;</span>
+        <span class="n">denominator</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency_accuracy</span> <span class="o">/</span> <span class="mf">1000000.0</span><span class="p">)</span>
+        <span class="n">min_duration</span> <span class="o">=</span> <span class="p">(</span><span class="n">exposure</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">readout_time</span><span class="p">)</span> <span class="o">/</span> <span class="n">denominator</span>
+        <span class="k">return</span> <span class="n">min_duration</span></div>
+
+<div class="viewcode-block" id="ExposureDeadtimeInfo.calculate_maximum_exposure"><a class="viewcode-back" href="../../../../reference/infos.html#malcolm.modules.scanning.infos.ExposureDeadtimeInfo.calculate_maximum_exposure">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_maximum_exposure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Calculate the maximum possible exposure based on a duration&quot;&quot;&quot;</span>
+        <span class="n">exposure</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">duration</span>
+            <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">readout_time</span>
+            <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency_accuracy</span> <span class="o">*</span> <span class="n">duration</span> <span class="o">/</span> <span class="mf">1000000.0</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">exposure</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_exposure</span><span class="p">:</span>
             <span class="n">exposure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_exposure</span>
         <span class="k">return</span> <span class="n">exposure</span></div></div>
 </pre></div>

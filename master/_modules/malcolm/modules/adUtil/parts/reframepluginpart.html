@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.adUtil.parts.reframepluginpart &mdash; malcolm 4.6+17.g0a844295 documentation</title>
+  <title>malcolm.modules.adUtil.parts.reframepluginpart &mdash; malcolm 4.6+88.g3125a99a documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -146,6 +146,7 @@
 <span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
 
 <span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">add_call_types</span>
+<span class="kn">from</span> <span class="nn">scanpointgenerator</span> <span class="kn">import</span> <span class="n">CompoundGenerator</span>
 
 <span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="n">Context</span><span class="p">,</span> <span class="n">PartRegistrar</span>
 <span class="kn">from</span> <span class="nn">malcolm.modules</span> <span class="kn">import</span> <span class="n">ADCore</span><span class="p">,</span> <span class="n">builtin</span><span class="p">,</span> <span class="n">scanning</span>
@@ -181,14 +182,24 @@
         <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ValidateHook</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_validate</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ReframePluginPart.on_validate"><a class="viewcode-back" href="../../../../../build/adUtil/parts_api.html#malcolm.modules.adUtil.parts.ReframePluginPart.on_validate">[docs]</a>    <span class="nd">@add_call_types</span>
-    <span class="k">def</span> <span class="nf">on_validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generator</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AGenerator</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">on_validate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">generator</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AGenerator</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">UParameterTweakInfos</span><span class="p">:</span>
         <span class="n">duration</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">duration</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="n">duration</span> <span class="o">&gt;</span> <span class="mi">0</span>
-        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Generator duration of </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2"> must be &gt; 0 to signify fixed exposure&quot;</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_adc_samples</span><span class="p">(</span><span class="n">duration</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
-        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Generator duration of </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2"> gives &lt; 1 ADC sample&quot;</span></div>
+        <span class="k">if</span> <span class="n">duration</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="c1"># Set the duration for 2 samples (1 live 1 dead)</span>
+            <span class="n">serialized</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+            <span class="n">new_generator</span> <span class="o">=</span> <span class="n">CompoundGenerator</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">serialized</span><span class="p">)</span>
+            <span class="n">new_generator</span><span class="o">.</span><span class="n">duration</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_freq</span>
+            <span class="k">return</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">ParameterTweakInfo</span><span class="p">(</span><span class="s2">&quot;generator&quot;</span><span class="p">,</span> <span class="n">new_generator</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="n">duration</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Generator duration of </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2"> must be &gt; 0 to signify fixed exposure&quot;</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_adc_samples</span><span class="p">(</span><span class="n">duration</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Generator duration of </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2"> gives &lt; 1 ADC sample&quot;</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
 
     <span class="k">def</span> <span class="nf">_number_of_adc_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generator_duration</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">generator_duration</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_freq</span><span class="p">)</span>

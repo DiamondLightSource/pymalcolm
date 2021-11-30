@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.scanning.util &mdash; malcolm 4.6+17.g0a844295 documentation</title>
+  <title>malcolm.modules.scanning.util &mdash; malcolm 4.6+88.g3125a99a documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
@@ -150,7 +150,7 @@
 <span class="sd">- All types required to initialize info classes are in the infos namespace</span>
 <span class="sd">- util depends on hooks and infos (not vice versa)&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">Array</span><span class="p">,</span> <span class="n">Serializable</span>
@@ -168,7 +168,7 @@
 <span class="kn">from</span> <span class="nn">malcolm.modules</span> <span class="kn">import</span> <span class="n">builtin</span>
 
 <span class="kn">from</span> <span class="nn">.hooks</span> <span class="kn">import</span> <span class="n">AAxesToMove</span><span class="p">,</span> <span class="n">ABreakpoints</span><span class="p">,</span> <span class="n">AGenerator</span><span class="p">,</span> <span class="n">UAxesToMove</span>
-<span class="kn">from</span> <span class="nn">.infos</span> <span class="kn">import</span> <span class="n">DatasetType</span>
+<span class="kn">from</span> <span class="nn">.infos</span> <span class="kn">import</span> <span class="n">DatasetType</span><span class="p">,</span> <span class="n">ParameterTweakInfo</span>
 
 
 <span class="k">def</span> <span class="nf">exposure_attribute</span><span class="p">(</span><span class="n">min_exposure</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AttributeModel</span><span class="p">:</span>
@@ -354,6 +354,23 @@
         <span class="c1"># Set transitions for aborted states</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_allowed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ABORTING</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ABORTED</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_allowed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ABORTED</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">RESETTING</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">resolve_generator_tweaks</span><span class="p">(</span>
+    <span class="n">generator_tweaks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ParameterTweakInfo</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ParameterTweakInfo</span><span class="p">:</span>
+    <span class="c1"># Only one tweak is simple</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">generator_tweaks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">generator_tweaks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Look for the largest duration in the tweaks</span>
+        <span class="n">largest_duration</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">tweak</span> <span class="ow">in</span> <span class="n">generator_tweaks</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">tweak</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">duration</span> <span class="o">&gt;</span> <span class="n">largest_duration</span><span class="p">:</span>
+                <span class="n">largest_duration</span> <span class="o">=</span> <span class="n">tweak</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">duration</span>
+        <span class="n">generator</span> <span class="o">=</span> <span class="n">generator_tweaks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">generator</span><span class="o">.</span><span class="n">duration</span> <span class="o">=</span> <span class="n">largest_duration</span>
+        <span class="k">return</span> <span class="n">ParameterTweakInfo</span><span class="p">(</span><span class="s2">&quot;generator&quot;</span><span class="p">,</span> <span class="n">generator</span><span class="p">)</span>
 </pre></div>
 
            </div>

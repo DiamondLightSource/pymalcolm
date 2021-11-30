@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Change Log &mdash; malcolm 4.6+17.g0a844295 documentation</title>
+  <title>Change Log &mdash; malcolm 4.6+88.g3125a99a documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -198,11 +198,55 @@
 This project adheres to <a class="reference external" href="http://semver.org/">Semantic Versioning</a> after 2-1.</p>
 <section id="unreleased">
 <h2>Unreleased<a class="headerlink" href="#unreleased" title="Permalink to this headline"></a></h2>
+<p>Changed:</p>
+<ul>
+<li><p>BeamSelectorPart now supports holding at each position for different lengths
+of time based on a mutator modifying delay_after, allowing different exposures
+to be used for each detector.</p></li>
+<li><p>ExposureDeadTimePart now has fixed values for readout time and frequency
+accuracy. These are configurable in the YAML but are then fixed at runtime.
+This fixes a bug in validate where the resulting exposure time is different if
+the target design is not loaded before you run validate/configure.</p>
+<p>Designs for detector runnable blocks which contain these entries should be
+removed (remove the following lines from the JSON design files):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="s2">&quot;readoutTime&quot;</span><span class="p">:</span> <span class="n">n</span><span class="o">.</span><span class="n">n</span><span class="p">,</span>
+<span class="o">-</span> <span class="s2">&quot;frequencyAccuracy&quot;</span><span class="p">:</span> <span class="n">n</span><span class="o">.</span><span class="n">n</span>
+</pre></div>
+</div>
+<p>You can then set the readout time when you instantiate the runnable block:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">ADPco.blocks.pco_runnable_block</span><span class="p">:</span>
+  <span class="nt">mri_prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BL11K-ML-PCO-01</span>
+  <span class="nt">pv_prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BL11K-EA-PCO-01</span>
+  <span class="nt">config_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(config_dir)</span>
+  <span class="nt">windows_drive</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">G</span>
+  <span class="nt">path_prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/dls</span>
+  <span class="nt">readout_time</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.005</span>
+</pre></div>
+</div>
+</li>
+</ul>
 <p>Added:</p>
-<ul class="simple">
+<ul>
 <li><p>DetectorDriverPart now has optional min_acquire_period argument. When set to a
 non-zero value this is checked during validation against the generator
 duration to ensure the detector can keep up during the acquisition.</p></li>
+<li><p>Calculate generator duration automatically. If a duration of 0.0 is given
+then some parts will attempt to calculate a duration based on other parameters
+combined with other information they have. The parts which tweak duration are:</p>
+<ul class="simple">
+<li><p>PmacChildPart</p></li>
+<li><p>PandAPulseTriggerPart</p></li>
+<li><p>DetectorDriverPart</p></li>
+<li><p>ExposureDeadtimePart</p></li>
+<li><p>AndorDriverPart</p></li>
+<li><p>ReframePluginPart</p></li>
+<li><p>BeamSelectorPart (based on a fixed move time)</p></li>
+</ul>
+<p>The largest tweak to generator duration by any part will win, and then all
+parts will validate with the new duration to check they are happy with the
+tweaked value. This can happen iteratively with up to 10 attempts per
+RunnableController.</p>
+</li>
 </ul>
 <p>Fixed</p>
 <ul class="simple">

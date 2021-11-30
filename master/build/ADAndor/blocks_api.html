@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.ADAndor.blocks &mdash; malcolm 4.6+17.g0a844295 documentation</title>
+  <title>malcolm.modules.ADAndor.blocks &mdash; malcolm 4.6+88.g3125a99a documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -199,7 +199,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="malcolm.modules.ADAndor.blocks.andor_runnable_block">
-<span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADAndor.blocks.</span></span><span class="sig-name descname"><span class="pre">andor_runnable_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mri_prefix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pv_prefix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#malcolm.modules.ADAndor.blocks.andor_runnable_block" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADAndor.blocks.</span></span><span class="sig-name descname"><span class="pre">andor_runnable_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mri_prefix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pv_prefix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_acquire_period</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#malcolm.modules.ADAndor.blocks.andor_runnable_block" title="Permalink to this definition"></a></dt>
 <dd><p>Device block corresponding to ADAndor + stat + pos + hdf writer.</p>
 <ul class="simple">
 <li><p>Detector driver should have pv prefix $(pv_prefix):CAM</p></li>
@@ -213,6 +213,7 @@
 <li><p><strong>mri_prefix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Malcolm resource id of the Block and prefix for children</p></li>
 <li><p><strong>pv_prefix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – PV prefix for driver and all plugins</p></li>
 <li><p><strong>config_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Where to store saved configs</p></li>
+<li><p><strong>min_acquire_period</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Minimum acquire period for detector</p></li>
 </ul>
 </dd>
 </dl>

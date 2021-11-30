@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.scanning.parts.detectorchildpart &mdash; malcolm 4.6+17.g0a844295 documentation</title>
+  <title>malcolm.modules.scanning.parts.detectorchildpart &mdash; malcolm 4.6+88.g3125a99a documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -307,7 +307,10 @@
             <span class="n">tweak_detectors</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+
+        <span class="c1"># Additional parameters that may need passing</span>
         <span class="n">takes_exposure</span> <span class="o">=</span> <span class="s2">&quot;exposure&quot;</span> <span class="ow">in</span> <span class="n">child</span><span class="o">.</span><span class="n">validate</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">takes</span><span class="o">.</span><span class="n">elements</span>
+        <span class="n">takes_frames_per_step</span> <span class="o">=</span> <span class="s2">&quot;frames_per_step&quot;</span> <span class="ow">in</span> <span class="n">child</span><span class="o">.</span><span class="n">validate</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">takes</span><span class="o">.</span><span class="n">elements</span>
 
         <span class="k">def</span> <span class="nf">do_validate</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">):</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">takes_exposure</span><span class="p">:</span>
@@ -355,6 +358,9 @@
                     <span class="s2">&quot;so framesPerStep can only be 0 or 1 for this row in the &quot;</span>
                     <span class="s2">&quot;detectors table&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
                 <span class="p">)</span>
+            <span class="c1"># Append frames per step now that we should have settled on a value</span>
+            <span class="k">if</span> <span class="n">takes_frames_per_step</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;frames_per_step&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">frames_per_step</span>
             <span class="c1"># This is a Serializable with the correct entries</span>
             <span class="n">returns</span> <span class="o">=</span> <span class="n">do_validate</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="c1"># Add in the exposure in case it is returned</span>
@@ -373,7 +379,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">exposure</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="k">if</span> <span class="n">tweak_detectors</span><span class="p">:</span>
-            <span class="c1"># Detector table changed, make a new onw</span>
+            <span class="c1"># Detector table changed, make a new one</span>
             <span class="n">det_row</span> <span class="o">=</span> <span class="p">[</span><span class="n">enable</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">,</span> <span class="n">exposure</span><span class="p">,</span> <span class="n">frames_per_step</span><span class="p">]</span>
             <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">assert</span> <span class="n">detectors</span><span class="p">,</span> <span class="s2">&quot;No detectors&quot;</span>

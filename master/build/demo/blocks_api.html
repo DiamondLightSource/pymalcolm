@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.demo.blocks &mdash; malcolm 4.6+17.g0a844295 documentation</title>
+  <title>malcolm.modules.demo.blocks &mdash; malcolm 4.6+88.g3125a99a documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -197,7 +197,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="malcolm.modules.demo.blocks.detector_block">
-<span class="sig-prename descclassname"><span class="pre">malcolm.modules.demo.blocks.</span></span><span class="sig-name descname"><span class="pre">detector_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mri</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">160</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'DemoDetector'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#malcolm.modules.demo.blocks.detector_block" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">malcolm.modules.demo.blocks.</span></span><span class="sig-name descname"><span class="pre">detector_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mri</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">160</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'DemoDetector'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">readout_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0.001'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#malcolm.modules.demo.blocks.detector_block" title="Permalink to this definition"></a></dt>
 <dd><p>This block uses a demo FileWriter and exposes a Detector like interface
 that can be controlled with a DetectorChildPart</p>
 <dl class="field-list simple">
@@ -208,6 +208,7 @@ that can be controlled with a DetectorChildPart</p>
 <li><p><strong>width</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Width of the produced image</p></li>
 <li><p><strong>height</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Height of the produced image</p></li>
 <li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Beamline specific label for the detector</p></li>
+<li><p><strong>readout_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Readout time of the detector</p></li>
 </ul>
 </dd>
 </dl>

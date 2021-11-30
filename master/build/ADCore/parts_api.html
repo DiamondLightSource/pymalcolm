@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.ADCore.parts &mdash; malcolm 4.6+17.g0a844295 documentation</title>
+  <title>malcolm.modules.ADCore.parts &mdash; malcolm 4.6+88.g3125a99a documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -204,10 +204,19 @@
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.parts.DetectorDriverPart.on_validate">
-<span class="sig-name descname"><span class="pre">on_validate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">generator:</span> <span class="pre">Anno(name='AGenerator'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'scanpointgenerator.core.compoundgenerator.CompoundGenerator'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Generator</span> <span class="pre">instance</span> <span class="pre">providing</span> <span class="pre">specification</span> <span class="pre">for</span> <span class="pre">scan')</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/ADCore/parts/detectordriverpart.html#DetectorDriverPart.on_validate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADCore.parts.DetectorDriverPart.on_validate" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">on_validate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">generator:</span> <span class="pre">Anno(name='AGenerator'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'scanpointgenerator.core.compoundgenerator.CompoundGenerator'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Generator</span> <span class="pre">instance</span> <span class="pre">providing</span> <span class="pre">specification</span> <span class="pre">for</span> <span class="pre">scan')</span></em>, <em class="sig-param"><span class="pre">frames_per_step:</span> <span class="pre">Anno(name='ADetectorFramesPerStep'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'int'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Frames</span> <span class="pre">per</span> <span class="pre">detector</span> <span class="pre">step')</span> <span class="pre">=</span> <span class="pre">1</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional[Union[Anno(name='AParameterTweakInfos',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.modules.scanning.infos.ParameterTweakInfo'&gt;,</span> <span class="pre">description='Parameters</span> <span class="pre">that</span> <span class="pre">need</span> <span class="pre">to</span> <span class="pre">be</span> <span class="pre">changed</span> <span class="pre">to</span> <span class="pre">make</span> <span class="pre">them</span> <span class="pre">compatible'),</span> <span class="pre">Sequence[malcolm.modules.scanning.infos.ParameterTweakInfo],</span> <span class="pre">malcolm.modules.scanning.infos.ParameterTweakInfo]]</span></span></span><a class="reference internal" href="../../_modules/malcolm/modules/ADCore/parts/detectordriverpart.html#DetectorDriverPart.on_validate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADCore.parts.DetectorDriverPart.on_validate" title="Permalink to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>generator</strong> (<em>CompoundGenerator</em>) – Generator instance providing specification for scan</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>generator</strong> (<em>CompoundGenerator</em>) – Generator instance providing specification for scan</p></li>
+<li><p><strong>frames_per_step</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Frames per detector step</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Parameters that need to be changed to make them compatible</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../scanning/infos_api.html#malcolm.modules.scanning.infos.ParameterTweakInfo" title="malcolm.modules.scanning.infos.ParameterTweakInfo">ParameterTweakInfo</a></p>
 </dd>
 </dl>
 </dd></dl>

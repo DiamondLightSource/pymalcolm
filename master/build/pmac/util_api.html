@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.pmac.util &mdash; malcolm 4.6+17.g0a844295 documentation</title>
+  <title>malcolm.modules.pmac.util &mdash; malcolm 4.6+88.g3125a99a documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -253,6 +253,28 @@ profile and all profiles are recalculated.</p>
 <p>Note that for each profile the area under the velocity/time plot
 must equal ‘distance’. The class VelocityProfile implements the math
 to achieve this.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.util.MinTurnaround">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.pmac.util.</span></span><span class="sig-name descname"><span class="pre">MinTurnaround</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">time:</span> <span class="pre">Anno(name='AMinTurnaround'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Minimum</span> <span class="pre">turnaround</span> <span class="pre">time</span> <span class="pre">for</span> <span class="pre">non-joined</span> <span class="pre">points')</span></em>, <em class="sig-param"><span class="pre">interval:</span> <span class="pre">Anno(name='AMinInterval'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Minimum</span> <span class="pre">interval</span> <span class="pre">between</span> <span class="pre">turnaround</span> <span class="pre">points')</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/util.html#MinTurnaround"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.util.MinTurnaround" title="Permalink to this definition"></a></dt>
+<dd><p>Dataclass for the Minimum turnaround information.</p>
+<p>This may come from a MinTurnaroundInfo if the scan block has a MinTurnaroundPart
+otherwise MIN_TIME and MIN_INTERVAL are used as default values.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.util.AlternatingDelayAfterMutator">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.pmac.util.</span></span><span class="sig-name descname"><span class="pre">AlternatingDelayAfterMutator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">even_delay_after:</span> <span class="pre">Anno(name='AEvenDelayAfter'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Delay</span> <span class="pre">after</span> <span class="pre">value</span> <span class="pre">to</span> <span class="pre">add</span> <span class="pre">to</span> <span class="pre">even</span> <span class="pre">points')</span></em>, <em class="sig-param"><span class="pre">odd_delay_after:</span> <span class="pre">Anno(name='AOddDelayAfter'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Delay</span> <span class="pre">after</span> <span class="pre">value</span> <span class="pre">to</span> <span class="pre">add</span> <span class="pre">to</span> <span class="pre">odd</span> <span class="pre">points')</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/util.html#AlternatingDelayAfterMutator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.util.AlternatingDelayAfterMutator" title="Permalink to this definition"></a></dt>
+<dd><p>Mutator to add alternating delay_after values based on the index of each point</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>even_delay_after</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Delay after value to add to even points</p></li>
+<li><p><strong>odd_delay_after</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Delay after value to add to odd points</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </section>

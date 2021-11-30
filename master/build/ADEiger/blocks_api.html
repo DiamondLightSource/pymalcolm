@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.ADEiger.blocks &mdash; malcolm 4.6+17.g0a844295 documentation</title>
+  <title>malcolm.modules.ADEiger.blocks &mdash; malcolm 4.6+88.g3125a99a documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -202,7 +202,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="malcolm.modules.ADEiger.blocks.eiger_runnable_block">
-<span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADEiger.blocks.</span></span><span class="sig-name descname"><span class="pre">eiger_runnable_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mri_prefix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pv_prefix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drv_suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'DET'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">writer_suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'OD'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_design</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#malcolm.modules.ADEiger.blocks.eiger_runnable_block" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADEiger.blocks.</span></span><span class="sig-name descname"><span class="pre">eiger_runnable_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mri_prefix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pv_prefix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drv_suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'DET'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">writer_suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'OD'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_design</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">readout_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0.0001'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#malcolm.modules.ADEiger.blocks.eiger_runnable_block" title="Permalink to this definition"></a></dt>
 <dd><p>Device block corresponding to ADOdin + Odin file writer plugin .</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -213,6 +213,7 @@
 <li><p><strong>drv_suffix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – PV suffix for detector driver</p></li>
 <li><p><strong>writer_suffix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – PV suffix for Odin data writer</p></li>
 <li><p><strong>initial_design</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Design to load at init</p></li>
+<li><p><strong>readout_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Readout time of the detector</p></li>
 </ul>
 </dd>
 </dl>

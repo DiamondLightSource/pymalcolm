@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.pmac.parts.pmacchildpart &mdash; malcolm 4.6+17.g0a844295 documentation</title>
+  <title>malcolm.modules.pmac.parts.pmacchildpart &mdash; malcolm 4.6+88.g3125a99a documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -149,22 +149,23 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">add_call_types</span>
-<span class="kn">from</span> <span class="nn">scanpointgenerator</span> <span class="kn">import</span> <span class="n">CompoundGenerator</span>
+<span class="kn">from</span> <span class="nn">scanpointgenerator</span> <span class="kn">import</span> <span class="n">CompoundGenerator</span><span class="p">,</span> <span class="n">Point</span>
 
 <span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="n">Block</span><span class="p">,</span> <span class="n">Future</span><span class="p">,</span> <span class="n">PartRegistrar</span><span class="p">,</span> <span class="n">Put</span><span class="p">,</span> <span class="n">Request</span>
 <span class="kn">from</span> <span class="nn">malcolm.modules</span> <span class="kn">import</span> <span class="n">builtin</span><span class="p">,</span> <span class="n">scanning</span>
-<span class="kn">from</span> <span class="nn">malcolm.modules.pmac.util</span> <span class="kn">import</span> <span class="n">get_motion_trigger</span>
-<span class="kn">from</span> <span class="nn">malcolm.modules.scanning.infos</span> <span class="kn">import</span> <span class="n">MinTurnaroundInfo</span><span class="p">,</span> <span class="n">MotionTrigger</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules.scanning.infos</span> <span class="kn">import</span> <span class="n">MotionTrigger</span>
 
 <span class="kn">from</span> <span class="nn">..infos</span> <span class="kn">import</span> <span class="n">MotorInfo</span>
 <span class="kn">from</span> <span class="nn">..util</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">MIN_INTERVAL</span><span class="p">,</span>
     <span class="n">MIN_TIME</span><span class="p">,</span>
+    <span class="n">MinTurnaround</span><span class="p">,</span>
     <span class="n">all_points_joined</span><span class="p">,</span>
     <span class="n">all_points_same_velocities</span><span class="p">,</span>
     <span class="n">cs_axis_mapping</span><span class="p">,</span>
     <span class="n">cs_port_with_motors_in</span><span class="p">,</span>
+    <span class="n">get_min_turnaround</span><span class="p">,</span>
     <span class="n">get_motion_axes</span><span class="p">,</span>
+    <span class="n">get_motion_trigger</span><span class="p">,</span>
     <span class="n">point_velocities</span><span class="p">,</span>
     <span class="n">profile_between_points</span><span class="p">,</span>
 <span class="p">)</span>
@@ -223,10 +224,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">MotorInfo</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="c1"># Lookup of the completed_step value for each point</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">completed_steps_lookup</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="c1"># The minimum turnaround time for non-joined points</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">min_turnaround</span> <span class="o">=</span> <span class="mf">0.0</span>
-        <span class="c1"># The minimum turnaround time for non-joined points</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">min_interval</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="c1"># Minimum turnaround information</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_turnaround</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MinTurnaround</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="c1"># If we are currently loading then block loading more points</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">loading</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="c1"># Where we have generated into profile</span>
@@ -276,8 +275,6 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_reset</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">on_abort</span><span class="p">(</span><span class="n">context</span><span class="p">)</span></div>
 
-    <span class="c1"># Allow CamelCase as arguments will be serialized</span>
-    <span class="c1"># noinspection PyPep8Naming</span>
 <div class="viewcode-block" id="PmacChildPart.on_validate"><a class="viewcode-back" href="../../../../../build/pmac/parts_api.html#malcolm.modules.pmac.parts.PmacChildPart.on_validate">[docs]</a>    <span class="nd">@add_call_types</span>
     <span class="k">def</span> <span class="nf">on_validate</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -296,28 +293,38 @@
             <span class="nb">list</span><span class="p">(</span><span class="n">axesToMove</span><span class="p">),</span>
             <span class="nb">sorted</span><span class="p">(</span><span class="n">available</span><span class="p">),</span>
         <span class="p">)</span>
-        <span class="c1"># If GPIO not demanded for every point we don&#39;t need to align to the</span>
-        <span class="c1"># servo cycle</span>
-        <span class="n">trigger</span> <span class="o">=</span> <span class="n">get_motion_trigger</span><span class="p">(</span><span class="n">part_info</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">trigger</span> <span class="o">!=</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">MotionTrigger</span><span class="o">.</span><span class="n">EVERY_POINT</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
         <span class="c1"># Find the duration</span>
-        <span class="k">assert</span> <span class="n">generator</span><span class="o">.</span><span class="n">duration</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Can only do fixed duration at the moment&quot;</span>
-        <span class="n">servo_freq</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">servoFrequency</span><span class="p">()</span>
-        <span class="c1"># convert half an exposure to multiple of servo ticks, rounding down</span>
-        <span class="n">ticks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">servo_freq</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">generator</span><span class="o">.</span><span class="n">duration</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">servo_freq</span><span class="p">,</span> <span class="mi">3200</span><span class="p">):</span>
-            <span class="c1"># + 0.002 for some observed jitter in the servo frequency if I10</span>
-            <span class="c1"># isn&#39;t a whole number of 1/4 us move timer ticks</span>
-            <span class="c1"># (any frequency apart from 3.2 kHz)</span>
-            <span class="n">ticks</span> <span class="o">+=</span> <span class="mf">0.002</span>
-        <span class="c1"># convert to integer number of microseconds, rounding up</span>
-        <span class="n">micros</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">ticks</span> <span class="o">/</span> <span class="n">servo_freq</span> <span class="o">*</span> <span class="mf">1e6</span><span class="p">)</span>
-        <span class="c1"># back to duration</span>
-        <span class="n">duration</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">micros</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1e6</span>
+        <span class="n">duration</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">duration</span>
+        <span class="k">assert</span> <span class="n">duration</span> <span class="o">&gt;=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: negative duration is not supported&quot;</span>
+
+        <span class="c1"># Check if we should guess the duration</span>
+        <span class="k">if</span> <span class="n">duration</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="c1"># We need to tweak the duration if we are going to take part</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">taking_part_in_scan</span><span class="p">(</span><span class="n">part_info</span><span class="p">,</span> <span class="n">motion_axes</span><span class="p">):</span>
+                <span class="n">duration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_generator_duration</span><span class="p">(</span>
+                    <span class="n">context</span><span class="p">,</span> <span class="n">generator</span><span class="p">,</span> <span class="n">part_info</span><span class="p">,</span> <span class="n">motion_axes</span>
+                <span class="p">)</span>
+                <span class="c1"># We may have not been able to tweak duration if axis mappings are</span>
+                <span class="c1"># missing.</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">duration</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="c1"># If GPIO is demanded for every point we need to align to the servo</span>
+        <span class="c1"># cycle</span>
+        <span class="n">trigger</span> <span class="o">=</span> <span class="n">get_motion_trigger</span><span class="p">(</span><span class="n">part_info</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">trigger</span> <span class="o">==</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">MotionTrigger</span><span class="o">.</span><span class="n">EVERY_POINT</span><span class="p">:</span>
+            <span class="n">servo_freq</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">servoFrequency</span><span class="p">()</span>
+            <span class="n">duration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_aligned_duration_with_servo_frequency</span><span class="p">(</span>
+                <span class="n">servo_freq</span><span class="p">,</span> <span class="n">duration</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Check if the duration was tweaked and return</span>
         <span class="k">if</span> <span class="n">duration</span> <span class="o">!=</span> <span class="n">generator</span><span class="o">.</span><span class="n">duration</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Calculated duration </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2"> does not match </span><span class="si">{</span><span class="n">generator</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: tweaking duration from </span><span class="si">{</span><span class="n">generator</span><span class="o">.</span><span class="n">duration</span><span class="si">}</span><span class="s2"> to &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
             <span class="n">serialized</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
             <span class="n">new_generator</span> <span class="o">=</span> <span class="n">CompoundGenerator</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">serialized</span><span class="p">)</span>
@@ -325,6 +332,107 @@
             <span class="k">return</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">ParameterTweakInfo</span><span class="p">(</span><span class="s2">&quot;generator&quot;</span><span class="p">,</span> <span class="n">new_generator</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_aligned_duration_with_servo_frequency</span><span class="p">(</span>
+        <span class="n">frequency</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="c1"># convert half an exposure to multiple of servo ticks, rounding up</span>
+        <span class="n">ticks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">frequency</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">duration</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">frequency</span><span class="p">,</span> <span class="mi">3200</span><span class="p">):</span>
+            <span class="c1"># -0.002 for some observed jitter in the servo frequency if I10</span>
+            <span class="c1"># isn&#39;t a whole number of 1/4 us move timer ticks</span>
+            <span class="c1"># (any frequency apart from 3.2 kHz)</span>
+            <span class="n">ticks</span> <span class="o">-=</span> <span class="mf">0.002</span>
+        <span class="c1"># convert to integer number of microseconds, rounding down</span>
+        <span class="n">micros</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">ticks</span> <span class="o">/</span> <span class="n">frequency</span> <span class="o">*</span> <span class="mf">1e6</span><span class="p">)</span>
+        <span class="c1"># back to duration</span>
+        <span class="n">duration</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">micros</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1e6</span>
+        <span class="k">return</span> <span class="n">duration</span>
+
+    <span class="k">def</span> <span class="nf">taking_part_in_scan</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">part_info</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">APartInfo</span><span class="p">,</span>
+        <span class="n">motion_axes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="c1"># Check if we should be taking part in the scan</span>
+        <span class="n">need_gpio</span> <span class="o">=</span> <span class="n">get_motion_trigger</span><span class="p">(</span><span class="n">part_info</span><span class="p">)</span> <span class="o">!=</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">MotionTrigger</span><span class="o">.</span><span class="n">NONE</span>
+        <span class="k">if</span> <span class="n">motion_axes</span> <span class="ow">or</span> <span class="n">need_gpio</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="PmacChildPart.calculate_generator_duration"><a class="viewcode-back" href="../../../../../build/pmac/parts_api.html#malcolm.modules.pmac.parts.PmacChildPart.calculate_generator_duration">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_generator_duration</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">,</span>
+        <span class="n">generator</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AGenerator</span><span class="p">,</span>
+        <span class="n">part_info</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">APartInfo</span><span class="p">,</span>
+        <span class="n">motion_axes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate a generator duration based on the generator and axes we are moving</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+        <span class="n">layout_table</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">value</span>
+        <span class="c1"># Check if we are moving axes in this scan</span>
+        <span class="k">if</span> <span class="n">motion_axes</span><span class="p">:</span>
+            <span class="c1"># TODO: what happens if axes are not mapped due to the current config on</span>
+            <span class="c1"># the brick not matching the target config for the scan?</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">axis_mapping</span> <span class="o">=</span> <span class="n">cs_axis_mapping</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">layout_table</span><span class="p">,</span> <span class="n">motion_axes</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
+                <span class="c1"># We can&#39;t check the axes as they are not mapped, so don&#39;t tweak the</span>
+                <span class="c1"># generator and just return</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: can&#39;t guess generator duration during &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;validate as axis mappings are not loaded or missing.&quot;</span>
+                <span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="c1"># Step scans and fly scans behave differently</span>
+            <span class="n">generator</span><span class="o">.</span><span class="n">prepare</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">generator</span><span class="o">.</span><span class="n">continuous</span> <span class="ow">and</span> <span class="n">generator</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="c1"># Estimate the duration for fly scans using the distance between the</span>
+                <span class="c1"># first two points and max velocities of participating axes</span>
+                <span class="n">first_point</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">get_point</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">second_point</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">get_point</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_duration_from_first_two_points</span><span class="p">(</span>
+                    <span class="n">axis_mapping</span><span class="p">,</span>
+                    <span class="n">first_point</span><span class="p">,</span>
+                    <span class="n">second_point</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Step scans have turnarounds at each point so can use this value</span>
+                <span class="n">min_turnaround</span> <span class="o">=</span> <span class="n">get_min_turnaround</span><span class="p">(</span><span class="n">part_info</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">min_turnaround</span><span class="o">.</span><span class="n">time</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Not moving axes so just return time of one tick</span>
+            <span class="k">return</span> <span class="n">TICK_S</span></div>
+
+<div class="viewcode-block" id="PmacChildPart.calculate_duration_from_first_two_points"><a class="viewcode-back" href="../../../../../build/pmac/parts_api.html#malcolm.modules.pmac.parts.PmacChildPart.calculate_duration_from_first_two_points">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_duration_from_first_two_points</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">axis_mapping</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">MotorInfo</span><span class="p">],</span>
+        <span class="n">first_point</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span>
+        <span class="n">second_point</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Guess a duration by using the distance between two points and the max velocities</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">duration</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">axis_name</span><span class="p">,</span> <span class="n">motor_info</span> <span class="ow">in</span> <span class="n">axis_mapping</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># Distance between two points</span>
+            <span class="n">distance</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">second_point</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span> <span class="o">-</span> <span class="n">first_point</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="c1"># So calculate time taken between two points based on max velocity</span>
+            <span class="n">min_duration</span> <span class="o">=</span> <span class="n">distance</span> <span class="o">/</span> <span class="n">motor_info</span><span class="o">.</span><span class="n">max_velocity</span>
+            <span class="c1"># Tweak duration based on slowest axis to move between points</span>
+            <span class="k">if</span> <span class="n">min_duration</span> <span class="o">&gt;</span> <span class="n">duration</span><span class="p">:</span>
+                <span class="n">duration</span> <span class="o">=</span> <span class="n">min_duration</span>
+        <span class="c1"># If duration is zero, it means we don&#39;t have any axes moving during these</span>
+        <span class="c1"># points so just tweak duration to time of one tick.</span>
+        <span class="k">if</span> <span class="n">duration</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">duration</span> <span class="o">=</span> <span class="n">TICK_S</span>
+        <span class="k">return</span> <span class="n">duration</span></div>
 
     <span class="k">def</span> <span class="nf">move_to_start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">cs_port</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">completed_steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Future</span><span class="p">:</span>
         <span class="c1"># Work out what method to call</span>
@@ -356,6 +464,33 @@
         <span class="n">fs</span> <span class="o">=</span> <span class="n">move_async</span><span class="p">(</span><span class="n">moveTime</span><span class="o">=</span><span class="n">move_to_start_time</span><span class="p">,</span> <span class="o">**</span><span class="n">args</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">fs</span>
 
+<div class="viewcode-block" id="PmacChildPart.get_cs_port"><a class="viewcode-back" href="../../../../../build/pmac/parts_api.html#malcolm.modules.pmac.parts.PmacChildPart.get_cs_port">[docs]</a>    <span class="k">def</span> <span class="nf">get_cs_port</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">,</span>
+        <span class="n">motion_axes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Work out the cs_port and motion_axes we should be using&quot;&quot;&quot;</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+        <span class="n">layout_table</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">if</span> <span class="n">motion_axes</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span> <span class="o">=</span> <span class="n">cs_axis_mapping</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">layout_table</span><span class="p">,</span> <span class="n">motion_axes</span><span class="p">)</span>
+            <span class="c1"># Check units for everything in the axis mapping</span>
+            <span class="c1"># TODO: reinstate this when GDA does it properly</span>
+            <span class="c1"># for axis_name, motor_info in sorted(self.axis_mapping.items()):</span>
+            <span class="c1">#     assert motor_info.units == generator.units[axis_name], \</span>
+            <span class="c1">#         &quot;%s: Expected scan units of %r, got %r&quot; % (</span>
+            <span class="c1">#         axis_name, motor_info.units, generator.units[axis_name])</span>
+            <span class="c1"># Guaranteed to have an entry in axis_mapping otherwise</span>
+            <span class="c1"># cs_axis_mapping would fail, so pick its cs_port</span>
+            <span class="n">cs_port</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">cs_port</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># No axes to move, but if told to output triggers we still need to</span>
+            <span class="c1"># do something</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="c1"># Pick the first cs we find that has an axis assigned</span>
+            <span class="n">cs_port</span> <span class="o">=</span> <span class="n">cs_port_with_motors_in</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">layout_table</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cs_port</span></div>
+
     <span class="c1"># Allow CamelCase as arguments will be serialized</span>
     <span class="c1"># noinspection PyPep8Naming</span>
 <div class="viewcode-block" id="PmacChildPart.on_configure"><a class="viewcode-back" href="../../../../../build/pmac/parts_api.html#malcolm.modules.pmac.parts.PmacChildPart.on_configure">[docs]</a>    <span class="nd">@add_call_types</span>
@@ -376,48 +511,17 @@
 
         <span class="c1"># Check if we should be taking part in the scan</span>
         <span class="n">motion_axes</span> <span class="o">=</span> <span class="n">get_motion_axes</span><span class="p">(</span><span class="n">generator</span><span class="p">,</span> <span class="n">axesToMove</span><span class="p">)</span>
-        <span class="n">need_gpio</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_triggers</span> <span class="o">!=</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">MotionTrigger</span><span class="o">.</span><span class="n">NONE</span>
-        <span class="k">if</span> <span class="n">motion_axes</span> <span class="ow">or</span> <span class="n">need_gpio</span><span class="p">:</span>
-            <span class="c1"># Taking part, so store generator</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">taking_part_in_scan</span><span class="p">(</span><span class="n">part_info</span><span class="p">,</span> <span class="n">motion_axes</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">generator</span> <span class="o">=</span> <span class="n">generator</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># Flag as not taking part</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">generator</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">return</span>
 
-        <span class="c1"># See if there is a minimum turnaround</span>
-        <span class="n">infos</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">MinTurnaroundInfo</span><span class="p">]</span> <span class="o">=</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">MinTurnaroundInfo</span><span class="o">.</span><span class="n">filter_values</span><span class="p">(</span>
-            <span class="n">part_info</span>
-        <span class="p">)</span>
-        <span class="k">if</span> <span class="n">infos</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">infos</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Expected 0 or 1 MinTurnaroundInfos, got </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span>
-                <span class="n">infos</span>
-            <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">min_turnaround</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">MIN_TIME</span><span class="p">,</span> <span class="n">infos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">gap</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">min_interval</span> <span class="o">=</span> <span class="n">infos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">interval</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">min_turnaround</span> <span class="o">=</span> <span class="n">MIN_TIME</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">min_interval</span> <span class="o">=</span> <span class="n">MIN_INTERVAL</span>
+        <span class="c1"># Set minimum turnaround information</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_turnaround</span> <span class="o">=</span> <span class="n">get_min_turnaround</span><span class="p">(</span><span class="n">part_info</span><span class="p">)</span>
 
-        <span class="c1"># Work out the cs_port we should be using</span>
-        <span class="n">layout_table</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">value</span>
-        <span class="k">if</span> <span class="n">motion_axes</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span> <span class="o">=</span> <span class="n">cs_axis_mapping</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">layout_table</span><span class="p">,</span> <span class="n">motion_axes</span><span class="p">)</span>
-            <span class="c1"># Check units for everything in the axis mapping</span>
-            <span class="c1"># TODO: reinstate this when GDA does it properly</span>
-            <span class="c1"># for axis_name, motor_info in sorted(self.axis_mapping.items()):</span>
-            <span class="c1">#     assert motor_info.units == generator.units[axis_name], \</span>
-            <span class="c1">#         &quot;%s: Expected scan units of %r, got %r&quot; % (</span>
-            <span class="c1">#         axis_name, motor_info.units, generator.units[axis_name])</span>
-            <span class="c1"># Guaranteed to have an entry in axis_mapping otherwise</span>
-            <span class="c1"># cs_axis_mapping would fail, so pick its cs_port</span>
-            <span class="n">cs_port</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">cs_port</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># No axes to move, but if told to output triggers we still need to</span>
-            <span class="c1"># do something</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span> <span class="o">=</span> <span class="p">{}</span>
-            <span class="c1"># Pick the first cs we find that has an axis assigned</span>
-            <span class="n">cs_port</span> <span class="o">=</span> <span class="n">cs_port_with_motors_in</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">layout_table</span><span class="p">)</span>
+        <span class="c1"># Work out the cs_port</span>
+        <span class="n">cs_port</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cs_port</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">motion_axes</span><span class="p">)</span>
 
         <span class="c1"># Reset GPIOs</span>
         <span class="c1"># TODO: we might need to put this in pause if the PandA logic doesn&#39;t</span>
@@ -805,7 +909,7 @@
             <span class="n">point</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">get_point</span><span class="p">(</span><span class="n">start_index</span><span class="p">)</span>
 
             <span class="c1"># Calculate how long to leave for the run-up (at least MIN_TIME)</span>
-            <span class="n">run_up_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_interval</span>
+            <span class="n">run_up_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_turnaround</span><span class="o">.</span><span class="n">interval</span>
             <span class="n">axis_points</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="k">for</span> <span class="n">axis_name</span><span class="p">,</span> <span class="n">velocity</span> <span class="ow">in</span> <span class="n">point_velocities</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span><span class="p">,</span> <span class="n">point</span>
@@ -874,7 +978,7 @@
         <span class="c1"># Calculate how long to leave for the tail-off</span>
         <span class="c1"># #(at least MIN_TIME)</span>
         <span class="n">axis_points</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">tail_off_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_interval</span>
+        <span class="n">tail_off_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_turnaround</span><span class="o">.</span><span class="n">interval</span>
         <span class="k">for</span> <span class="n">axis_name</span><span class="p">,</span> <span class="n">velocity</span> <span class="ow">in</span> <span class="n">point_velocities</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span><span class="p">,</span> <span class="n">point</span><span class="p">,</span> <span class="n">entry</span><span class="o">=</span><span class="kc">False</span>
         <span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -897,9 +1001,13 @@
 
     <span class="k">def</span> <span class="nf">insert_gap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point</span><span class="p">,</span> <span class="n">next_point</span><span class="p">,</span> <span class="n">completed_steps</span><span class="p">):</span>
         <span class="c1"># Work out the velocity profiles of how to move to the start</span>
-        <span class="n">min_turnaround</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_turnaround</span><span class="p">,</span> <span class="n">point</span><span class="o">.</span><span class="n">delay_after</span><span class="p">)</span>
+        <span class="n">min_turnaround</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_turnaround</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">point</span><span class="o">.</span><span class="n">delay_after</span><span class="p">)</span>
         <span class="n">time_arrays</span><span class="p">,</span> <span class="n">velocity_arrays</span> <span class="o">=</span> <span class="n">profile_between_points</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span><span class="p">,</span> <span class="n">point</span><span class="p">,</span> <span class="n">next_point</span><span class="p">,</span> <span class="n">min_turnaround</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_interval</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span><span class="p">,</span>
+            <span class="n">point</span><span class="p">,</span>
+            <span class="n">next_point</span><span class="p">,</span>
+            <span class="n">min_turnaround</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">min_turnaround</span><span class="o">.</span><span class="n">interval</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="n">start_positions</span> <span class="o">=</span> <span class="p">{}</span>
