@@ -3,8 +3,8 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
-Unreleased
-----------
+`5.0`_ - 2021-11-30
+-------------------
 
 Changed:
 
@@ -21,10 +21,10 @@ Changed:
 
   .. code-block::
 
-    - "readoutTime": n.n,
-    - "frequencyAccuracy": n.n
+    - "readoutTime": 0.005,
+    - "frequencyAccuracy": 50.0
 
-  You can then set the readout time when you instantiate the runnable block:
+  You can then set the readout time when you instantiate the runnable block (frequency accuracy is probably fine at the default value of 50.0):
 
   .. code-block:: yaml
 
@@ -687,6 +687,7 @@ Added:
 
 - Initial release with hello world and websocket comms
 
+.. _5.0: https://github.com/dls-controls/pymalcolm/compare/4.6...5.0
 .. _4.6: https://github.com/dls-controls/pymalcolm/compare/4.5...4.6
 .. _4.5: https://github.com/dls-controls/pymalcolm/compare/4.4...4.5
 .. _4.4: https://github.com/dls-controls/pymalcolm/compare/4-3-1...4.4
