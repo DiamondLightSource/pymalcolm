@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trajectory Scan Triggering &mdash; malcolm 5.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Contributing" href="contributing.html" />
+    <link rel="prev" title="Datasets and Detectors" href="datasets.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../contents.html" class="icon icon-home"> malcolm
+            <img src="../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                5.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Trajectory Scan Triggering</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#pmac-based-triggering">PMAC-based Triggering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-the-panda-for-triggering">Using the PandA for Triggering</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+  <!-- Add versions for selected branches + tags -->
+  <p class="caption">
+    <span class="caption-text">Versions</span>
+  </p>
+  <ul id="versions"/>
+  <script>
+    // Add any branches to appear in the side pane here, tags will be added below
+    // Will only appear if docs are built and pushed in gh-pages
+    var versions = ['main', 'master'];
+    var dirs = new Set();
+    function addVersion(name) {
+      if (dirs.has(name)) {
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        a.href = 'https://dls-controls.github.io/malcolm/' + name;
+        a.innerText = name;
+        li.appendChild(a)
+        document.getElementById('versions').appendChild(li);
+      }
+    }
+    Promise.all([
+      // Find gh-pages directories and populate `dirs`
+      fetch("https://api.github.com/repos/dls-controls/malcolm/contents?ref=gh-pages")
+      .then(response => response.json())
+      .then(data => data.forEach(function(e) {
+        if (e.type == "dir") dirs.add(e.name);
+      })),
+      // Add tags to `versions`
+      fetch('https://api.github.com/repos/dls-controls/malcolm/tags')
+        .then(response => response.json())
+        .then(data => data.forEach(function(e) {
+          versions.push(e.name);
+        }))
+      ]).then(_ => versions.forEach(addVersion))
+  </script>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../contents.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Trajectory Scan Triggering</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/reference/triggering.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="trajectory-scan-triggering">
+<span id="id1"></span><h1>Trajectory Scan Triggering<a class="headerlink" href="#trajectory-scan-triggering" title="Permalink to this headline"></a></h1>
+<section id="pmac-based-triggering">
+<h2>PMAC-based Triggering<a class="headerlink" href="#pmac-based-triggering" title="Permalink to this headline"></a></h2>
+<p>This is intended as a description of how trigger signals are used and generated
+for a trajectory scan. It uses the DLS trajectory scan motion program for PMAC
+and Power PMAC. An example of this in use can be found in the <a class="reference internal" href="../tutorials/pmac.html#pmac-tutorial"><span class="std std-ref">PMAC Master Tutorial</span></a>.</p>
+<p>There are 3 GPIO signals used to provide triggering information for detectors.
+All of these signals are considered to trigger on a rising edge. They are all
+fed into a PandA which uses them to determine when to average motor positions
+and when to trigger the detector(s). The signals are :</p>
+<ul class="simple">
+<li><p>Live signal: Indicates the start of a frame</p></li>
+<li><p>Dead signal: Indicates the start of a period where no frames are acquired</p></li>
+<li><p>Centre signal: Indicates that we are in the middle of the current frame</p></li>
+</ul>
+<p>When a series of frames are taken back to back, the live signal triggers for
+the start of each. The dead signal triggers at the end of the last frame.</p>
+<p>When Malcolm uploads lists of PVT points to the trajectory scan motion program
+it also uploads a User Subroutine to be called as each point is reached. The
+first 8 of these represent all combinations of the 3 GPIO Signals as follows:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>User</p></th>
+<th class="head"><p>GPIO 0</p></th>
+<th class="head"><p>GPIO 1</p></th>
+<th class="head"><p>GPIO 2</p></th>
+</tr>
+<tr class="row-even"><th class="head"><p>Sub</p></th>
+<th class="head"><p>Live</p></th>
+<th class="head"><p>Dead</p></th>
+<th class="head"><p>Centre</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-even"><td><p>4</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>5</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-even"><td><p>6</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>7</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-even"><td><p>8</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+</tr>
+</tbody>
+</table>
+<p>The diagram below shows an example of a snake scan with 6 data points and the
+corresponding trigger signals.</p>
+<p>The graph at the bottom shows the states of the GPIO lines as the PVT scan
+progresses through its points.</p>
+<p>Note that the acquisition time is shorter than the live time.  The trigger
+signal for the detector is controlled by the PandA. In order to centre the
+acquisition with respect to the Live signals, the trigger signal can be delayed
+by half the readout time.</p>
+<dl class="simple">
+<dt>Some of the PVT points are provided by Malcolm for convenience, and are used to:</dt><dd><ol class="arabic simple">
+<li><p>Provide a centre frame signal, and</p></li>
+<li><p>Tightly control turnaround path so that motors do not exceed their
+limits. The turnaround PVT points are added for locations where the
+acceleration changes.</p></li>
+</ol>
+</dd>
+</dl>
+<img alt="../_images/triggering_0.png" src="../_images/triggering_0.png" />
+</section>
+<section id="using-the-panda-for-triggering">
+<h2>Using the PandA for Triggering<a class="headerlink" href="#using-the-panda-for-triggering" title="Permalink to this headline"></a></h2>
+<p>The current PMAC devices at Diamond are limited to a maximum of 300Hz for the
+above signals. If this is exceeded, other processing on the PMAC will not have
+enough time to complete. It is, however, quite straightforward to set-up and
+use.</p>
+<p>In order to use a higher detector trigger rate, the PandA can be used to
+generate the majority of the above signals itself. Using a single trigger signal
+to indicate the start of each row, it will trigger the detectors as well as
+position capture. The <a class="reference internal" href="../tutorials/panda.html#panda-tutorial"><span class="std std-ref">PandA Master Tutorial</span></a> uses this method for triggering.</p>
+<p>The start-of-row signal can be generated in two ways:</p>
+<ol class="arabic simple">
+<li><dl class="simple">
+<dt>PandA position compare</dt><dd><ul class="simple">
+<li><p>This requires straight through mapped axes (no kinematics)</p></li>
+<li><p>This requires that turnarounds are more than 100ms, to provide enough
+time for processing</p></li>
+<li><p>This has the benefit of making rows line up in snake scans if there is
+significant following error on axes</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>PMAC row triggers</dt><dd><ul class="simple">
+<li><p>This can be used with kinematics</p></li>
+<li><p>The row triggers have a maximum rate of 300Hz</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="datasets.html" class="btn btn-neutral float-left" title="Datasets and Detectors" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="contributing.html" class="btn btn-neutral float-right" title="Contributing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,11 @@
+
+xspress3
+========
+
+.. module:: malcolm.modules.xspress3
+
+.. toctree::
+    :maxdepth: 1
+    :caption: malcolm.modules.xspress3
+
+    blocks <blocks_api.rst>

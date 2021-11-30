@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.modules.system.controllers.ProcessController &mdash; malcolm 5.0 documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../../../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                5.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+  <!-- Add versions for selected branches + tags -->
+  <p class="caption">
+    <span class="caption-text">Versions</span>
+  </p>
+  <ul id="versions"/>
+  <script>
+    // Add any branches to appear in the side pane here, tags will be added below
+    // Will only appear if docs are built and pushed in gh-pages
+    var versions = ['main', 'master'];
+    var dirs = new Set();
+    function addVersion(name) {
+      if (dirs.has(name)) {
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        a.href = 'https://dls-controls.github.io/malcolm/' + name;
+        a.innerText = name;
+        li.appendChild(a)
+        document.getElementById('versions').appendChild(li);
+      }
+    }
+    Promise.all([
+      // Find gh-pages directories and populate `dirs`
+      fetch("https://api.github.com/repos/dls-controls/malcolm/contents?ref=gh-pages")
+      .then(response => response.json())
+      .then(data => data.forEach(function(e) {
+        if (e.type == "dir") dirs.add(e.name);
+      })),
+      // Add tags to `versions`
+      fetch('https://api.github.com/repos/dls-controls/malcolm/tags')
+        .then(response => response.json())
+        .then(data => data.forEach(function(e) {
+          versions.push(e.name);
+        }))
+      ]).then(_ => versions.forEach(addVersion))
+  </script>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+      <li>malcolm.modules.system.controllers.ProcessController</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for malcolm.modules.system.controllers.ProcessController</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+
+<span class="kn">import</span> <span class="nn">cothread</span>
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span>
+
+<span class="kn">from</span> <span class="nn">malcolm</span> <span class="kn">import</span> <span class="n">__version__</span>
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Alarm</span><span class="p">,</span>
+    <span class="n">AlarmSeverity</span><span class="p">,</span>
+    <span class="n">BadValueError</span><span class="p">,</span>
+    <span class="n">ProcessStartHook</span><span class="p">,</span>
+    <span class="n">ProcessStopHook</span><span class="p">,</span>
+    <span class="n">StringMeta</span><span class="p">,</span>
+    <span class="n">Widget</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules</span> <span class="kn">import</span> <span class="n">builtin</span><span class="p">,</span> <span class="n">ca</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules.ca.util</span> <span class="kn">import</span> <span class="n">catools</span>
+
+<span class="kn">from</span> <span class="nn">..parts.dirparsepart</span> <span class="kn">import</span> <span class="n">DirParsePart</span>
+<span class="kn">from</span> <span class="nn">..parts.iociconpart</span> <span class="kn">import</span> <span class="n">IocIconPart</span>
+
+
+<span class="k">def</span> <span class="nf">await_ioc_start</span><span class="p">(</span><span class="n">stats</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
+    <span class="n">cothread</span><span class="o">.</span><span class="n">Yield</span><span class="p">()</span>
+    <span class="n">pid_rbv</span> <span class="o">=</span> <span class="n">catools</span><span class="o">.</span><span class="n">caget</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">:PID&quot;</span> <span class="o">%</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">pid_rbv</span><span class="p">)</span> <span class="o">!=</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="n">BadValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Got back different PID: &quot;</span>
+            <span class="o">+</span> <span class="s2">&quot;is there another system instance on the machine?&quot;</span>
+        <span class="p">)</span>
+    <span class="n">catools</span><span class="o">.</span><span class="n">caput</span><span class="p">(</span>
+        <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">:YAML:PATH&quot;</span> <span class="o">%</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">stats</span><span class="p">[</span><span class="s2">&quot;yaml_path&quot;</span><span class="p">],</span> <span class="n">datatype</span><span class="o">=</span><span class="n">catools</span><span class="o">.</span><span class="n">DBR_CHAR_STR</span>
+    <span class="p">)</span>
+    <span class="n">catools</span><span class="o">.</span><span class="n">caput</span><span class="p">(</span>
+        <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">:PYMALCOLM:PATH&quot;</span> <span class="o">%</span> <span class="n">prefix</span><span class="p">,</span>
+        <span class="n">stats</span><span class="p">[</span><span class="s2">&quot;pymalcolm_path&quot;</span><span class="p">],</span>
+        <span class="n">datatype</span><span class="o">=</span><span class="n">catools</span><span class="o">.</span><span class="n">DBR_CHAR_STR</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">start_ioc</span><span class="p">(</span><span class="n">stats</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
+    <span class="n">db_macros</span> <span class="o">=</span> <span class="s2">&quot;prefix=&#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">prefix</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">epics_base</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;EPICS_BASE&quot;</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">BadValueError</span><span class="p">(</span><span class="s2">&quot;EPICS base not defined in environment&quot;</span><span class="p">)</span>
+    <span class="n">softIoc_bin</span> <span class="o">=</span> <span class="n">epics_base</span> <span class="o">+</span> <span class="s2">&quot;/bin/linux-x86_64/softIoc&quot;</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">stats</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">db_macros</span> <span class="o">+=</span> <span class="s2">&quot;,</span><span class="si">%s</span><span class="s2">=&#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)))[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">db_template</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s2">&quot;db&quot;</span><span class="p">,</span> <span class="s2">&quot;system.template&quot;</span><span class="p">)</span>
+    <span class="n">ioc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">softIoc_bin</span><span class="p">,</span> <span class="s2">&quot;-m&quot;</span><span class="p">,</span> <span class="n">db_macros</span><span class="p">,</span> <span class="s2">&quot;-d&quot;</span><span class="p">,</span> <span class="n">db_template</span><span class="p">],</span>
+        <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+        <span class="n">stdin</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">cothread</span><span class="o">.</span><span class="n">Spawn</span><span class="p">(</span><span class="n">await_ioc_start</span><span class="p">,</span> <span class="n">stats</span><span class="p">,</span> <span class="n">prefix</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ioc</span>
+
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;prefix for self.system PVs&quot;</span><span class="p">):</span>
+    <span class="n">APvPrefix</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;space-separated list of IOCs to monitor&quot;</span><span class="p">):</span>
+    <span class="n">AIocList</span> <span class="o">=</span> <span class="nb">str</span>
+
+
+<div class="viewcode-block" id="ProcessController"><a class="viewcode-back" href="../../../../../build/system/controllers_api.html#malcolm.modules.system.controllers.ProcessController">[docs]</a><span class="k">class</span> <span class="nc">ProcessController</span><span class="p">(</span><span class="n">builtin</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">ManagerController</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">mri</span><span class="p">:</span> <span class="n">builtin</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">AMri</span><span class="p">,</span>
+        <span class="n">prefix</span><span class="p">:</span> <span class="n">APvPrefix</span><span class="p">,</span>
+        <span class="n">config_dir</span><span class="p">:</span> <span class="n">builtin</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">AConfigDir</span><span class="p">,</span>
+        <span class="n">ioc_list</span><span class="p">:</span> <span class="n">AIocList</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">mri</span><span class="p">,</span> <span class="n">config_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ioc</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ioc_blocks</span><span class="p">:</span> <span class="n">OrderedDict</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">=</span> <span class="n">prefix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bl_iocs</span> <span class="o">=</span> <span class="n">ioc_list</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bl_iocs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bl_iocs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bl_iocs</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stats</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="c1"># TODO: the following stuff is all Linux-specific....</span>
+        <span class="n">sys_call_bytes</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;/proc/</span><span class="si">%s</span><span class="s2">/cmdline&quot;</span> <span class="o">%</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">(),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;</span><span class="se">\0</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">sys_call</span> <span class="o">=</span> <span class="p">[</span><span class="n">el</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">sys_call_bytes</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;pymalcolm_path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">sys_call</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;yaml_path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">sys_call</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;yaml_ver&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_yaml_version</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;yaml_path&quot;</span><span class="p">],</span> <span class="s2">&quot;/dls_sw/work&quot;</span><span class="p">,</span> <span class="s2">&quot;/dls_sw/prod&quot;</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;pymalcolm_ver&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">__version__</span>
+        <span class="n">hostname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">uname</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;kernel&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">uname</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="n">os</span><span class="o">.</span><span class="n">uname</span><span class="p">()[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;hostname&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">hostname</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hostname</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">39</span> <span class="k">else</span> <span class="n">hostname</span><span class="p">[:</span><span class="mi">35</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;...&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;pid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">())</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pymalcolm_path</span> <span class="o">=</span> <span class="n">StringMeta</span><span class="p">(</span>
+            <span class="s2">&quot;Path to pymalcolm executable&quot;</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">Widget</span><span class="o">.</span><span class="n">MULTILINETEXTUPDATE</span><span class="o">.</span><span class="n">tag</span><span class="p">()]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;pymalcolm_path&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pymalcolm_ver</span> <span class="o">=</span> <span class="n">StringMeta</span><span class="p">(</span>
+            <span class="s2">&quot;Version of pymalcolm executable&quot;</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">Widget</span><span class="o">.</span><span class="n">TEXTUPDATE</span><span class="o">.</span><span class="n">tag</span><span class="p">()]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;pymalcolm_ver&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">yaml_path</span> <span class="o">=</span> <span class="n">StringMeta</span><span class="p">(</span>
+            <span class="s2">&quot;Path to yaml configuration file&quot;</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">Widget</span><span class="o">.</span><span class="n">MULTILINETEXTUPDATE</span><span class="o">.</span><span class="n">tag</span><span class="p">()]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;yaml_path&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">yaml_ver</span> <span class="o">=</span> <span class="n">StringMeta</span><span class="p">(</span>
+            <span class="s2">&quot;version of yaml configuration file&quot;</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">Widget</span><span class="o">.</span><span class="n">TEXTUPDATE</span><span class="o">.</span><span class="n">tag</span><span class="p">()]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;yaml_ver&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="n">StringMeta</span><span class="p">(</span>
+            <span class="s2">&quot;Name of host machine&quot;</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">Widget</span><span class="o">.</span><span class="n">TEXTUPDATE</span><span class="o">.</span><span class="n">tag</span><span class="p">()]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;hostname&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span> <span class="o">=</span> <span class="n">StringMeta</span><span class="p">(</span>
+            <span class="s2">&quot;Kernel of host machine&quot;</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">Widget</span><span class="o">.</span><span class="n">TEXTUPDATE</span><span class="o">.</span><span class="n">tag</span><span class="p">()]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;kernel&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pid</span> <span class="o">=</span> <span class="n">StringMeta</span><span class="p">(</span>
+            <span class="s2">&quot;process ID of pymalcolm instance&quot;</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">Widget</span><span class="o">.</span><span class="n">TEXTUPDATE</span><span class="o">.</span><span class="n">tag</span><span class="p">()]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;pid&quot;</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span><span class="s2">&quot;pymalcolmPath&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pymalcolm_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span><span class="s2">&quot;pymalcolmVer&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pymalcolm_ver</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span><span class="s2">&quot;yamlPath&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">yaml_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span><span class="s2">&quot;yamlVer&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">yaml_ver</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span><span class="s2">&quot;hostname&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hostname</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span><span class="s2">&quot;kernel&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span><span class="s2">&quot;pid&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pid</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;yaml_ver&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;work&quot;</span><span class="p">,</span> <span class="s2">&quot;unknown&quot;</span><span class="p">]:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Non-prod YAML config&quot;</span>
+            <span class="n">alarm</span> <span class="o">=</span> <span class="n">Alarm</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">,</span> <span class="n">severity</span><span class="o">=</span><span class="n">AlarmSeverity</span><span class="o">.</span><span class="n">MINOR_ALARM</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_health</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">builtin</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">HealthInfo</span><span class="p">(</span><span class="n">alarm</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_hooked</span><span class="p">(</span><span class="n">ProcessStartHook</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">init</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_hooked</span><span class="p">(</span><span class="n">ProcessStopHook</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_ioc</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ioc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ioc</span> <span class="o">=</span> <span class="n">start_ioc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_ioc_list</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sd">&quot;&quot;&quot;\</span>
+<span class="sd">pymalcolm %(pymalcolm_ver)s started</span>
+
+<span class="sd">Path: %(pymalcolm_path)s</span>
+<span class="sd">Yaml: %(yaml_path)s&quot;&quot;&quot;</span>
+            <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">stats</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_run_git_cmd</span><span class="p">(</span><span class="s2">&quot;commit&quot;</span><span class="p">,</span> <span class="s2">&quot;--allow-empty&quot;</span><span class="p">,</span> <span class="s2">&quot;-m&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set_default_layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">mri</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">visible</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">part_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="n">part_name</span><span class="p">],</span> <span class="n">builtin</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">ChildPart</span><span class="p">):</span>
+                <span class="n">visible</span> <span class="o">+=</span> <span class="p">[</span><span class="kc">True</span><span class="p">]</span>
+                <span class="n">x</span> <span class="o">+=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">y</span> <span class="o">+=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">name</span> <span class="o">+=</span> <span class="p">[</span><span class="n">part_name</span><span class="p">]</span>
+                <span class="n">mri</span> <span class="o">+=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="n">part_name</span><span class="p">]</span><span class="o">.</span><span class="n">mri</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_layout</span><span class="p">(</span><span class="n">builtin</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">LayoutTable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">mri</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">visible</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">stop_ioc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ioc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ioc</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ioc</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">get_ioc_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ioc_controllers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">ioc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bl_iocs</span><span class="p">:</span>
+            <span class="n">ioc_controller</span> <span class="o">=</span> <span class="n">make_ioc_status</span><span class="p">(</span><span class="n">ioc</span><span class="p">)</span>
+            <span class="n">ioc_controllers</span> <span class="o">+=</span> <span class="p">[</span><span class="n">ioc_controller</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">add_controllers</span><span class="p">(</span><span class="n">ioc_controllers</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">ioc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bl_iocs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_part</span><span class="p">(</span><span class="n">builtin</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">ChildPart</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">ioc</span><span class="p">,</span> <span class="n">mri</span><span class="o">=</span><span class="n">ioc</span> <span class="o">+</span> <span class="s2">&quot;:STATUS&quot;</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">parse_yaml_version</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">work_area</span><span class="p">,</span> <span class="n">prod_area</span><span class="p">):</span>
+        <span class="n">ver</span> <span class="o">=</span> <span class="s2">&quot;unknown&quot;</span>
+        <span class="k">if</span> <span class="n">file_path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">work_area</span><span class="p">):</span>
+            <span class="n">ver</span> <span class="o">=</span> <span class="s2">&quot;work&quot;</span>
+        <span class="k">elif</span> <span class="n">file_path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">prod_area</span><span class="p">):</span>
+            <span class="n">ver</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_git_cmd</span><span class="p">(</span>
+                <span class="s2">&quot;describe&quot;</span><span class="p">,</span> <span class="s2">&quot;--tags&quot;</span><span class="p">,</span> <span class="s2">&quot;--exact-match&quot;</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">file_path</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">ver</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;Prod (unknown version)&quot;</span>
+            <span class="n">ver</span> <span class="o">=</span> <span class="n">ver</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ver</span></div>
+
+
+<span class="k">def</span> <span class="nf">make_ioc_status</span><span class="p">(</span><span class="n">ioc</span><span class="p">):</span>
+    <span class="n">controller</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">StatefulController</span><span class="p">(</span><span class="n">ioc</span> <span class="o">+</span> <span class="s2">&quot;:STATUS&quot;</span><span class="p">)</span>
+
+    <span class="n">controller</span><span class="o">.</span><span class="n">add_part</span><span class="p">(</span>
+        <span class="n">ca</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">CAStringPart</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;epicsVersion&quot;</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;EPICS version&quot;</span><span class="p">,</span>
+            <span class="n">rbv</span><span class="o">=</span><span class="p">(</span><span class="n">ioc</span> <span class="o">+</span> <span class="s2">&quot;:EPICS_VERS&quot;</span><span class="p">),</span>
+            <span class="n">throw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="n">controller</span><span class="o">.</span><span class="n">add_part</span><span class="p">(</span>
+        <span class="n">IocIconPart</span><span class="p">(</span><span class="n">ioc</span><span class="p">,</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;/../icons/epics-logo.svg&quot;</span><span class="p">))</span>
+    <span class="p">)</span>
+    <span class="n">controller</span><span class="o">.</span><span class="n">add_part</span><span class="p">(</span><span class="n">DirParsePart</span><span class="p">(</span><span class="n">ioc</span><span class="p">,</span> <span class="n">ioc</span><span class="p">))</span>
+
+    <span class="n">controller</span><span class="o">.</span><span class="n">add_part</span><span class="p">(</span>
+        <span class="n">ca</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">CAActionPart</span><span class="p">(</span>
+            <span class="s2">&quot;restartIoc&quot;</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;restart IOC via procServ&quot;</span><span class="p">,</span>
+            <span class="n">pv</span><span class="o">=</span><span class="p">(</span><span class="n">ioc</span> <span class="o">+</span> <span class="s2">&quot;:RESTART&quot;</span><span class="p">),</span>
+            <span class="n">throw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">controller</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

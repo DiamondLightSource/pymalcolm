@@ -1,0 +1,11 @@
+
+zebra
+=====
+
+.. module:: malcolm.modules.zebra
+
+.. toctree::
+    :maxdepth: 1
+    :caption: malcolm.modules.zebra
+
+    blocks <blocks_api.rst>

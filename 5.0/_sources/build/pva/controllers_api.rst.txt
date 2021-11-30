@@ -1,0 +1,6 @@
+
+malcolm.modules.pva.controllers
+===============================
+
+.. automodule:: malcolm.modules.pva.controllers
+    :members:

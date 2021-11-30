@@ -1,0 +1,6 @@
+
+malcolm.modules.ADMerlin.blocks
+===============================
+
+.. automodule:: malcolm.modules.ADMerlin.blocks
+    :members:

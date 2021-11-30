@@ -1,0 +1,14 @@
+
+system
+======
+
+.. module:: malcolm.modules.system
+
+.. toctree::
+    :maxdepth: 1
+    :caption: malcolm.modules.system
+
+    blocks <blocks_api.rst>
+    controllers <controllers_api.rst>
+    defines <defines_api.rst>
+    parts <parts_api.rst>
