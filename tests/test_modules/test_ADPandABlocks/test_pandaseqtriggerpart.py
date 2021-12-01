@@ -246,10 +246,11 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         mock_registrar = Mock(name="mock_registrar")
         call_list = [
             call(ReportStatusHook, self.o.on_report_status),
-            call((ConfigureHook, SeekHook, PostRunArmedHook), self.o.on_configure),
+            call((ConfigureHook, SeekHook), self.o.on_configure),
             call(RunHook, self.o.on_run),
             call(ResetHook, self.o.on_reset),
             call((AbortHook, PauseHook), self.o.on_abort),
+            call(PostRunArmedHook, self.o.post_inner_scan)
         ]
 
         self.o.setup(mock_registrar)

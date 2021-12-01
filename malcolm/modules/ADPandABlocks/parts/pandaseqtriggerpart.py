@@ -348,7 +348,6 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
             (
                 scanning.hooks.ConfigureHook,
                 scanning.hooks.SeekHook,
-                scanning.hooks.PostRunArmedHook,
             ),
             self.on_configure,
         )
@@ -357,6 +356,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         registrar.hook(
             (scanning.hooks.AbortHook, scanning.hooks.PauseHook), self.on_abort
         )
+        registrar.hook(scanning.hooks.PostRunArmedHook, self.post_inner_scan)
 
     @add_call_types
     def on_report_status(
@@ -539,3 +539,18 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
 
         if self.db_seq_table is not None:
             self.db_seq_table.clean_up()
+
+    @add_call_types
+    def post_inner_scan(
+        self,
+        context: scanning.hooks.AContext,
+        completed_steps: scanning.hooks.ACompletedSteps,
+        steps_to_do: scanning.hooks.AStepsToDo,
+        part_info: scanning.hooks.APartInfo,
+        generator: scanning.hooks.AGenerator,
+        axesToMove: scanning.hooks.AAxesToMove,
+    ) -> None:
+        self.on_abort(context)
+        self.on_configure(
+            context, completed_steps, steps_to_do, part_info, generator, axesToMove
+        )
