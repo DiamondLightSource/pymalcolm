@@ -250,7 +250,7 @@ class TestPandaSeqTriggerPart(ChildTestCase):
             call(RunHook, self.o.on_run),
             call(ResetHook, self.o.on_reset),
             call((AbortHook, PauseHook), self.o.on_abort),
-            call(PostRunArmedHook, self.o.post_inner_scan)
+            call(PostRunArmedHook, self.o.post_inner_scan),
         ]
 
         self.o.setup(mock_registrar)
