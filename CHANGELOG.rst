@@ -3,6 +3,16 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
+Unreleased
+----------
+
+Fixed:
+
+- PmacChildPart now only reports progress if the brick is providing a trigger
+  at every point. This means the scan block's RunnableController should now
+  report more useful progress for scans using start of row triggering or
+  position compare.
+
 `5.0`_ - 2021-11-30
 -------------------
 
@@ -24,7 +34,8 @@ Changed:
     - "readoutTime": 0.005,
     - "frequencyAccuracy": 50.0
 
-  You can then set the readout time when you instantiate the runnable block (frequency accuracy is probably fine at the default value of 50.0):
+  You can then set the readout time when you instantiate the runnable block
+  (frequency accuracy is probably fine at the default value of 50.0):
 
   .. code-block:: yaml
 
