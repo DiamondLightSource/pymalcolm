@@ -9,6 +9,9 @@ on:
     tags:
       - "*"
   pull_request:
+  schedule:
+    # Run every Monday at 8am
+    - cron: '0 8 * * MON'
 
 # Global environment
 env:
