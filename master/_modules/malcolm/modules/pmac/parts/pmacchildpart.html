@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.pmac.parts.pmacchildpart &mdash; malcolm 5.0+1.g3d7efcda documentation</title>
+  <title>malcolm.modules.pmac.parts.pmacchildpart &mdash; malcolm 5.0+3.g8b81adf1 documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -578,7 +578,9 @@
         <span class="c1"># scan step</span>
         <span class="k">if</span> <span class="n">scanned</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">completed_steps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">completed_steps_lookup</span><span class="p">[</span><span class="n">scanned</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">registrar</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">RunProgressInfo</span><span class="p">(</span><span class="n">completed_steps</span><span class="p">))</span>
+            <span class="c1"># Only report progress if we are triggering for every point</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_triggers</span> <span class="o">==</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">MotionTrigger</span><span class="o">.</span><span class="n">EVERY_POINT</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">registrar</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">RunProgressInfo</span><span class="p">(</span><span class="n">completed_steps</span><span class="p">))</span>
             <span class="c1"># Keep PROFILE_POINTS trajectory points in front</span>
             <span class="k">if</span> <span class="p">(</span>
                 <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">loading</span>
