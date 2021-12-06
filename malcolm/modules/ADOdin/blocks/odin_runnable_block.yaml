@@ -45,6 +45,10 @@
     description: Name of secondary dataset to link in nxs file
     default: sum
 
+- builtin.parameters.string:
+    name: readout_time
+    description: Readout time of the detector
+    default: 1e-3
 
 - builtin.defines.docstring:
     value: |
@@ -73,7 +77,7 @@
 
 - scanning.parts.ExposureDeadtimePart:
     name: DEADTIME
-    initial_readout_time: 1e-3  # todo check correct readout time
+    readout_time: $(readout_time)
 
 # Add an Odin Filewriter
 - ADOdin.blocks.odin_writer_block:

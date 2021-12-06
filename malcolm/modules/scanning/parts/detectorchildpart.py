@@ -162,7 +162,10 @@ class DetectorChildPart(builtin.parts.ChildPart):
             tweak_detectors = True
 
         child = context.block_view(self.mri)
+
+        # Additional parameters that may need passing
         takes_exposure = "exposure" in child.validate.meta.takes.elements
+        takes_frames_per_step = "frames_per_step" in child.validate.meta.takes.elements
 
         def do_validate(**params):
             if not takes_exposure:
@@ -210,6 +213,9 @@ class DetectorChildPart(builtin.parts.ChildPart):
                     "so framesPerStep can only be 0 or 1 for this row in the "
                     "detectors table" % self.name
                 )
+            # Append frames per step now that we should have settled on a value
+            if takes_frames_per_step:
+                kwargs["frames_per_step"] = frames_per_step
             # This is a Serializable with the correct entries
             returns = do_validate(**kwargs)
             # Add in the exposure in case it is returned
@@ -228,7 +234,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
         else:
             exposure = 0.0
         if tweak_detectors:
-            # Detector table changed, make a new onw
+            # Detector table changed, make a new one
             det_row = [enable, self.name, self.mri, exposure, frames_per_step]
             rows = []
             assert detectors, "No detectors"

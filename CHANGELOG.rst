@@ -6,11 +6,68 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 Unreleased
 ----------
 
+Fixed:
+
+- PmacChildPart now only reports progress if the brick is providing a trigger
+  at every point. This means the scan block's RunnableController should now
+  report more useful progress for scans using start of row triggering or
+  position compare.
+
+`5.0`_ - 2021-11-30
+-------------------
+
+Changed:
+
+- BeamSelectorPart now supports holding at each position for different lengths
+  of time based on a mutator modifying delay_after, allowing different exposures
+  to be used for each detector.
+- ExposureDeadTimePart now has fixed values for readout time and frequency
+  accuracy. These are configurable in the YAML but are then fixed at runtime.
+  This fixes a bug in validate where the resulting exposure time is different if
+  the target design is not loaded before you run validate/configure.
+  
+  Designs for detector runnable blocks which contain these entries should be
+  removed (remove the following lines from the JSON design files):
+
+  .. code-block::
+
+    - "readoutTime": 0.005,
+    - "frequencyAccuracy": 50.0
+
+  You can then set the readout time when you instantiate the runnable block
+  (frequency accuracy is probably fine at the default value of 50.0):
+
+  .. code-block:: yaml
+
+    - ADPco.blocks.pco_runnable_block:
+      mri_prefix: BL11K-ML-PCO-01
+      pv_prefix: BL11K-EA-PCO-01
+      config_dir: $(config_dir)
+      windows_drive: G
+      path_prefix: /dls
+      readout_time: 0.005
+
 Added:
 
 - DetectorDriverPart now has optional min_acquire_period argument. When set to a
   non-zero value this is checked during validation against the generator
   duration to ensure the detector can keep up during the acquisition.
+- Calculate generator duration automatically. If a duration of 0.0 is given
+  then some parts will attempt to calculate a duration based on other parameters
+  combined with other information they have. The parts which tweak duration are:
+
+  - PmacChildPart
+  - PandAPulseTriggerPart
+  - DetectorDriverPart
+  - ExposureDeadtimePart
+  - AndorDriverPart
+  - ReframePluginPart
+  - BeamSelectorPart (based on a fixed move time)
+
+  The largest tweak to generator duration by any part will win, and then all
+  parts will validate with the new duration to check they are happy with the
+  tweaked value. This can happen iteratively with up to 10 attempts per
+  RunnableController.
 
 Fixed
 
@@ -641,6 +698,7 @@ Added:
 
 - Initial release with hello world and websocket comms
 
+.. _5.0: https://github.com/dls-controls/pymalcolm/compare/4.6...5.0
 .. _4.6: https://github.com/dls-controls/pymalcolm/compare/4.5...4.6
 .. _4.5: https://github.com/dls-controls/pymalcolm/compare/4.4...4.5
 .. _4.4: https://github.com/dls-controls/pymalcolm/compare/4-3-1...4.4

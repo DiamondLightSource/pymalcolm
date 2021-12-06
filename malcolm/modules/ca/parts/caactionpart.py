@@ -23,7 +23,19 @@ with Anno("How long to wait for status_pv == good_status before returning"):
 
 
 class CAActionPart(Part):
-    """Group a number of PVs together that represent a method like acquire()"""
+    """
+    Group a number of PVs together that represent a method like acquire()
+
+    Commonly a group of pvs are used to represent a method call like this::
+
+        caput(pv, wait=True)
+        assert caget(status_pv) == good_status, (
+            "Action failed with message: %s" % caget(message_pv)
+        )
+
+    This `Part` wraps up this design pattern as a Malcolm `Method`
+
+    """
 
     def __init__(
         self,

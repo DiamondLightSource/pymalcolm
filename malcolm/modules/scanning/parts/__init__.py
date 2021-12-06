@@ -5,10 +5,12 @@ from .attributeprerunpart import AttributePreRunPart
 from .datasettablepart import DatasetTablePart
 from .detectorchildpart import AInitialVisibility, AMri, APartName, DetectorChildPart
 from .directorymonitorpart import DirectoryMonitorPart
+from .doubletriggerpart import DoubleTriggerPart
 from .exposuredeadtimepart import (
-    AInitialAccuracy,
-    AInitialReadoutTime,
+    AAccuracy,
+    ADetectorFramesPerStep,
     AMinExposure,
+    AReadoutTime,
     ExposureDeadtimePart,
 )
 from .minturnaroundpart import MinTurnaroundPart

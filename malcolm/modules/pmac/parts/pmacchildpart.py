@@ -4,22 +4,23 @@ from typing import Dict, List, Optional, Union
 
 import numpy as np
 from annotypes import add_call_types
-from scanpointgenerator import CompoundGenerator
+from scanpointgenerator import CompoundGenerator, Point
 
 from malcolm.core import Block, Future, PartRegistrar, Put, Request
 from malcolm.modules import builtin, scanning
-from malcolm.modules.pmac.util import get_motion_trigger
-from malcolm.modules.scanning.infos import MinTurnaroundInfo, MotionTrigger
+from malcolm.modules.scanning.infos import MotionTrigger
 
 from ..infos import MotorInfo
 from ..util import (
-    MIN_INTERVAL,
     MIN_TIME,
+    MinTurnaround,
     all_points_joined,
     all_points_same_velocities,
     cs_axis_mapping,
     cs_port_with_motors_in,
+    get_min_turnaround,
     get_motion_axes,
+    get_motion_trigger,
     point_velocities,
     profile_between_points,
 )
@@ -78,10 +79,8 @@ class PmacChildPart(builtin.parts.ChildPart):
         self.axis_mapping: Dict[str, MotorInfo] = {}
         # Lookup of the completed_step value for each point
         self.completed_steps_lookup: List[int] = []
-        # The minimum turnaround time for non-joined points
-        self.min_turnaround = 0.0
-        # The minimum turnaround time for non-joined points
-        self.min_interval = 0.0
+        # Minimum turnaround information
+        self.min_turnaround: Optional[MinTurnaround] = None
         # If we are currently loading then block loading more points
         self.loading = False
         # Where we have generated into profile
@@ -131,8 +130,6 @@ class PmacChildPart(builtin.parts.ChildPart):
         super().on_reset(context)
         self.on_abort(context)
 
-    # Allow CamelCase as arguments will be serialized
-    # noinspection PyPep8Naming
     @add_call_types
     def on_validate(
         self,
@@ -151,28 +148,38 @@ class PmacChildPart(builtin.parts.ChildPart):
             list(axesToMove),
             sorted(available),
         )
-        # If GPIO not demanded for every point we don't need to align to the
-        # servo cycle
-        trigger = get_motion_trigger(part_info)
-        if trigger != scanning.infos.MotionTrigger.EVERY_POINT:
-            return None
         # Find the duration
-        assert generator.duration > 0, "Can only do fixed duration at the moment"
-        servo_freq = child.servoFrequency()
-        # convert half an exposure to multiple of servo ticks, rounding down
-        ticks = np.floor(servo_freq * 0.5 * generator.duration)
-        if not np.isclose(servo_freq, 3200):
-            # + 0.002 for some observed jitter in the servo frequency if I10
-            # isn't a whole number of 1/4 us move timer ticks
-            # (any frequency apart from 3.2 kHz)
-            ticks += 0.002
-        # convert to integer number of microseconds, rounding up
-        micros = np.ceil(ticks / servo_freq * 1e6)
-        # back to duration
-        duration = 2 * float(micros) / 1e6
+        duration = generator.duration
+        assert duration >= 0.0, f"{self.name}: negative duration is not supported"
+
+        # Check if we should guess the duration
+        if duration == 0.0:
+            # We need to tweak the duration if we are going to take part
+            if self.taking_part_in_scan(part_info, motion_axes):
+                duration = self.calculate_generator_duration(
+                    context, generator, part_info, motion_axes
+                )
+                # We may have not been able to tweak duration if axis mappings are
+                # missing.
+                if not duration:
+                    return None
+            else:
+                return None
+
+        # If GPIO is demanded for every point we need to align to the servo
+        # cycle
+        trigger = get_motion_trigger(part_info)
+        if trigger == scanning.infos.MotionTrigger.EVERY_POINT:
+            servo_freq = child.servoFrequency()
+            duration = self.get_aligned_duration_with_servo_frequency(
+                servo_freq, duration
+            )
+
+        # Check if the duration was tweaked and return
         if duration != generator.duration:
             self.log.debug(
-                f"Calculated duration {duration} does not match {generator}"
+                f"{self.name}: tweaking duration from {generator.duration} to "
+                f"{duration}"
             )
             serialized = generator.to_dict()
             new_generator = CompoundGenerator.from_dict(serialized)
@@ -180,6 +187,107 @@ class PmacChildPart(builtin.parts.ChildPart):
             return scanning.infos.ParameterTweakInfo("generator", new_generator)
         else:
             return None
+
+    @staticmethod
+    def get_aligned_duration_with_servo_frequency(
+        frequency: float, duration: float
+    ) -> float:
+        # convert half an exposure to multiple of servo ticks, rounding up
+        ticks = np.ceil(frequency * 0.5 * duration)
+        if not np.isclose(frequency, 3200):
+            # -0.002 for some observed jitter in the servo frequency if I10
+            # isn't a whole number of 1/4 us move timer ticks
+            # (any frequency apart from 3.2 kHz)
+            ticks -= 0.002
+        # convert to integer number of microseconds, rounding down
+        micros = np.floor(ticks / frequency * 1e6)
+        # back to duration
+        duration = 2 * float(micros) / 1e6
+        return duration
+
+    def taking_part_in_scan(
+        self,
+        part_info: scanning.hooks.APartInfo,
+        motion_axes: List[str],
+    ) -> bool:
+        # Check if we should be taking part in the scan
+        need_gpio = get_motion_trigger(part_info) != scanning.infos.MotionTrigger.NONE
+        if motion_axes or need_gpio:
+            return True
+        else:
+            return False
+
+    def calculate_generator_duration(
+        self,
+        context: scanning.hooks.AContext,
+        generator: scanning.hooks.AGenerator,
+        part_info: scanning.hooks.APartInfo,
+        motion_axes: List[str],
+    ) -> Optional[float]:
+        """
+        Calculate a generator duration based on the generator and axes we are moving
+        """
+        child = context.block_view(self.mri)
+        layout_table = child.layout.value
+        # Check if we are moving axes in this scan
+        if motion_axes:
+            # TODO: what happens if axes are not mapped due to the current config on
+            # the brick not matching the target config for the scan?
+            try:
+                axis_mapping = cs_axis_mapping(context, layout_table, motion_axes)
+            except AssertionError:
+                # We can't check the axes as they are not mapped, so don't tweak the
+                # generator and just return
+                self.log.debug(
+                    f"{self.name}: can't guess generator duration during "
+                    f"validate as axis mappings are not loaded or missing."
+                )
+                return None
+            # Step scans and fly scans behave differently
+            generator.prepare()
+            if generator.continuous and generator.size > 1:
+                # Estimate the duration for fly scans using the distance between the
+                # first two points and max velocities of participating axes
+                first_point = generator.get_point(0)
+                second_point = generator.get_point(1)
+                return self.calculate_duration_from_first_two_points(
+                    axis_mapping,
+                    first_point,
+                    second_point,
+                )
+            else:
+                # Step scans have turnarounds at each point so can use this value
+                min_turnaround = get_min_turnaround(part_info)
+                return min_turnaround.time
+        else:
+            # Not moving axes so just return time of one tick
+            return TICK_S
+
+    def calculate_duration_from_first_two_points(
+        self,
+        axis_mapping: Dict[str, MotorInfo],
+        first_point: Point,
+        second_point: Point,
+    ) -> float:
+        """
+        Guess a duration by using the distance between two points and the max velocities
+        """
+        duration = 0.0
+        for axis_name, motor_info in axis_mapping.items():
+            # Distance between two points
+            distance = (
+                second_point.positions[axis_name] - first_point.positions[axis_name]
+            )
+            # So calculate time taken between two points based on max velocity
+            min_duration = distance / motor_info.max_velocity
+            # Tweak duration based on slowest axis to move between points
+            if min_duration > duration:
+                duration = min_duration
+        # If duration is zero, it means we don't have any axes moving during these
+        # points so just tweak duration to time of one tick.
+        if duration == 0.0:
+            duration = TICK_S
+        return duration
 
     def move_to_start(self, child: Block, cs_port: str, completed_steps: int) -> Future:
         # Work out what method to call
@@ -211,6 +319,33 @@ class PmacChildPart(builtin.parts.ChildPart):
         fs = move_async(moveTime=move_to_start_time, **args)
         return fs
 
+    def get_cs_port(
+        self,
+        context: scanning.hooks.AContext,
+        motion_axes: List[str],
+    ) -> str:
+        """Work out the cs_port and motion_axes we should be using"""
+        child = context.block_view(self.mri)
+        layout_table = child.layout.value
+        if motion_axes:
+            self.axis_mapping = cs_axis_mapping(context, layout_table, motion_axes)
+            # Check units for everything in the axis mapping
+            # TODO: reinstate this when GDA does it properly
+            # for axis_name, motor_info in sorted(self.axis_mapping.items()):
+            #     assert motor_info.units == generator.units[axis_name], \
+            #         "%s: Expected scan units of %r, got %r" % (
+            #         axis_name, motor_info.units, generator.units[axis_name])
+            # Guaranteed to have an entry in axis_mapping otherwise
+            # cs_axis_mapping would fail, so pick its cs_port
+            cs_port = list(self.axis_mapping.values())[0].cs_port
+        else:
+            # No axes to move, but if told to output triggers we still need to
+            # do something
+            self.axis_mapping = {}
+            # Pick the first cs we find that has an axis assigned
+            cs_port = cs_port_with_motors_in(context, layout_table)
+        return cs_port
+
     # Allow CamelCase as arguments will be serialized
     # noinspection PyPep8Naming
     @add_call_types
@@ -231,48 +366,17 @@ class PmacChildPart(builtin.parts.ChildPart):
 
         # Check if we should be taking part in the scan
         motion_axes = get_motion_axes(generator, axesToMove)
-        need_gpio = self.output_triggers != scanning.infos.MotionTrigger.NONE
-        if motion_axes or need_gpio:
-            # Taking part, so store generator
+        if self.taking_part_in_scan(part_info, motion_axes):
             self.generator = generator
         else:
-            # Flag as not taking part
             self.generator = None
             return
 
-        # See if there is a minimum turnaround
-        infos: List[MinTurnaroundInfo] = scanning.infos.MinTurnaroundInfo.filter_values(
-            part_info
-        )
-        if infos:
-            assert len(infos) == 1, "Expected 0 or 1 MinTurnaroundInfos, got %d" % len(
-                infos
-            )
-            self.min_turnaround = max(MIN_TIME, infos[0].gap)
-            self.min_interval = infos[0].interval
-        else:
-            self.min_turnaround = MIN_TIME
-            self.min_interval = MIN_INTERVAL
+        # Set minimum turnaround information
+        self.min_turnaround = get_min_turnaround(part_info)
 
-        # Work out the cs_port we should be using
-        layout_table = child.layout.value
-        if motion_axes:
-            self.axis_mapping = cs_axis_mapping(context, layout_table, motion_axes)
-            # Check units for everything in the axis mapping
-            # TODO: reinstate this when GDA does it properly
-            # for axis_name, motor_info in sorted(self.axis_mapping.items()):
-            #     assert motor_info.units == generator.units[axis_name], \
-            #         "%s: Expected scan units of %r, got %r" % (
-            #         axis_name, motor_info.units, generator.units[axis_name])
-            # Guaranteed to have an entry in axis_mapping otherwise
-            # cs_axis_mapping would fail, so pick its cs_port
-            cs_port = list(self.axis_mapping.values())[0].cs_port
-        else:
-            # No axes to move, but if told to output triggers we still need to
-            # do something
-            self.axis_mapping = {}
-            # Pick the first cs we find that has an axis assigned
-            cs_port = cs_port_with_motors_in(context, layout_table)
+        # Work out the cs_port
+        cs_port = self.get_cs_port(context, motion_axes)
 
         # Reset GPIOs
         # TODO: we might need to put this in pause if the PandA logic doesn't
@@ -329,7 +433,9 @@ class PmacChildPart(builtin.parts.ChildPart):
         # scan step
         if scanned > 0:
             completed_steps = self.completed_steps_lookup[scanned - 1]
-            self.registrar.report(scanning.infos.RunProgressInfo(completed_steps))
+            # Only report progress if we are triggering for every point
+            if self.output_triggers == scanning.infos.MotionTrigger.EVERY_POINT:
+                self.registrar.report(scanning.infos.RunProgressInfo(completed_steps))
             # Keep PROFILE_POINTS trajectory points in front
             if (
                 not self.loading
@@ -660,7 +766,7 @@ class PmacChildPart(builtin.parts.ChildPart):
             point = self.generator.get_point(start_index)
 
             # Calculate how long to leave for the run-up (at least MIN_TIME)
-            run_up_time = self.min_interval
+            run_up_time = self.min_turnaround.interval
             axis_points = {}
             for axis_name, velocity in point_velocities(
                 self.axis_mapping, point
@@ -729,7 +835,7 @@ class PmacChildPart(builtin.parts.ChildPart):
         # Calculate how long to leave for the tail-off
         # #(at least MIN_TIME)
         axis_points = {}
-        tail_off_time = self.min_interval
+        tail_off_time = self.min_turnaround.interval
         for axis_name, velocity in point_velocities(
             self.axis_mapping, point, entry=False
         ).items():
@@ -752,9 +858,13 @@ class PmacChildPart(builtin.parts.ChildPart):
 
     def insert_gap(self, point, next_point, completed_steps):
         # Work out the velocity profiles of how to move to the start
-        min_turnaround = max(self.min_turnaround, point.delay_after)
+        min_turnaround = max(self.min_turnaround.time, point.delay_after)
         time_arrays, velocity_arrays = profile_between_points(
-            self.axis_mapping, point, next_point, min_turnaround, self.min_interval
+            self.axis_mapping,
+            point,
+            next_point,
+            min_turnaround,
+            self.min_turnaround.interval,
         )
 
         start_positions = {}

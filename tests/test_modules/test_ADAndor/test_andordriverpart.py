@@ -1,6 +1,8 @@
+import math
+
 import pytest
 from mock import Mock, call, patch
-from scanpointgenerator import CompoundGenerator, LineGenerator
+from scanpointgenerator import CompoundGenerator, LineGenerator, StaticPointGenerator
 
 from malcolm.core import Context, Process
 from malcolm.modules.ADAndor.blocks import andor_driver_block
@@ -17,7 +19,11 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         )
         self.mock_when_value_matches(self.child)
         # readoutTime used to be 0.002, not any more...
-        self.andor_driver_part = AndorDriverPart(name="m", mri="mri")
+        self.andor_driver_part = AndorDriverPart(
+            name="m",
+            mri="mri",
+            min_acquire_period=0.2,
+        )
         self.context.set_notify_dispatch_request(
             self.andor_driver_part.notify_dispatch_request
         )
@@ -334,3 +340,99 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         )
 
         self.assertEqual(expected_readout_factor, actual_readout_factor)
+
+    def _get_static_generator(self, duration):
+        static = StaticPointGenerator(10)
+        generator = CompoundGenerator([static], [], [], duration)
+        return generator
+
+    def test_validate_raises_AssertionError_for_negative_duration(self):
+        generator = self._get_static_generator(-1.0)
+
+        self.assertRaises(
+            AssertionError, self.andor_driver_part.on_validate, self.context, generator
+        )
+
+    @patch("malcolm.modules.ADCore.parts.DetectorDriverPart.on_validate")
+    def test_validate_calls_parent_method(self, mock_super_validate):
+        generator = self._get_static_generator(5.0)
+        generator_zero_duration = self._get_static_generator(0.0)
+
+        self.andor_driver_part.on_validate(self.context, generator)
+        self.andor_driver_part.on_validate(self.context, generator, frames_per_step=2)
+        self.andor_driver_part.on_validate(
+            self.context, generator_zero_duration, exposure=0.0
+        )
+        self.andor_driver_part.on_validate(
+            self.context, generator_zero_duration, frames_per_step=2
+        )
+
+        # Check the mock method was called with the correct args
+        expected_calls = [
+            call(generator, frames_per_step=1),
+            call(generator, frames_per_step=2),
+            call(generator_zero_duration, frames_per_step=1),
+            call(generator_zero_duration, frames_per_step=2),
+        ]
+        mock_super_validate.assert_has_calls(expected_calls)
+
+    def test_validate_tweaks_generator_for_zero_duration_and_positive_exposure(self):
+        # Input parameters
+        generator = self._get_static_generator(0.0)
+        exposure = 0.25
+
+        # Set the readout time
+        self.set_attributes(self.child, andorReadoutTime=0.1)
+
+        # Single frame per step
+        tweaks = self.andor_driver_part.on_validate(
+            self.context, generator, exposure=exposure
+        )
+        assert tweaks.parameter == "generator"
+        assert tweaks.value["duration"] == 0.35
+
+        # Multiple frames per step
+        tweaks = self.andor_driver_part.on_validate(
+            self.context, generator, exposure=exposure, frames_per_step=3
+        )
+        assert tweaks.parameter == "generator"
+        assert math.isclose(tweaks.value["duration"], 1.05)
+
+    def test_validate_raises_AssertionError_for_too_small_duration(self):
+        generator = self._get_static_generator(0.2)
+
+        # Set the readout time
+        self.set_attributes(self.child, andorReadoutTime=0.1)
+
+        # Single frame per step
+        exposure = 0.11
+        self.assertRaises(
+            AssertionError,
+            self.andor_driver_part.on_validate,
+            self.context,
+            generator,
+            exposure=exposure,
+        )
+
+        # Two frames per step (duration is already divided down before)
+        self.assertRaises(
+            AssertionError,
+            self.andor_driver_part.on_validate,
+            self.context,
+            generator,
+            exposure=exposure,
+            frames_per_step=2,
+        )
+
+    def test_validate_succeeds_without_tweaking_for_positive_exposure(self):
+        generator = self._get_static_generator(1.0)
+        exposure = 0.5
+
+        # Set the readout time
+        self.set_attributes(self.child, andorReadoutTime=0.1)
+
+        tweaks = self.andor_driver_part.on_validate(
+            self.context, generator, exposure=exposure
+        )
+
+        assert tweaks is None

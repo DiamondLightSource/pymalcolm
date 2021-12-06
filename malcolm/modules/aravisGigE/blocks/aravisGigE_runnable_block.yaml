@@ -15,6 +15,16 @@
     description: Beamline specific label for the detector
     default: aravisGigE
 
+- builtin.parameters.float64:
+    name: min_acquire_period
+    description: Minimum acquire period for detector
+    default: 0.0
+
+- builtin.parameters.string:
+    name: readout_time
+    description: Readout time of the detector
+    default: 200e-6
+
 - builtin.defines.docstring:
     value: |
       Device block corresponding to ADAndor + stat + pos + hdf writer.
@@ -42,10 +52,11 @@
     mri: $(mri_prefix):DRV
     soft_trigger_modes:
         - Off
+    min_acquire_period: $(min_acquire_period)
 
 - scanning.parts.ExposureDeadtimePart:
     name: DEADTIME
-    initial_readout_time: 200e-6
+    readout_time: $(readout_time)
 
 - ADCore.blocks.stats_plugin_block:
     mri: $(mri_prefix):STAT

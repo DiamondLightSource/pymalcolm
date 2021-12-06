@@ -38,12 +38,6 @@
     mri: $(mri_prefix):DRV
     prefix: $(pv_prefix):ADC
 
-# Commented out as it is always active, we don't start and stop this
-#- ADCore.parts.DetectorDriverPart:
-#    name: DRV
-#    mri: $(mri_prefix):DRV
-#    readoutTime: 200e-6
-
 - adUtil.blocks.reframe_plugin_block:
     mri: $(mri_prefix):TRIG
     prefix: $(pv_prefix):TRIG

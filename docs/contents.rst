@@ -44,5 +44,7 @@ Contents
     build/modules_api
     api/external_api
 
-* :ref:`genindex`
+.. toctree::
+    :caption: Appendix
 
+    Index <genindex.html#http://>

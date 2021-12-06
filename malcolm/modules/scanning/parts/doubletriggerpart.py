@@ -9,23 +9,21 @@ AMri = builtin.parts.AMri
 AInitialVisibility = builtin.parts.AInitialVisibility
 
 
-class PandAAlternatingDivPart(builtin.parts.ChildPart):
-    """Part for informing PandA that it can have multiple
-    triggers.
-
-    This part is used in beam selector scans (specific for K11
-    DIAD beam line).
-    """
+class DoubleTriggerPart(builtin.parts.ChildPart):
+    """Part for informing a parent that it can have 2 triggers per step."""
 
     def __init__(
-        self, name: APartName, mri: AMri, initial_visibility: AInitialVisibility = False
+        self,
+        name: APartName,
+        mri: AMri,
+        initial_visibility: AInitialVisibility = False,
     ) -> None:
         super().__init__(
             name, mri, initial_visibility=initial_visibility, stateful=False
         )
-        assert CAMEL_RE.match(name), (
-            "PandAAlternatingDivPart name %r should be camelCase" % name
-        )
+        assert CAMEL_RE.match(
+            name
+        ), f"DoubleTriggerPart name {name} should be camelCase"
 
     def setup(self, registrar: PartRegistrar) -> None:
         super().setup(registrar)
@@ -38,9 +36,9 @@ class PandAAlternatingDivPart(builtin.parts.ChildPart):
         self, context: scanning.hooks.AContext
     ) -> scanning.hooks.UInfos:
         child = context.block_view(self.mri)
-        panda_mri = child.panda.value
+        detector_mri = child.detector.value
         # Say that we can do multi frame for this detector
-        info = scanning.infos.DetectorMutiframeInfo(panda_mri)
+        info = scanning.infos.DetectorMutiframeInfo(detector_mri)
         return info
 
     # Allow CamelCase as these parameters will be serialized
@@ -52,15 +50,14 @@ class PandAAlternatingDivPart(builtin.parts.ChildPart):
         detectors: scanning.util.ADetectorTable = None,
     ) -> None:
         child = context.block_view(self.mri)
-        panda_mri = child.panda.value
-        # Check that PandA has frames_per_step of 2
-        assert detectors, "No detectors found in table. Expecting a PandA"
-        try:
-            for i, mri in enumerate(detectors.mri):
-                if mri == panda_mri:
-                    assert detectors.framesPerStep[i] == 2, (
-                        "PandA can only have framesPerStep=2 "
-                        "as it is alternating triggers between 2 detectors"
-                    )
-        except AttributeError:
-            raise
+        detector_mri = child.detector.value
+        assert (
+            detectors
+        ), f"{detector_mri}: requires a detector table with 2 frames per step"
+        if detectors:
+            for enable, _, mri, _, frames in detectors.rows():
+                if mri == detector_mri:
+                    if enable and frames != 2:
+                        raise ValueError(
+                            f"{detector_mri}: frames per step has to be equal to 2"
+                        )

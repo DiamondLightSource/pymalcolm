@@ -7,7 +7,7 @@ from scanpointgenerator import CompoundGenerator, Point, Points
 
 from malcolm.core import APartName, Block, Context, PartRegistrar
 from malcolm.modules import builtin, pmac, scanning
-from malcolm.modules.scanning.infos import MinTurnaroundInfo
+from malcolm.modules.pmac.util import MinTurnaround, get_min_turnaround
 
 from ..doublebuffer import MIN_PULSE, TICK, DoubleBuffer, SequencerRows
 from ..util import Trigger
@@ -36,13 +36,11 @@ class SeqTriggers:
         axis_mapping: Dict[str, pmac.infos.MotorInfo],
         trigger_enums: Dict[Tuple[str, bool], str],
         min_turnaround: float,
-        min_interval: float,
     ) -> None:
         self.generator: CompoundGenerator = generator
         self.axis_mapping: Dict[str, pmac.infos.MotorInfo] = axis_mapping
         self.trigger_enums: Dict[Tuple[str, bool], str] = trigger_enums
         self.min_turnaround: float = min_turnaround
-        self.min_interval: float = min_interval
         self.last_point: Point = None
 
     @staticmethod
@@ -78,9 +76,14 @@ class SeqTriggers:
     ) -> float:
         """Return the duration that the given axis is moving in the opposite direction from
         that required for `point`, during the prior turnaround."""
-        min_turnaround = max(self.min_turnaround, point.delay_after)
+        assert self.min_turnaround, f"{self.name}: no MinTurnaround assigned"
+        min_turnaround = max(self.min_turnaround.time, point.delay_after)
         time_arrays, velocity_arrays = pmac.util.profile_between_points(
-            self.axis_mapping, self.last_point, point, min_turnaround, self.min_interval
+            self.axis_mapping,
+            self.last_point,
+            point,
+            min_turnaround,
+            self.min_turnaround.interval,
         )
         info = self.axis_mapping[axis_name]
         time_array = time_arrays[info.scannable]
@@ -330,9 +333,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         # What is the mapping of scannable name to MotorInfo
         self.axis_mapping: Dict[str, pmac.infos.MotorInfo] = {}
         # The minimum turnaround time for non-joined points
-        self.min_turnaround: float = 0.0
-        # The minimum time between turnaround points
-        self.min_interval: float = 0.0
+        self.min_turnaround: Optional[MinTurnaround] = None
         # {(scannable, increasing): trigger_enum}
         self.trigger_enums: Dict[Tuple[str, bool], str] = {}
         # The panda Block we will be prodding
@@ -459,16 +460,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         row_trigger = child.rowTrigger.value
 
         # See if there is a minimum turnaround
-        infos: List[MinTurnaroundInfo] = MinTurnaroundInfo.filter_values(part_info)
-        if infos:
-            assert len(infos) == 1, "Expected 0 or 1 MinTurnaroundInfos, got %d" % len(
-                infos
-            )
-            self.min_turnaround = max(pmac.util.MIN_TIME, infos[0].gap)
-            self.min_interval = infos[0].interval
-        else:
-            self.min_turnaround = pmac.util.MIN_TIME
-            self.min_interval = pmac.util.MIN_INTERVAL
+        self.min_turnaround = get_min_turnaround(part_info)
 
         # Get panda Block, and the sequencer Blocks so we can do some checking
         self.panda, seqa, seqb = _get_blocks(context, self.panda_mri)
@@ -505,7 +497,6 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
             self.axis_mapping,
             self.trigger_enums,
             self.min_turnaround,
-            self.min_interval,
         )
 
         rows_gen = seq_triggers.get_rows(self.loaded_up_to, self.scan_up_to)

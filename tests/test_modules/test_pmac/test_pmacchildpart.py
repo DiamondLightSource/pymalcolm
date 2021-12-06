@@ -1,6 +1,7 @@
 import shutil
 from datetime import datetime
 from os import environ
+from typing import List
 
 import numpy as np
 import pytest
@@ -8,6 +9,7 @@ from mock import ANY, Mock, call, patch
 from scanpointgenerator import CompoundGenerator, LineGenerator, StaticPointGenerator
 
 from malcolm.core import Context, Process
+from malcolm.modules import scanning
 from malcolm.modules.builtin.defines import tmp_dir
 from malcolm.modules.pmac.parts import PmacChildPart
 from malcolm.modules.scanning.infos import (
@@ -138,14 +140,113 @@ class TestPMACChildPart(ChildTestCase):
             axes_to_scan,
         )
 
-    def test_validate(self):
+    def test_validate_returns_expected_duration(self):
         generator = CompoundGenerator([], [], [], 0.0102)
         axesToMove = ["x"]
         # servoFrequency() return value
         self.child.handled_requests.post.return_value = 4919.300698316487
+
         ret = self.o.on_validate(self.context, generator, axesToMove, {})
-        expected = 0.010166
-        assert ret.value.duration == expected
+
+        expected_duration = 0.010568
+        assert ret.value.duration == expected_duration
+
+    def test_validate_tweaks_duration_for_continuous_scan(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
+        generator = CompoundGenerator([xs], [], [], 0.0)
+        self.set_motor_attributes()
+        axesToMove = ["x"]
+        # servoFrequency() return value
+        self.child.handled_requests.post.return_value = 4919.300698316487
+
+        ret = self.o.on_validate(self.context, generator, axesToMove, {})
+
+        # Duration is calculated based on maximum velocity of stages
+        expected_duration = 0.250034
+        assert ret.value.duration == expected_duration
+
+    def test_validate_tweaks_duration_for_continuous_scan_with_single_point(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 1, alternate=True)
+        generator = CompoundGenerator([xs], [], [], 0.0)
+        self.set_motor_attributes()
+        axesToMove = ["x"]
+        # servoFrequency() return value
+        self.child.handled_requests.post.return_value = 4919.300698316487
+
+        ret = self.o.on_validate(self.context, generator, axesToMove, {})
+
+        # Duration is calculated based on turnaround info
+        expected_duration = 0.00203
+        assert ret.value.duration == expected_duration
+
+    def test_validate_tweaks_duration_for_axes_that_do_not_move(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.0, 5, alternate=True)
+        generator = CompoundGenerator([xs], [], [], 0.0)
+        self.set_motor_attributes()
+        axesToMove = ["x"]
+        # servoFrequency() return value
+        self.child.handled_requests.post.return_value = 4919.300698316487
+        # Create a part info saying we are not providing any triggers
+        part_info = {"motion_trigger": [MotionTriggerInfo(MotionTrigger.NONE)]}
+
+        ret = self.o.on_validate(self.context, generator, axesToMove, part_info)
+
+        # Expected duration is one trajectory tick (as we are not aligning with servo)
+        expected_duration = 1e-6
+        assert ret.value.duration == expected_duration
+
+    def test_validate_tweaks_duration_for_step_scan(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
+        generator = CompoundGenerator([xs], [], [], 0.0, continuous=False)
+        self.set_motor_attributes()
+        axesToMove = ["x"]
+        # servoFrequency() return value
+        self.child.handled_requests.post.return_value = 4919.300698316487
+
+        ret = self.o.on_validate(self.context, generator, axesToMove, {})
+
+        # Duration is calculated based on turnaround info
+        expected_duration = 0.00203
+        assert ret.value.duration == expected_duration
+
+    def test_validate_does_not_tweak_duration_if_not_taking_part(self):
+        static = StaticPointGenerator(10)
+        generator = CompoundGenerator([static], [], [], 0.0)
+        # servoFrequency() return value
+        self.child.handled_requests.post.return_value = 4919.300698316487
+        # Create a part info saying we are not providing any triggers
+        part_info = {"motion_trigger": [MotionTriggerInfo(MotionTrigger.NONE)]}
+
+        ret = self.o.on_validate(self.context, generator, [], part_info)
+
+        # Duration should not be tweaked
+        assert ret is None
+
+    def test_validate_raises_AssertionError_for_negative_duration(self):
+        generator = CompoundGenerator([], [], [], -1.0)
+        axesToMove = ["x"]
+        # servoFrequency() return value
+        self.child.handled_requests.post.return_value = 4919.300698316487
+
+        self.assertRaises(
+            AssertionError, self.o.on_validate, self.context, generator, axesToMove, {}
+        )
+
+    @patch("malcolm.modules.pmac.parts.pmacchildpart.cs_axis_mapping")
+    def test_validate_does_not_tweak_for_bad_cs_axis_mapping(
+        self, cs_axis_mapping_mock
+    ):
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
+        generator = CompoundGenerator([xs], [], [], 0.0)
+        axesToMove = ["x"]
+
+        # Our mocked method should raise an AssertionError
+        cs_axis_mapping_mock.side_effect = AssertionError("Mock assertion")
+
+        # But the call should still work - we just don't get a tweak
+        tweaks = self.o.on_validate(self.context, generator, axesToMove, {})
+
+        assert tweaks is None
 
     def do_check_output_quantized(self):
         assert self.child.handled_requests.mock_calls[:4] == [
@@ -605,6 +706,21 @@ class TestPMACChildPart(ChildTestCase):
         assert self.o.end_index == 3
         assert len(self.o.completed_steps_lookup) == 11
         assert len(self.o.profile["timeArray"]) == 3
+
+    def test_update_step_does_not_report_when_trigger_not_every_point(self):
+        # Need to configure so we don't error
+        self.do_configure(axes_to_scan=[])
+        # Registrar mock to check we weren't called
+        self.o.registrar = Mock()
+
+        self.o.output_triggers == scanning.infos.MotionTrigger.NONE
+        self.o.update_step(1, self.context.block_view("PMAC"))
+
+        self.o.output_triggers == scanning.infos.MotionTrigger.ROW_GATE
+        self.o.update_step(2, self.context.block_view("PMAC"))
+
+        # Ensure the mock did not get called
+        self.o.registrar.assert_not_called()
 
     def test_run(self):
         self.o.generator = ANY
@@ -1224,3 +1340,58 @@ class TestPMACChildPart(ChildTestCase):
         assert args["velocityMode"] == pytest.approx(
             [1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 3]
         )
+
+    def test_get_aligned_duration_with_servo_frequency(self):
+        # Use a class to store the failures
+        class FailedDurationTweak:
+            def __init__(
+                self, original: float, first: float, second: float, reason: str
+            ):
+                self.orginal = original
+                self.first = first
+                self.second = second
+                self.reason = reason
+
+            def __repr__(self) -> str:
+                return (
+                    f"DurationTweak(start: {self.orginal}, "
+                    f"1st: {self.first}, 2nd: {self.second}, "
+                    f"reason: {self.reason})"
+                )
+
+        # Test inputs
+        input_frequencies = [4909, 5000.20445229, 3200]
+        input_durations = [0.1, 0.25999, 1.0]
+
+        failed_list: List[FailedDurationTweak] = []
+        for freq in input_frequencies:
+            for duration in input_durations:
+                # First iteration may tweak
+                first_duration = self.o.get_aligned_duration_with_servo_frequency(
+                    freq, duration
+                )
+                # Second iteration should return the same duration
+                second_duration = self.o.get_aligned_duration_with_servo_frequency(
+                    freq, first_duration
+                )
+                # Check the duration is not modified on the second call
+                if first_duration != second_duration:
+                    failed_list.append(
+                        FailedDurationTweak(
+                            duration, first_duration, second_duration, "2nd tweak"
+                        )
+                    )
+                # Check that the duration doesn't shrink
+                elif first_duration < duration:
+                    failed_list.append(
+                        FailedDurationTweak(
+                            duration,
+                            first_duration,
+                            second_duration,
+                            "Duration decreased",
+                        )
+                    )
+        # Print out any failures
+        assert (
+            len(failed_list) == 0
+        ), f"Failed with tweaking a second time on following inputs: {failed_list}"

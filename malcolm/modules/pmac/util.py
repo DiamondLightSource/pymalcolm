@@ -1,9 +1,11 @@
 from collections import Counter
-from typing import Dict, List, Set
+from dataclasses import dataclass
+from typing import Dict, List, Set, Union
 
 import numpy as np
-from annotypes import Array, Sequence
-from scanpointgenerator import CompoundGenerator, Point, Points, StaticPointGenerator
+from annotypes import Anno, Array, Sequence
+from scanpointgenerator import CompoundGenerator, Mutator, Point, StaticPointGenerator
+from scanpointgenerator.core.point import Points
 
 from malcolm.core import Context
 from malcolm.modules import builtin, scanning
@@ -200,12 +202,10 @@ def point_velocities(
         # so vl = 2 * vlp - vp
         # where vlp = dlp / (t/2)
         velocity = 4 * d_half / point.duration - vp
-        assert (
-            abs(velocity) <= motor_info.max_velocity
-        ), "Velocity %s invalid for %r with max_velocity %s" % (
-            velocity,
-            axis_name,
-            motor_info.max_velocity,
+        max_velocity = motor_info.max_velocity
+        assert (abs(velocity) - max_velocity) / max_velocity < 1e-6, (
+            f"Velocity {velocity} invalid for {axis_name} with "
+            f"max_velocity {max_velocity}"
         )
         velocities[axis_name] = velocity
     return velocities
@@ -299,3 +299,76 @@ def get_motion_trigger(
     else:
         trigger = scanning.infos.MotionTrigger.EVERY_POINT
     return trigger
+
+
+with Anno("Minimum turnaround time for non-joined points"):
+    AMinTurnaround = float
+with Anno("Minimum interval between turnaround points"):
+    AMinInterval = float
+
+
+@dataclass
+class MinTurnaround:
+    """Dataclass for the Minimum turnaround information.
+
+    This may come from a MinTurnaroundInfo if the scan block has a MinTurnaroundPart
+    otherwise MIN_TIME and MIN_INTERVAL are used as default values.
+    """
+
+    time: AMinTurnaround
+    interval: AMinInterval
+
+
+def get_min_turnaround(
+    part_info: scanning.hooks.APartInfo,
+) -> MinTurnaround:
+    # Use the part if it exists
+    infos = scanning.infos.MinTurnaroundInfo.filter_values(part_info)
+    if infos:
+        assert len(infos) == 1, "Expected 0 or 1 MinTurnaroundInfos, got %d" % len(
+            infos
+        )
+        min_turnaround = max(MIN_TIME, infos[0].gap)
+        min_interval = infos[0].interval
+    # Otherwise use the defaults
+    else:
+        min_turnaround = MIN_TIME
+        min_interval = MIN_INTERVAL
+
+    return MinTurnaround(min_turnaround, min_interval)
+
+
+with Anno("Delay after value to add to even points"):
+    AEvenDelayAfter = float
+with Anno("Delay after value to add to odd points"):
+    AOddDelayAfter = float
+
+
+class AlternatingDelayAfterMutator(Mutator):
+    """Mutator to add alternating delay_after values based on the index of each point"""
+
+    def __init__(
+        self, even_delay_after: AEvenDelayAfter, odd_delay_after: AOddDelayAfter
+    ) -> None:
+        self.delays = [even_delay_after, odd_delay_after]
+
+    def mutate(self, point: Point, idx: Union[int, List[int], Array[int]]) -> Point:
+        delay_after: Union[float, np.ndarray]
+        if isinstance(point, Points):
+            # We have multiple points, so we should have multiple indices in a list
+            # or array
+            assert isinstance(
+                idx, (List, np.ndarray)
+            ), "Indices needs to be list or array for multiple points"
+            size = len(point)
+            delay_after = np.empty(size)
+            for i in range(size):
+                delay_after[i] = self.delays[idx[i] % 2]
+        else:
+            # We should only have a single point
+            assert isinstance(
+                idx, (int, np.integer)
+            ), "Indices needs to be list or array for multiple points"
+            delay_after = self.delays[idx % 2]
+        point.delay_after += delay_after
+        return point

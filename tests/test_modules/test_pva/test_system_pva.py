@@ -68,6 +68,7 @@ class TestSystemDetectorPVA(unittest.TestCase):
             fileTemplate="%s.h5",
             formatName="det",
             exposure=0.0489975,
+            frames_per_step=1,
         )
         assert validated == block.validate(generator, self.tmpdir)
         # Sent 2 things, other zeroed
@@ -79,6 +80,7 @@ class TestSystemDetectorPVA(unittest.TestCase):
             fileTemplate="",
             formatName="",
             exposure=0,
+            frames_per_step=0,
         )
         assert block.validate.took.present == ["generator", "fileDir"]
         # Got back defaulted things
@@ -89,6 +91,7 @@ class TestSystemDetectorPVA(unittest.TestCase):
             "axesToMove",
             "breakpoints",
             "exposure",
+            "frames_per_step",
             "formatName",
             "fileTemplate",
         ]
@@ -112,6 +115,7 @@ class TestSystemDetectorPVA(unittest.TestCase):
             breakpoints=an_empty_list,
             formatName="det",
             exposure=0.0489975,
+            frames_per_step=1,
         )
         params = block.configure(generator, self.tmpdir, axesToMove=["x", "y"])
 
@@ -128,6 +132,7 @@ class TestSystemDetectorPVA(unittest.TestCase):
             fileDir=self.tmpdir,
             fileTemplate="",
             formatName="",
+            frames_per_step=0,
         )
         assert block.configure.took.present == ["generator", "fileDir", "axesToMove"]
         assert block.configure.returned.value == validated
@@ -137,6 +142,7 @@ class TestSystemDetectorPVA(unittest.TestCase):
             "axesToMove",
             "breakpoints",
             "exposure",
+            "frames_per_step",
             "formatName",
             "fileTemplate",
         ]

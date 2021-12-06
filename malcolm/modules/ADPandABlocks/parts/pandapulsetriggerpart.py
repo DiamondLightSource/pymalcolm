@@ -1,14 +1,20 @@
 from typing import Optional
 
-from annotypes import add_call_types
+from annotypes import Anno, add_call_types
+from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import CAMEL_RE, APartName, BadValueError, PartRegistrar
 from malcolm.modules import builtin, scanning
+
+from .pandaseqtriggerpart import TICK
 
 # Pull re-used annotypes into our namespace in case we are subclassed
 APartName = APartName
 AMri = builtin.parts.AMri
 AInitialVisibility = builtin.parts.AInitialVisibility
+
+with Anno("Whether to zero the delay or centre the pulse to the frame"):
+    AZeroDelay = bool
 
 
 class PandAPulseTriggerPart(builtin.parts.ChildPart):
@@ -22,12 +28,17 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
     - $(name)Pulses: pulses Attribute of the PULSE block
 
     The Detector is required to have:
+
     - exposure: an Attribute that reports after configure() the exposure that
       is expected by the detector
     """
 
     def __init__(
-        self, name: APartName, mri: AMri, initial_visibility: AInitialVisibility = True
+        self,
+        name: APartName,
+        mri: AMri,
+        initial_visibility: AInitialVisibility = True,
+        zero_delay: AZeroDelay = False,
     ) -> None:
         super().__init__(
             name, mri, initial_visibility=initial_visibility, stateful=False
@@ -43,6 +54,8 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
         self.panda = None
         # The detector Block we will be reading from
         self.detector = None
+        # Whether to always set delay to zero
+        self.zero_delay = zero_delay
 
     def setup(self, registrar: PartRegistrar) -> None:
         super().setup(registrar)
@@ -50,6 +63,25 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
         registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
         registrar.hook(scanning.hooks.ConfigureHook, self.on_configure)
         registrar.hook(scanning.hooks.PostConfigureHook, self.on_post_configure)
+        registrar.hook(scanning.hooks.ValidateHook, self.on_validate)
+
+    @add_call_types
+    def on_validate(
+        self, generator: scanning.hooks.AGenerator
+    ) -> scanning.hooks.UParameterTweakInfos:
+        duration = generator.duration
+        if duration == 0.0:
+            # We need to tweak the duration
+            serialized = generator.to_dict()
+            new_generator = CompoundGenerator.from_dict(serialized)
+            # Set the duration to 2 clock cycles
+            new_generator.duration = 2 * TICK
+            return scanning.infos.ParameterTweakInfo("generator", new_generator)
+        else:
+            assert (
+                duration > 0
+            ), f"Generator duration of {duration} must be > 0 to signify fixed exposure"
+            return None
 
     @add_call_types
     def on_report_status(
@@ -161,10 +193,15 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
                 # No exposure, so assume a very tiny readout time
                 width = step - 1e-6
             assert width < step, "Width %s is not less than Step %s" % (width, step)
+            # Calculate delay of pulse
+            if self.zero_delay:
+                delay = 0.0
+            else:
+                delay = (step - width) / 2
             values = {
                 self.name + "Step": step,
                 self.name + "Width": width,
-                self.name + "Delay": (step - width) / 2,
+                self.name + "Delay": delay,
                 self.name + "Pulses": self.frames_per_step,
             }
             self.panda.put_attribute_values(values)

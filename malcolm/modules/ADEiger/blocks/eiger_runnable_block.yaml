@@ -25,6 +25,11 @@
     description: Design to load at init
     default:
 
+- builtin.parameters.string:
+    name: readout_time
+    description: Readout time of the detector
+    default: 1e-4
+
 - builtin.defines.docstring:
     value: |
       Device block corresponding to ADOdin + Odin file writer plugin .
@@ -51,7 +56,7 @@
 
 - scanning.parts.ExposureDeadtimePart:
     name: DEADTIME
-    initial_readout_time: 1e-4
+    readout_time: $(readout_time)
 
 # Add an Odin Filewriter
 - ADOdin.blocks.odin_writer_block:

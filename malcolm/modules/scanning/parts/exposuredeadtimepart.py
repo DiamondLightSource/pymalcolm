@@ -1,4 +1,5 @@
 from annotypes import Anno, add_call_types
+from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import (
     APartName,
@@ -23,12 +24,14 @@ from ..util import exposure_attribute
 
 readout_desc = "Subtract this time from frame duration when calculating exposure"
 with Anno(readout_desc):
-    AInitialReadoutTime = float
+    AReadoutTime = float
 frequency_accuracy_desc = "In ppm. Subtract duration*this/1e6 when calculating exposure"
 with Anno(frequency_accuracy_desc):
-    AInitialAccuracy = float
+    AAccuracy = float
 with Anno("The minimum exposure time this detector will accept"):
     AMinExposure = float
+with Anno("Frames per detector step"):
+    ADetectorFramesPerStep = int
 
 # Pull re-used annotypes into our namespace in case we are subclassed
 APartName = APartName
@@ -38,23 +41,23 @@ class ExposureDeadtimePart(Part):
     def __init__(
         self,
         name: APartName,
-        initial_readout_time: AInitialReadoutTime = 0.0,
-        initial_frequency_accuracy: AInitialAccuracy = 50.0,
+        readout_time: AReadoutTime = 0.0,
+        frequency_accuracy: AAccuracy = 50.0,
         min_exposure: AMinExposure = 0.0,
     ) -> None:
         super().__init__(name)
         self.readout_time = NumberMeta(
             "float64",
             readout_desc,
-            tags=[Widget.TEXTINPUT.tag(), config_tag()],
+            tags=[Widget.TEXTUPDATE.tag(), config_tag()],
             display=Display(precision=6, units="s"),
-        ).create_attribute_model(initial_readout_time)
+        ).create_attribute_model(readout_time)
         self.frequency_accuracy = NumberMeta(
             "float64",
             frequency_accuracy_desc,
-            tags=[Widget.TEXTINPUT.tag(), config_tag()],
+            tags=[Widget.TEXTUPDATE.tag(), config_tag()],
             display=Display(precision=3, units="ppm"),
-        ).create_attribute_model(initial_frequency_accuracy)
+        ).create_attribute_model(frequency_accuracy)
         self.min_exposure = min_exposure
         self.exposure = exposure_attribute(min_exposure)
 
@@ -65,17 +68,13 @@ class ExposureDeadtimePart(Part):
         registrar.hook(ValidateHook, self.on_validate)
         registrar.hook(ConfigureHook, self.on_configure)
         # Attributes
-        registrar.add_attribute_model(
-            "readoutTime", self.readout_time, self.readout_time.set_value
-        )
-        registrar.add_attribute_model(
-            "frequencyAccuracy",
-            self.frequency_accuracy,
-            self.frequency_accuracy.set_value,
-        )
+        registrar.add_attribute_model("readoutTime", self.readout_time)
+        registrar.add_attribute_model("frequencyAccuracy", self.frequency_accuracy)
         registrar.add_attribute_model("exposure", self.exposure)
         # Tell the controller to expose some extra configure parameters
         registrar.report(ConfigureHook.create_info(self.on_configure))
+        # Tell the controller to expose some extra validate parameters
+        registrar.report(ConfigureHook.create_info(self.on_validate))
 
     @add_call_types
     def on_report_status(self) -> UInfos:
@@ -86,12 +85,48 @@ class ExposureDeadtimePart(Part):
         return info
 
     @add_call_types
-    def on_validate(self, generator: AGenerator, exposure: AExposure = 0.0) -> UInfos:
+    def on_validate(
+        self,
+        generator: AGenerator,
+        exposure: AExposure = 0.0,
+        frames_per_step: ADetectorFramesPerStep = 1,
+    ) -> UInfos:
         info = self.on_report_status()
-        new_exposure = info.calculate_exposure(generator.duration, exposure)
-        if new_exposure != exposure:
-            return ParameterTweakInfo("exposure", new_exposure)
+        # Check if we need to calculate a generator duration
+        if generator.duration == 0.0:
+            if exposure == 0.0:
+                # Get minimum exposure time
+                exposure = info.calculate_exposure(generator.duration, exposure)
+            # Calculate generator duration
+            new_duration = info.calculate_minimum_duration(exposure) * frames_per_step
+            # Add a tiny fractional amount so we don't run into floating point
+            # comparison issues
+            new_duration *= 1 + 1e-12
+            serialized = generator.to_dict()
+            new_generator = CompoundGenerator.from_dict(serialized)
+            new_generator.duration = new_duration
+            self.log.debug(f"{self.name}: tweaking duration to {new_duration}")
+            # Only tweak the duration for now
+            return ParameterTweakInfo("generator", new_generator)
         else:
+            # Check if we need to tweak the exposure time
+            if exposure == 0.0:
+                new_exposure = info.calculate_exposure(generator.duration, exposure)
+                self.log.debug(f"{self.name}: tweaking exposure to {new_exposure}")
+                return ParameterTweakInfo("exposure", new_exposure)
+            # Otherwise check the provided parameters are compatible
+            else:
+                # Check provided exposure against minimum exposure
+                min_exposure = info.min_exposure
+                assert (
+                    exposure >= info.min_exposure
+                ), f"{self.name} given exposure {exposure} below min {min_exposure}"
+                # Check provided exposure against maximum possible exposure
+                max_exposure = info.calculate_maximum_exposure(generator.duration)
+                assert exposure <= max_exposure, (
+                    f"{self.name} given exposure {exposure} above max {max_exposure} "
+                    f"based on a duration per frame of {generator.duration}"
+                )
             return None
 
     @add_call_types

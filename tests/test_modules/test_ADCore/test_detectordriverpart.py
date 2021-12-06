@@ -223,7 +223,16 @@ class TestDetectorDriverPart(ChildTestCase):
         ]
         assert self.o.is_hardware_triggered
 
-    def test_validate(self):
+    def test_validate_with_no_min_acquire_period_does_not_tweak(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
+        generator = CompoundGenerator([ys, xs], [], [], 1.0)
+
+        tweaks = self.o.on_validate(generator)
+
+        assert tweaks is None, "Shouldn't have tweaked anything"
+
+    def test_validate_with_positive_generator_duration_and_min_acquire_period(self):
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
 
@@ -234,6 +243,24 @@ class TestDetectorDriverPart(ChildTestCase):
         # 0.005 < min_acquire_period
         generator = CompoundGenerator([ys, xs], [], [], 0.005)
         self.assertRaises(AssertionError, self.o.on_validate, generator)
+
+    def test_validate_with_zero_generator_duration_and_min_acquire_period(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
+
+        # 0.0 means we should guess and tweak
+        generator = CompoundGenerator([ys, xs], [], [], 0.0)
+        tweaks = self.o.on_validate(generator)
+
+        assert tweaks.parameter == "generator"
+        assert tweaks.value["duration"] == 0.01
+
+        # Now try with multiple frames per step
+        frames_per_step = 5
+        tweaks = self.o.on_validate(generator, frames_per_step=frames_per_step)
+
+        assert tweaks.parameter == "generator"
+        assert tweaks.value["duration"] == 0.05
 
     def test_version_check(self):
         block = self.context.block_view("mri")

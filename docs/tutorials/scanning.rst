@@ -9,8 +9,6 @@ that Device Layer that looks a bit like a simulated motion controller. Now let's
 put a `scan_layer_` Block on top that will control the underlying Device Blocks
 to work together to perform a scan.
 
-.. module:: malcolm.core
-
 Block Hierarchy
 ---------------
 

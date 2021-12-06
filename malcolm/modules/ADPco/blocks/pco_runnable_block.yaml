@@ -25,6 +25,16 @@
     description: "Linux path base which is replaced with windows_drive letter"
     default: /dls
 
+- builtin.parameters.string:
+    name: readout_time
+    description: Readout time of the detector
+    default: 2e-3
+
+- builtin.parameters.string:
+    name: min_acquire_period
+    description: Minimum acquire period of the detector
+    default: 0.0
+
 - builtin.defines.docstring:
     value: |
       Device block corresponding to PCO + stat + pos + hdf writer.
@@ -53,10 +63,11 @@
     soft_trigger_modes:
         - Off
     runs_on_windows: True
+    min_acquire_period: $(min_acquire_period)
 
 - scanning.parts.ExposureDeadtimePart:
     name: DEADTIME
-    initial_readout_time: 200e-6
+    readout_time: $(readout_time)
 
 - ADCore.blocks.stats_plugin_block:
     mri: $(mri_prefix):STAT

@@ -132,8 +132,32 @@ class TestPandaPulseTriggerPart(ChildTestCase):
         ex = SquashingExcluder(axes=["det_frames_per_step", "x"])
         generatormultiplied = CompoundGenerator([ys, xs, spg], [ex], [], 0.2)
         detector.configure(generatormultiplied, self.tmpdir)
+
         self.o.on_post_configure()
+
         self.check_pulse_mocks(0.19899, 0.2, 0.000505, 5)
+
+    def test_configure_multiple_no_exposure_with_zero_delay(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.3, 4)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
+        generator = CompoundGenerator([ys, xs], [], [], 1.0)
+        generator.prepare()
+        detectors = DetectorTable.from_rows([[True, "det", "DET", 0.0, 5]])
+        # Set delay to zero (normally done in constructor)
+        self.o.zero_delay = True
+        self.o.on_configure(self.context, generator, detectors)
+        assert self.o.generator_duration == 1.0
+        assert self.o.frames_per_step == 5
+        # Detector would normally be configured by DetectorChildPart
+        detector = self.process.block_view("DET")
+        spg = StaticPointGenerator(5, axes=["det_frames_per_step"])
+        ex = SquashingExcluder(axes=["det_frames_per_step", "x"])
+        generatormultiplied = CompoundGenerator([ys, xs, spg], [ex], [], 0.2)
+        detector.configure(generatormultiplied, self.tmpdir)
+
+        self.o.on_post_configure()
+
+        self.check_pulse_mocks(0.19899, 0.2, 0.0, 5)
 
     def test_system(self):
         xs = LineGenerator("x", "mm", 0.0, 0.3, 4)
@@ -141,8 +165,10 @@ class TestPandaPulseTriggerPart(ChildTestCase):
         generator = CompoundGenerator([ys, xs], [], [], 1.0)
         generator.prepare()
         detectors = DetectorTable.from_rows([[True, "det", "DET", 0.0, 5]])
+
         b = self.scan.block_view()
         b.configure(generator, self.tmpdir, detectors=detectors)
+
         self.check_pulse_mocks(0.19899, 0.2, 0.000505, 5)
 
     def test_system_defined_exposure(self):
@@ -151,6 +177,35 @@ class TestPandaPulseTriggerPart(ChildTestCase):
         generator = CompoundGenerator([ys, xs], [], [], 1.0)
         generator.prepare()
         detectors = DetectorTable.from_rows([[True, "det", "DET", 0.1, 5]])
+
         b = self.scan.block_view()
         b.configure(generator, self.tmpdir, detectors=detectors)
+
         self.check_pulse_mocks(0.1, 0.2, 0.05, 5)
+
+    def test_on_validate_tweaks_zero_duration(self):
+        points = StaticPointGenerator(10)
+        generator = CompoundGenerator([points], [], [], 0.0)
+        generator.prepare()
+        # Disable the detector
+        detectors = DetectorTable.from_rows([[False, "det", "DET", 0.0, 5]])
+        # Expected duration is 2 clock cycles
+        expected_duration = 2 * 8.0e-9
+
+        b = self.scan.block_view()
+        params = b.validate(generator, self.tmpdir, detectors=detectors)
+
+        self.assertEqual(expected_duration, params["generator"]["duration"])
+
+    def test_on_validate_raises_AssertionError_for_negative_duration(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.3, 4)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
+        generator = CompoundGenerator([ys, xs], [], [], -1.0)
+        generator.prepare()
+        # Disable the detector
+        detectors = DetectorTable.from_rows([[False, "det", "DET", 0.0, 5]])
+
+        b = self.scan.block_view()
+        self.assertRaises(
+            AssertionError, b.validate, generator, self.tmpdir, detectors=detectors
+        )

@@ -40,9 +40,6 @@ with Anno("The time that the phase should take"):
 with Anno("Output value during the phase"):
     AOutArray = Union[Array[bool]]
 
-# TODO - WHAT GIVES HERE ?? -
-#  AAttributeNames and AAttributeNames causes an IDE error in references below
-#  wheras "from ADCore.util import AAttributeTypes" does not
 # Pull re-used annotypes into our namespace in case we are subclassed
 AAttributeTypes = ADCore.util.AAttributeTypes
 UAttributeTypes = ADCore.util.UAttributeTypes

@@ -3,8 +3,6 @@
 Detector Tutorial
 =================
 
-.. module:: malcolm.core
-
 You should already know how to create a `part_` that can be instantiated
 multiple times in a `ManagerController` with each instance creating
 a `block_` in the `device_layer_` below.
