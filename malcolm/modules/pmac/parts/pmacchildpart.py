@@ -1,7 +1,9 @@
+import math
 import re
 from enum import Enum
 from typing import Dict, List, Optional, Union
 
+import cothread
 import numpy as np
 from annotypes import add_call_types
 from scanpointgenerator import CompoundGenerator, Point
@@ -30,6 +32,9 @@ TICK_S = 0.000001
 
 # Longest move time we can request
 MAX_MOVE_TIME = 4.0
+
+# Batch size when generating the generator profile
+GENERATOR_PROFILE_BATCH_SIZE = 100000
 
 
 # velocity modes
@@ -791,41 +796,53 @@ class PmacChildPart(builtin.parts.ChildPart):
 
         points, joined, velocities = self.get_some_points(start_index)
         points_idx = start_index
-        for i in range(start_index, self.steps_up_to):
-            if i - points_idx >= BATCH_POINTS:
-                points, joined, velocities = self.get_some_points(i)
-                points_idx = i
 
-            last_point = i + 1 == self.steps_up_to
-            if not last_point:
-                # cope with the zero axes case (where joined == None)
-                points_are_joined = joined is None or joined[i - points_idx]
-                same_velocities = velocities is None or velocities[i - points_idx]
-            else:
-                same_velocities = points_are_joined = False
+        # Divide the work into batches so we don't block other threads for too
+        # much time (causing CA timeouts)
+        total_steps = self.steps_up_to - start_index
+        batches = int(math.ceil(total_steps / GENERATOR_PROFILE_BATCH_SIZE))
+        index = start_index
+        for _ in range(batches):
+            end_point = min(index + GENERATOR_PROFILE_BATCH_SIZE, self.steps_up_to)
+            for i in range(index, end_point):
+                if i - points_idx >= BATCH_POINTS:
+                    points, joined, velocities = self.get_some_points(i)
+                    points_idx = i
 
-            if self.output_triggers == scanning.infos.MotionTrigger.EVERY_POINT:
-                self.add_generator_point_pair(
-                    points[i - points_idx], i, points_are_joined
-                )
-            else:
-                self.add_sparse_point(
-                    points, i - points_idx, points_are_joined, same_velocities
-                )
+                last_point = i + 1 == self.steps_up_to
+                if not last_point:
+                    # cope with the zero axes case (where joined == None)
+                    points_are_joined = joined is None or joined[i - points_idx]
+                    same_velocities = velocities is None or velocities[i - points_idx]
+                else:
+                    same_velocities = points_are_joined = False
 
-            # add in the turnaround between non-contiguous points
-            if not (points_are_joined or last_point):
-                self.insert_gap(
-                    points[i - points_idx], points[i - points_idx + 1], i + 1
-                )
+                if self.output_triggers == scanning.infos.MotionTrigger.EVERY_POINT:
+                    self.add_generator_point_pair(
+                        points[i - points_idx], i, points_are_joined
+                    )
+                else:
+                    self.add_sparse_point(
+                        points, i - points_idx, points_are_joined, same_velocities
+                    )
 
-            # Check if we have exceeded the points number and need to write
-            # Strictly less than so we always add one more point to the time
-            # array so we can always stretch points in a subsequent add with
-            # the values already in the profiles
-            if len(self.profile["timeArray"]) > PROFILE_POINTS:
-                self.end_index = i + 1
-                return
+                # add in the turnaround between non-contiguous points
+                if not (points_are_joined or last_point):
+                    self.insert_gap(
+                        points[i - points_idx], points[i - points_idx + 1], i + 1
+                    )
+
+                # Check if we have exceeded the points number and need to write
+                # Strictly less than so we always add one more point to the time
+                # array so we can always stretch points in a subsequent add with
+                # the values already in the profiles
+                if len(self.profile["timeArray"]) > PROFILE_POINTS:
+                    self.end_index = i + 1
+                    return
+            # Update index for next batch
+            index = end_point
+            # Yield after each batch so other cothreads don't stall
+            cothread.Yield()
 
         self.add_tail_off()
 
