@@ -6,7 +6,9 @@ from typing import List
 import numpy as np
 import pytest
 from mock import ANY, Mock, call, patch
+from mock.mock import MagicMock
 from scanpointgenerator import CompoundGenerator, LineGenerator, StaticPointGenerator
+from scanpointgenerator.core.point import Point, Points
 
 from malcolm.core import Context, Process
 from malcolm.modules import scanning
@@ -1215,7 +1217,7 @@ class TestPMACChildPart(ChildTestCase):
         )
         elapsed = datetime.now() - start
         # todo goal was sub 1 second but we achieved sub 3 secs
-        assert elapsed.total_seconds() < 3.5
+        assert elapsed.total_seconds() < 3.0
 
     def test_configure_long_trajectory(self):
         # Skip on GitHub Actions and GitLab CI
@@ -1395,3 +1397,137 @@ class TestPMACChildPart(ChildTestCase):
         assert (
             len(failed_list) == 0
         ), f"Failed with tweaking a second time on following inputs: {failed_list}"
+
+    def test_add_sparse_point(self):
+        # Set up the part
+        self.o.output_triggers = MotionTrigger.ROW_GATE
+        self.o.profile = MagicMock()
+
+        # Sample point
+        point = Point()
+        point.duration = 1.0
+        points = Points()
+        points += point
+
+        # A point will not be added if they are joined and the velocity is the same
+        points_are_joined = True
+        same_velocities = True
+        point_added = self.o.add_sparse_point(
+            points, 0, points_are_joined, same_velocities
+        )
+        assert point_added is False
+
+        # A point will be added if joined but not the same velocity
+        points_are_joined = True
+        same_velocities = False
+        point_added = self.o.add_sparse_point(
+            points, 0, points_are_joined, same_velocities
+        )
+        assert point_added is True
+
+        # A lower bound is added if we are at the end of a row
+        points_are_joined = False
+        same_velocities = False
+        point_added = self.o.add_sparse_point(
+            points, 0, points_are_joined, same_velocities
+        )
+        assert point_added is True
+
+        # A point is added if we are not joined
+        points_are_joined = False
+        same_velocities = True
+        point_added = self.o.add_sparse_point(
+            points, 0, points_are_joined, same_velocities
+        )
+        assert point_added is True
+
+
+class TestSparseGeneratorProfileTailOffs(ChildTestCase):
+    def setUp(self) -> None:
+        self.o = PmacChildPart(name="pmac", mri="PMAC")
+        # Set up the triggering
+        self.o.output_triggers = MotionTrigger.ROW_GATE
+
+    @patch.object(PmacChildPart, "insert_gap")
+    @patch.object(PmacChildPart, "add_sparse_point")
+    @patch.object(PmacChildPart, "check_profile_length_exceeds_profile_points")
+    @patch.object(PmacChildPart, "get_some_points")
+    def test_adds_tail_off_for_zero_points(
+        self, get_some_points_mock, exceed_profile_points_mock, *_
+    ):
+        # Configure mocks
+        exceed_profile_points_mock.return_value = False
+        get_some_points_mock.return_value = None, None, None
+
+        add_tail_off = self.o.create_generator_profile_sparse(0)
+
+        assert add_tail_off is True
+
+    @patch.object(PmacChildPart, "insert_gap")
+    @patch.object(PmacChildPart, "add_sparse_point")
+    @patch.object(PmacChildPart, "check_profile_length_exceeds_profile_points")
+    @patch.object(PmacChildPart, "get_some_points")
+    def test_adds_tail_off_when_done(
+        self, get_some_points_mock, exceed_profile_points_mock, *_
+    ):
+        # Set the mock profile check to False
+        exceed_profile_points_mock.return_value = False
+
+        # Create a Points object with a single point
+        point = Point()
+        point.duration = 1.0
+        points = Points()
+        points += point
+
+        assert len(points) == 1
+
+        # Return those points
+        get_some_points_mock.return_value = points, False, False
+
+        # Last point is in batch
+        self.o.steps_up_to = 1
+
+        add_tail_off = self.o.create_generator_profile_sparse(0)
+
+        assert add_tail_off is True
+
+    @patch.object(PmacChildPart, "insert_gap")
+    @patch.object(PmacChildPart, "add_sparse_point")
+    @patch.object(PmacChildPart, "check_profile_length_exceeds_profile_points")
+    @patch.object(PmacChildPart, "get_some_points")
+    def test_no_tail_off_for_exceeding_profile_points(
+        self, get_some_points_mock, exceed_profile_points_mock, *_
+    ):
+        # Set the mock profile check to True
+        exceed_profile_points_mock.return_value = True
+
+        # In the last point in batch
+        # Create a Points object with a single point
+        point = Point()
+        point.duration = 1.0
+        points = Points()
+        points += point
+
+        # Return those points
+        self.o.get_some_points.return_value = points, False, False
+
+        # Set steps up to - important for last_point_in_batch flag
+        self.o.steps_up_to = 1
+
+        add_tail_off = self.o.create_generator_profile_sparse(0)
+
+        assert add_tail_off is False
+
+        # In the main loop
+        # Just add one more point
+        points += point
+
+        # Return those points
+        get_some_points_mock.return_value = points, [False, False], [False, False]
+
+        # Set steps up to
+        self.o.steps_up_to = 2
+
+        add_tail_off = self.o.create_generator_profile_sparse(0)
+
+        assert add_tail_off is False
