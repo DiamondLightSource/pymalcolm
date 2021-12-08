@@ -2,6 +2,7 @@ import re
 from enum import Enum
 from typing import Dict, List, Optional, Union
 
+import cothread
 import numpy as np
 from annotypes import add_call_types
 from scanpointgenerator import CompoundGenerator, Point
@@ -432,9 +433,9 @@ class PmacChildPart(builtin.parts.ChildPart):
         # "how far through the pmac trajectory" rather than a generator
         # scan step
         if scanned > 0:
-            completed_steps = self.completed_steps_lookup[scanned - 1]
             # Only report progress if we are triggering for every point
             if self.output_triggers == scanning.infos.MotionTrigger.EVERY_POINT:
+                completed_steps = self.completed_steps_lookup[scanned - 1]
                 self.registrar.report(scanning.infos.RunProgressInfo(completed_steps))
             # Keep PROFILE_POINTS trajectory points in front
             if (
@@ -690,6 +691,7 @@ class PmacChildPart(builtin.parts.ChildPart):
         or not used at all. Indexing into points[] is expensive so this is
         intentional.
         """
+        profile_point_added = False
         if self.time_since_last_pvt > 0 and not points_are_joined:
             # assume we can skip if we are at the end of a row and we
             # just skipped the most recent point (i.e. time_since_last_pvt > 0)
@@ -712,6 +714,7 @@ class PmacChildPart(builtin.parts.ChildPart):
                 {name: point.positions[name] for name in self.axis_mapping},
             )
             self.time_since_last_pvt = point.duration / 2.0
+            profile_point_added = True
 
         # only add the lower bound if we did not skip this point OR if we are
         # at the end of a row where we always require a final point
@@ -741,6 +744,8 @@ class PmacChildPart(builtin.parts.ChildPart):
                 {name: point.upper[name] for name in self.axis_mapping},
             )
             self.time_since_last_pvt = 0
+            profile_point_added = True
+        return profile_point_added
 
     def get_some_points(self, start_index):
         # calculate the indices of the next batch of points to get for
@@ -758,6 +763,145 @@ class PmacChildPart(builtin.parts.ChildPart):
         joined = all_points_joined(points)
 
         return points, joined, velocities
+
+    def check_profile_length_exceeds_profile_points(self) -> bool:
+        # Check if we have exceeded the points number and need to write
+        # Strictly less than so we always add one more point to the time
+        # array so we can always stretch points in a subsequent add with
+        # the values already in the profiles
+        return len(self.profile["timeArray"]) > PROFILE_POINTS
+
+    def is_last_point_in_current_batch(
+        self, start_batch_index: int, num_points: int
+    ) -> bool:
+        return start_batch_index + num_points == self.steps_up_to
+
+    def create_generator_profile_every_point(self, start_index: int) -> bool:
+        # Ensure we have the correct trigger type
+        assert (
+            self.output_triggers == scanning.infos.MotionTrigger.EVERY_POINT
+        ), f"{self.name}: trigger should be every point, got {self.output_triggers}"
+
+        # Keep going until we finish or exceed the maximum length of a profile
+        start_batch_index = start_index
+        point_index = start_index
+        while True:
+            # Grab some points
+            points, joined, _ = self.get_some_points(start_batch_index)
+            if not points:
+                return True
+
+            # Number of points and check if the last point is in this batch
+            num_points = len(points)
+            last_point_in_batch = self.is_last_point_in_current_batch(
+                start_batch_index, num_points
+            )
+
+            # Don't do all points in the batch otherwise we can get an index error
+            # when adding the turnaround.
+            points_to_do = num_points - 1
+            for i in range(points_to_do):
+                self.add_generator_point_pair(points[i], point_index, joined[i])
+
+                # add in the turnaround between non-contiguous points
+                if not (joined[i]):
+                    self.insert_gap(points[i], points[i + 1], point_index + 1)
+
+                # Check if we have exceeded the profile points limit
+                if self.check_profile_length_exceeds_profile_points():
+                    self.end_index = point_index + 1
+                    return False
+
+                # Increment point index
+                point_index += 1
+
+            # Check for the last point
+            if last_point_in_batch:
+                # Add the final generator point
+                self.add_generator_point_pair(points[-1], point_index, False)
+
+                # Check if we have exceeded the profile points limit
+                if self.check_profile_length_exceeds_profile_points():
+                    self.end_index = point_index + 1
+                    return False
+
+                # Increment point index
+                point_index += 1
+
+            # Increment the index for the next batch
+            start_batch_index = point_index
+
+            # Check if we are done
+            if start_batch_index == self.steps_up_to:
+                # Return True for a tail-off
+                return True
+
+            # Yield so that we don't continuously block other threads
+            cothread.Yield()
+
+    def create_generator_profile_sparse(self, start_index: int) -> bool:
+        # Ensure we have the correct trigger type
+        assert (
+            self.output_triggers != scanning.infos.MotionTrigger.EVERY_POINT
+        ), f"{self.name}: trigger should not be every point"
+
+        # Keep going until we finish or exceed the maximum length of a profile
+        start_batch_index = start_index
+        point_index = start_index
+        while True:
+            # Grab some points
+            points, joined, velocities = self.get_some_points(start_batch_index)
+            if not points:
+                return True
+
+            # Number of points and check if the last point is in this batch
+            num_points = len(points)
+            last_point_in_batch = self.is_last_point_in_current_batch(
+                start_batch_index, num_points
+            )
+
+            # Don't do all points in the batch otherwise we can get an index error
+            # when adding the turnaround.
+            points_to_do = num_points - 1
+            for i in range(points_to_do):
+                point_added = self.add_sparse_point(points, i, joined[i], velocities[i])
+
+                # add in the turnaround between non-contiguous points
+                if not (joined[i]):
+                    self.insert_gap(points[i], points[i + 1], point_index + 1)
+
+                # Check if we have exceeded the profile points limit. Only check if we
+                # have actually added a point, otherwise we waste time.
+                if point_added and self.check_profile_length_exceeds_profile_points():
+                    self.end_index = point_index + 1
+                    return False
+
+                # Increment point index
+                point_index += 1
+
+            # Check for the last point
+            if last_point_in_batch:
+                point_added = self.add_sparse_point(points, points_to_do, False, False)
+
+                # Check if we have exceeded the profile points limit. Only check if we
+                # have actually added a point, otherwise we waste time.
+                if point_added and self.check_profile_length_exceeds_profile_points():
+                    self.end_index = point_index + 1
+                    return False
+
+                # Increment point index
+                point_index += 1
+
+            # Increment the index for the next batch
+            start_batch_index = point_index
+
+            # Check if we are done
+            if start_batch_index == self.steps_up_to:
+                # Return True for a tail-off
+                return True
+
+            # Yield so that we don't continuously block other threads
+            cothread.Yield()
 
     def calculate_generator_profile(self, start_index, do_run_up=False):
         # If we are doing the first build, do_run_up will be passed to flag
@@ -789,45 +933,13 @@ class PmacChildPart(builtin.parts.ChildPart):
 
         self.time_since_last_pvt = 0
 
-        points, joined, velocities = self.get_some_points(start_index)
-        points_idx = start_index
-        for i in range(start_index, self.steps_up_to):
-            if i - points_idx >= BATCH_POINTS:
-                points, joined, velocities = self.get_some_points(i)
-                points_idx = i
-
-            last_point = i + 1 == self.steps_up_to
-            if not last_point:
-                # cope with the zero axes case (where joined == None)
-                points_are_joined = joined is None or joined[i - points_idx]
-                same_velocities = velocities is None or velocities[i - points_idx]
-            else:
-                same_velocities = points_are_joined = False
-
-            if self.output_triggers == scanning.infos.MotionTrigger.EVERY_POINT:
-                self.add_generator_point_pair(
-                    points[i - points_idx], i, points_are_joined
-                )
-            else:
-                self.add_sparse_point(
-                    points, i - points_idx, points_are_joined, same_velocities
-                )
-
-            # add in the turnaround between non-contiguous points
-            if not (points_are_joined or last_point):
-                self.insert_gap(
-                    points[i - points_idx], points[i - points_idx + 1], i + 1
-                )
-
-            # Check if we have exceeded the points number and need to write
-            # Strictly less than so we always add one more point to the time
-            # array so we can always stretch points in a subsequent add with
-            # the values already in the profiles
-            if len(self.profile["timeArray"]) > PROFILE_POINTS:
-                self.end_index = i + 1
-                return
-
-        self.add_tail_off()
+        # Create the generator profile
+        if self.output_triggers == scanning.infos.MotionTrigger.EVERY_POINT:
+            needs_tail_off = self.create_generator_profile_every_point(start_index)
+        else:
+            needs_tail_off = self.create_generator_profile_sparse(start_index)
+        if needs_tail_off:
+            self.add_tail_off()
 
     def add_tail_off(self):
         # Add the last tail off point
