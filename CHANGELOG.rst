@@ -6,6 +6,15 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 Unreleased
 ----------
 
+Changed:
+
+- PmacChildPart's profile generation is now split into two methods based on the
+  trigger type. The loop performance has been improved, reducing configure
+  times by ~20% for small scans and ~40% for large scans when profile point
+  generation dominates. A Yield has also been added so the thread suspends
+  after each batch so it doesn't block other threads for the entire profile
+  calculation, which previously caused timeout problems with other components.
+
 Fixed:
 
 - PmacChildPart now only reports progress if the brick is providing a trigger
