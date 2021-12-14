@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Change Log &mdash; malcolm 5.0+3.g8b81adf1 documentation</title>
+  <title>Change Log &mdash; malcolm 5.0+5.g166dc803 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -199,6 +199,15 @@
 This project adheres to <a class="reference external" href="http://semver.org/">Semantic Versioning</a> after 2-1.</p>
 <section id="unreleased">
 <h2>Unreleased<a class="headerlink" href="#unreleased" title="Permalink to this headline"></a></h2>
+<p>Changed:</p>
+<ul class="simple">
+<li><p>PmacChildPart’s profile generation is now split into two methods based on the
+trigger type. The loop performance has been improved, reducing configure
+times by ~20% for small scans and ~40% for large scans when profile point
+generation dominates. A Yield has also been added so the thread suspends
+after each batch so it doesn’t block other threads for the entire profile
+calculation, which previously caused timeout problems with other components.</p></li>
+</ul>
 <p>Fixed:</p>
 <ul class="simple">
 <li><p>PmacChildPart now only reports progress if the brick is providing a trigger

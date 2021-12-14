@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.pmac.parts.pmacchildpart &mdash; malcolm 5.0+3.g8b81adf1 documentation</title>
+  <title>malcolm.modules.pmac.parts.pmacchildpart &mdash; malcolm 5.0+5.g166dc803 documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -147,6 +147,7 @@
 <span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
 
+<span class="kn">import</span> <span class="nn">cothread</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">add_call_types</span>
 <span class="kn">from</span> <span class="nn">scanpointgenerator</span> <span class="kn">import</span> <span class="n">CompoundGenerator</span><span class="p">,</span> <span class="n">Point</span>
@@ -577,9 +578,9 @@
         <span class="c1"># &quot;how far through the pmac trajectory&quot; rather than a generator</span>
         <span class="c1"># scan step</span>
         <span class="k">if</span> <span class="n">scanned</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">completed_steps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">completed_steps_lookup</span><span class="p">[</span><span class="n">scanned</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
             <span class="c1"># Only report progress if we are triggering for every point</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_triggers</span> <span class="o">==</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">MotionTrigger</span><span class="o">.</span><span class="n">EVERY_POINT</span><span class="p">:</span>
+                <span class="n">completed_steps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">completed_steps_lookup</span><span class="p">[</span><span class="n">scanned</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">registrar</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">RunProgressInfo</span><span class="p">(</span><span class="n">completed_steps</span><span class="p">))</span>
             <span class="c1"># Keep PROFILE_POINTS trajectory points in front</span>
             <span class="k">if</span> <span class="p">(</span>
@@ -835,6 +836,7 @@
 <span class="sd">        or not used at all. Indexing into points[] is expensive so this is</span>
 <span class="sd">        intentional.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">profile_point_added</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_since_last_pvt</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">points_are_joined</span><span class="p">:</span>
             <span class="c1"># assume we can skip if we are at the end of a row and we</span>
             <span class="c1"># just skipped the most recent point (i.e. time_since_last_pvt &gt; 0)</span>
@@ -857,6 +859,7 @@
                 <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">point</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span><span class="p">},</span>
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">time_since_last_pvt</span> <span class="o">=</span> <span class="n">point</span><span class="o">.</span><span class="n">duration</span> <span class="o">/</span> <span class="mf">2.0</span>
+            <span class="n">profile_point_added</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="c1"># only add the lower bound if we did not skip this point OR if we are</span>
         <span class="c1"># at the end of a row where we always require a final point</span>
@@ -885,7 +888,9 @@
                 <span class="n">point_num</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
                 <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">point</span><span class="o">.</span><span class="n">upper</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span><span class="p">},</span>
             <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">time_since_last_pvt</span> <span class="o">=</span> <span class="mi">0</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">time_since_last_pvt</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">profile_point_added</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">profile_point_added</span></div>
 
     <span class="k">def</span> <span class="nf">get_some_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_index</span><span class="p">):</span>
         <span class="c1"># calculate the indices of the next batch of points to get for</span>
@@ -903,6 +908,145 @@
         <span class="n">joined</span> <span class="o">=</span> <span class="n">all_points_joined</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">points</span><span class="p">,</span> <span class="n">joined</span><span class="p">,</span> <span class="n">velocities</span>
+
+    <span class="k">def</span> <span class="nf">check_profile_length_exceeds_profile_points</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="c1"># Check if we have exceeded the points number and need to write</span>
+        <span class="c1"># Strictly less than so we always add one more point to the time</span>
+        <span class="c1"># array so we can always stretch points in a subsequent add with</span>
+        <span class="c1"># the values already in the profiles</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">profile</span><span class="p">[</span><span class="s2">&quot;timeArray&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">PROFILE_POINTS</span>
+
+    <span class="k">def</span> <span class="nf">is_last_point_in_current_batch</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">start_batch_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_points</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">start_batch_index</span> <span class="o">+</span> <span class="n">num_points</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps_up_to</span>
+
+    <span class="k">def</span> <span class="nf">create_generator_profile_every_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="c1"># Ensure we have the correct trigger type</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output_triggers</span> <span class="o">==</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">MotionTrigger</span><span class="o">.</span><span class="n">EVERY_POINT</span>
+        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: trigger should be every point, got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">output_triggers</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="c1"># Keep going until we finish or exceed the maximum length of a profile</span>
+        <span class="n">start_batch_index</span> <span class="o">=</span> <span class="n">start_index</span>
+        <span class="n">point_index</span> <span class="o">=</span> <span class="n">start_index</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="c1"># Grab some points</span>
+            <span class="n">points</span><span class="p">,</span> <span class="n">joined</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_some_points</span><span class="p">(</span><span class="n">start_batch_index</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">points</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+
+            <span class="c1"># Number of points and check if the last point is in this batch</span>
+            <span class="n">num_points</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">last_point_in_batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_last_point_in_current_batch</span><span class="p">(</span>
+                <span class="n">start_batch_index</span><span class="p">,</span> <span class="n">num_points</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Don&#39;t do all points in the batch otherwise we can get an index error</span>
+            <span class="c1"># when adding the turnaround.</span>
+            <span class="n">points_to_do</span> <span class="o">=</span> <span class="n">num_points</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">points_to_do</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_generator_point_pair</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">point_index</span><span class="p">,</span> <span class="n">joined</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+                <span class="c1"># add in the turnaround between non-contiguous points</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">joined</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">insert_gap</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+                <span class="c1"># Check if we have exceeded the profile points limit</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_profile_length_exceeds_profile_points</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">end_index</span> <span class="o">=</span> <span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+
+                <span class="c1"># Increment point index</span>
+                <span class="n">point_index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="c1"># Check for the last point</span>
+            <span class="k">if</span> <span class="n">last_point_in_batch</span><span class="p">:</span>
+                <span class="c1"># Add the final generator point</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_generator_point_pair</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">point_index</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+                <span class="c1"># Check if we have exceeded the profile points limit</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_profile_length_exceeds_profile_points</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">end_index</span> <span class="o">=</span> <span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+
+                <span class="c1"># Increment point index</span>
+                <span class="n">point_index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="c1"># Increment the index for the next batch</span>
+            <span class="n">start_batch_index</span> <span class="o">=</span> <span class="n">point_index</span>
+
+            <span class="c1"># Check if we are done</span>
+            <span class="k">if</span> <span class="n">start_batch_index</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps_up_to</span><span class="p">:</span>
+                <span class="c1"># Return True for a tail-off</span>
+                <span class="k">return</span> <span class="kc">True</span>
+
+            <span class="c1"># Yield so that we don&#39;t continuously block other threads</span>
+            <span class="n">cothread</span><span class="o">.</span><span class="n">Yield</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">create_generator_profile_sparse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="c1"># Ensure we have the correct trigger type</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output_triggers</span> <span class="o">!=</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">MotionTrigger</span><span class="o">.</span><span class="n">EVERY_POINT</span>
+        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: trigger should not be every point&quot;</span>
+
+        <span class="c1"># Keep going until we finish or exceed the maximum length of a profile</span>
+        <span class="n">start_batch_index</span> <span class="o">=</span> <span class="n">start_index</span>
+        <span class="n">point_index</span> <span class="o">=</span> <span class="n">start_index</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="c1"># Grab some points</span>
+            <span class="n">points</span><span class="p">,</span> <span class="n">joined</span><span class="p">,</span> <span class="n">velocities</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_some_points</span><span class="p">(</span><span class="n">start_batch_index</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">points</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+
+            <span class="c1"># Number of points and check if the last point is in this batch</span>
+            <span class="n">num_points</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">last_point_in_batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_last_point_in_current_batch</span><span class="p">(</span>
+                <span class="n">start_batch_index</span><span class="p">,</span> <span class="n">num_points</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Don&#39;t do all points in the batch otherwise we can get an index error</span>
+            <span class="c1"># when adding the turnaround.</span>
+            <span class="n">points_to_do</span> <span class="o">=</span> <span class="n">num_points</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">points_to_do</span><span class="p">):</span>
+                <span class="n">point_added</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_sparse_point</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">joined</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">velocities</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+                <span class="c1"># add in the turnaround between non-contiguous points</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">joined</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">insert_gap</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+                <span class="c1"># Check if we have exceeded the profile points limit. Only check if we</span>
+                <span class="c1"># have actually added a point, otherwise we waste time.</span>
+                <span class="k">if</span> <span class="n">point_added</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_profile_length_exceeds_profile_points</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">end_index</span> <span class="o">=</span> <span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+
+                <span class="c1"># Increment point index</span>
+                <span class="n">point_index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="c1"># Check for the last point</span>
+            <span class="k">if</span> <span class="n">last_point_in_batch</span><span class="p">:</span>
+                <span class="n">point_added</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_sparse_point</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">points_to_do</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+                <span class="c1"># Check if we have exceeded the profile points limit. Only check if we</span>
+                <span class="c1"># have actually added a point, otherwise we waste time.</span>
+                <span class="k">if</span> <span class="n">point_added</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_profile_length_exceeds_profile_points</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">end_index</span> <span class="o">=</span> <span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+
+                <span class="c1"># Increment point index</span>
+                <span class="n">point_index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="c1"># Increment the index for the next batch</span>
+            <span class="n">start_batch_index</span> <span class="o">=</span> <span class="n">point_index</span>
+
+            <span class="c1"># Check if we are done</span>
+            <span class="k">if</span> <span class="n">start_batch_index</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps_up_to</span><span class="p">:</span>
+                <span class="c1"># Return True for a tail-off</span>
+                <span class="k">return</span> <span class="kc">True</span>
+
+            <span class="c1"># Yield so that we don&#39;t continuously block other threads</span>
+            <span class="n">cothread</span><span class="o">.</span><span class="n">Yield</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">calculate_generator_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_index</span><span class="p">,</span> <span class="n">do_run_up</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="c1"># If we are doing the first build, do_run_up will be passed to flag</span>
@@ -934,45 +1078,13 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">time_since_last_pvt</span> <span class="o">=</span> <span class="mi">0</span>
 
-        <span class="n">points</span><span class="p">,</span> <span class="n">joined</span><span class="p">,</span> <span class="n">velocities</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_some_points</span><span class="p">(</span><span class="n">start_index</span><span class="p">)</span>
-        <span class="n">points_idx</span> <span class="o">=</span> <span class="n">start_index</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start_index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps_up_to</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">i</span> <span class="o">-</span> <span class="n">points_idx</span> <span class="o">&gt;=</span> <span class="n">BATCH_POINTS</span><span class="p">:</span>
-                <span class="n">points</span><span class="p">,</span> <span class="n">joined</span><span class="p">,</span> <span class="n">velocities</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_some_points</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-                <span class="n">points_idx</span> <span class="o">=</span> <span class="n">i</span>
-
-            <span class="n">last_point</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps_up_to</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">last_point</span><span class="p">:</span>
-                <span class="c1"># cope with the zero axes case (where joined == None)</span>
-                <span class="n">points_are_joined</span> <span class="o">=</span> <span class="n">joined</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">joined</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="n">points_idx</span><span class="p">]</span>
-                <span class="n">same_velocities</span> <span class="o">=</span> <span class="n">velocities</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">velocities</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="n">points_idx</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">same_velocities</span> <span class="o">=</span> <span class="n">points_are_joined</span> <span class="o">=</span> <span class="kc">False</span>
-
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_triggers</span> <span class="o">==</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">MotionTrigger</span><span class="o">.</span><span class="n">EVERY_POINT</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">add_generator_point_pair</span><span class="p">(</span>
-                    <span class="n">points</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="n">points_idx</span><span class="p">],</span> <span class="n">i</span><span class="p">,</span> <span class="n">points_are_joined</span>
-                <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">add_sparse_point</span><span class="p">(</span>
-                    <span class="n">points</span><span class="p">,</span> <span class="n">i</span> <span class="o">-</span> <span class="n">points_idx</span><span class="p">,</span> <span class="n">points_are_joined</span><span class="p">,</span> <span class="n">same_velocities</span>
-                <span class="p">)</span>
-
-            <span class="c1"># add in the turnaround between non-contiguous points</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">points_are_joined</span> <span class="ow">or</span> <span class="n">last_point</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">insert_gap</span><span class="p">(</span>
-                    <span class="n">points</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="n">points_idx</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="n">points_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
-                <span class="p">)</span>
-
-            <span class="c1"># Check if we have exceeded the points number and need to write</span>
-            <span class="c1"># Strictly less than so we always add one more point to the time</span>
-            <span class="c1"># array so we can always stretch points in a subsequent add with</span>
-            <span class="c1"># the values already in the profiles</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">profile</span><span class="p">[</span><span class="s2">&quot;timeArray&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">PROFILE_POINTS</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">end_index</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
-                <span class="k">return</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">add_tail_off</span><span class="p">()</span>
+        <span class="c1"># Create the generator profile</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_triggers</span> <span class="o">==</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">MotionTrigger</span><span class="o">.</span><span class="n">EVERY_POINT</span><span class="p">:</span>
+            <span class="n">needs_tail_off</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_generator_profile_every_point</span><span class="p">(</span><span class="n">start_index</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">needs_tail_off</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_generator_profile_sparse</span><span class="p">(</span><span class="n">start_index</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">needs_tail_off</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_tail_off</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">add_tail_off</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Add the last tail off point</span>

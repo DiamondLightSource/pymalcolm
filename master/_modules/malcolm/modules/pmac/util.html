@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.pmac.util &mdash; malcolm 5.0+3.g8b81adf1 documentation</title>
+  <title>malcolm.modules.pmac.util &mdash; malcolm 5.0+5.g166dc803 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
@@ -303,6 +303,9 @@
         <span class="n">v2</span> <span class="o">=</span> <span class="n">velocities</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
         <span class="n">results</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">)</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">and_all_axes</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+    <span class="c1"># If we have no axes then all velocities are the same</span>
+    <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">result</span></div>
 
 
@@ -319,6 +322,9 @@
         <span class="n">lowers</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">lower</span><span class="p">[</span><span class="n">axis_name</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span>
         <span class="n">results</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">uppers</span> <span class="o">==</span> <span class="n">lowers</span><span class="p">,</span> <span class="n">no_delay</span><span class="p">)</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">and_all_axes</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+    <span class="c1"># If we have no axes then all points are joined</span>
+    <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">result</span></div>
 
 
