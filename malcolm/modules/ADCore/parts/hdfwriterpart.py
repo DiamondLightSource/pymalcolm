@@ -372,7 +372,6 @@ class HDFWriterPart(builtin.parts.ChildPart):
         # Future for the start action
         self.start_future: Optional[Future] = None
         self.first_array_future: Optional[Future] = None
-        self.first_capture_future: Optional[Future] = None
         self.last_expected_unique_id = 0
         self.done_when_captured = 0
         # This is when the readback for number of frames captured last updated
@@ -506,10 +505,7 @@ class HDFWriterPart(builtin.parts.ChildPart):
         self.first_array_future = child.when_value_matches_async(
             "arrayCounterReadback", greater_than_value, compare_value=0
         )
-        # Create a future waiting for the first file to be captured
-        self.first_capture_future = child.when_value_matches_async(
-            "numCapturedReadback", greater_than_value, compare_value=0
-        )
+        # Check XML
         self._check_xml_is_valid(child)
         # Return the dataset information
         dataset_infos = list(
@@ -549,10 +545,6 @@ class HDFWriterPart(builtin.parts.ChildPart):
         self.num_captured_offset = num_captured - completed_steps
         # Expected captured readback after this batch
         self.done_when_captured = num_captured + steps_to_do
-        # Update the first capture future
-        self.first_capture_future = child.when_value_matches_async(
-            "numCapturedReadback", greater_than_value, compare_value=num_captured + 1
-        )
 
     @add_call_types
     def on_run(self, context: scanning.hooks.AContext) -> None:

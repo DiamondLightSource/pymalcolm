@@ -308,9 +308,6 @@ class TestHDFWriterPart(ChildTestCase):
             call.when_value_matches(
                 "arrayCounterReadback", greater_than_value, None, compare_value=0
             ),
-            call.when_value_matches(
-                "numCapturedReadback", greater_than_value, None, compare_value=0
-            ),
         ]
         with open(expected_xml_filename_local) as f:
             actual_xml = f.read().replace(">", ">\n")
