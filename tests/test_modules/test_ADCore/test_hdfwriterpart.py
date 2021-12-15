@@ -1,6 +1,5 @@
 import os
 import shutil
-import unittest
 from xml.etree import ElementTree
 
 import cothread
@@ -16,7 +15,7 @@ from malcolm.modules.ADCore.infos import (
     NDAttributeDatasetInfo,
 )
 from malcolm.modules.ADCore.parts import HDFWriterPart
-from malcolm.modules.ADCore.parts.hdfwriterpart import greater_than_value
+from malcolm.modules.ADCore.parts.hdfwriterpart import greater_than_zero
 from malcolm.modules.ADCore.util import AttributeDatasetType
 from malcolm.modules.builtin.defines import tmp_dir
 from malcolm.modules.scanning.controllers import RunnableController
@@ -306,9 +305,7 @@ class TestHDFWriterPart(ChildTestCase):
             call.put("xmlLayout", expected_xml_filename_remote),
             call.put("numCapture", 0),
             call.post("start"),
-            call.when_value_matches(
-                "arrayCounterReadback", greater_than_value, None, compare_value=0
-            ),
+            call.when_value_matches("arrayCounterReadback", greater_than_zero, None),
         ]
         with open(expected_xml_filename_local) as f:
             actual_xml = f.read().replace(">", ">\n")
@@ -489,17 +486,3 @@ class TestHDFWriterPart(ChildTestCase):
         child.xmlErrorMsg.value = "XML description file cannot be opened"
 
         self.assertRaises(AssertionError, self.o._check_xml_is_valid, child)
-
-
-class GreaterThanValue(unittest.TestCase):
-    def test_greater_than_returns_False_for_smaller_number(self):
-        assert greater_than_value(0, 1) is False
-        assert greater_than_value(100, 500) is False
-
-    def test_greater_than_returns_False_for_same_number(self):
-        assert greater_than_value(0, 0) is False
-        assert greater_than_value(50, 50) is False
-
-    def test_greater_than_returns_True_for_larger_number(self):
-        assert greater_than_value(10, 0) is True
-        assert greater_than_value(100, 50) is True
