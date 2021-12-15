@@ -15,7 +15,7 @@ from malcolm.modules.ADCore.infos import (
     NDAttributeDatasetInfo,
 )
 from malcolm.modules.ADCore.parts import HDFWriterPart
-from malcolm.modules.ADCore.parts.hdfwriterpart import greater_than_zero
+from malcolm.modules.ADCore.parts.hdfwriterpart import greater_than_value
 from malcolm.modules.ADCore.util import AttributeDatasetType
 from malcolm.modules.builtin.defines import tmp_dir
 from malcolm.modules.scanning.controllers import RunnableController
@@ -305,7 +305,12 @@ class TestHDFWriterPart(ChildTestCase):
             call.put("xmlLayout", expected_xml_filename_remote),
             call.put("numCapture", 0),
             call.post("start"),
-            call.when_value_matches("arrayCounterReadback", greater_than_zero, None),
+            call.when_value_matches(
+                "arrayCounterReadback", greater_than_value, None, compare_value=0
+            ),
+            call.when_value_matches(
+                "numCapturedReadback", greater_than_value, None, compare_value=0
+            ),
         ]
         with open(expected_xml_filename_local) as f:
             actual_xml = f.read().replace(">", ">\n")
@@ -357,18 +362,14 @@ class TestHDFWriterPart(ChildTestCase):
     def test_run(self):
         self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
-        self.o.done_when_reaches = 38
-        self.o.completed_offset = 0
-        # Say that we're getting the first frame
-        self.o.array_future = Future(None)
-        self.o.array_future.set_result(None)
+        self.o.done_when_captured = 38
         self.o.registrar = MagicMock()
         # run waits for this value, so say we have finished immediately
-        self.set_attributes(self.child, uniqueId=self.o.done_when_reaches)
+        self.set_attributes(self.child, numCapturedReadback=self.o.done_when_captured)
         self.mock_when_value_matches(self.child)
         self.o.on_run(self.context)
         assert self.child.handled_requests.mock_calls == [
-            call.when_value_matches("uniqueId", 38, None)
+            call.when_value_matches("numCapturedReadback", 38, None)
         ]
         assert self.o.registrar.report.called_once
         assert self.o.registrar.report.call_args_list[0][0][0].steps == 38
@@ -376,21 +377,23 @@ class TestHDFWriterPart(ChildTestCase):
     def test_run_and_flush(self):
         self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
 
-        def set_unique_id():
+        def set_num_captured():
             # Sleep for 2.5 seconds to ensure 2 flushes, and then set value to finish
             cothread.Sleep(2.5)
-            self.set_attributes(self.child, uniqueId=self.o.done_when_reaches)
+            self.set_attributes(
+                self.child, numCapturedReadback=self.o.done_when_captured
+            )
 
-        self.o.done_when_reaches = 38
-        self.o.completed_offset = 0
+        self.o.done_when_captured = 5
         # Say that we're getting the first frame
-        self.o.array_future = Future(None)
-        self.o.array_future.set_result(None)
+        self.o.first_array_future = Future(None)
+        self.o.first_array_future.set_result(None)
         self.o.start_future = Future(None)
         self.o.registrar = MagicMock()
-        self.o.frame_timeout = 60
+        # Reduce frame timeout so we don't hang on this test for too long
+        self.o.frame_timeout = 5
         # Spawn process to finish it after a few seconds
-        self.process.spawn(set_unique_id)
+        self.process.spawn(set_num_captured)
         # Run
         self.o.on_run(self.context)
         assert self.child.handled_requests.mock_calls == [
@@ -399,17 +402,21 @@ class TestHDFWriterPart(ChildTestCase):
         ]
         assert self.o.registrar.report.called_once
         assert self.o.registrar.report.call_args_list[0][0][0].steps == 0
-        assert self.o.registrar.report.call_args_list[1][0][0].steps == 38
+        assert self.o.registrar.report.call_args_list[1][0][0].steps == 5
 
     def test_seek(self):
         self.mock_when_value_matches(self.child)
         self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
-        self.o.done_when_reaches = 10
+        # Num captured readback usually reads a bit higher than the completed steps
+        # after a pause is requested
         completed_steps = 4
+        self.set_attributes(self.child, numCapturedReadback=6)
+        # Call the seek
         steps_to_do = 3
-        self.o.on_seek(completed_steps, steps_to_do)
-        assert self.o.done_when_reaches == 13
+        self.o.on_seek(self.context, completed_steps, steps_to_do)
+        # We expect done when captured to be the current captured readback + steps to do
+        assert self.o.done_when_captured == 9
 
     def test_post_run_ready(self):
         self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
