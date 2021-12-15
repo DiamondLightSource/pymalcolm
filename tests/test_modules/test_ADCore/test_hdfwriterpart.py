@@ -1,12 +1,13 @@
 import os
 import shutil
+import unittest
 from xml.etree import ElementTree
 
 import cothread
 from mock import MagicMock, call
 from scanpointgenerator import CompoundGenerator, LineGenerator, SpiralGenerator
 
-from malcolm.core import Context, Future, Process
+from malcolm.core import Context, Future, Process, TimeoutError
 from malcolm.modules.ADCore.blocks import hdf_writer_block
 from malcolm.modules.ADCore.infos import (
     CalculatedNDAttributeDatasetInfo,
@@ -360,11 +361,16 @@ class TestHDFWriterPart(ChildTestCase):
         self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.o.done_when_captured = 38
+        # Need a registrar object or we get AssertionError
         self.o.registrar = MagicMock()
-        # run waits for this value, so say we have finished immediately
+        # Run waits for this value, so say we have finished immediately
         self.set_attributes(self.child, numCapturedReadback=self.o.done_when_captured)
         self.mock_when_value_matches(self.child)
+
+        # Run
         self.o.on_run(self.context)
+
+        # Check calls
         assert self.child.handled_requests.mock_calls == [
             call.when_value_matches("numCapturedReadback", 38, None)
         ]
@@ -386,13 +392,17 @@ class TestHDFWriterPart(ChildTestCase):
         self.o.first_array_future = Future(None)
         self.o.first_array_future.set_result(None)
         self.o.start_future = Future(None)
+        # Need a registrar object or we get AssertionError
         self.o.registrar = MagicMock()
         # Reduce frame timeout so we don't hang on this test for too long
         self.o.frame_timeout = 5
         # Spawn process to finish it after a few seconds
         self.process.spawn(set_num_captured)
+
         # Run
         self.o.on_run(self.context)
+
+        # Check calls
         assert self.child.handled_requests.mock_calls == [
             call.post("flushNow"),
             call.post("flushNow"),
@@ -401,8 +411,23 @@ class TestHDFWriterPart(ChildTestCase):
         assert self.o.registrar.report.call_args_list[0][0][0].steps == 0
         assert self.o.registrar.report.call_args_list[1][0][0].steps == 5
 
+    def test_run_raises_TimeoutError_for_stalled_writer(self):
+        self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
+        self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
+        self.o.done_when_captured = 10
+        # Need a registrar object or we get AssertionError
+        self.o.registrar = MagicMock()
+        self.o.start_future = MagicMock()
+        # Mock the last update
+        self.o.last_capture_update = MagicMock()
+        self.o.last_capture_update.return_value = 0.0
+        # Set a short timeout for testing
+        self.o.frame_timeout = 0.1
+
+        # Now check the error is raised
+        self.assertRaises(TimeoutError, self.o.on_run, self.context)
+
     def test_seek(self):
-        self.mock_when_value_matches(self.child)
         self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         # Num captured readback usually reads a bit higher than the completed steps
@@ -464,3 +489,17 @@ class TestHDFWriterPart(ChildTestCase):
         child.xmlErrorMsg.value = "XML description file cannot be opened"
 
         self.assertRaises(AssertionError, self.o._check_xml_is_valid, child)
+
+
+class GreaterThanValue(unittest.TestCase):
+    def test_greater_than_returns_False_for_smaller_number(self):
+        assert greater_than_value(0, 1) is False
+        assert greater_than_value(100, 500) is False
+
+    def test_greater_than_returns_False_for_same_number(self):
+        assert greater_than_value(0, 0) is False
+        assert greater_than_value(50, 50) is False
+
+    def test_greater_than_returns_True_for_larger_number(self):
+        assert greater_than_value(10, 0) is True
+        assert greater_than_value(100, 50) is True
