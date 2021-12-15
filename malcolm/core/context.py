@@ -249,7 +249,7 @@ class Context:
         future = self.when_matches_async(path, good_value, bad_values)
         self.wait_all_futures(future, timeout=timeout, event_timeout=event_timeout)
 
-    def when_matches_async(self, path, good_value, bad_values=None, **kwargs):
+    def when_matches_async(self, path, good_value, bad_values=None):
         """Wait for an attribute to become a given value
 
         Args:
@@ -264,7 +264,7 @@ class Context:
             Future: a single Future that will resolve when the path matches
             good_value or bad_values
         """
-        when = When(good_value, bad_values, **kwargs)
+        when = When(good_value, bad_values)
         future = self.subscribe(path, when)
         when.set_future_context(future, weakref.proxy(self))
         return future
@@ -427,13 +427,11 @@ class Context:
 
 
 class When:
-    def __init__(
-        self, good_value: Callable[[Any], bool], bad_values: Any, **kwargs
-    ) -> None:
+    def __init__(self, good_value: Callable[[Any], bool], bad_values: Any) -> None:
         if callable(good_value):
 
-            def condition_satisfied(value, **kwargs):
-                return good_value(value, **kwargs)
+            def condition_satisfied(value):
+                return good_value(value)
 
         else:
 
@@ -447,7 +445,6 @@ class When:
         self.future: Union[Future, None] = None
         self.context: Union[Context, None] = None
         self.last = None
-        self.kwargs = kwargs
 
     def set_future_context(self, future: Future, context: Context) -> None:
         self.future = future
@@ -459,10 +456,7 @@ class When:
         if self.future:
             self.last = value
             try:
-                if self.kwargs:
-                    satisfied = self.condition_satisfied(value, **self.kwargs)
-                else:
-                    satisfied = self.condition_satisfied(value)
+                satisfied = self.condition_satisfied(value)
             except Exception:
                 # Bad value, so unsubscribe
                 assert self.context, "No context"

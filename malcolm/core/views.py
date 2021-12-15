@@ -192,18 +192,15 @@ class Block(View):
         bad_values=None,
         timeout=None,
         event_timeout=None,
-        **kwargs
     ):
-        future = self.when_value_matches_async(attr, good_value, bad_values, **kwargs)
+        future = self.when_value_matches_async(attr, good_value, bad_values)
         self._context.wait_all_futures(
             future, timeout=timeout, event_timeout=event_timeout
         )
 
-    def when_value_matches_async(self, attr, good_value, bad_values=None, **kwargs):
+    def when_value_matches_async(self, attr, good_value, bad_values=None):
         path = self._data.path + [attr, "value"]
-        future = self._context.when_matches_async(
-            path, good_value, bad_values, **kwargs
-        )
+        future = self._context.when_matches_async(path, good_value, bad_values)
         return future
 
 

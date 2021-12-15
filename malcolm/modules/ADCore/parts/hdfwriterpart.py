@@ -41,8 +41,8 @@ AMri = builtin.parts.AMri
 APartRunsOnWindows = APartRunsOnWindows
 
 
-def greater_than_value(v: int, compare_value: int = 0) -> bool:
-    return v > compare_value
+def greater_than_zero(v: int) -> bool:
+    return v > 0
 
 
 def create_dataset_infos(
@@ -372,12 +372,9 @@ class HDFWriterPart(builtin.parts.ChildPart):
         # Future for the start action
         self.start_future: Optional[Future] = None
         self.first_array_future: Optional[Future] = None
-        self.last_expected_unique_id = 0
         self.done_when_captured = 0
         # This is when the readback for number of frames captured last updated
         self.last_capture_update: Optional[float] = None
-        # Store unique ID offset for multiple run batches
-        self.uniqueid_offset = 0
         # Store number of frames captured for progress reporting
         self.num_captured_offset = 0
         # The HDF5 layout file we write to say where the datasets go
@@ -439,10 +436,8 @@ class HDFWriterPart(builtin.parts.ChildPart):
         formatName: scanning.hooks.AFormatName = "det",
         fileTemplate: scanning.hooks.AFileTemplate = "%s.h5",
     ) -> scanning.hooks.UInfos:
-        # On initial configure, expect to get the demanded number of frames
-        self.last_expected_unique_id = completed_steps + steps_to_do
+        # What the capture readback value should say at the end of the run
         self.done_when_captured = completed_steps + steps_to_do
-        self.uniqueid_offset = 0
         self.num_captured_offset = 0
         # Calculate how long to wait before marking this scan as stalled
         self.frame_timeout = FRAME_TIMEOUT
@@ -503,7 +498,7 @@ class HDFWriterPart(builtin.parts.ChildPart):
         self.start_future = child.start_async()
         # Create a future waiting for the first array
         self.first_array_future = child.when_value_matches_async(
-            "arrayCounterReadback", greater_than_value, compare_value=0
+            "arrayCounterReadback", greater_than_zero
         )
         # Check XML
         self._check_xml_is_valid(child)
@@ -526,19 +521,12 @@ class HDFWriterPart(builtin.parts.ChildPart):
         completed_steps: scanning.hooks.ACompletedSteps,
         steps_to_do: scanning.hooks.AStepsToDo,
     ) -> None:
-        # This is rewinding or setting up for another batch, so the detector
-        # will skip to a uniqueID that has not been produced yet
-        self.uniqueid_offset = completed_steps - self.last_expected_unique_id
-        self.last_expected_unique_id += steps_to_do
-        # Update the first array future
+        # Reset array counter to zero so we can check for the first frame
+        # to arrive in the plugin
         child = context.block_view(self.mri)
-        self.first_array_future = child.when_value_matches_async(
-            "arrayCounterReadback",
-            greater_than_value,
-            compare_value=self.uniqueid_offset + 1,
-        )
-        # Calculate the expected number of captured frames separately. This is
-        # in case pausing has resulted in extra frames that will be overwritten
+        child.arrayCounter.put_value(0)
+        # Calculate the expected number of captured frames. This is in case
+        # pausing has resulted in extra frames that will be overwritten
         # using the position plugin when resuming.
         num_captured = child.numCapturedReadback.value
         # Offset for progress updates
