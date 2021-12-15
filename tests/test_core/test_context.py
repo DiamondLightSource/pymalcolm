@@ -184,6 +184,22 @@ class TestContext(unittest.TestCase):
             Subscribe(1, ["block", "attr", "value"]), Unsubscribe(1)
         )
 
+    def test_when_matches_async_func_with_kwargs(self):
+        self.o._q.put(Update(1, "value1"))
+        self.o._q.put(Return(1))
+
+        def f(value, start_char=""):
+            return value.startswith(start_char)
+
+        future = self.o.when_matches_async(
+            ["block", "attr", "value"], f, start_char="v"
+        )
+        self.o.wait_all_futures(future, timeout=0.01)
+
+        self.assert_handle_request_called_with(
+            Subscribe(1, ["block", "attr", "value"]), Unsubscribe(1)
+        )
+
     def test_ignore_stops_before_now(self):
         fs = [self.o.put_async(["block", "attr", "value"], 32)]
         self.o.stop()
