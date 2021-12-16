@@ -290,6 +290,41 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         self.gate_part.enable_set.assert_not_called()
         buffer_instance.run.assert_not_called()
 
+        # The SRGate should only be enabled by on_pre_run() here.
+        self.o.on_pre_run(self.context)
+        self.o.on_run(self.context)
+        self.gate_part.enable_set.assert_called_once()
+        buffer_instance.run.assert_called_once()
+
+    @patch(
+        "malcolm.modules.ADPandABlocks.parts.pandaseqtriggerpart.DoubleBuffer",
+        autospec=True,
+    )
+    def test_configure_and_run_prepare_no_axes(self, buffer_class):
+        buffer_instance = buffer_class.return_value
+        buffer_instance.run.return_value = []
+
+        generator = CompoundGenerator([StaticPointGenerator(size=1)], [], [], 1.0)
+        generator.prepare()
+
+        completed_steps = 0
+        steps_to_do = generator.size
+
+        self.o.on_configure(
+            self.context, completed_steps, steps_to_do, {}, generator, ""
+        )
+
+        assert self.o.generator is generator
+        assert self.o.loaded_up_to == completed_steps
+        assert self.o.scan_up_to == completed_steps + steps_to_do
+
+        buffer_instance.configure.assert_called_once()
+
+        self.gate_part.enable_set.assert_not_called()
+        buffer_instance.run.assert_not_called()
+
+        # The SRGate should only be enabled by on_run() here.
+        self.o.on_pre_run(self.context)
         self.o.on_run(self.context)
         self.gate_part.enable_set.assert_called_once()
         buffer_instance.run.assert_called_once()
@@ -397,7 +432,7 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         expected.add_seq_entry(1, IT, 0, hb, 0, 1)
         expected.add_seq_entry(1, GT, -350, hf, 1, 0)
         expected.add_seq_entry(3, IT, 0, hf, 1, 0)
-        expected.add_seq_entry(1, IT, 0, 1250, 0, 1)
+        expected.add_seq_entry(1, IT, 0, MIN_PULSE, 0, 1)
         expected.add_seq_entry(0, IT, 0, MIN_PULSE, 0, 0)
 
         assert seq_rows.as_tuples() == expected.as_tuples()
@@ -424,15 +459,16 @@ class TestPandaSeqTriggerPart(ChildTestCase):
             count=1, trigger=B1, position=0, half_duration=hf, live=1, dead=0
         )
         expected.add_seq_entry(3, IT, 0, hf, 1, 0)
-        expected.add_seq_entry(1, B0, 0, 1250, 0, 1)
+        expected.add_seq_entry(1, B0, 0, MIN_PULSE, 0, 1)
         expected.add_seq_entry(1, B1, 0, hf, 1, 0)
         expected.add_seq_entry(3, IT, 0, hf, 1, 0)
-        expected.add_seq_entry(1, IT, 0, 1250, 0, 1)
+        expected.add_seq_entry(1, IT, 0, MIN_PULSE, 0, 1)
         expected.add_seq_entry(0, IT, 0, MIN_PULSE, 0, 0)
 
         assert seq_rows.as_tuples() == expected.as_tuples()
 
-    def test_configure_stepped(self):
+    # AssertionError is thrown as inputs are not are not set for SEQ bitA.
+    def test_configure_assert_stepped(self):
         xs = LineGenerator("x", "mm", 0.0, 0.3, 4, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
         generator = CompoundGenerator([ys, xs], [], [], 1.0, continuous=False)
@@ -440,12 +476,41 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         completed_steps = 0
         steps_to_do = generator.size
         self.set_motor_attributes()
+        self.set_attributes(self.child, rowTrigger="Motion Controller")
         axes_to_move = ["x", "y"]
 
         with self.assertRaises(AssertionError):
             self.o.on_configure(
                 self.context, completed_steps, steps_to_do, {}, generator, axes_to_move
             )
+
+    def test_configure_stepped(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.3, 4)
+        ys = LineGenerator("y", "mm", 0.0, 0.2, 3)
+        generator = CompoundGenerator([ys, xs], [], [], 1.0, continuous=False)
+        generator.prepare()
+        self.set_motor_attributes()
+        self.set_attributes(self.child, rowTrigger="Motion Controller")
+        self.set_attributes(self.child_seq1, bita="TTLIN1.VAL")
+        self.set_attributes(self.child_seq2, bita="TTLIN1.VAL")
+        axes_to_move = ["x", "y"]
+
+        seq_rows = self.get_sequencer_rows(generator, axes_to_move)
+        # Triggers
+        B0 = Trigger.BITA_0
+        B1 = Trigger.BITA_1
+        IT = Trigger.IMMEDIATE
+        # Half a frame
+        hf = 62500000
+        expected = SequencerRows()
+        for i in range(11):
+            expected.add_seq_entry(1, B1, 0, hf, 1, 0)
+            expected.add_seq_entry(1, B0, 0, MIN_PULSE, 0, 1)
+        expected.add_seq_entry(1, B1, 0, hf, 1, 0)
+        expected.add_seq_entry(1, IT, 0, MIN_PULSE, 0, 1)
+        expected.add_seq_entry(0, IT, 0, MIN_PULSE, 0, 0)
+
+        assert seq_rows.as_tuples() == expected.as_tuples()
 
     def test_acquire_scan(self):
         generator = CompoundGenerator([StaticPointGenerator(size=5)], [], [], 1.0)
@@ -460,33 +525,10 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         expected.add_seq_entry(
             count=5, trigger=IT, position=0, half_duration=hf, live=1, dead=0
         )
-        expected.add_seq_entry(1, IT, 0, 1250, 0, 1)
+        expected.add_seq_entry(1, IT, 0, MIN_PULSE, 0, 1)
         expected.add_seq_entry(0, IT, 0, MIN_PULSE, 0, 0)
 
         assert seq_rows.as_tuples() == expected.as_tuples()
-
-    def test_configure_single_point_multi_frames(self):
-        # This test uses PCAP to generate a static point test.
-        # The test moves the motors to a new position and then generates
-        # 5 triggers at that position
-
-        xs = LineGenerator("x", "mm", 0.0, 0.0, 5, alternate=True)
-        ys = LineGenerator("y", "mm", 1.0, 1.0, 1)
-        generator = CompoundGenerator([ys, xs], [], [], 1.0)
-        generator.prepare()
-
-        # TODO: This should probably be removed as it appears to check a property
-        # of CompoundGenerator.
-        steps_to_do = 5
-        self.assertEqual(steps_to_do, generator.size)
-
-        completed_steps = 0
-        self.set_motor_attributes()
-        axes_to_move = ["x", "y"]
-
-        self.o.on_configure(
-            self.context, completed_steps, steps_to_do, {}, generator, axes_to_move
-        )
 
     def test_configure_pcomp_row_trigger_with_single_point_rows(self):
         x_steps, y_steps = 1, 5
@@ -517,7 +559,7 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         expected.add_seq_entry(1, GT, -500, hf, 1, 0)
         expected.add_seq_entry(1, IT, 0, hb, 0, 1)
         expected.add_seq_entry(1, LT, 0, hf, 1, 0)
-        expected.add_seq_entry(1, IT, 0, 1250, 0, 1)
+        expected.add_seq_entry(1, IT, 0, MIN_PULSE, 0, 1)
         expected.add_seq_entry(0, IT, 0, MIN_PULSE, 0, 0)
 
         assert seq_rows.as_tuples() == expected.as_tuples()
@@ -557,7 +599,7 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         expected.add_seq_entry(1, GT, -375, hf, 1, 0)
         expected.add_seq_entry(1, IT, 0, hfb, 0, 1)
         expected.add_seq_entry(1, GT, -125, hf, 1, 0)
-        expected.add_seq_entry(1, IT, 0, 1250, 0, 1)
+        expected.add_seq_entry(1, IT, 0, MIN_PULSE, 0, 1)
         expected.add_seq_entry(0, IT, 0, MIN_PULSE, 0, 0)
 
         assert seq_rows.as_tuples() == expected.as_tuples()
@@ -573,7 +615,7 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         # Triggers
         IT = Trigger.IMMEDIATE
         expected = SequencerRows()
-        expected.add_seq_entry(1, IT, 0, 1250, 0, 1)
+        expected.add_seq_entry(1, IT, 0, MIN_PULSE, 0, 1)
         expected.add_seq_entry(0, IT, 0, MIN_PULSE, 0, 0)
 
         assert seq_rows.as_tuples() == expected.as_tuples()
@@ -595,7 +637,7 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         expected.add_seq_entry(
             count=1, trigger=LT, position=50, half_duration=hf, live=1, dead=0
         )
-        expected.add_seq_entry(1, IT, 0, 1250, 0, 1)
+        expected.add_seq_entry(1, IT, 0, MIN_PULSE, 0, 1)
         expected.add_seq_entry(0, IT, 0, MIN_PULSE, 0, 0)
 
         assert seq_rows.as_tuples() == expected.as_tuples()

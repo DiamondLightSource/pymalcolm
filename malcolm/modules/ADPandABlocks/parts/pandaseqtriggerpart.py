@@ -233,28 +233,21 @@ class SeqTriggers:
             else:
                 start_indices, end_indices = self._get_row_indices(points)
 
-                # Handle first row of batch
+                # Handle the first scan row from the current batch of points
                 end = start_indices[0] if start_indices.size else len(points)
                 if self.last_point is None:
                     # This is the beginning of the scan
-                    point = points[0]
-                    first_point_static = point.positions == point.lower == point.upper
-
-                    if not first_point_static:
-                        # If the motors are moving during this point then
-                        # wait for triggers
-                        yield self._create_triggered_rows(points, 0, end, False)
-                    else:
-                        # This first row will trigger immediately
-                        yield self._create_immediate_rows(points.duration[0:end])
-
+                    yield self._create_triggered_rows(points, 0, end, False)
                     self.last_point = points[end - 1]
-                else:  # This is the beginning of the batch
-                    # The first point is from the previous batch
+                else:
+                    # This is the beginning of subsequent batches.
+                    # Sequence table rows are only added here if the previous batch
+                    # of points finished in the middle of a continuous scan row.
+                    # The first point of the current batch is from the previous batch.
                     yield self._create_immediate_rows(points.duration[1:end])
 
+                # Remaining scan rows from the current batch of points.
                 for start_i, end_i in zip(start_indices, end_indices):
-                    # First row handled outside of loop
                     yield self._create_triggered_rows(points, start_i, end_i, True)
                     self.last_point = points[end_i - 1]
 
@@ -352,6 +345,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
             ),
             self.on_configure,
         )
+        registrar.hook(scanning.hooks.PreRunHook, self.on_pre_run)
         registrar.hook(scanning.hooks.RunHook, self.on_run)
         registrar.hook(builtin.hooks.ResetHook, self.on_reset)
         registrar.hook(
@@ -507,11 +501,20 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         self.db_seq_table.configure(rows_gen)
 
     @add_call_types
-    def on_run(self, context: scanning.hooks.AContext) -> None:
-        # Call sequence table enable
+    def on_pre_run(self, context: scanning.hooks.AContext) -> None:
         assert self.panda, "No PandA"
         assert self.db_seq_table, "No DoubleBuffer"
-        self.panda.seqSetEnable()
+        # If there are MotorInfo's enable seqTableA here so ready to receive the
+        # first signal (once the motors have moved to the first point).
+        if self.axis_mapping:
+            self.panda.seqSetEnable()
+
+    @add_call_types
+    def on_run(self, context: scanning.hooks.AContext) -> None:
+        # When there are no MotorInfo's the first row will have Trigger.IMMEDIATE
+        # so don't enable seqTableA until running.
+        if not self.axis_mapping:
+            self.panda.seqSetEnable()
         futures = self.db_seq_table.run()
         context.wait_all_futures(futures)
 
