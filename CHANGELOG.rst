@@ -3,8 +3,8 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
-Unreleased
-----------
+`5.1`_ - 2021-12-16
+-------------------
 
 Changed:
 
@@ -14,7 +14,7 @@ Changed:
   generation dominates. A Yield has also been added so the thread suspends
   after each batch so it doesn't block other threads for the entire profile
   calculation, which previously caused timeout problems with other components.
-- HdfWriterPart now looks at the number of frames written to the HDF5 file to
+- HDFWriterPart now looks at the number of frames written to the HDF5 file to
   track progress and check for stalling issues. This means a scan will now fail
   instead of succeed if the file plugin receives all frames but doesn't write
   them.
@@ -711,6 +711,7 @@ Added:
 
 - Initial release with hello world and websocket comms
 
+.. _5.1: https://github.com/dls-controls/pymalcolm/compare/5.0...5.1
 .. _5.0: https://github.com/dls-controls/pymalcolm/compare/4.6...5.0
 .. _4.6: https://github.com/dls-controls/pymalcolm/compare/4.5...4.6
 .. _4.5: https://github.com/dls-controls/pymalcolm/compare/4.4...4.5
