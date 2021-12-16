@@ -1,0 +1,6 @@
+
+malcolm.modules.ADTetrAMM.blocks
+================================
+
+.. automodule:: malcolm.modules.ADTetrAMM.blocks
+    :members:

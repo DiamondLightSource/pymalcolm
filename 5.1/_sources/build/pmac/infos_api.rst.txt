@@ -1,0 +1,6 @@
+
+malcolm.modules.pmac.infos
+==========================
+
+.. automodule:: malcolm.modules.pmac.infos
+    :members:

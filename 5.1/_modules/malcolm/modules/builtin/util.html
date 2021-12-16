@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.modules.builtin.util &mdash; malcolm 5.1 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                5.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+  <!-- Add versions for selected branches + tags -->
+  <p class="caption">
+    <span class="caption-text">Versions</span>
+  </p>
+  <ul id="versions"/>
+  <script>
+    // Add any branches to appear in the side pane here, tags will be added below
+    // Will only appear if docs are built and pushed in gh-pages
+    var versions = ['main', 'master'];
+    var dirs = new Set();
+    function addVersion(name) {
+      if (dirs.has(name)) {
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        a.href = 'https://dls-controls.github.io/malcolm/' + name;
+        a.innerText = name;
+        li.appendChild(a)
+        document.getElementById('versions').appendChild(li);
+      }
+    }
+    Promise.all([
+      // Find gh-pages directories and populate `dirs`
+      fetch("https://api.github.com/repos/dls-controls/malcolm/contents?ref=gh-pages")
+      .then(response => response.json())
+      .then(data => data.forEach(function(e) {
+        if (e.type == "dir") dirs.add(e.name);
+      })),
+      // Add tags to `versions`
+      fetch('https://api.github.com/repos/dls-controls/malcolm/tags')
+        .then(response => response.json())
+        .then(data => data.forEach(function(e) {
+          versions.push(e.name);
+        }))
+      ]).then(_ => versions.forEach(addVersion))
+  </script>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>malcolm.modules.builtin.util</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for malcolm.modules.builtin.util</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">collections.abc</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">xml.etree</span> <span class="kn">import</span> <span class="n">cElementTree</span> <span class="k">as</span> <span class="n">ET</span>
+
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">Array</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.compat</span> <span class="kn">import</span> <span class="n">et_to_string</span>
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+    <span class="n">Port</span><span class="p">,</span>
+    <span class="n">StateSet</span><span class="p">,</span>
+    <span class="n">Table</span><span class="p">,</span>
+    <span class="n">VMeta</span><span class="p">,</span>
+    <span class="n">Widget</span><span class="p">,</span>
+    <span class="n">config_tag</span><span class="p">,</span>
+    <span class="n">group_tag</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">.parts</span> <span class="kn">import</span> <span class="n">ChildPart</span>  <span class="c1"># noqa: F401</span>
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Is the attribute writeable?&quot;</span><span class="p">):</span>
+    <span class="n">AWriteable</span> <span class="o">=</span> <span class="nb">bool</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span>
+    <span class="s2">&quot;If writeable, which iteration should this field be loaded/saved in?&quot;</span>
+    <span class="s2">&quot; 0 means do not restore&quot;</span>
+<span class="p">):</span>
+    <span class="n">AConfig</span> <span class="o">=</span> <span class="nb">int</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;If given, which GUI group should we attach to&quot;</span><span class="p">):</span>
+    <span class="n">AGroup</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;If given, use this widget instead of the default&quot;</span><span class="p">):</span>
+    <span class="n">AWidget</span> <span class="o">=</span> <span class="n">Widget</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;If given, mark this as a Sink Port of the given type&quot;</span><span class="p">):</span>
+    <span class="n">ASinkPort</span> <span class="o">=</span> <span class="n">Port</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span>
+    <span class="s2">&quot;If given, mark this Sink Port as having a badge&quot;</span>
+    <span class="o">+</span> <span class="s2">&quot; value [tag constructed by badge_value_tag()]&quot;</span>
+<span class="p">):</span>
+    <span class="n">APortBadge</span> <span class="o">=</span> <span class="nb">str</span>
+
+
+<span class="k">def</span> <span class="nf">set_tags</span><span class="p">(</span>
+    <span class="n">meta</span><span class="p">:</span> <span class="n">VMeta</span><span class="p">,</span>
+    <span class="n">writeable</span><span class="p">:</span> <span class="n">AWriteable</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">config</span><span class="p">:</span> <span class="n">AConfig</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">group</span><span class="p">:</span> <span class="n">AGroup</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">widget</span><span class="p">:</span> <span class="n">AWidget</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">sink_port</span><span class="p">:</span> <span class="n">ASinkPort</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">port_badge</span><span class="p">:</span> <span class="n">APortBadge</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">tags</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">meta</span><span class="o">.</span><span class="n">set_writeable</span><span class="p">(</span><span class="n">writeable</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">widget</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="n">meta</span><span class="o">.</span><span class="n">default_widget</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">widget</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">Widget</span><span class="o">.</span><span class="n">NONE</span><span class="p">:</span>
+        <span class="n">tags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">widget</span><span class="o">.</span><span class="n">tag</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">config</span> <span class="ow">and</span> <span class="n">writeable</span><span class="p">:</span>
+        <span class="c1"># We only allow config tags on writeable functions</span>
+        <span class="n">tags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">config_tag</span><span class="p">(</span><span class="n">config</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">group</span><span class="p">:</span>
+        <span class="c1"># If we have a group then add the tag</span>
+        <span class="n">tags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group_tag</span><span class="p">(</span><span class="n">group</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">sink_port</span><span class="p">:</span>
+        <span class="n">tags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sink_port</span><span class="o">.</span><span class="n">sink_port_tag</span><span class="p">(</span><span class="n">disconnected_value</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">port_badge</span><span class="p">:</span>
+            <span class="n">tags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">port_badge</span><span class="p">)</span>
+    <span class="n">meta</span><span class="o">.</span><span class="n">set_tags</span><span class="p">(</span><span class="n">tags</span><span class="p">)</span>
+
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Names of the layout parts&quot;</span><span class="p">):</span>
+    <span class="n">ANameArray</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Malcolm full names of child blocks&quot;</span><span class="p">):</span>
+    <span class="n">AMriArray</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;X Coordinates of child blocks&quot;</span><span class="p">):</span>
+    <span class="n">AXArray</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Y Coordinates of child blocks&quot;</span><span class="p">):</span>
+    <span class="n">AYArray</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Whether child blocks are visible&quot;</span><span class="p">):</span>
+    <span class="n">AVisibleArray</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">bool</span><span class="p">]]</span>
+<span class="n">UNameArray</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">ANameArray</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="n">UMriArray</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">AMriArray</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="n">UXArray</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">AXArray</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span>
+<span class="n">UYArray</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">AYArray</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span>
+<span class="n">UVisibleArray</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">AVisibleArray</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">bool</span><span class="p">]]</span>
+
+
+<div class="viewcode-block" id="LayoutTable"><a class="viewcode-back" href="../../../../build/builtin/util_api.html#malcolm.modules.builtin.util.LayoutTable">[docs]</a><span class="k">class</span> <span class="nc">LayoutTable</span><span class="p">(</span><span class="n">Table</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">UNameArray</span><span class="p">,</span>
+        <span class="n">mri</span><span class="p">:</span> <span class="n">UMriArray</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">:</span> <span class="n">UXArray</span><span class="p">,</span>
+        <span class="n">y</span><span class="p">:</span> <span class="n">UYArray</span><span class="p">,</span>
+        <span class="n">visible</span><span class="p">:</span> <span class="n">UVisibleArray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">ANameArray</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mri</span> <span class="o">=</span> <span class="n">AMriArray</span><span class="p">(</span><span class="n">mri</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">AXArray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">AYArray</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="n">AVisibleArray</span><span class="p">(</span><span class="n">visible</span><span class="p">)</span></div>
+
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Name of the block.field to export&quot;</span><span class="p">):</span>
+    <span class="n">ASourceNameArray</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Name of the field to export as&quot;</span><span class="p">):</span>
+    <span class="n">AExportNameArray</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="n">USourceNameArray</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">ASourceNameArray</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="n">UExportNameArray</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">AExportNameArray</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+
+
+<div class="viewcode-block" id="ExportTable"><a class="viewcode-back" href="../../../../build/builtin/util_api.html#malcolm.modules.builtin.util.ExportTable">[docs]</a><span class="k">class</span> <span class="nc">ExportTable</span><span class="p">(</span><span class="n">Table</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="n">USourceNameArray</span><span class="p">,</span> <span class="n">export</span><span class="p">:</span> <span class="n">UExportNameArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="n">ASourceNameArray</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">export</span> <span class="o">=</span> <span class="n">AExportNameArray</span><span class="p">(</span><span class="n">export</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="wait_for_stateful_block_init"><a class="viewcode-back" href="../../../../build/builtin/util_api.html#malcolm.modules.builtin.util.wait_for_stateful_block_init">[docs]</a><span class="k">def</span> <span class="nf">wait_for_stateful_block_init</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">mri</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wait until a Block backed by a StatefulController has initialized</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        context (Context): The context to use to make the child block</span>
+<span class="sd">        mri (str): The mri of the child block</span>
+<span class="sd">        timeout (float): The maximum time to wait</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">when_matches</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">mri</span><span class="p">,</span> <span class="s2">&quot;state&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">],</span>
+        <span class="n">StatefulStates</span><span class="o">.</span><span class="n">READY</span><span class="p">,</span>
+        <span class="n">bad_values</span><span class="o">=</span><span class="p">[</span><span class="n">StatefulStates</span><span class="o">.</span><span class="n">FAULT</span><span class="p">,</span> <span class="n">StatefulStates</span><span class="o">.</span><span class="n">DISABLED</span><span class="p">],</span>
+        <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StatefulStates"><a class="viewcode-back" href="../../../../reference/statesets.html#malcolm.modules.builtin.util.StatefulStates">[docs]</a><span class="k">class</span> <span class="nc">StatefulStates</span><span class="p">(</span><span class="n">StateSet</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This state set covers controllers and parts that can be disabled and have</span>
+<span class="sd">    faults, but otherwise have no state.&quot;&quot;&quot;</span>
+
+    <span class="n">RESETTING</span> <span class="o">=</span> <span class="s2">&quot;Resetting&quot;</span>
+    <span class="n">DISABLED</span> <span class="o">=</span> <span class="s2">&quot;Disabled&quot;</span>
+    <span class="n">DISABLING</span> <span class="o">=</span> <span class="s2">&quot;Disabling&quot;</span>
+    <span class="n">FAULT</span> <span class="o">=</span> <span class="s2">&quot;Fault&quot;</span>
+    <span class="n">READY</span> <span class="o">=</span> <span class="s2">&quot;Ready&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_block_transitions</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_error_disable_transitions</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">create_block_transitions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_allowed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RESETTING</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">READY</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">create_error_disable_transitions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">block_states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">possible_states</span><span class="p">[:]</span>
+
+        <span class="c1"># Set transitions for standard states</span>
+        <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">block_states</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_allowed</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">FAULT</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_allowed</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">DISABLING</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_allowed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FAULT</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">RESETTING</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">DISABLING</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_allowed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DISABLING</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">FAULT</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">DISABLED</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_allowed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DISABLED</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">RESETTING</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ManagerStates"><a class="viewcode-back" href="../../../../reference/statesets.html#malcolm.modules.builtin.util.ManagerStates">[docs]</a><span class="k">class</span> <span class="nc">ManagerStates</span><span class="p">(</span><span class="n">StatefulStates</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This state set covers controllers and parts that have loadable and</span>
+<span class="sd">    savable child state.&quot;&quot;&quot;</span>
+
+    <span class="n">SAVING</span> <span class="o">=</span> <span class="s2">&quot;Saving&quot;</span>
+    <span class="n">LOADING</span> <span class="o">=</span> <span class="s2">&quot;Loading&quot;</span>
+
+    <span class="k">def</span> <span class="nf">create_block_transitions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">create_block_transitions</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_allowed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">READY</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">SAVING</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_allowed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SAVING</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">READY</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_allowed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">READY</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">LOADING</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_allowed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LOADING</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">READY</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="no_save"><a class="viewcode-back" href="../../../../build/builtin/util_api.html#malcolm.modules.builtin.util.no_save">[docs]</a><span class="k">def</span> <span class="nf">no_save</span><span class="p">(</span><span class="o">*</span><span class="n">attribute_names</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Helper for defining ChildPart.no_save_attribute_names.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        attribute_names (str): The Attributes of the child Block that shouldn&#39;t</span>
+<span class="sd">            be saved</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">decorator</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="s2">&quot;ChildPart&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Type</span><span class="p">[</span><span class="s2">&quot;ChildPart&quot;</span><span class="p">]:</span>
+        <span class="n">additions</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">attribute_name</span> <span class="ow">in</span> <span class="n">attribute_names</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attribute_name</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Iterable</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
+                <span class="n">attribute_name</span><span class="p">,</span> <span class="nb">str</span>
+            <span class="p">):</span>
+                <span class="n">additions</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">(</span><span class="n">attribute_name</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">additions</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">attribute_name</span><span class="p">)</span>
+        <span class="n">bad</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">additions</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">str</span><span class="p">)]</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">bad</span><span class="p">,</span> <span class="s2">&quot;Cannot add non-string attribute names to no_save: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">bad</span>
+        <span class="n">existing</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">no_save_attribute_names</span> <span class="ow">or</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">no_save_attribute_names</span> <span class="o">=</span> <span class="n">existing</span> <span class="o">|</span> <span class="n">additions</span>
+        <span class="k">return</span> <span class="bp">cls</span>
+
+    <span class="k">return</span> <span class="n">decorator</span></div>
+
+
+<div class="viewcode-block" id="SVGIcon"><a class="viewcode-back" href="../../../../build/builtin/util_api.html#malcolm.modules.builtin.util.SVGIcon">[docs]</a><span class="k">class</span> <span class="nc">SVGIcon</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Helper object for working with SVG icons&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">svg_text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># https://stackoverflow.com/a/8998773</span>
+        <span class="n">ET</span><span class="o">.</span><span class="n">register_namespace</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;http://www.w3.org/2000/svg&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">svg_text</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">find_parent_child</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Find the first parent which has a child with id i</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;.//*[@id=</span><span class="si">%r</span><span class="s2">]/..&quot;</span> <span class="o">%</span> <span class="nb">id</span><span class="p">)</span>
+        <span class="c1"># Find the child and remove it</span>
+        <span class="k">if</span> <span class="n">parent</span><span class="p">:</span>
+            <span class="n">child</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;./*[@id=</span><span class="si">%r</span><span class="s2">]&quot;</span> <span class="o">%</span> <span class="nb">id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">parent</span><span class="p">,</span> <span class="n">child</span>
+
+    <span class="k">def</span> <span class="nf">remove_elements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">:</span>
+            <span class="n">parent</span><span class="p">,</span> <span class="n">child</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_parent_child</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">parent</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">add_text</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">anchor</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;font: 10px sans&quot;</span>
+    <span class="p">):</span>
+        <span class="n">attr</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">y</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="n">style</span><span class="o">=</span><span class="n">style</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">transform</span><span class="p">:</span>
+            <span class="n">attr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;transform&quot;</span><span class="p">,</span> <span class="n">transform</span><span class="p">)</span>
+        <span class="n">attr</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;text-anchor&quot;</span><span class="p">,</span> <span class="n">anchor</span><span class="p">)</span>
+        <span class="n">attr</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">text</span>
+
+    <span class="k">def</span> <span class="nf">update_edge_arrow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">edge</span><span class="p">):</span>
+        <span class="n">edge</span> <span class="o">=</span> <span class="n">edge</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">parent</span><span class="p">,</span> <span class="n">child</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_parent_child</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+        <span class="c1"># Check that it still exists, it might have been removed</span>
+        <span class="k">if</span> <span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;level&quot;</span> <span class="ow">in</span> <span class="n">edge</span><span class="p">:</span>
+                <span class="c1"># Remove it</span>
+                <span class="n">parent</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s2">&quot;rising&quot;</span> <span class="ow">in</span> <span class="n">edge</span><span class="p">:</span>
+                <span class="c1"># Remove the falling marker</span>
+                <span class="k">del</span> <span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">&quot;marker-end&quot;</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="s2">&quot;falling&quot;</span> <span class="ow">in</span> <span class="n">edge</span><span class="p">:</span>
+                <span class="c1"># Remove the falling marker</span>
+                <span class="k">del</span> <span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">&quot;marker-start&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">et_to_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

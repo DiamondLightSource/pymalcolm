@@ -1,0 +1,6 @@
+
+malcolm.modules.web.infos
+=========================
+
+.. automodule:: malcolm.modules.web.infos
+    :members:

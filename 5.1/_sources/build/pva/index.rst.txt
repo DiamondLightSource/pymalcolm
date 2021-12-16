@@ -1,0 +1,12 @@
+
+pva
+===
+
+.. module:: malcolm.modules.pva
+
+.. toctree::
+    :maxdepth: 1
+    :caption: malcolm.modules.pva
+
+    blocks <blocks_api.rst>
+    controllers <controllers_api.rst>

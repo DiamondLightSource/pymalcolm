@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scanning Tutorial &mdash; malcolm 5.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="AreaDetector Tutorial" href="areadetector.html" />
+    <link rel="prev" title="Detector Tutorial" href="detector.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../contents.html" class="icon icon-home"> malcolm
+            <img src="../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                5.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Scanning Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#block-hierarchy">Block Hierarchy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#creating-the-blocks">Creating the Blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#scan-block">Scan Block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hooking-a-simple-device-block-into-a-scan">Hooking a Simple Device Block into a Scan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hooking-into-configure">Hooking into configure()</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hooking-into-run">Hooking into run()</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-a-scan">Running a Scan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+  <!-- Add versions for selected branches + tags -->
+  <p class="caption">
+    <span class="caption-text">Versions</span>
+  </p>
+  <ul id="versions"/>
+  <script>
+    // Add any branches to appear in the side pane here, tags will be added below
+    // Will only appear if docs are built and pushed in gh-pages
+    var versions = ['main', 'master'];
+    var dirs = new Set();
+    function addVersion(name) {
+      if (dirs.has(name)) {
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        a.href = 'https://dls-controls.github.io/malcolm/' + name;
+        a.innerText = name;
+        li.appendChild(a)
+        document.getElementById('versions').appendChild(li);
+      }
+    }
+    Promise.all([
+      // Find gh-pages directories and populate `dirs`
+      fetch("https://api.github.com/repos/dls-controls/malcolm/contents?ref=gh-pages")
+      .then(response => response.json())
+      .then(data => data.forEach(function(e) {
+        if (e.type == "dir") dirs.add(e.name);
+      })),
+      // Add tags to `versions`
+      fetch('https://api.github.com/repos/dls-controls/malcolm/tags')
+        .then(response => response.json())
+        .then(data => data.forEach(function(e) {
+          versions.push(e.name);
+        }))
+      ]).then(_ => versions.forEach(addVersion))
+  </script>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../contents.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Scanning Tutorial</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorials/scanning.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="scanning-tutorial">
+<span id="id1"></span><h1>Scanning Tutorial<a class="headerlink" href="#scanning-tutorial" title="Permalink to this headline"></a></h1>
+<p>You should already know how to create a detector <a class="reference internal" href="../reference/glossary.html#block"><span class="std std-ref">Block</span></a> in the <a class="reference internal" href="../reference/glossary.html#device-layer"><span class="std std-ref">Device Layer</span></a>
+that controls a simulated detector, and how to create a motion Block in
+that Device Layer that looks a bit like a simulated motion controller. Now let’s
+put a <a class="reference internal" href="../reference/glossary.html#scan-layer"><span class="std std-ref">Scan Layer</span></a> Block on top that will control the underlying Device Blocks
+to work together to perform a scan.</p>
+<section id="block-hierarchy">
+<h2>Block Hierarchy<a class="headerlink" href="#block-hierarchy" title="Permalink to this headline"></a></h2>
+<p>To make this work, we want to provide a <a class="reference internal" href="../reference/glossary.html#scan-layer"><span class="std std-ref">Scan Layer</span></a> Block with a configure/run
+interface. It should then control its children concurrently during the Configure
+and Run phases of the scan:</p>
+<ul class="simple">
+<li><p>Configure: It should take the union of its child Blocks’ parameters, and call
+the child configure() with the requested parameters. It should then report
+the child datasets (if any) in a dataset table of its own.</p></li>
+<li><p>Run: It should run() both children at the same time, relying on hardware
+synchronization to keep them in step. It should report back progress of its
+children.</p></li>
+</ul>
+<p>In the <a class="reference internal" href="motion.html#motion-tutorial"><span class="std std-ref">Motion Tutorial</span></a> we introduced a simple Device Block. The interface it
+presents is pair of <code class="docutils literal notranslate"><span class="pre">moveX</span></code> and <code class="docutils literal notranslate"><span class="pre">moveY</span></code> <a class="reference internal" href="../reference/glossary.html#method"><span class="std std-ref">Methods</span></a>. To control
+this within a scan, we need to write a <a class="reference internal" href="../reference/glossary.html#part"><span class="std std-ref">Part</span></a> which knows when to call these
+Methods.</p>
+<p>In the <a class="reference internal" href="detector.html#detector-tutorial"><span class="std std-ref">Detector Tutorial</span></a> we introduced a runnable Device Block. It presents
+a configure/run interface, and includes a Dataset Table to report back the
+files that it will write. This is a common design pattern for all detectors, so
+we can use a <a class="reference internal" href="../build/scanning/parts_api.html#malcolm.modules.scanning.parts.DetectorChildPart" title="malcolm.modules.scanning.parts.DetectorChildPart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DetectorChildPart</span></code></a> to integrate it into the scan.</p>
+<p>Our scan Block should support the same configure/run interface, so we use a
+<a class="reference internal" href="../build/scanning/controllers_api.html#malcolm.modules.scanning.controllers.RunnableController" title="malcolm.modules.scanning.controllers.RunnableController"><code class="xref any py py-class docutils literal notranslate"><span class="pre">RunnableController</span></code></a> just like in the detector.</p>
+<p>We now end up with a hierarchy that looks like this:</p>
+<div class="graphviz"><object data="../_images/graphviz-a92eb08ed4df0b448cd15e6c8e438bf5d23f5bdd.svg" type="image/svg+xml" class="graphviz">
+<p class="warning">digraph scan_child_connections {
+newrank=true;  // Sensible ranking of clusters
+bgcolor=transparent
+compound=true
+node [fontname=Arial fontsize=10 shape=rect style=filled fillcolor=&quot;#8BC4E9&quot;]
+graph [fontname=Arial fontsize=10]
+edge [fontname=Arial fontsize=10 arrowhead=vee]
+
+subgraph cluster_scan {
+    label=&quot;Scan Layer&quot;
+            style=filled
+            color=lightgrey
+
+    subgraph cluster_scan_block {
+        label=&quot;SCAN&quot;
+        ranksep=0.1
+                color=white
+        scan_c [label=&quot;RunnableController&quot;]
+        DSET_s [label=&lt;DatasetTablePart&lt;BR/&gt;name: 'DSET'&gt;]
+        MOT [label=&lt;MotionChildPart&lt;BR/&gt;name: 'MOT'&gt;]
+        DET [label=&lt;DetectorChildPart&lt;BR/&gt;name: 'DET'&gt;]
+        SA [label=&lt;SimultaneousAxesPart&lt;BR/&gt;name: 'simultaneousAxes'&gt;]
+        scan_c -&gt; DSET_s [style=invis]
+        scan_c -&gt; MOT [style=invis]
+        scan_c -&gt; DET [style=invis]
+        scan_c -&gt; SA [style=invis]
+    }
+}
+
+subgraph cluster_device {
+    label=&quot;Device Layer&quot;
+            style=filled
+            color=lightgrey
+
+    subgraph cluster_detector {
+        label=&quot;DETECTOR&quot;
+        ranksep=0.1
+                color=white
+        detector_c [label=&quot;RunnableController&quot;]
+        FW [label=&lt;FileWritePart&lt;BR/&gt;name: 'FW'&gt;]
+        DSET [label=&lt;DatasetTablePart&lt;BR/&gt;name: 'DSET'&gt;]
+        detector_c -&gt; FW [style=invis]
+        detector_c -&gt; DSET [style=invis]
+        {rank=max; FW DSET}
+    }
+
+    subgraph cluster_motion {
+        label=&quot;MOTION&quot;
+        ranksep=0.1
+                color=white
+        motion_c [label=&quot;ManagerController&quot;]
+        x [label=&lt;MotorMovePart&lt;BR/&gt;name: 'x'&gt;]
+        y [label=&lt;MotorMovePart&lt;BR/&gt;name: 'y'&gt;]
+        motion_c -&gt; x [style=invis]
+        motion_c -&gt; y [style=invis]
+    }
+}
+
+subgraph cluster_hardware {
+    label=&quot;Hardware Layer&quot;
+            style=filled
+            color=lightgrey
+
+    subgraph cluster_counterx {
+        label=&quot;COUNTERX&quot;
+        color=white
+        counterx_c [label=&quot;BasicController&quot;]
+        counterx_p [label=&quot;CounterPart&quot;]
+        counterx_c -&gt; counterx_p [style=invis]
+    }
+
+    subgraph cluster_countery {
+        label=&quot;COUNTERY&quot;
+        color=white
+        countery_c [label=&quot;BasicController&quot;]
+        countery_p [label=&quot;CounterPart&quot;]
+        countery_c -&gt; countery_p [style=invis]
+    }
+}
+
+MOT -&gt; motion_c [lhead=cluster_motion minlen=3 style=dashed]
+DET -&gt; detector_c [lhead=cluster_detector minlen=3 style=dashed]
+x -&gt; counterx_c [lhead=cluster_counterx minlen=3 style=dashed]
+y -&gt; countery_c [lhead=cluster_countery minlen=3 style=dashed]
+}</p></object></div>
+<p>The MOTION and DETECTOR Blocks are unchanged from the previous examples, we
+have just placed a SCAN Block in a layer above them that uses an appropriate
+<a class="reference internal" href="../reference/glossary.html#part"><span class="std std-ref">Part</span></a> to control each of its children. The nice thing about this design is
+that we can add another detector to control just by adding a new part to the
+scan.</p>
+</section>
+<section id="creating-the-blocks">
+<h2>Creating the Blocks<a class="headerlink" href="#creating-the-blocks" title="Permalink to this headline"></a></h2>
+<p>Let’s have a look at the <a class="reference internal" href="../reference/glossary.html#process-definition"><span class="std std-ref">Process Definition</span></a>
+<code class="docutils literal notranslate"><span class="pre">./malcolm/modules/demo/DEMO-SCANNING.yaml</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define a directory to store config in</span>
+<span class="p p-Indicator">-</span> <span class="nt">builtin.defines.tmp_dir</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">config_dir</span>
+
+<span class="c1"># Create some Blocks</span>
+<span class="p p-Indicator">-</span> <span class="nt">demo.blocks.motion_block</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">MOTION</span>
+    <span class="nt">config_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(config_dir)</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">demo.blocks.detector_block</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">DETECTOR</span>
+    <span class="nt">config_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(config_dir)</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">demo.blocks.scan_1det_block</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">SCAN</span>
+    <span class="nt">config_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(config_dir)</span>
+
+<span class="c1"># Add a webserver</span>
+<span class="p p-Indicator">-</span> <span class="nt">web.blocks.web_server_block</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">WEB</span>
+</pre></div>
+</div>
+<p>To start off with, we ask for our temporary directory, which we can reference
+as <code class="docutils literal notranslate"><span class="pre">$(config_dir)</span></code>. In production we would still use a
+<code class="docutils literal notranslate"><span class="pre">builtin.defines.string</span></code> to define this variable and pass it down in the same
+way. In general we should try to follow the <a class="reference external" href="https://en.wikipedia.org/wiki/Don%27t_repeat_yourself">DRY</a> principle: Don’t repeat
+yourself. If there is a single value used in multiple places, we should define
+it in one place and pass it down to where it is needed. This may require more
+lines of YAML, but when the variable is changed later it will be clear where it
+need to be changed.</p>
+<p>Apart from the web server, we instantiate 3 Blocks:</p>
+<ul class="simple">
+<li><p>The motion block from the <a class="reference internal" href="motion.html#motion-tutorial"><span class="std std-ref">Motion Tutorial</span></a></p></li>
+<li><p>The detector block from the <a class="reference internal" href="detector.html#detector-tutorial"><span class="std std-ref">Detector Tutorial</span></a></p></li>
+<li><p>Our new <code class="docutils literal notranslate"><span class="pre">scan_1det_block</span></code> to sit on top</p></li>
+</ul>
+</section>
+<section id="scan-block">
+<h2>Scan Block<a class="headerlink" href="#scan-block" title="Permalink to this headline"></a></h2>
+<p>The top level Scan Block is a <a class="reference internal" href="../build/demo/blocks_api.html#malcolm.modules.demo.blocks.scan_1det_block" title="malcolm.modules.demo.blocks.scan_1det_block"><code class="xref any py py-func docutils literal notranslate"><span class="pre">scan_1det_block</span></code></a> defined just for this demo.
+Let’s take a look at <code class="docutils literal notranslate"><span class="pre">./malcolm/modules/demo/blocks/scan_1det_block.yaml</span></code>
+to see what one of those looks like:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mri</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">MRI for created block</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">config_dir</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Where to store saved configs</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.defines.docstring</span><span class="p">:</span>
+    <span class="nt">value</span><span class="p">:</span> <span class="p p-Indicator">|</span>
+      <span class="no">Demo scan that drives an detector like block called DETECTOR and a demo</span>
+      <span class="no">motion controller called MOTION</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">scanning.controllers.RunnableController</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(mri)</span>
+    <span class="nt">config_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(config_dir)</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="p p-Indicator">|</span>
+      <span class="no">Demo scan with a single detector and motor controller suitable for</span>
+      <span class="no">making an interesting pattern when scanning x and y in range -10 to 10</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parts.LabelPart</span><span class="p">:</span>
+    <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Mapping x, y with demo detector</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">scanning.parts.DatasetTablePart</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">DSET</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">scanning.parts.SimultaneousAxesPart</span><span class="p">:</span>
+    <span class="nt">value</span><span class="p">:</span> <span class="p p-Indicator">[</span><span class="nv">x</span><span class="p p-Indicator">,</span> <span class="nv">y</span><span class="p p-Indicator">]</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">scanning.parts.DetectorChildPart</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">DET</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">DETECTOR</span>
+    <span class="nt">initial_visibility</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">True</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">demo.parts.MotionChildPart</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">MOT</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">MOTION</span>
+    <span class="nt">initial_visibility</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">True</span>
+</pre></div>
+</div>
+<p>After some parameter definitions, we get to the Controller. We use a
+<a class="reference internal" href="../build/scanning/controllers_api.html#malcolm.modules.scanning.controllers.RunnableController" title="malcolm.modules.scanning.controllers.RunnableController"><code class="xref any py py-class docutils literal notranslate"><span class="pre">RunnableController</span></code></a> like in the Detector Block, passing it the <a class="reference internal" href="../reference/glossary.html#mri"><span class="std std-ref">mri</span></a> of
+the created Block, along with where to write saved configs and its docstring.
+Next we have a <a class="reference internal" href="../build/scanning/parts_api.html#malcolm.modules.scanning.parts.DatasetTablePart" title="malcolm.modules.scanning.parts.DatasetTablePart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DatasetTablePart</span></code></a> to report datasets just like Device Blocks.
+After that is a <a class="reference internal" href="../build/scanning/parts_api.html#malcolm.modules.scanning.parts.SimultaneousAxesPart" title="malcolm.modules.scanning.parts.SimultaneousAxesPart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">SimultaneousAxesPart</span></code></a> which checks that all the desired
+<code class="docutils literal notranslate"><span class="pre">axesToMove</span></code> of a scan are within a particular set. This is needed because
+a motor controller is probably setup for a specific set of axes to be scanned
+together, and any subset of those axes is acceptable as an argument to
+configure().</p>
+<p>The final two parts control child Blocks, a <a class="reference internal" href="../build/scanning/parts_api.html#malcolm.modules.scanning.parts.DetectorChildPart" title="malcolm.modules.scanning.parts.DetectorChildPart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DetectorChildPart</span></code></a> will control
+any configure/run Block with a DatasetTable, and the <a class="reference internal" href="../build/demo/parts_api.html#malcolm.modules.demo.parts.MotionChildPart" title="malcolm.modules.demo.parts.MotionChildPart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">MotionChildPart</span></code></a> is
+written specially for our Motion Block.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Child Device Blocks are not instantiated by Blocks in the <a class="reference internal" href="../reference/glossary.html#scan-layer"><span class="std std-ref">Scan Layer</span></a> in
+contrast to Blocks in the <a class="reference internal" href="../reference/glossary.html#device-layer"><span class="std std-ref">Device Layer</span></a> that typically create their child
+Blocks in the <a class="reference internal" href="../reference/glossary.html#hardware-layer"><span class="std std-ref">Hardware Layer</span></a>. This is because Device Blocks can
+potentially be used by many Scan Blocks, while Hardware Blocks are typically
+only used by a single Device Block.</p>
+</div>
+</section>
+<section id="hooking-a-simple-device-block-into-a-scan">
+<h2>Hooking a Simple Device Block into a Scan<a class="headerlink" href="#hooking-a-simple-device-block-into-a-scan" title="Permalink to this headline"></a></h2>
+<p>To make our Motion Block with <code class="docutils literal notranslate"><span class="pre">moveX()</span></code> and <code class="docutils literal notranslate"><span class="pre">moveY()</span></code> Methods work within
+a scan Block, we have to write some logic that will call these at the correct
+point in a <a class="reference external" href="https://scanpointgenerator.readthedocs.io">Scan Point Generator</a> specified scan. We do this by registering
+a number of hooks, like in the <a class="reference internal" href="detector.html#detector-tutorial"><span class="std std-ref">Detector Tutorial</span></a>. Let’s look at the start of
+<code class="docutils literal notranslate"><span class="pre">./malcolm/modules/demo/parts/motionchildpart.py</span></code> to see this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">add_call_types</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="n">Block</span><span class="p">,</span> <span class="n">Future</span><span class="p">,</span> <span class="n">PartRegistrar</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules</span> <span class="kn">import</span> <span class="n">builtin</span><span class="p">,</span> <span class="n">scanning</span>
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;If &gt;0, raise an exception at the end of this step&quot;</span><span class="p">):</span>
+    <span class="n">AExceptionStep</span> <span class="o">=</span> <span class="nb">int</span>
+
+
+<span class="k">class</span> <span class="nc">MaybeMover</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Helper object that does async moves on an axis of a child Block only if</span>
+<span class="sd">    the last move didn&#39;t move it to that position&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_move</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_move_async</span> <span class="o">=</span> <span class="n">child</span><span class="p">[</span><span class="n">axis</span> <span class="o">+</span> <span class="s2">&quot;Move_async&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">maybe_move_async</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">fs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Future</span><span class="p">],</span> <span class="n">position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;If the last move was not to position, start an async move there,</span>
+<span class="sd">        adding the Future to fs&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_move</span> <span class="o">!=</span> <span class="n">position</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_last_move</span> <span class="o">=</span> <span class="n">position</span>
+            <span class="n">fs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_move_async</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="n">duration</span><span class="p">))</span>
+
+
+<span class="k">class</span> <span class="nc">MotionChildPart</span><span class="p">(</span><span class="n">builtin</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">ChildPart</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Provides control of a `counter_block` within a `RunnableController`&quot;&quot;&quot;</span>
+
+    <span class="c1"># Generator instance</span>
+    <span class="n">_generator</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AGenerator</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1"># Where to start</span>
+    <span class="n">_completed_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># How many steps to do</span>
+    <span class="n">_steps_to_do</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># When to blow up</span>
+    <span class="n">_exception_step</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># Which axes we should be moving</span>
+    <span class="n">_axes_to_move</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AAxesToMove</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1"># MaybeMover objects to help with async moves</span>
+    <span class="n">_movers</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">MaybeMover</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">registrar</span><span class="p">:</span> <span class="n">PartRegistrar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">registrar</span><span class="p">)</span>
+        <span class="c1"># Hooks</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">PreConfigureHook</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reload</span><span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ConfigureHook</span><span class="p">,</span>
+                <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">PostRunArmedHook</span><span class="p">,</span>
+                <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">SeekHook</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">on_configure</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">RunHook</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_run</span><span class="p">)</span>
+        <span class="c1"># Tell the controller to expose some extra configure parameters</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ConfigureHook</span><span class="o">.</span><span class="n">create_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_configure</span><span class="p">))</span>
+
+</pre></div>
+</div>
+<p>After the imports and annotype definitions as in previous tutorials, we come
+to the class definition. We inherit from <a class="reference internal" href="../build/builtin/parts_api.html#malcolm.modules.builtin.parts.ChildPart" title="malcolm.modules.builtin.parts.ChildPart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ChildPart</span></code></a> as we are controlling a
+single child Block. As we have no new arguments to pass to <code class="docutils literal notranslate"><span class="pre">__init__</span></code>, we
+don’t need to override it, we can just declare all the instance variables as
+class variables with value <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">setup()</span></code> function is where we register our Hooks, as we will see below.
+We also report that we take an extra configure argument <code class="docutils literal notranslate"><span class="pre">exceptionStep</span></code>.</p>
+</section>
+<section id="hooking-into-configure">
+<h2>Hooking into configure()<a class="headerlink" href="#hooking-into-configure" title="Permalink to this headline"></a></h2>
+<p>There is a <a class="reference internal" href="../build/scanning/hooks_api.html#malcolm.modules.scanning.hooks.PreConfigureHook" title="malcolm.modules.scanning.hooks.PreConfigureHook"><code class="xref any py py-class docutils literal notranslate"><span class="pre">PreConfigureHook</span></code></a> that is called at the start of <code class="docutils literal notranslate"><span class="pre">configure()</span></code>.
+It’s purpose is reloading the last saved design to the child Block, as we
+see in its documentation:</p>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.hooks.</span></span><span class="sig-name descname"><span class="pre">PreConfigureHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">part:</span> <span class="pre">Anno(name='APart'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.part.Part'&gt;</span></em>, <em class="sig-param"><span class="pre">description='The</span> <span class="pre">part</span> <span class="pre">that</span> <span class="pre">has</span> <span class="pre">attached</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">Hook')</span></em>, <em class="sig-param"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></em>, <em class="sig-param"><span class="pre">**kwargs:</span> <span class="pre">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/scanning/hooks.html#PreConfigureHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Called before configure() to get the device into a suitable state to
+report status and run configure. Typically will load a saved design.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
+<li><p><strong>context</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<p>We hook this to our <a class="reference internal" href="../build/builtin/parts_api.html#malcolm.modules.builtin.parts.ChildPart.reload" title="malcolm.modules.builtin.parts.ChildPart.reload"><code class="xref py py-meth docutils literal notranslate"><span class="pre">reload()</span></code></a>
+function to accomplish this. The purpose of this is so that if someone messes
+with our counter settings between scans, or another scan Block reconfigures
+them, they should be restored before anything else is done.</p>
+<p>We then hook our <code class="docutils literal notranslate"><span class="pre">on_configure()</span></code> method into the <a class="reference internal" href="../build/scanning/hooks_api.html#malcolm.modules.scanning.hooks.ConfigureHook" title="malcolm.modules.scanning.hooks.ConfigureHook"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ConfigureHook</span></code></a>, <a class="reference internal" href="../build/scanning/hooks_api.html#malcolm.modules.scanning.hooks.PostRunArmedHook" title="malcolm.modules.scanning.hooks.PostRunArmedHook"><code class="xref any py py-class docutils literal notranslate"><span class="pre">PostRunArmedHook</span></code></a> and <a class="reference internal" href="../build/scanning/hooks_api.html#malcolm.modules.scanning.hooks.SeekHook" title="malcolm.modules.scanning.hooks.SeekHook"><code class="xref any py py-class docutils literal notranslate"><span class="pre">SeekHook</span></code></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_configure</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">,</span>
+        <span class="n">completed_steps</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ACompletedSteps</span><span class="p">,</span>
+        <span class="n">steps_to_do</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AStepsToDo</span><span class="p">,</span>
+        <span class="c1"># The following were passed from user calling configure()</span>
+        <span class="n">generator</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AGenerator</span><span class="p">,</span>
+        <span class="n">axesToMove</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AAxesToMove</span><span class="p">,</span>
+        <span class="n">exceptionStep</span><span class="p">:</span> <span class="n">AExceptionStep</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+        <span class="c1"># Store the generator and place we need to start</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_generator</span> <span class="o">=</span> <span class="n">generator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_completed_steps</span> <span class="o">=</span> <span class="n">completed_steps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_steps_to_do</span> <span class="o">=</span> <span class="n">steps_to_do</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_exception_step</span> <span class="o">=</span> <span class="n">exceptionStep</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_axes_to_move</span> <span class="o">=</span> <span class="n">axesToMove</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_movers</span> <span class="o">=</span> <span class="p">{</span><span class="n">axis</span><span class="p">:</span> <span class="n">MaybeMover</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">axesToMove</span><span class="p">}</span>
+        <span class="c1"># Move to start (instantly)</span>
+        <span class="n">first_point</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">get_point</span><span class="p">(</span><span class="n">completed_steps</span><span class="p">)</span>
+        <span class="n">fs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Future</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">axis</span><span class="p">,</span> <span class="n">mover</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_movers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">mover</span><span class="o">.</span><span class="n">maybe_move_async</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span> <span class="n">first_point</span><span class="o">.</span><span class="n">lower</span><span class="p">[</span><span class="n">axis</span><span class="p">])</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">wait_all_futures</span><span class="p">(</span><span class="n">fs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This just stores the parameters to configure, ready to start the run, then moves
+to the start of the scan. It does this by using a <code class="docutils literal notranslate"><span class="pre">MaybeMover</span></code> helper object
+written just for this class. Lets look at this now:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MaybeMover</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Helper object that does async moves on an axis of a child Block only if</span>
+<span class="sd">    the last move didn&#39;t move it to that position&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_move</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_move_async</span> <span class="o">=</span> <span class="n">child</span><span class="p">[</span><span class="n">axis</span> <span class="o">+</span> <span class="s2">&quot;Move_async&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">maybe_move_async</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">fs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Future</span><span class="p">],</span> <span class="n">position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;If the last move was not to position, start an async move there,</span>
+<span class="sd">        adding the Future to fs&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_move</span> <span class="o">!=</span> <span class="n">position</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_last_move</span> <span class="o">=</span> <span class="n">position</span>
+            <span class="n">fs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_move_async</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="n">duration</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>When we construct this object, we pass the child Block and the axis we expect
+it move. It then grabs the asynchronous version of the axis move Method. The
+<a class="reference internal" href="../api/core_api.html#malcolm.core.Block" title="malcolm.core.Block"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Block</span></code></a> object supports both item and attribute axis, so <code class="docutils literal notranslate"><span class="pre">child.xMove</span></code> and
+<code class="docutils literal notranslate"><span class="pre">child[&quot;xMove&quot;]</span></code> are equivalent. It also creates asynchronous versions of
+these methods accessible with <code class="docutils literal notranslate"><span class="pre">child.xMove_async</span></code> and <code class="docutils literal notranslate"><span class="pre">child[&quot;xMove_async&quot;]</span></code>
+that kick off the Method, and return <a class="reference internal" href="../reference/glossary.html#future"><span class="std std-ref">Future</span></a> objects that can be waited on,
+and will hold the result of the method when it is finished.</p>
+</section>
+<section id="hooking-into-run">
+<h2>Hooking into run()<a class="headerlink" href="#hooking-into-run" title="Permalink to this headline"></a></h2>
+<p>We also hooked our <code class="docutils literal notranslate"><span class="pre">on_run()</span></code> Method into the <a class="reference internal" href="../build/scanning/hooks_api.html#malcolm.modules.scanning.hooks.RunHook" title="malcolm.modules.scanning.hooks.RunHook"><code class="xref any py py-class docutils literal notranslate"><span class="pre">RunHook</span></code></a>. Let’s look at what it
+does:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Start time so everything is relative</span>
+        <span class="n">point_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_completed_steps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_completed_steps</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steps_to_do</span>
+        <span class="p">):</span>
+            <span class="c1"># Get the point we are meant to be scanning</span>
+            <span class="n">point</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generator</span><span class="o">.</span><span class="n">get_point</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="c1"># Update when the next point is due and how long motor moves take</span>
+            <span class="n">point_time</span> <span class="o">+=</span> <span class="n">point</span><span class="o">.</span><span class="n">duration</span>
+            <span class="n">move_duration</span> <span class="o">=</span> <span class="n">point_time</span> <span class="o">-</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="c1"># Move the children (instantly) to the beginning of the point, then</span>
+            <span class="c1"># start them moving to the end of the point, taking duration</span>
+            <span class="c1"># seconds, populating a list of futures we can wait on</span>
+            <span class="n">fs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Future</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">axis</span><span class="p">,</span> <span class="n">mover</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_movers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">mover</span><span class="o">.</span><span class="n">maybe_move_async</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span> <span class="n">point</span><span class="o">.</span><span class="n">lower</span><span class="p">[</span><span class="n">axis</span><span class="p">])</span>
+                <span class="n">mover</span><span class="o">.</span><span class="n">maybe_move_async</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span> <span class="n">point</span><span class="o">.</span><span class="n">upper</span><span class="p">[</span><span class="n">axis</span><span class="p">],</span> <span class="n">move_duration</span><span class="p">)</span>
+            <span class="c1"># Wait for the moves to complete</span>
+            <span class="n">context</span><span class="o">.</span><span class="n">wait_all_futures</span><span class="p">(</span><span class="n">fs</span><span class="p">)</span>
+            <span class="c1"># Update the point as being complete</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">registrar</span><span class="p">,</span> <span class="s2">&quot;Part has no registrar&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">registrar</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">RunProgressInfo</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="c1"># If this is the exception step then blow up</span>
+            <span class="k">assert</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exception_step</span><span class="p">,</span> <span class="p">(</span>
+                <span class="s2">&quot;Raising exception at step </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exception_step</span>
+            <span class="p">)</span>
+</pre></div>
+</div>
+<p>We iterate through each of the step indexes that we need to produce, getting a
+scanpointgenerator.Point object for each one. We pick out the lower and upper
+bounds of the axes we were told to move during that Point, move them
+instantaneously to the lower bound, then move them to the upper bound
+so they finish together at the end of the Point duration, all using our mover
+helper object defined in <code class="docutils literal notranslate"><span class="pre">on_configure()</span></code>. If a move occurs, a <a class="reference internal" href="../api/core_api.html#malcolm.core.Future" title="malcolm.core.Future"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Future</span></code></a> will
+be added to the <code class="docutils literal notranslate"><span class="pre">fs</span></code> list, which we can wait on by using
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">wait_all_futures()</span></code>.</p>
+<p>Finally we <code class="xref py py-meth docutils literal notranslate"><span class="pre">report()</span></code> a <a class="reference internal" href="../build/scanning/infos_api.html#malcolm.modules.scanning.infos.RunProgressInfo" title="malcolm.modules.scanning.infos.RunProgressInfo"><code class="xref any py py-class docutils literal notranslate"><span class="pre">RunProgressInfo</span></code></a> with the
+current step number so the client knows how much of the scan is complete, and
+check the current step number to see if we were meant to blow up here.</p>
+</section>
+<section id="running-a-scan">
+<h2>Running a Scan<a class="headerlink" href="#running-a-scan" title="Permalink to this headline"></a></h2>
+<p>Let’s start up the example and see it in action:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[me@mypc pymalcolm]$ pipenv run imalcolm malcolm/modules/demo/DEMO-SCANNING.yaml
+Loading malcolm...
+Python 3.7.2 (default, Jan 20 2020, 11:03:41)
+Type &#39;copyright&#39;, &#39;credits&#39; or &#39;license&#39; for more information
+IPython 7.19.0 -- An enhanced Interactive Python. Type &#39;?&#39; for help.
+
+
+Welcome to iMalcolm.
+
+self.mri_list:
+    [&#39;MOTION:COUNTERX&#39;, &#39;MOTION:COUNTERY&#39;, &#39;MOTION&#39;, &#39;DETECTOR&#39;, &#39;SCAN&#39;, &#39;WEB&#39;]
+
+# To create a view of an existing Block
+block = self.block_view(&quot;&lt;mri&gt;&quot;)
+
+# To create a proxy of a Block in another Malcolm
+self.make_proxy(&quot;&lt;client_comms_mri&gt;&quot;, &quot;&lt;mri&gt;&quot;)
+block = self.block_view(&quot;&lt;mri&gt;&quot;)
+
+# To view state of Blocks in a GUI
+!firefox localhost:8008
+
+In [1]:
+</pre></div>
+</div>
+<p>Then run a scan by configuring and running with a generator. If you have
+completed the <a class="reference internal" href="detector.html#detector-tutorial"><span class="std std-ref">Detector Tutorial</span></a> then some of the lines will be in your
+<a class="reference external" href="https://ipython.org">IPython</a> history and you can get them back by pressing the up arrow:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">scanpointgenerator</span> <span class="kn">import</span> <span class="n">LineGenerator</span><span class="p">,</span> <span class="n">CompoundGenerator</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">json_encode</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">yline</span> <span class="o">=</span> <span class="n">LineGenerator</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;mm&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">xline</span> <span class="o">=</span> <span class="n">LineGenerator</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;mm&quot;</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">alternate</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="n">generator</span> <span class="o">=</span> <span class="n">CompoundGenerator</span><span class="p">([</span><span class="n">yline</span><span class="p">,</span> <span class="n">xline</span><span class="p">],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="n">duration</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="n">json_encode</span><span class="p">(</span><span class="n">generator</span><span class="p">)</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="s1">&#39;{&quot;typeid&quot;: &quot;scanpointgenerator:generator/CompoundGenerator:1.0&quot;, &quot;generators&quot;: [{&quot;typeid&quot;: &quot;scanpointgenerator:generator/LineGenerator:1.0&quot;, &quot;axes&quot;: [&quot;y&quot;], &quot;units&quot;: [&quot;mm&quot;], &quot;start&quot;: [0.0], &quot;stop&quot;: [1.0], &quot;size&quot;: 6, &quot;alternate&quot;: false}, {&quot;typeid&quot;: &quot;scanpointgenerator:generator/LineGenerator:1.0&quot;, &quot;axes&quot;: [&quot;x&quot;], &quot;units&quot;: [&quot;mm&quot;], &quot;start&quot;: [0.0], &quot;stop&quot;: [1.0], &quot;size&quot;: 5, &quot;alternate&quot;: true}], &quot;excluders&quot;: [], &quot;mutators&quot;: [], &quot;duration&quot;: 0.5, &quot;continuous&quot;: true}&#39;</span>
+</pre></div>
+</div>
+<p>Then we can open <a class="reference external" href="http://localhost:8008/gui/SCAN">http://localhost:8008/gui/SCAN</a> to see the <strong>SCAN</strong>
+Block on the left. If we expand the Configure method and click Edit by the
+Generator field we can paste in our JSON, then set fileDir to “/tmp” and
+click Configure to arm:</p>
+<img alt="../_images/scanning_0.png" src="../_images/scanning_0.png" />
+<p>You can now click Run, and a scan will be run. Clicking through the layers
+SCAN -&gt; Layout -&gt; MOT -&gt; Layout -&gt; x -&gt; COUNTER -&gt; Info will get you to
+<a class="reference external" href="http://localhost:8008/gui/SCAN/layout/MOT/layout/x/counter/.info">http://localhost:8008/gui/SCAN/layout/MOT/layout/x/counter/.info</a> and clicking
+on the PLOT tab will show the x axis has moved on its snake scanning trajectory:</p>
+<img alt="../_images/scanning_1.png" src="../_images/scanning_1.png" />
+<p>The DETECTOR block will write 30 frames to <code class="docutils literal notranslate"><span class="pre">/tmp/DET.h5</span></code> as the previous
+example. The reason the filename and dataset names are a little different is
+because the detector dataset takes its name from the parent controlling part,
+defaulting to <code class="docutils literal notranslate"><span class="pre">det</span></code> if not specified. In <code class="docutils literal notranslate"><span class="pre">scan_block.yaml</span></code> we defined the
+for <code class="docutils literal notranslate"><span class="pre">DETECTOR</span></code> to have name <code class="docutils literal notranslate"><span class="pre">DET</span></code>, hence the name of the written file.
+Apart from this, the file is identical to previous example.</p>
+<p>From here you can click Configure again, run another scan, and try pausing,
+resuming and seeking within the scan. You can seek by setting <code class="docutils literal notranslate"><span class="pre">completedSteps</span></code>
+after pausing, or by running the <code class="docutils literal notranslate"><span class="pre">pause()</span></code> method again while paused with
+a different <code class="docutils literal notranslate"><span class="pre">lastGoodStep</span></code> value. You could try setting an <code class="docutils literal notranslate"><span class="pre">exceptionStep</span></code>
+to simulate a scan that fails at a particular point.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../build/scanning/util_api.html#malcolm.modules.scanning.util.RunnableStates" title="malcolm.modules.scanning.util.RunnableStates"><code class="xref any py py-class docutils literal notranslate"><span class="pre">RunnableStates</span></code></a> has more information about what functions you can
+run in different Block states.</p>
+</div>
+</section>
+<section id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline"></a></h2>
+<p>This tutorial has given us an understanding of how a <a class="reference internal" href="../reference/glossary.html#scan-layer"><span class="std std-ref">Scan Layer</span></a> Block can
+co-ordinate various <a class="reference internal" href="../reference/glossary.html#device-layer"><span class="std std-ref">Device Layer</span></a> Blocks to perform a continuous scan. In the
+next tutorial we will see how to add an <a class="reference external" href="https://epics.anl.gov/">EPICS</a> <a class="reference external" href="https://cars9.uchicago.edu/software/epics/areaDetector.html">areaDetector</a> Device Block
+to our scan, and make a scan with multiple detectors.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="detector.html" class="btn btn-neutral float-left" title="Detector Tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="areadetector.html" class="btn btn-neutral float-right" title="AreaDetector Tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

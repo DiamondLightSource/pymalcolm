@@ -1,0 +1,6 @@
+
+malcolm.modules.ADPandABlocks.blocks
+====================================
+
+.. automodule:: malcolm.modules.ADPandABlocks.blocks
+    :members:

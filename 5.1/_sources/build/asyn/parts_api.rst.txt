@@ -1,0 +1,6 @@
+
+malcolm.modules.asyn.parts
+==========================
+
+.. automodule:: malcolm.modules.asyn.parts
+    :members:

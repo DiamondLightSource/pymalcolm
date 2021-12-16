@@ -1,0 +1,6 @@
+
+malcolm.modules.scanning.hooks
+==============================
+
+.. automodule:: malcolm.modules.scanning.hooks
+    :members:

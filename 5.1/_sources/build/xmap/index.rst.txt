@@ -1,0 +1,12 @@
+
+xmap
+====
+
+.. module:: malcolm.modules.xmap
+
+.. toctree::
+    :maxdepth: 1
+    :caption: malcolm.modules.xmap
+
+    blocks <blocks_api.rst>
+    parts <parts_api.rst>
