@@ -3,7 +3,7 @@ import shutil
 from xml.etree import ElementTree
 
 import cothread
-from mock import MagicMock, call
+from mock import MagicMock, call, patch
 from scanpointgenerator import CompoundGenerator, LineGenerator, SpiralGenerator
 
 from malcolm.core import Context, Future, Process, TimeoutError
@@ -486,3 +486,21 @@ class TestHDFWriterPart(ChildTestCase):
         child.xmlErrorMsg.value = "XML description file cannot be opened"
 
         self.assertRaises(AssertionError, self.o._check_xml_is_valid, child)
+
+    @patch("malcolm.modules.ADCore.parts.hdfwriterpart.time.time")
+    def test_has_file_writing_stalled(self, time_mock):
+        self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
+
+        # First case - no last capture update so return False
+        assert self.o._has_file_writing_stalled() is False
+
+        # Set up the attributes and mock for the last two cases
+        self.o.last_capture_update = 10.0
+        self.o.frame_timeout = 60.0
+        time_mock.side_effect = [30.0, 71.0]
+
+        # Second case - last capture update is within frame timeout
+        assert self.o._has_file_writing_stalled() is False
+
+        # Final case - last capture update is outside frame timeout
+        assert self.o._has_file_writing_stalled() is True
