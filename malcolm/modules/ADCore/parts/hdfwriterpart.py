@@ -558,12 +558,11 @@ class HDFWriterPart(builtin.parts.ChildPart):
                 # This is ok, means we aren't done yet, so flush
                 self._flush_if_still_writing(child)
                 # Check it hasn't been too long since the last frame was written
-                if self.last_capture_update:
-                    if self._has_file_writing_stalled():
-                        timeout_message = self._get_file_writing_stalled_error_message(
-                            child
-                        )
-                        raise TimeoutError(timeout_message)
+                if self._has_file_writing_stalled():
+                    timeout_message = self._get_file_writing_stalled_error_message(
+                        child
+                    )
+                    raise TimeoutError(timeout_message)
             else:
                 break
 
@@ -576,10 +575,12 @@ class HDFWriterPart(builtin.parts.ChildPart):
             # Flush the hdf frames to disk
             child.flushNow()
 
-    def _has_file_writing_stalled(self):
-        return time.time() > self.last_capture_update + self.frame_timeout
+    def _has_file_writing_stalled(self) -> bool:
+        if self.last_capture_update:
+            return time.time() > self.last_capture_update + self.frame_timeout
+        return False
 
-    def _get_file_writing_stalled_error_message(self, child):
+    def _get_file_writing_stalled_error_message(self, child) -> str:
         unique_id = child.uniqueId.value
         num_captured = child.numCapturedReadback.value - self.num_captured_offset
         frames_expected = self.done_when_captured - self.num_captured_offset
