@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.core.views &mdash; malcolm 5.0+5.g166dc803 documentation</title>
+  <title>malcolm.core.views &mdash; malcolm 5.0+15.g2d501e92 documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
@@ -331,7 +331,12 @@
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">when_value_matches</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">good_value</span><span class="p">,</span> <span class="n">bad_values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">event_timeout</span><span class="o">=</span><span class="kc">None</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">attr</span><span class="p">,</span>
+        <span class="n">good_value</span><span class="p">,</span>
+        <span class="n">bad_values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">event_timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="n">future</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">when_value_matches_async</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">good_value</span><span class="p">,</span> <span class="n">bad_values</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_context</span><span class="o">.</span><span class="n">wait_all_futures</span><span class="p">(</span>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.ADCore.parts.hdfwriterpart &mdash; malcolm 5.0+5.g166dc803 documentation</title>
+  <title>malcolm.modules.ADCore.parts.hdfwriterpart &mdash; malcolm 5.0+15.g2d501e92 documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -516,12 +516,12 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">mri</span><span class="p">)</span>
         <span class="c1"># Future for the start action</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">start_future</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Future</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">array_future</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Future</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">done_when_reaches</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="c1"># This is when uniqueId last updated</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">last_id_update</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="c1"># CompletedSteps = arrayCounter + self.uniqueid_offset</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">uniqueid_offset</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">first_array_future</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Future</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">done_when_captured</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># This is when the readback for number of frames captured last updated</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_capture_update</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Store number of frames captured for progress reporting</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_captured_offset</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="c1"># The HDF5 layout file we write to say where the datasets go</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">layout_filename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">runs_on_windows</span> <span class="o">=</span> <span class="n">runs_on_windows</span>
@@ -581,9 +581,9 @@
         <span class="n">formatName</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AFormatName</span> <span class="o">=</span> <span class="s2">&quot;det&quot;</span><span class="p">,</span>
         <span class="n">fileTemplate</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AFileTemplate</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.h5&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">UInfos</span><span class="p">:</span>
-        <span class="c1"># On initial configure, expect to get the demanded number of frames</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">done_when_reaches</span> <span class="o">=</span> <span class="n">completed_steps</span> <span class="o">+</span> <span class="n">steps_to_do</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">uniqueid_offset</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># What the capture readback value should say at the end of the run</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">done_when_captured</span> <span class="o">=</span> <span class="n">completed_steps</span> <span class="o">+</span> <span class="n">steps_to_do</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_captured_offset</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="c1"># Calculate how long to wait before marking this scan as stalled</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">frame_timeout</span> <span class="o">=</span> <span class="n">FRAME_TIMEOUT</span>
         <span class="k">if</span> <span class="n">generator</span><span class="o">.</span><span class="n">duration</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -639,12 +639,13 @@
         <span class="n">context</span><span class="o">.</span><span class="n">wait_all_futures</span><span class="p">(</span><span class="n">futures</span><span class="p">)</span>
         <span class="c1"># Reset numCapture back to 0</span>
         <span class="n">child</span><span class="o">.</span><span class="n">numCapture</span><span class="o">.</span><span class="n">put_value</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-        <span class="c1"># Start the plugin</span>
+        <span class="c1"># Create a future for the file capture</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">start_future</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">start_async</span><span class="p">()</span>
-        <span class="c1"># Start a future waiting for the first array</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">array_future</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">when_value_matches_async</span><span class="p">(</span>
+        <span class="c1"># Create a future waiting for the first array</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">first_array_future</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">when_value_matches_async</span><span class="p">(</span>
             <span class="s2">&quot;arrayCounterReadback&quot;</span><span class="p">,</span> <span class="n">greater_than_zero</span>
         <span class="p">)</span>
+        <span class="c1"># Check XML</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_xml_is_valid</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
         <span class="c1"># Return the dataset information</span>
         <span class="n">dataset_infos</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
@@ -661,38 +662,54 @@
 <div class="viewcode-block" id="HDFWriterPart.on_seek"><a class="viewcode-back" href="../../../../../build/ADCore/parts_api.html#malcolm.modules.ADCore.parts.HDFWriterPart.on_seek">[docs]</a>    <span class="nd">@add_call_types</span>
     <span class="k">def</span> <span class="nf">on_seek</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">,</span>
         <span class="n">completed_steps</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ACompletedSteps</span><span class="p">,</span>
         <span class="n">steps_to_do</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AStepsToDo</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># This is rewinding or setting up for another batch, so the detector</span>
-        <span class="c1"># will skip to a uniqueID that has not been produced yet</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">uniqueid_offset</span> <span class="o">=</span> <span class="n">completed_steps</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">done_when_reaches</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">done_when_reaches</span> <span class="o">+=</span> <span class="n">steps_to_do</span></div>
+        <span class="c1"># Reset array counter to zero so we can check for the first frame</span>
+        <span class="c1"># to arrive in the plugin</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+        <span class="n">child</span><span class="o">.</span><span class="n">arrayCounter</span><span class="o">.</span><span class="n">put_value</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># Calculate the expected number of captured frames. This is in case</span>
+        <span class="c1"># pausing has resulted in extra frames that will be overwritten</span>
+        <span class="c1"># using the position plugin when resuming.</span>
+        <span class="n">num_captured</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">numCapturedReadback</span><span class="o">.</span><span class="n">value</span>
+        <span class="c1"># Offset for progress updates</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_captured_offset</span> <span class="o">=</span> <span class="n">num_captured</span> <span class="o">-</span> <span class="n">completed_steps</span>
+        <span class="c1"># Expected captured readback after this batch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">done_when_captured</span> <span class="o">=</span> <span class="n">num_captured</span> <span class="o">+</span> <span class="n">steps_to_do</span></div>
 
 <div class="viewcode-block" id="HDFWriterPart.on_run"><a class="viewcode-back" href="../../../../../build/ADCore/parts_api.html#malcolm.modules.ADCore.parts.HDFWriterPart.on_run">[docs]</a>    <span class="nd">@add_call_types</span>
     <span class="k">def</span> <span class="nf">on_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">context</span><span class="o">.</span><span class="n">wait_all_futures</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array_future</span><span class="p">)</span>
-        <span class="n">context</span><span class="o">.</span><span class="n">unsubscribe_all</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">last_id_update</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Wait for the first array to arrive in the plugin without a timeout</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">wait_all_futures</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">first_array_future</span><span class="p">)</span>
+
+        <span class="c1"># Get the child block</span>
         <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
-        <span class="n">child</span><span class="o">.</span><span class="n">uniqueId</span><span class="o">.</span><span class="n">subscribe_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">update_completed_steps</span><span class="p">)</span>
-        <span class="n">f_done</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">when_value_matches_async</span><span class="p">(</span><span class="s2">&quot;uniqueId&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">done_when_reaches</span><span class="p">)</span>
+
+        <span class="c1"># Update progress based on number of frames written</span>
+        <span class="n">child</span><span class="o">.</span><span class="n">numCapturedReadback</span><span class="o">.</span><span class="n">subscribe_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">update_completed_steps</span><span class="p">)</span>
+
+        <span class="c1"># Wait for the number of captured frames to reach the target</span>
+        <span class="n">f_done</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">when_value_matches_async</span><span class="p">(</span>
+            <span class="s2">&quot;numCapturedReadback&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">done_when_captured</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_capture_update</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Use a regular timeout so we can request a manual flush every second</span>
                 <span class="n">context</span><span class="o">.</span><span class="n">wait_all_futures</span><span class="p">(</span><span class="n">f_done</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">TimeoutError</span><span class="p">:</span>
                 <span class="c1"># This is ok, means we aren&#39;t done yet, so flush</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_flush_if_still_writing</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
-                <span class="c1"># Check it hasn&#39;t been too long</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_id_update</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_id_update</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_timeout</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span>
-                            <span class="s2">&quot;HDF writer stalled, last updated at </span><span class="si">%s</span><span class="s2">&quot;</span>
-                            <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">last_id_update</span><span class="p">)</span>
-                        <span class="p">)</span>
-                <span class="c1"># TODO: what happens if we miss the last frame?</span>
+                <span class="c1"># Check it hasn&#39;t been too long since the last frame was written</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_file_writing_stalled</span><span class="p">():</span>
+                    <span class="n">timeout_message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_file_writing_stalled_error_message</span><span class="p">(</span>
+                        <span class="n">child</span>
+                    <span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span><span class="n">timeout_message</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span></div>
+                <span class="k">break</span></div>
 
     <span class="k">def</span> <span class="nf">_flush_if_still_writing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
         <span class="c1"># Check that the start_future hasn&#39;t errored</span>
@@ -702,6 +719,22 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Flush the hdf frames to disk</span>
             <span class="n">child</span><span class="o">.</span><span class="n">flushNow</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_has_file_writing_stalled</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_capture_update</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_capture_update</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_timeout</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">_get_file_writing_stalled_error_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">unique_id</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">uniqueId</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">num_captured</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">numCapturedReadback</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_captured_offset</span>
+        <span class="n">frames_expected</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">done_when_captured</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_captured_offset</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: writing stalled at </span><span class="si">{</span><span class="n">num_captured</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">frames_expected</span><span class="si">}</span><span class="s2"> &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;captured (readback offset is </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_captured_offset</span><span class="si">}</span><span class="s2">). &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Last update was </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">last_capture_update</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;last uniqueId received in plugin was </span><span class="si">{</span><span class="n">unique_id</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
 
 <div class="viewcode-block" id="HDFWriterPart.on_post_run_ready"><a class="viewcode-back" href="../../../../../build/ADCore/parts_api.html#malcolm.modules.ADCore.parts.HDFWriterPart.on_post_run_ready">[docs]</a>    <span class="nd">@add_call_types</span>
     <span class="k">def</span> <span class="nf">on_post_run_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -715,12 +748,12 @@
         <span class="n">child</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span></div>
 
     <span class="k">def</span> <span class="nf">update_completed_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">completed_steps</span> <span class="o">=</span> <span class="n">value</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">uniqueid_offset</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">last_id_update</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">registrar</span><span class="p">,</span> <span class="s2">&quot;No registrar assigned&quot;</span>
+        <span class="n">completed_steps</span> <span class="o">=</span> <span class="n">value</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_captured_offset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_capture_update</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="c1"># Stop negative values being reported for first call when subscribing</span>
         <span class="c1"># when we have a non-zero offset.</span>
         <span class="k">if</span> <span class="n">completed_steps</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">registrar</span><span class="p">,</span> <span class="s2">&quot;No registrar assigned&quot;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">registrar</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">RunProgressInfo</span><span class="p">(</span><span class="n">completed_steps</span><span class="p">))</span></div>
 </pre></div>
 

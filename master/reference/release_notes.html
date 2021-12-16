@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Change Log &mdash; malcolm 5.0+5.g166dc803 documentation</title>
+  <title>Change Log &mdash; malcolm 5.0+15.g2d501e92 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -207,6 +207,10 @@ times by ~20% for small scans and ~40% for large scans when profile point
 generation dominates. A Yield has also been added so the thread suspends
 after each batch so it doesn’t block other threads for the entire profile
 calculation, which previously caused timeout problems with other components.</p></li>
+<li><p>HdfWriterPart now looks at the number of frames written to the HDF5 file to
+track progress and check for stalling issues. This means a scan will now fail
+instead of succeed if the file plugin receives all frames but doesn’t write
+them.</p></li>
 </ul>
 <p>Fixed:</p>
 <ul class="simple">
