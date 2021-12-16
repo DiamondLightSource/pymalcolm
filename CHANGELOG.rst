@@ -14,6 +14,10 @@ Changed:
   generation dominates. A Yield has also been added so the thread suspends
   after each batch so it doesn't block other threads for the entire profile
   calculation, which previously caused timeout problems with other components.
+- HdfWriterPart now looks at the number of frames written to the HDF5 file to
+  track progress and check for stalling issues. This means a scan will now fail
+  instead of succeed if the file plugin receives all frames but doesn't write
+  them.
 
 Fixed:
 
