@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Change Log &mdash; malcolm 5.1+1.gd0845581 documentation</title>
+  <title>Change Log &mdash; malcolm 5.1+2.gd73006d9 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -72,6 +72,7 @@
 <li class="toctree-l1"><a class="reference internal" href="triggering.html">Trajectory Scan Triggering</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Change Log</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#unreleased">Unreleased</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id1">5.1 - 2021-12-16</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id2">5.0 - 2021-11-30</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id3">4.6 - 2021-08-17</a></li>
@@ -197,6 +198,18 @@
 <h1>Change Log<a class="headerlink" href="#change-log" title="Permalink to this headline"></a></h1>
 <p>All notable changes to this project will be documented in this file.
 This project adheres to <a class="reference external" href="http://semver.org/">Semantic Versioning</a> after 2-1.</p>
+<section id="unreleased">
+<h2>Unreleased<a class="headerlink" href="#unreleased" title="Permalink to this headline"></a></h2>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>Fixed bug with PmacChildPart when performing large scans with start of row
+triggering. If the profile generation completed with more than 4,000 points
+to upload, then during Run you would encounter an error “Why do we still have
+points?”. This is because the logic expected the profile to be able to written
+in a single write (i.e. under 2000 points). Now multiple profile writes are
+allowed when the brick is not providing a trigger at every point.</p></li>
+</ul>
+</section>
 <section id="id1">
 <h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/5.0...5.1">5.1</a> - 2021-12-16<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
 <p>Changed:</p>
