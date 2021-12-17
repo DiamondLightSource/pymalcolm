@@ -3,6 +3,18 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
+Unreleased
+----------
+
+Fixed:
+
+- Fixed bug with PmacChildPart when performing large scans with start of row
+  triggering. If the profile generation completed with more than 4,000 points
+  to upload, then during Run you would encounter an error "Why do we still have
+  points?". This is because the logic expected the profile to be able to written
+  in a single write (i.e. under 2000 points). Now multiple profile writes are
+  allowed when the brick is not providing a trigger at every point.
+
 `5.1`_ - 2021-12-16
 -------------------
 
