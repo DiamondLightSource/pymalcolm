@@ -88,6 +88,8 @@ class PmacChildPart(builtin.parts.ChildPart):
         self.end_index = 0
         # Where we should stop loading points
         self.steps_up_to = 0
+        # Have we already added a tail-off for the current profile
+        self.tail_off_added = False
         # What sort of triggers to output
         self.output_triggers: Optional[MotionTrigger] = None
         # Profile points that haven't been sent yet
@@ -365,6 +367,9 @@ class PmacChildPart(builtin.parts.ChildPart):
         # Store what sort of triggers we need to output
         self.output_triggers = get_motion_trigger(part_info)
 
+        # Reset tail off state
+        self.tail_off_added = False
+
         # Check if we should be taking part in the scan
         motion_axes = get_motion_axes(generator, axesToMove)
         if self.taking_part_in_scan(part_info, motion_axes):
@@ -449,7 +454,8 @@ class PmacChildPart(builtin.parts.ChildPart):
                 self.loading = False
 
             # If we got to the end, there might be some leftover points that
-            # need to be appended to finish
+            # need to be appended to finish - but we should wait until we can
+            # append them.
             if (
                 not self.loading
                 and self.end_index == self.steps_up_to
@@ -458,9 +464,14 @@ class PmacChildPart(builtin.parts.ChildPart):
                 self.loading = True
                 self.calculate_generator_profile(self.end_index)
                 self.write_profile_points(child)
-                assert not self.profile["timeArray"], (
-                    "Why do we still have points? %s" % self.profile
-                )
+                # If we are triggering at every point, then only one load should be
+                # required. Otherwise for row triggering we may have more than 2000
+                # points left in the profile due to sparse generation, so skip the
+                # check.
+                if self.output_triggers == scanning.infos.MotionTrigger.EVERY_POINT:
+                    assert not self.profile["timeArray"], (
+                        "Why do we still have points? %s" % self.profile
+                    )
                 self.loading = False
 
     def write_profile_points(self, child, cs_port=None):
@@ -497,7 +508,6 @@ class PmacChildPart(builtin.parts.ChildPart):
             else:
                 v = np.array(v, np.float64)
             args[k] = v
-
         child.writeProfile(**args)
 
     user_program = {
@@ -938,7 +948,8 @@ class PmacChildPart(builtin.parts.ChildPart):
             needs_tail_off = self.create_generator_profile_every_point(start_index)
         else:
             needs_tail_off = self.create_generator_profile_sparse(start_index)
-        if needs_tail_off:
+        # Only add the tail off point if we haven't done so already
+        if needs_tail_off and not self.tail_off_added:
             self.add_tail_off()
 
     def add_tail_off(self):
@@ -967,6 +978,7 @@ class PmacChildPart(builtin.parts.ChildPart):
             axis_points,
         )
         self.end_index = self.steps_up_to
+        self.tail_off_added = True
 
     def insert_gap(self, point, next_point, completed_steps):
         # Work out the velocity profiles of how to move to the start
