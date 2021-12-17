@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.pmac.parts.pmacchildpart &mdash; malcolm 5.0+18.gec3e10f3 documentation</title>
+  <title>malcolm.modules.pmac.parts.pmacchildpart &mdash; malcolm 5.1+1.gd0845581 documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -31,7 +31,7 @@
             <img src="../../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.0
+                5.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -233,6 +233,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">end_index</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="c1"># Where we should stop loading points</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">steps_up_to</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># Have we already added a tail-off for the current profile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tail_off_added</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="c1"># What sort of triggers to output</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">output_triggers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MotionTrigger</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="c1"># Profile points that haven&#39;t been sent yet</span>
@@ -510,6 +512,9 @@
         <span class="c1"># Store what sort of triggers we need to output</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">output_triggers</span> <span class="o">=</span> <span class="n">get_motion_trigger</span><span class="p">(</span><span class="n">part_info</span><span class="p">)</span>
 
+        <span class="c1"># Reset tail off state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tail_off_added</span> <span class="o">=</span> <span class="kc">False</span>
+
         <span class="c1"># Check if we should be taking part in the scan</span>
         <span class="n">motion_axes</span> <span class="o">=</span> <span class="n">get_motion_axes</span><span class="p">(</span><span class="n">generator</span><span class="p">,</span> <span class="n">axesToMove</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">taking_part_in_scan</span><span class="p">(</span><span class="n">part_info</span><span class="p">,</span> <span class="n">motion_axes</span><span class="p">):</span>
@@ -594,7 +599,8 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">loading</span> <span class="o">=</span> <span class="kc">False</span>
 
             <span class="c1"># If we got to the end, there might be some leftover points that</span>
-            <span class="c1"># need to be appended to finish</span>
+            <span class="c1"># need to be appended to finish - but we should wait until we can</span>
+            <span class="c1"># append them.</span>
             <span class="k">if</span> <span class="p">(</span>
                 <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">loading</span>
                 <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_index</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps_up_to</span>
@@ -603,9 +609,14 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">loading</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">calculate_generator_profile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">end_index</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">write_profile_points</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
-                <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">profile</span><span class="p">[</span><span class="s2">&quot;timeArray&quot;</span><span class="p">],</span> <span class="p">(</span>
-                    <span class="s2">&quot;Why do we still have points? </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">profile</span>
-                <span class="p">)</span>
+                <span class="c1"># If we are triggering at every point, then only one load should be</span>
+                <span class="c1"># required. Otherwise for row triggering we may have more than 2000</span>
+                <span class="c1"># points left in the profile due to sparse generation, so skip the</span>
+                <span class="c1"># check.</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_triggers</span> <span class="o">==</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">MotionTrigger</span><span class="o">.</span><span class="n">EVERY_POINT</span><span class="p">:</span>
+                    <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">profile</span><span class="p">[</span><span class="s2">&quot;timeArray&quot;</span><span class="p">],</span> <span class="p">(</span>
+                        <span class="s2">&quot;Why do we still have points? </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">profile</span>
+                    <span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">loading</span> <span class="o">=</span> <span class="kc">False</span>
 
 <div class="viewcode-block" id="PmacChildPart.write_profile_points"><a class="viewcode-back" href="../../../../../build/pmac/parts_api.html#malcolm.modules.pmac.parts.PmacChildPart.write_profile_points">[docs]</a>    <span class="k">def</span> <span class="nf">write_profile_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="n">cs_port</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -642,7 +653,6 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
             <span class="n">args</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
-
         <span class="n">child</span><span class="o">.</span><span class="n">writeProfile</span><span class="p">(</span><span class="o">**</span><span class="n">args</span><span class="p">)</span></div>
 
     <span class="n">user_program</span> <span class="o">=</span> <span class="p">{</span>
@@ -1083,7 +1093,8 @@
             <span class="n">needs_tail_off</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_generator_profile_every_point</span><span class="p">(</span><span class="n">start_index</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">needs_tail_off</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_generator_profile_sparse</span><span class="p">(</span><span class="n">start_index</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">needs_tail_off</span><span class="p">:</span>
+        <span class="c1"># Only add the tail off point if we haven&#39;t done so already</span>
+        <span class="k">if</span> <span class="n">needs_tail_off</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">tail_off_added</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add_tail_off</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">add_tail_off</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1112,6 +1123,7 @@
             <span class="n">axis_points</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">end_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps_up_to</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tail_off_added</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="k">def</span> <span class="nf">insert_gap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point</span><span class="p">,</span> <span class="n">next_point</span><span class="p">,</span> <span class="n">completed_steps</span><span class="p">):</span>
         <span class="c1"># Work out the velocity profiles of how to move to the start</span>
