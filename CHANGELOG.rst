@@ -3,8 +3,18 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
-Unreleased
-----------
+`5.2`_ - 2022-01-05
+-------------------
+
+Changed:
+
+- DetectorDriverPart's attributesFile is no longer saved in a design. This stops
+  the warning when a populated Attributes to Capture table on the web GUI
+  creates its own attributes file and overwrites the attributeFile value saved
+  in the design (if present). If wanting to capture additional NDAttributes you
+  can now either use the Attributes to Capture table and save it to your design,
+  or alternatively create the attributes XML file via iocbuilder and set the
+  attributes filepath at IOC startup.
 
 Fixed:
 
@@ -723,6 +733,7 @@ Added:
 
 - Initial release with hello world and websocket comms
 
+.. _5.2: https://github.com/dls-controls/pymalcolm/compare/5.1...5.2
 .. _5.1: https://github.com/dls-controls/pymalcolm/compare/5.0...5.1
 .. _5.0: https://github.com/dls-controls/pymalcolm/compare/4.6...5.0
 .. _4.6: https://github.com/dls-controls/pymalcolm/compare/4.5...4.6
