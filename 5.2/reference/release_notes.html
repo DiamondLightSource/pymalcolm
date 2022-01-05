@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Change Log &mdash; malcolm 5.2 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="malcolm.core" href="../api/core_api.html" />
+    <link rel="prev" title="Contributing" href="contributing.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../contents.html" class="icon icon-home"> malcolm
+            <img src="../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                5.2
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Change Log</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id1">5.2 - 2022-01-05</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">5.1 - 2021-12-16</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">5.0 - 2021-11-30</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id4">4.6 - 2021-08-17</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id5">4.5 - 2021-04-27</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id6">4.4 - 2021-03-02</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id7">4-3-1 - 2020-09-18</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#b8-2020-04-17">4-2b8 - 2020-04-17</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#b6-2020-02-10">4-2b6 - 2020-02-10</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#b5-2020-01-27">4-2b5 - 2020-01-27</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#b4-2019-12-04">4-2b4 - 2019-12-04</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#b3-2019-11-28">4-2b3 - 2019-11-28</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#b2-2019-11-27">4-2b2 - 2019-11-27</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#b1-2019-11-27">4-2b1 - 2019-11-27</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id8">4-1-1 - 2019-11-18</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id9">4-1 - 2019-09-26</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id10">4-0 - 2019-07-05</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#b2-2019-06-20">4-0b2 - 2019-06-20</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#b1-2019-05-03">4-0b1 - 2019-05-03</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id11">3-5-1 - 2019-07-26</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id12">3-5 - 2019-06-17</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id13">3-4-1 - 2019-05-08</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id14">3-4 - 2019-03-28</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id15">3-3 - 2019-02-19</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id16">3-2 - 2019-01-21</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id17">3-0 - 2019-01-04</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#b2-2018-12-05">3-0b2 - 2018-12-05</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#b1-2018-12-04">3-0b1 - 2018-12-04</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#a9-2018-12-03">3-0a9 - 2018-12-03</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#a8-2018-11-30">3-0a8 - 2018-11-30</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#a7-2018-11-27">3-0a7 - 2018-11-27</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#a6-2018-11-05">3-0a6 - 2018-11-05</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#a5-2018-10-17">3-0a5 - 2018-10-17</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#a4-2018-09-24">3-0a4 - 2018-09-24</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#a3-2018-07-25">3-0a3 - 2018-07-25</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#a2-2018-07-17">3-0a2 - 2018-07-17</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#a1-2018-07-16">3-0a1 - 2018-07-16</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id18">2-3-1 - 2018-06-07</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id19">2-3 - 2018-05-31</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id20">2-2 - 2018-03-29</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id21">2-1 - 2017-08-30</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#a6-2016-10-03">2-0a6 - 2016-10-03</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#a5-2016-10-03">2-0a5 - 2016-10-03</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#a4-2016-09-20">2-0a4 - 2016-09-20</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#a3-2016-08-31">2-0a3 - 2016-08-31</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#a2-2016-08-30">2-0a2 - 2016-08-30</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#a1-2016-08-15">2-0a1 - 2016-08-15</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+  <!-- Add versions for selected branches + tags -->
+  <p class="caption">
+    <span class="caption-text">Versions</span>
+  </p>
+  <ul id="versions"/>
+  <script>
+    // Add any branches to appear in the side pane here, tags will be added below
+    // Will only appear if docs are built and pushed in gh-pages
+    var versions = ['main', 'master'];
+    var dirs = new Set();
+    function addVersion(name) {
+      if (dirs.has(name)) {
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        a.href = 'https://dls-controls.github.io/malcolm/' + name;
+        a.innerText = name;
+        li.appendChild(a)
+        document.getElementById('versions').appendChild(li);
+      }
+    }
+    Promise.all([
+      // Find gh-pages directories and populate `dirs`
+      fetch("https://api.github.com/repos/dls-controls/malcolm/contents?ref=gh-pages")
+      .then(response => response.json())
+      .then(data => data.forEach(function(e) {
+        if (e.type == "dir") dirs.add(e.name);
+      })),
+      // Add tags to `versions`
+      fetch('https://api.github.com/repos/dls-controls/malcolm/tags')
+        .then(response => response.json())
+        .then(data => data.forEach(function(e) {
+          versions.push(e.name);
+        }))
+      ]).then(_ => versions.forEach(addVersion))
+  </script>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../contents.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Change Log</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/reference/release_notes.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="change-log">
+<h1>Change Log<a class="headerlink" href="#change-log" title="Permalink to this headline"></a></h1>
+<p>All notable changes to this project will be documented in this file.
+This project adheres to <a class="reference external" href="http://semver.org/">Semantic Versioning</a> after 2-1.</p>
+<section id="id1">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/5.1...5.2">5.2</a> - 2022-01-05<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
+<p>Changed:</p>
+<ul class="simple">
+<li><p>DetectorDriverPart’s attributesFile is no longer saved in a design. This stops
+the warning when a populated Attributes to Capture table on the web GUI
+creates its own attributes file and overwrites the attributeFile value saved
+in the design (if present). If wanting to capture additional NDAttributes you
+can now either use the Attributes to Capture table and save it to your design,
+or alternatively create the attributes XML file via iocbuilder and set the
+attributes filepath at IOC startup.</p></li>
+</ul>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>Fixed bug with PmacChildPart when performing large scans with start of row
+triggering. If the profile generation completed with more than 4,000 points
+to upload, then during Run you would encounter an error “Why do we still have
+points?”. This is because the logic expected the profile to be able to written
+in a single write (i.e. under 2000 points). Now multiple profile writes are
+allowed when the brick is not providing a trigger at every point.</p></li>
+</ul>
+</section>
+<section id="id2">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/5.0...5.1">5.1</a> - 2021-12-16<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
+<p>Changed:</p>
+<ul class="simple">
+<li><p>PmacChildPart’s profile generation is now split into two methods based on the
+trigger type. The loop performance has been improved, reducing configure
+times by ~20% for small scans and ~40% for large scans when profile point
+generation dominates. A Yield has also been added so the thread suspends
+after each batch so it doesn’t block other threads for the entire profile
+calculation, which previously caused timeout problems with other components.</p></li>
+<li><p>HDFWriterPart now looks at the number of frames written to the HDF5 file to
+track progress and check for stalling issues. This means a scan will now fail
+instead of succeed if the file plugin receives all frames but doesn’t write
+them.</p></li>
+</ul>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>PmacChildPart now only reports progress if the brick is providing a trigger
+at every point. This means the scan block’s RunnableController should now
+report more useful progress for scans using start of row triggering or
+position compare.</p></li>
+</ul>
+</section>
+<section id="id3">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/4.6...5.0">5.0</a> - 2021-11-30<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h2>
+<p>Changed:</p>
+<ul>
+<li><p>BeamSelectorPart now supports holding at each position for different lengths
+of time based on a mutator modifying delay_after, allowing different exposures
+to be used for each detector.</p></li>
+<li><p>ExposureDeadTimePart now has fixed values for readout time and frequency
+accuracy. These are configurable in the YAML but are then fixed at runtime.
+This fixes a bug in validate where the resulting exposure time is different if
+the target design is not loaded before you run validate/configure.</p>
+<p>Designs for detector runnable blocks which contain these entries should be
+removed (remove the following lines from the JSON design files):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="s2">&quot;readoutTime&quot;</span><span class="p">:</span> <span class="mf">0.005</span><span class="p">,</span>
+<span class="o">-</span> <span class="s2">&quot;frequencyAccuracy&quot;</span><span class="p">:</span> <span class="mf">50.0</span>
+</pre></div>
+</div>
+<p>You can then set the readout time when you instantiate the runnable block
+(frequency accuracy is probably fine at the default value of 50.0):</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">ADPco.blocks.pco_runnable_block</span><span class="p">:</span>
+  <span class="nt">mri_prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BL11K-ML-PCO-01</span>
+  <span class="nt">pv_prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BL11K-EA-PCO-01</span>
+  <span class="nt">config_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(config_dir)</span>
+  <span class="nt">windows_drive</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">G</span>
+  <span class="nt">path_prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/dls</span>
+  <span class="nt">readout_time</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.005</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<p>Added:</p>
+<ul>
+<li><p>DetectorDriverPart now has optional min_acquire_period argument. When set to a
+non-zero value this is checked during validation against the generator
+duration to ensure the detector can keep up during the acquisition.</p></li>
+<li><p>Calculate generator duration automatically. If a duration of 0.0 is given
+then some parts will attempt to calculate a duration based on other parameters
+combined with other information they have. The parts which tweak duration are:</p>
+<ul class="simple">
+<li><p>PmacChildPart</p></li>
+<li><p>PandAPulseTriggerPart</p></li>
+<li><p>DetectorDriverPart</p></li>
+<li><p>ExposureDeadtimePart</p></li>
+<li><p>AndorDriverPart</p></li>
+<li><p>ReframePluginPart</p></li>
+<li><p>BeamSelectorPart (based on a fixed move time)</p></li>
+</ul>
+<p>The largest tweak to generator duration by any part will win, and then all
+parts will validate with the new duration to check they are happy with the
+tweaked value. This can happen iteratively with up to 10 attempts per
+RunnableController.</p>
+</li>
+</ul>
+<p>Fixed</p>
+<ul class="simple">
+<li><p>Malcolm designs will no longer overwrite XMAP energy values</p></li>
+<li><p>The PreRunHook will now run at the beginning of do_run() so that it also runs
+on a resume.</p></li>
+</ul>
+</section>
+<section id="id4">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/4.5...4.6">4.6</a> - 2021-08-17<a class="headerlink" href="#id4" title="Permalink to this headline"></a></h2>
+<p>Changed:</p>
+<ul class="simple">
+<li><p>Added Unrolling block to be able to enable/disable unrolling part in scan
+design</p></li>
+</ul>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>Servo interrupt frequency getter for PowerPMAC (needed at scan
+configuring phase), this requires pmac version 2-5-5 or higher</p></li>
+<li><p>Issue with PositionLabellerPart subscription not adding more positions after
+the initial 5000 points</p></li>
+<li><p>OdinWriterPart cast data type to lower case for NumPy V1.2</p></li>
+<li><p>Nexus templates for Savu Kinematics added to package data</p></li>
+<li><p>Savu Kinematics now supports no axes to move</p></li>
+<li><p>Scans with breakpoints and pausing are now working again after breaking in
+the 4.5 release</p></li>
+</ul>
+</section>
+<section id="id5">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/4.4...4.5">4.5</a> - 2021-04-27<a class="headerlink" href="#id5" title="Permalink to this headline"></a></h2>
+<p>Changed:</p>
+<ul class="simple">
+<li><p>Improvements when scanning with software outer axes:</p>
+<ul>
+<li><p>Hardware-triggered detectors remain armed between inner scans</p></li>
+<li><p>By default detectors write to single files for the whole scan instead of
+for each inner scan</p></li>
+<li><p>For ADOdin you can set frames per block and blocks per file to control
+number of output files</p></li>
+</ul>
+</li>
+</ul>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>Tutorials now described using pipenv</p></li>
+<li><p>/tmp no longer becomes a git repository when running tests</p></li>
+<li><p>Template designs now included in package data</p></li>
+<li><p>Fixed issue where existing block wiring would not be shown before a design is
+loaded</p></li>
+</ul>
+</section>
+<section id="id6">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/4-3-1...4.4">4.4</a> - 2021-03-02<a class="headerlink" href="#id6" title="Permalink to this headline"></a></h2>
+<p>Added:</p>
+<ul class="simple">
+<li><p>ADEthercat support - two runnable blocks for hardware and software-triggered
+devices</p></li>
+<li><p>Breakpoints - these can be defined for the scan to be broken up into
+multiple sections where run returns in an armed state</p></li>
+<li><p>GitHub Actions CI</p></li>
+<li><p>Directory monitor support - checks whether all expected file mounts are
+present on a server during configure</p></li>
+</ul>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>GitLab CI script</p></li>
+</ul>
+<p>Removed:</p>
+<ul class="simple">
+<li><p>Travis CI</p></li>
+</ul>
+</section>
+<section id="id7">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/4-2b8...4-3-1">4-3-1</a> - 2020-09-18<a class="headerlink" href="#id7" title="Permalink to this headline"></a></h2>
+<p>Added:</p>
+<ul class="simple">
+<li><p>Converted module to Python 3</p>
+<ul>
+<li><p>Converted type hint comments to Python 3 annotations</p></li>
+<li><p>Now use setup.cfg</p></li>
+<li><p>Converted code base style using Black</p></li>
+<li><p>Removed Python 2 compatibility methods</p></li>
+</ul>
+</li>
+<li><p>Created Pipfile for use with pipenv</p></li>
+<li><p>Added mypy, Black and Flake8 checks to Travis</p></li>
+<li><p>Added Gitlab CI script</p></li>
+<li><p>Added check during configure for valid layout file for HDFWriterPart</p></li>
+<li><p>Added KinematicsSavuPart</p></li>
+<li><p>Added ADPcoWin support</p></li>
+<li><p>Added ffmpeg viewer as block in ADCore</p></li>
+</ul>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>Fix hang when calling unsubscribe in callback</p></li>
+</ul>
+</section>
+<section id="b8-2020-04-17">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/4-2b6...4-2b8">4-2b8</a> - 2020-04-17<a class="headerlink" href="#b8-2020-04-17" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>Fix for ‘sharksfin issue’ - start positions in trajectories were
+incorrect for high acceleration motors</p></li>
+<li><p>Fix for sparse trajectories accumlating errors - rename the velocity modes
+as follows and use mode 2 at the end of each sparse row</p>
+<ul>
+<li><p>0 = Average Previous to Next</p></li>
+<li><p>1 = Real Previous to Current</p></li>
+<li><p>2 = Average Previous to Current (replaces Average Current to Next)</p></li>
+<li><p>3 = Zero Velocity</p></li>
+</ul>
+</li>
+<li><p>Recommend V3 of the pmac Trajectory Program but allow V2 (using V2 will
+invalidate the fix above which only applies to long, sparse trajectories)</p></li>
+</ul>
+</section>
+<section id="b6-2020-02-10">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/4-2b5...4-2b6">4-2b6</a> - 2020-02-10<a class="headerlink" href="#b6-2020-02-10" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>Added NDArrayAddress CAPart to NDPlugin parts</p></li>
+</ul>
+</section>
+<section id="b5-2020-01-27">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/4-2b4...4-2b5">4-2b5</a> - 2020-01-27<a class="headerlink" href="#b5-2020-01-27" title="Permalink to this headline"></a></h2>
+<p>Added:</p>
+<ul class="simple">
+<li><p>Added builtin.defines.tmp_dir and use it in tutorials</p></li>
+<li><p>Web GUI now has editable meter and table row seek</p></li>
+<li><p>Added +DELAY badge to PandA</p></li>
+</ul>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>Updated docs for training course</p></li>
+<li><p>Added BeamSelectorPart for DIAD</p></li>
+</ul>
+</section>
+<section id="b4-2019-12-04">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/4-2b3...4-2b4">4-2b4</a> - 2019-12-04<a class="headerlink" href="#b4-2019-12-04" title="Permalink to this headline"></a></h2>
+<p>Added:</p>
+<ul class="simple">
+<li><p>configure() now returns validated parameters rather than nothing</p></li>
+</ul>
+</section>
+<section id="b3-2019-11-28">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/4-2b2...4-2b3">4-2b3</a> - 2019-11-28<a class="headerlink" href="#b3-2019-11-28" title="Permalink to this headline"></a></h2>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>pmac now makes sparse points when doing PCOMP (previously it only did this on
+start of row triggering)</p></li>
+<li><p>Improve git logging of saved names</p></li>
+<li><p>Expose axis setpoint datasets on a per-file basis</p></li>
+</ul>
+</section>
+<section id="b2-2019-11-27">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/4-2b1...4-2b2">4-2b2</a> - 2019-11-27<a class="headerlink" href="#b2-2019-11-27" title="Permalink to this headline"></a></h2>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>PandASeqTriggerPart now reconfigures on seek to work with 3D scans</p></li>
+<li><p>PandA Blocks with HEALTH don’t cause an error</p></li>
+</ul>
+</section>
+<section id="b1-2019-11-27">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/4-1-1...4-2b1">4-2b1</a> - 2019-11-27<a class="headerlink" href="#b1-2019-11-27" title="Permalink to this headline"></a></h2>
+<p>Changed:</p>
+<ul class="simple">
+<li><p>Scanpointgenerator bumped to 3.0.0. Adds post_delay attribute to
+CompoundGenerator</p></li>
+<li><p>Add enable column to Detector Table</p></li>
+<li><p>PMAC module now calculates more efficient turnaround points, only placing
+PVT points where acceleration changes. This requires pmac module version
+2-4-14 or later, which includes a new version of the trajectory scan program</p></li>
+<li><p>Versioning now taken from git describe</p></li>
+</ul>
+<p>Added:</p>
+<ul class="simple">
+<li><p>System Block to hold comms modules and supporting IOCs that can be
+extracted from the DLS redirector</p></li>
+<li><p>Profiling web server contains link to its profiles page</p></li>
+<li><p>AttributePreRunPart to allow shutters to be opened and closed around runs</p></li>
+<li><p>Added SysLog JSON logger which will be forwarded to Graylog</p></li>
+<li><p>PandAPulseTriggerPart to multiply out triggers for detectors</p></li>
+</ul>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>Clear dataset table on reset()</p></li>
+<li><p>Fixed restful server support</p></li>
+<li><p>Bugfixes for malcolmjs (widget:meter, navbar, colours) bumping release to
+1.7.8</p></li>
+</ul>
+</section>
+<section id="id8">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/4-1...4-1-1">4-1-1</a> - 2019-11-18<a class="headerlink" href="#id8" title="Permalink to this headline"></a></h2>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>Faulty detectors marked as such at startup, and only fail the scan they are in
+if they are used (visible and configured in Detector Table)</p></li>
+<li><p>Fix Odin dataset names passed via the Dataset Table</p></li>
+</ul>
+</section>
+<section id="id9">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/4-0...4-1">4-1</a> - 2019-09-26<a class="headerlink" href="#id9" title="Permalink to this headline"></a></h2>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>Increased xml generation performance of position labeller</p></li>
+<li><p>Bugfixes for malcolmjs, bumping release from 1.7.1 -&gt; 1.7.4</p></li>
+</ul>
+<p>Changed:</p>
+<ul class="simple">
+<li><p>panda_pcomp is now panda_seq_trigger</p></li>
+<li><p>Bump dependency on scanpointgenerator to 2.3</p></li>
+<li><p>Mark scans as stalled if detector doesn’t produce frames for more than 60s</p></li>
+</ul>
+<p>Added:</p>
+<ul class="simple">
+<li><p>maxVelocityPercent added to motors. Allows turnaround times to be tweaked
+without changing VMAX</p></li>
+<li><p>axisNumber attribute to pmac motors</p></li>
+<li><p>UnrollingPart to allow Odin detectors to squash scan dimensions together
+to avoid unperformant VDS snake scans</p></li>
+<li><p>Some new icons for PandA</p></li>
+<li><p>PMAC now generates sparse points for lines when not being asked to trigger</p></li>
+<li><p>Preliminary Detector Table support to allow disabling detectors at configure()</p></li>
+</ul>
+</section>
+<section id="id10">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/4-0b2...4-0">4-0</a> - 2019-07-05<a class="headerlink" href="#id10" title="Permalink to this headline"></a></h2>
+<p>Added:</p>
+<ul class="simple">
+<li><p>PMAC Row Gate only trigger option for use with PandASeqTriggerPart</p></li>
+<li><p>PandA tutorial</p></li>
+</ul>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>Now works with Python3.7</p></li>
+<li><p>ADCore HDF Writer now always writes at least some Attributes</p></li>
+</ul>
+</section>
+<section id="b2-2019-06-20">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/4-0b1...4-0b2">4-0b2</a> - 2019-06-20<a class="headerlink" href="#b2-2019-06-20" title="Permalink to this headline"></a></h2>
+<p>Changed:</p>
+<ul class="simple">
+<li><p>All PV arguments are now pv_prefix, not prefix</p></li>
+</ul>
+<p>Added:</p>
+<ul class="simple">
+<li><p>PMAC Tutorial</p></li>
+<li><p>Live and Dead frame template for PandA</p></li>
+</ul>
+</section>
+<section id="b1-2019-05-03">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/3-5-1...4-0b1">4-0b1</a> - 2019-05-03<a class="headerlink" href="#b1-2019-05-03" title="Permalink to this headline"></a></h2>
+<p>Changed:</p>
+<ul class="simple">
+<li><p>CS and motors now show a link to parent PMAC, require pmac version 2-2</p></li>
+<li><p>Added Position Compare support for PandA via 2 SEQ blocks</p></li>
+<li><p>State machine. Added Finished state and Malcolm will now sit in Finished state
+after a scan</p></li>
+<li><p>CSMove changed to explicitly tell the motor controller how long it should take
+to do the move to start</p></li>
+<li><p>Changed seeking to not allow it to stop on a configured_step boundary</p></li>
+<li><p>Disable checking of scanpointgenerator units while GDA doesn’t send the right
+ones</p></li>
+<li><p>PMAC should now be a ManagerController, with PmacChildPart in the scan</p></li>
+<li><p>PandA now specifies datasets in a Bits and Positions table</p></li>
+<li><p>Web GUI now takes last run parameters from server for methods</p></li>
+<li><p>All identifiers in YAML must now be in snake_case</p></li>
+</ul>
+<p>Added:</p>
+<ul class="simple">
+<li><p>Make use of FlushNow in ADCore, which flushes data and attributes after every
+second during run() or when commanded through the record on HDF Writer. Files
+are kept open until next reset()/abort()</p></li>
+</ul>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>caactionpart now waits for good status, prevents timeout errors when doing
+caputs</p></li>
+</ul>
+<p>Added:</p>
+<ul class="simple">
+<li><p>ADEiger support</p></li>
+<li><p>Improved ADAndor support with knowledge of frame transfer mode</p></li>
+</ul>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>Race condition on making async logging at imalcolm startup</p></li>
+</ul>
+</section>
+<section id="id11">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/3-5...3-5-1">3-5-1</a> - 2019-07-26<a class="headerlink" href="#id11" title="Permalink to this headline"></a></h2>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>Added timeout if detector doesn’t produce frames for 120 seconds</p></li>
+</ul>
+</section>
+<section id="id12">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/3-4-1...3-5">3-5</a> - 2019-06-17<a class="headerlink" href="#id12" title="Permalink to this headline"></a></h2>
+<p>Changed:</p>
+<ul class="simple">
+<li><p>Removed local file logging</p></li>
+<li><p>Add pymalcolm version tag to Block meta</p></li>
+<li><p>Support no axis scans in PMAC. Requires pmac xxxx</p></li>
+<li><p>Do as many scanpointgenerator dimensions as possible to support acquire scans</p></li>
+</ul>
+</section>
+<section id="id13">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/3-4...3-4-1">3-4-1</a> - 2019-05-08<a class="headerlink" href="#id13" title="Permalink to this headline"></a></h2>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>no_save now saves everything apart from what is passed. Previously it was
+updating a set that was common to all ChildPart subclasses</p></li>
+<li><p>pmactrajectorypart no longer checks CS numbers on validate in case they are
+different to what is saved</p></li>
+</ul>
+</section>
+<section id="id14">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/3-3...3-4">3-4</a> - 2019-03-28<a class="headerlink" href="#id14" title="Permalink to this headline"></a></h2>
+<p>Added:</p>
+<ul class="simple">
+<li><p>ADOdin VDS and nexus file generation</p></li>
+<li><p>HDF Attributes control of NDAttributes written</p></li>
+<li><p>Windows detector file path support</p></li>
+<li><p>added precision and units to number attributes</p></li>
+</ul>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>Update to malcolmjs 1.6.2 to fix cryptic errors</p></li>
+</ul>
+</section>
+<section id="id15">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/3-2...3-3">3-3</a> - 2019-02-19<a class="headerlink" href="#id15" title="Permalink to this headline"></a></h2>
+<p>Added:</p>
+<ul class="simple">
+<li><p>Precision and units in a display_t for NumberMeta</p></li>
+<li><p>Number of frames per chunk in HDF writer Block saved</p></li>
+<li><p>Merlin support</p></li>
+<li><p>Waveform Table support with plot widget in malcolmjs</p></li>
+</ul>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>Disconnected PVs now keep their value, rather than zeroing it</p></li>
+<li><p>Update malcolmjs to 1.6.1</p></li>
+<li><p>Subtle bug with turnaround trajectories at high accelerations</p></li>
+<li><p>Made explicit the attributes that are managed by ChildPart and shouldn’t save</p></li>
+<li><p>save() now calls sync so file is flushed to disk (for PandA)</p></li>
+</ul>
+</section>
+<section id="id16">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/3-0...3-2">3-2</a> - 2019-01-21<a class="headerlink" href="#id16" title="Permalink to this headline"></a></h2>
+<p>Added:</p>
+<ul class="simple">
+<li><p>ADOdin support for start/stop (not rewind or VDS yet)</p></li>
+<li><p>Configurable poll period of PandA</p></li>
+</ul>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>Performance tweaks for PandA web control, which makes time_t unordered dict</p></li>
+<li><p>Better error message for wrong cs_port in a trajectory scan</p></li>
+</ul>
+</section>
+<section id="id17">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/3-0b2...3-0">3-0</a> - 2019-01-04<a class="headerlink" href="#id17" title="Permalink to this headline"></a></h2>
+<p>Changed:</p>
+<ul class="simple">
+<li><p>areaDetectors now set acquirePeriod = exposure + readout_time</p></li>
+<li><p>Andor calculates readout_time from the reported driver values</p></li>
+</ul>
+<p>Added:</p>
+<ul class="simple">
+<li><p>soft_trigger_modes to DetectorDriverPart to calculate is_hardware_triggered</p></li>
+</ul>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>Look at operstart rather than flags to see if link is down for WebSockets</p></li>
+<li><p>BrickPart can now take initial_visibility again (broken in 3-0b2)</p></li>
+<li><p>Add git username and email settings at save for git versions that support it</p></li>
+</ul>
+</section>
+<section id="b2-2018-12-05">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/3-0b1...3-0b2">3-0b2</a> - 2018-12-05<a class="headerlink" href="#b2-2018-12-05" title="Permalink to this headline"></a></h2>
+<p>Added:</p>
+<ul class="simple">
+<li><p>PYMALCOLM_STACK_SIZE environment variable setting coroutine stack size</p></li>
+<li><p>Default is still 0 (coroutines share stack)</p></li>
+<li><p>DetectorDriverPart now also writes acqurirePeriod if writing exposure</p></li>
+</ul>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>ADAndor now uses imageMode=Multiple not Fixed</p></li>
+<li><p>ADAndor now uses standard DetectorDriverPart</p></li>
+</ul>
+</section>
+<section id="b1-2018-12-04">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/3-0a9...3-0b1">3-0b1</a> - 2018-12-04<a class="headerlink" href="#b1-2018-12-04" title="Permalink to this headline"></a></h2>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>Trajectory scan back to level driven pulses as 24V GPIO has soft falling edges</p></li>
+<li><p>Update malcolmjs to 1.5.1</p></li>
+</ul>
+</section>
+<section id="a9-2018-12-03">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/3-0a8...3-0a9">3-0a9</a> - 2018-12-03<a class="headerlink" href="#a9-2018-12-03" title="Permalink to this headline"></a></h2>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>Websocket only validates for interfaces that are up</p></li>
+<li><p>Motor records have a number of records read only if they don’t need writing</p></li>
+</ul>
+</section>
+<section id="a8-2018-11-30">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/3-0a7...3-0a8">3-0a8</a> - 2018-11-30<a class="headerlink" href="#a8-2018-11-30" title="Permalink to this headline"></a></h2>
+<p>Changed:</p>
+<ul class="simple">
+<li><p>Websocket server now blocks write access from outside subnet</p></li>
+</ul>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>PandA now reports correct datasets to the HDF writer to link</p></li>
+<li><p>ADAndor does exposure time in a more standard way</p></li>
+</ul>
+</section>
+<section id="a7-2018-11-27">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/3-0a6...3-0a7">3-0a7</a> - 2018-11-27<a class="headerlink" href="#a7-2018-11-27" title="Permalink to this headline"></a></h2>
+<p>Changed:</p>
+<ul class="simple">
+<li><p>cothread is now a required dependency</p></li>
+</ul>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>Updated first 3 tutorials to match Malcolm3 changes</p></li>
+<li><p>Bug on saving a new design after loading design=””</p></li>
+</ul>
+<p>Updated:</p>
+<ul class="simple">
+<li><p>Web gui version (malcolmjs 1.5)</p></li>
+</ul>
+</section>
+<section id="a6-2018-11-05">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/3-0a5...3-0a6">3-0a6</a> - 2018-11-05<a class="headerlink" href="#a6-2018-11-05" title="Permalink to this headline"></a></h2>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>p4p imalcolm packaging and &gt;= handling</p></li>
+<li><p>Some documentation updates</p></li>
+</ul>
+</section>
+<section id="a5-2018-10-17">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/3-0a4...3-0a5">3-0a5</a> - 2018-10-17<a class="headerlink" href="#a5-2018-10-17" title="Permalink to this headline"></a></h2>
+<p>Changed:</p>
+<ul class="simple">
+<li><p>Web gui version (malcolmjs 1.3.1)</p></li>
+</ul>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>Minor bug with loading non-existant attributes failing</p></li>
+<li><p>Some internal issues in p4p pvAccess support</p></li>
+<li><p>ProxyController refactor, moving some code to ClientComms</p></li>
+</ul>
+</section>
+<section id="a4-2018-09-24">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/3-0a3...3-0a4">3-0a4</a> - 2018-09-24<a class="headerlink" href="#a4-2018-09-24" title="Permalink to this headline"></a></h2>
+<p>Added:</p>
+<ul class="simple">
+<li><p>Web gui (malcolmjs 1.1.0)</p></li>
+</ul>
+<p>Changed:</p>
+<ul class="simple">
+<li><p>PVAccess library from pvaPy to p4p. This means that monitor deltas and RPC
+errors now work as expected</p></li>
+</ul>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>PMAC trajectory pause waits for long enough to get GPIO signals</p></li>
+<li><p>MotorInfo.make_velocity_profile now works with small distances, zero
+velocities, and a min_time. A floating point rounding error was previously
+making it return less than min_time</p></li>
+<li><p>Make all areaDetectors wait on stop() for the acquire light to go out</p></li>
+<li><p>Updated DEFAULT_TIMEOUT to 10s</p></li>
+<li><p>Fixed pmac so that stretched pulses on a PROFILE_POINTS boundary work</p></li>
+<li><p>Added pollNow() for pmac GPIOs (requires pmac 2-1 or later)</p></li>
+<li><p>Enforce camelCaseFields and Alphanumeric + underscore + dash Part names</p></li>
+<li><p>Don’t load child runnable block designs at init</p></li>
+<li><p>Error message when a Field is not writeable now shows current state</p></li>
+<li><p>Check generator units match axis units in pmac cs part</p></li>
+<li><p>Added “get” option to Put to allow current value to be returned</p></li>
+<li><p>out/inports are now source/sinkPorts</p></li>
+<li><p>Added widget:tree and widget:multilinetextupdate and removed widget:title</p></li>
+<li><p>rbv_suff is now rbv_suffix</p></li>
+</ul>
+</section>
+<section id="a3-2018-07-25">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/3-0a2...3-0a3">3-0a3</a> - 2018-07-25<a class="headerlink" href="#a3-2018-07-25" title="Permalink to this headline"></a></h2>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>PMAC move to start uses the right timeout (instead of fixed 5 seconds)</p></li>
+<li><p>SimultaneousAxes now works from axesToMove instead of generator axes</p></li>
+</ul>
+</section>
+<section id="a2-2018-07-17">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/3-0a1...3-0a2">3-0a2</a> - 2018-07-17<a class="headerlink" href="#a2-2018-07-17" title="Permalink to this headline"></a></h2>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>DLS specific require paths</p></li>
+</ul>
+</section>
+<section id="a1-2018-07-16">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/2-3-1...3-0a1">3-0a1</a> - 2018-07-16<a class="headerlink" href="#a1-2018-07-16" title="Permalink to this headline"></a></h2>
+<p>Changed:</p>
+<ul class="simple">
+<li><p>All yaml keys are snake_case rather than camelCase</p></li>
+<li><p>Default webserver port is now 8008</p></li>
+<li><p>axesToMove attribute has changed to simultaneousAxes</p></li>
+<li><p>Load save more explicit with initial_visibility on ChildParts</p></li>
+<li><p>Python classes now use <a class="reference external" href="https://github.com/dls-controls/annotypes">annotypes</a> for type introspection</p></li>
+<li><p>Hook decorators are replaced by a more explicit Part.register_hooked()</p></li>
+<li><p>DetectorDriverPart refactored to give a better interface</p></li>
+</ul>
+</section>
+<section id="id18">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/2-3...2-3-1">2-3-1</a> - 2018-06-07<a class="headerlink" href="#id18" title="Permalink to this headline"></a></h2>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>Graylog config for DLS logging to point to graylog2</p></li>
+</ul>
+</section>
+<section id="id19">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/2-2...2-3">2-3</a> - 2018-05-31<a class="headerlink" href="#id19" title="Permalink to this headline"></a></h2>
+<p>Added:</p>
+<ul class="simple">
+<li><p>event_timeout to future waiting functions</p></li>
+</ul>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>HDF writer only waits up to 60s for new frames to tick before timing out</p></li>
+<li><p>Make hardware step scanning work</p></li>
+</ul>
+</section>
+<section id="id20">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/2-1...2-2">2-2</a> - 2018-03-29<a class="headerlink" href="#id20" title="Permalink to this headline"></a></h2>
+<p>Changed:</p>
+<ul class="simple">
+<li><p>Split arrayCounter into arrayCounter and arrayCounterReadback on ADCore ndarraybase_parts</p></li>
+</ul>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>Made RunnableChildPart handle a resume on a child that was Armed not Paused</p></li>
+<li><p>Made VDS depend on h5py 2.7.1 and vds-gen 0.2</p></li>
+<li><p>Removed flaky sum datasets of VDS</p></li>
+<li><p>Fix a regression where Xmap would not report its DET and sum datasets</p></li>
+</ul>
+<p>Added:</p>
+<ul class="simple">
+<li><p>dtacq support</p></li>
+</ul>
+</section>
+<section id="id21">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/2-0a6...2-1">2-1</a> - 2017-08-30<a class="headerlink" href="#id21" title="Permalink to this headline"></a></h2>
+<p>Changed:</p>
+<ul class="simple">
+<li><p>Major refactor, many breaking changes</p></li>
+</ul>
+</section>
+<section id="a6-2016-10-03">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/2-0a5...2-0a6">2-0a6</a> - 2016-10-03<a class="headerlink" href="#a6-2016-10-03" title="Permalink to this headline"></a></h2>
+<p>Changed:</p>
+<ul class="simple">
+<li><p>Attributes no longer serialize to NTAttribute, they now use NTScalar,
+NTScalarArray, NTTable or NTUnion</p></li>
+</ul>
+</section>
+<section id="a5-2016-10-03">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/2-0a4...2-0a5">2-0a5</a> - 2016-10-03<a class="headerlink" href="#a5-2016-10-03" title="Permalink to this headline"></a></h2>
+<p>Added:</p>
+<ul class="simple">
+<li><p>Support for PandABox</p></li>
+</ul>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>Extra padding point in turnaround in PMACTrajectoryScan</p></li>
+</ul>
+</section>
+<section id="a4-2016-09-20">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/2-0a3...2-0a4">2-0a4</a> - 2016-09-20<a class="headerlink" href="#a4-2016-09-20" title="Permalink to this headline"></a></h2>
+<p>Added:</p>
+<ul class="simple">
+<li><p>PMAC trajectory scanning</p></li>
+<li><p>Pause, Abort and Rewind</p></li>
+<li><p>PVA: Get and Post for client</p></li>
+</ul>
+</section>
+<section id="a3-2016-08-31">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/2-0a2...2-0a3">2-0a3</a> - 2016-08-31<a class="headerlink" href="#a3-2016-08-31" title="Permalink to this headline"></a></h2>
+<p>Added:</p>
+<ul class="simple">
+<li><p>imalcolm client script</p></li>
+</ul>
+</section>
+<section id="a2-2016-08-30">
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/2-0a1...2-0a2">2-0a2</a> - 2016-08-30<a class="headerlink" href="#a2-2016-08-30" title="Permalink to this headline"></a></h2>
+<p>Added:</p>
+<ul class="simple">
+<li><p>Ability to start comms from YAML</p></li>
+<li><p>PVAccess comms</p></li>
+<li><p>Dummy PMAC trajectory scan</p></li>
+</ul>
+</section>
+<section id="a1-2016-08-15">
+<h2>2-0a1 - 2016-08-15<a class="headerlink" href="#a1-2016-08-15" title="Permalink to this headline"></a></h2>
+<p>Added:</p>
+<ul class="simple">
+<li><p>Initial release with hello world and websocket comms</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="contributing.html" class="btn btn-neutral float-left" title="Contributing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../api/core_api.html" class="btn btn-neutral float-right" title="malcolm.core" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

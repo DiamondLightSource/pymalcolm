@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.modules.builtin.hooks &mdash; malcolm 5.2 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                5.2
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+  <!-- Add versions for selected branches + tags -->
+  <p class="caption">
+    <span class="caption-text">Versions</span>
+  </p>
+  <ul id="versions"/>
+  <script>
+    // Add any branches to appear in the side pane here, tags will be added below
+    // Will only appear if docs are built and pushed in gh-pages
+    var versions = ['main', 'master'];
+    var dirs = new Set();
+    function addVersion(name) {
+      if (dirs.has(name)) {
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        a.href = 'https://dls-controls.github.io/malcolm/' + name;
+        a.innerText = name;
+        li.appendChild(a)
+        document.getElementById('versions').appendChild(li);
+      }
+    }
+    Promise.all([
+      // Find gh-pages directories and populate `dirs`
+      fetch("https://api.github.com/repos/dls-controls/malcolm/contents?ref=gh-pages")
+      .then(response => response.json())
+      .then(data => data.forEach(function(e) {
+        if (e.type == "dir") dirs.add(e.name);
+      })),
+      // Add tags to `versions`
+      fetch('https://api.github.com/repos/dls-controls/malcolm/tags')
+        .then(response => response.json())
+        .then(data => data.forEach(function(e) {
+          versions.push(e.name);
+        }))
+      ]).then(_ => versions.forEach(addVersion))
+  </script>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>malcolm.modules.builtin.hooks</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for malcolm.modules.builtin.hooks</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">weakref</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">Array</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="n">Context</span><span class="p">,</span> <span class="n">Hook</span><span class="p">,</span> <span class="n">Part</span>
+
+<span class="kn">from</span> <span class="nn">.infos</span> <span class="kn">import</span> <span class="n">LayoutInfo</span><span class="p">,</span> <span class="n">PortInfo</span>
+<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">LayoutTable</span>
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;The part that has attached to the Hook&quot;</span><span class="p">):</span>
+    <span class="n">APart</span> <span class="o">=</span> <span class="n">Part</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Context that should be used to perform operations on child blocks&quot;</span><span class="p">):</span>
+    <span class="n">AContext</span> <span class="o">=</span> <span class="n">Context</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Whether this operation is taking place at init&quot;</span><span class="p">):</span>
+    <span class="n">AInit</span> <span class="o">=</span> <span class="nb">bool</span>
+
+<span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ControllerHook"><a class="viewcode-back" href="../../../../build/builtin/hooks_api.html#malcolm.modules.builtin.hooks.ControllerHook">[docs]</a><span class="k">class</span> <span class="nc">ControllerHook</span><span class="p">(</span><span class="n">Hook</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;A hook that takes Part and Context for use in controllers&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">part</span><span class="p">:</span> <span class="n">APart</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">AContext</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Pass a weak reference to our children</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">weakref</span><span class="o">.</span><span class="n">proxy</span><span class="p">(</span><span class="n">context</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># But hold a strong reference here to stop it disappearing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="n">context</span>
+
+    <span class="k">def</span> <span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># context might have been aborted but have nothing servicing</span>
+        <span class="c1"># the queue, we still want the legitimate messages on the</span>
+        <span class="c1"># queue so just tell it to ignore stops it got before now</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">ignore_stops_before_now</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="InitHook"><a class="viewcode-back" href="../../../../reference/statesets.html#malcolm.modules.builtin.hooks.InitHook">[docs]</a><span class="k">class</span> <span class="nc">InitHook</span><span class="p">(</span><span class="n">ControllerHook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Called when this controller is told to start by the process&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="ResetHook"><a class="viewcode-back" href="../../../../tutorials/detector.html#malcolm.modules.builtin.hooks.ResetHook">[docs]</a><span class="k">class</span> <span class="nc">ResetHook</span><span class="p">(</span><span class="n">ControllerHook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Called at reset() to reset all parts to a known good state&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="HaltHook"><a class="viewcode-back" href="../../../../reference/statesets.html#malcolm.modules.builtin.hooks.HaltHook">[docs]</a><span class="k">class</span> <span class="nc">HaltHook</span><span class="p">(</span><span class="n">ControllerHook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Called when this controller is told to halt&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="DisableHook"><a class="viewcode-back" href="../../../../reference/statesets.html#malcolm.modules.builtin.hooks.DisableHook">[docs]</a><span class="k">class</span> <span class="nc">DisableHook</span><span class="p">(</span><span class="n">ControllerHook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Called at disable() to stop all parts updating their attributes&quot;&quot;&quot;</span></div>
+
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;The PortInfos for all the parts&quot;</span><span class="p">):</span>
+    <span class="n">APortMap</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Array</span><span class="p">[</span><span class="n">PortInfo</span><span class="p">]]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span>
+    <span class="s2">&quot;A possibly partial set of changes to the layout table that &quot;</span> <span class="s2">&quot;should be acted on&quot;</span>
+<span class="p">):</span>
+    <span class="n">ALayoutTable</span> <span class="o">=</span> <span class="n">LayoutTable</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;The current layout information&quot;</span><span class="p">):</span>
+    <span class="n">ALayoutInfos</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="n">LayoutInfo</span><span class="p">]]</span>
+<span class="n">ULayoutInfos</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">ALayoutInfos</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">LayoutInfo</span><span class="p">],</span> <span class="n">LayoutInfo</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="LayoutHook"><a class="viewcode-back" href="../../../../reference/statesets.html#malcolm.modules.builtin.hooks.LayoutHook">[docs]</a><span class="k">class</span> <span class="nc">LayoutHook</span><span class="p">(</span><span class="n">ControllerHook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Called when layout table set and at init to update child layout&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">part</span><span class="p">:</span> <span class="n">APart</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">AContext</span><span class="p">,</span> <span class="n">ports</span><span class="p">:</span> <span class="n">APortMap</span><span class="p">,</span> <span class="n">layout</span><span class="p">:</span> <span class="n">ALayoutTable</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">ports</span><span class="o">=</span><span class="n">ports</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">)</span>
+
+<div class="viewcode-block" id="LayoutHook.validate_return"><a class="viewcode-back" href="../../../../reference/statesets.html#malcolm.modules.builtin.hooks.LayoutHook.validate_return">[docs]</a>    <span class="k">def</span> <span class="nf">validate_return</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ret</span><span class="p">:</span> <span class="n">ULayoutInfos</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ALayoutInfos</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Check that all returned infos are LayoutInfos&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ALayoutInfos</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span></div></div>
+
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;The serialized structure to load&quot;</span><span class="p">):</span>
+    <span class="n">AStructure</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>
+
+
+<div class="viewcode-block" id="LoadHook"><a class="viewcode-back" href="../../../../reference/statesets.html#malcolm.modules.builtin.hooks.LoadHook">[docs]</a><span class="k">class</span> <span class="nc">LoadHook</span><span class="p">(</span><span class="n">ControllerHook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Called at load() to load child settings from a structure&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">part</span><span class="p">:</span> <span class="n">APart</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">AContext</span><span class="p">,</span> <span class="n">structure</span><span class="p">:</span> <span class="n">AStructure</span><span class="p">,</span> <span class="n">init</span><span class="p">:</span> <span class="n">AInit</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">structure</span><span class="o">=</span><span class="n">structure</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="n">init</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SaveHook"><a class="viewcode-back" href="../../../../reference/statesets.html#malcolm.modules.builtin.hooks.SaveHook">[docs]</a><span class="k">class</span> <span class="nc">SaveHook</span><span class="p">(</span><span class="n">ControllerHook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Called at save() to serialize child settings into a dict structure&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SaveHook.validate_return"><a class="viewcode-back" href="../../../../reference/statesets.html#malcolm.modules.builtin.hooks.SaveHook.validate_return">[docs]</a>    <span class="k">def</span> <span class="nf">validate_return</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ret</span><span class="p">:</span> <span class="n">AStructure</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AStructure</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Check that a serialized structure is returned&quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span> <span class="s2">&quot;Expected a structure, got </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ret</span><span class="p">,)</span>
+        <span class="k">return</span> <span class="n">ret</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

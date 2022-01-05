@@ -1,0 +1,6 @@
+
+malcolm.modules.xmap.parts
+==========================
+
+.. automodule:: malcolm.modules.xmap.parts
+    :members:

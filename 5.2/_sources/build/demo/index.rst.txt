@@ -1,0 +1,13 @@
+
+demo
+====
+
+.. module:: malcolm.modules.demo
+
+.. toctree::
+    :maxdepth: 1
+    :caption: malcolm.modules.demo
+
+    blocks <blocks_api.rst>
+    parts <parts_api.rst>
+    util <util_api.rst>

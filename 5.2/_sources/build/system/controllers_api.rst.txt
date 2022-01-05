@@ -1,0 +1,6 @@
+
+malcolm.modules.system.controllers
+==================================
+
+.. automodule:: malcolm.modules.system.controllers
+    :members:

@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.modules.scanning.controllers.runnablecontroller &mdash; malcolm 5.2 documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../../../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                5.2
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+  <!-- Add versions for selected branches + tags -->
+  <p class="caption">
+    <span class="caption-text">Versions</span>
+  </p>
+  <ul id="versions"/>
+  <script>
+    // Add any branches to appear in the side pane here, tags will be added below
+    // Will only appear if docs are built and pushed in gh-pages
+    var versions = ['main', 'master'];
+    var dirs = new Set();
+    function addVersion(name) {
+      if (dirs.has(name)) {
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        a.href = 'https://dls-controls.github.io/malcolm/' + name;
+        a.innerText = name;
+        li.appendChild(a)
+        document.getElementById('versions').appendChild(li);
+      }
+    }
+    Promise.all([
+      // Find gh-pages directories and populate `dirs`
+      fetch("https://api.github.com/repos/dls-controls/malcolm/contents?ref=gh-pages")
+      .then(response => response.json())
+      .then(data => data.forEach(function(e) {
+        if (e.type == "dir") dirs.add(e.name);
+      })),
+      // Add tags to `versions`
+      fetch('https://api.github.com/repos/dls-controls/malcolm/tags')
+        .then(response => response.json())
+        .then(data => data.forEach(function(e) {
+          versions.push(e.name);
+        }))
+      ]).then(_ => versions.forEach(addVersion))
+  </script>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+      <li>malcolm.modules.scanning.controllers.runnablecontroller</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for malcolm.modules.scanning.controllers.runnablecontroller</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Type</span>
+
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">add_call_types</span><span class="p">,</span> <span class="n">deserialize_object</span>
+<span class="kn">from</span> <span class="nn">scanpointgenerator</span> <span class="kn">import</span> <span class="n">CompoundGenerator</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.compat</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+    <span class="n">AbortedError</span><span class="p">,</span>
+    <span class="n">AMri</span><span class="p">,</span>
+    <span class="n">Context</span><span class="p">,</span>
+    <span class="n">NumberMeta</span><span class="p">,</span>
+    <span class="n">Part</span><span class="p">,</span>
+    <span class="n">Queue</span><span class="p">,</span>
+    <span class="ne">TimeoutError</span><span class="p">,</span>
+    <span class="n">Widget</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">malcolm.core.models</span> <span class="kn">import</span> <span class="n">MethodMeta</span><span class="p">,</span> <span class="n">TableMeta</span><span class="p">,</span> <span class="n">VMeta</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules</span> <span class="kn">import</span> <span class="n">builtin</span>
+
+<span class="kn">from</span> <span class="nn">..hooks</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AAxesToMove</span><span class="p">,</span>
+    <span class="n">AbortHook</span><span class="p">,</span>
+    <span class="n">ABreakpoints</span><span class="p">,</span>
+    <span class="n">ConfigureHook</span><span class="p">,</span>
+    <span class="n">ControllerHook</span><span class="p">,</span>
+    <span class="n">PauseHook</span><span class="p">,</span>
+    <span class="n">PostConfigureHook</span><span class="p">,</span>
+    <span class="n">PostRunArmedHook</span><span class="p">,</span>
+    <span class="n">PostRunReadyHook</span><span class="p">,</span>
+    <span class="n">PreConfigureHook</span><span class="p">,</span>
+    <span class="n">PreRunHook</span><span class="p">,</span>
+    <span class="n">ReportStatusHook</span><span class="p">,</span>
+    <span class="n">RunHook</span><span class="p">,</span>
+    <span class="n">SeekHook</span><span class="p">,</span>
+    <span class="n">ValidateHook</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">..infos</span> <span class="kn">import</span> <span class="n">ConfigureParamsInfo</span><span class="p">,</span> <span class="n">ParameterTweakInfo</span><span class="p">,</span> <span class="n">RunProgressInfo</span>
+<span class="kn">from</span> <span class="nn">..util</span> <span class="kn">import</span> <span class="n">AGenerator</span><span class="p">,</span> <span class="n">ConfigureParams</span><span class="p">,</span> <span class="n">RunnableStates</span><span class="p">,</span> <span class="n">resolve_generator_tweaks</span>
+
+<span class="n">PartContextParams</span> <span class="o">=</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Part</span><span class="p">,</span> <span class="n">Context</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span>
+<span class="n">PartConfigureParams</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Part</span><span class="p">,</span> <span class="n">ConfigureParamsInfo</span><span class="p">]</span>
+
+<span class="n">ss</span> <span class="o">=</span> <span class="n">RunnableStates</span>
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;The validated configure parameters&quot;</span><span class="p">):</span>
+    <span class="n">AConfigureParams</span> <span class="o">=</span> <span class="n">ConfigureParams</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Step to mark as the last completed step, -1 for current&quot;</span><span class="p">):</span>
+    <span class="n">ALastGoodStep</span> <span class="o">=</span> <span class="nb">int</span>
+
+<span class="c1"># Pull re-used annotypes into our namespace in case we are subclassed</span>
+<span class="n">AConfigDir</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">AConfigDir</span>
+<span class="n">AInitialDesign</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">AInitialDesign</span>
+<span class="n">ADescription</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">ADescription</span>
+<span class="n">AUseGit</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">AUseGit</span>
+<span class="n">ATemplateDesigns</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">ATemplateDesigns</span>
+
+
+<span class="k">def</span> <span class="nf">update_configure_model</span><span class="p">(</span>
+    <span class="n">configure_model</span><span class="p">:</span> <span class="n">MethodMeta</span><span class="p">,</span> <span class="n">part_configure_infos</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ConfigureParamsInfo</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="c1"># These will not be inserted as they already exist</span>
+
+    <span class="n">ignored</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">ConfigureHook</span><span class="o">.</span><span class="n">call_types</span><span class="p">)</span>
+
+    <span class="c1"># Re-calculate the following</span>
+    <span class="n">required</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">metas</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+    <span class="n">defaults</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+
+    <span class="c1"># First do the required arguments</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">configure_model</span><span class="o">.</span><span class="n">takes</span><span class="o">.</span><span class="n">required</span><span class="p">:</span>
+        <span class="n">required</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="n">metas</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">configure_model</span><span class="o">.</span><span class="n">takes</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">part_configure_infos</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">info</span><span class="o">.</span><span class="n">required</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">required</span> <span class="o">+</span> <span class="n">ignored</span><span class="p">:</span>
+                <span class="n">required</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+                <span class="c1"># TODO: moan about type changes, when != works...</span>
+                <span class="n">metas</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">metas</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+
+    <span class="c1"># Now the default and optional</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">configure_model</span><span class="o">.</span><span class="n">takes</span><span class="o">.</span><span class="n">elements</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">required</span><span class="p">:</span>
+            <span class="n">metas</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">configure_model</span><span class="o">.</span><span class="n">takes</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">part_configure_infos</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">meta</span> <span class="ow">in</span> <span class="n">info</span><span class="o">.</span><span class="n">metas</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">required</span> <span class="o">+</span> <span class="n">ignored</span><span class="p">:</span>
+                <span class="c1"># TODO: moan about type changes, when != works...</span>
+                <span class="n">metas</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">meta</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">info</span><span class="o">.</span><span class="n">defaults</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">meta</span><span class="p">,</span> <span class="n">TableMeta</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">min</span><span class="p">(</span>
+                        <span class="n">m</span><span class="o">.</span><span class="n">writeable</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">meta</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+                    <span class="p">):</span>
+                        <span class="c1"># This is a table with non-writeable rows, merge the</span>
+                        <span class="c1"># defaults together row by row</span>
+                        <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
+                        <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">defaults</span><span class="p">:</span>
+                            <span class="n">rows</span> <span class="o">+=</span> <span class="n">defaults</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">rows</span><span class="p">()</span>
+                        <span class="n">rows</span> <span class="o">+=</span> <span class="n">info</span><span class="o">.</span><span class="n">defaults</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">rows</span><span class="p">()</span>
+                        <span class="k">assert</span> <span class="n">meta</span><span class="o">.</span><span class="n">table_cls</span><span class="p">,</span> <span class="s2">&quot;No Meta table class&quot;</span>
+                        <span class="n">defaults</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">meta</span><span class="o">.</span><span class="n">table_cls</span><span class="o">.</span><span class="n">from_rows</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">defaults</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">defaults</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+
+    <span class="c1"># Copy and prepare values for takes and returns</span>
+    <span class="n">takes_metas</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+    <span class="n">returns_metas</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">metas</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">takes_metas</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">deserialize_object</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span> <span class="n">VMeta</span><span class="p">)</span>
+        <span class="n">returns_metas</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">deserialize_object</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span> <span class="n">VMeta</span><span class="p">)</span>
+        <span class="n">returns_metas</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">set_writeable</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># Set them on the model</span>
+    <span class="n">configure_model</span><span class="o">.</span><span class="n">takes</span><span class="o">.</span><span class="n">set_elements</span><span class="p">(</span><span class="n">takes_metas</span><span class="p">)</span>
+    <span class="n">configure_model</span><span class="o">.</span><span class="n">takes</span><span class="o">.</span><span class="n">set_required</span><span class="p">(</span><span class="n">required</span><span class="p">)</span>
+    <span class="n">configure_model</span><span class="o">.</span><span class="n">returns</span><span class="o">.</span><span class="n">set_elements</span><span class="p">(</span><span class="n">returns_metas</span><span class="p">)</span>
+    <span class="n">configure_model</span><span class="o">.</span><span class="n">returns</span><span class="o">.</span><span class="n">set_required</span><span class="p">(</span><span class="n">required</span><span class="p">)</span>
+    <span class="n">configure_model</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">defaults</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="RunnableController"><a class="viewcode-back" href="../../../../../build/scanning/controllers_api.html#malcolm.modules.scanning.controllers.RunnableController">[docs]</a><span class="k">class</span> <span class="nc">RunnableController</span><span class="p">(</span><span class="n">builtin</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">ManagerController</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;RunnableDevice implementer that also exposes GUI for child parts&quot;&quot;&quot;</span>
+
+    <span class="c1"># The state_set that this controller implements</span>
+    <span class="n">state_set</span> <span class="o">=</span> <span class="n">ss</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">mri</span><span class="p">:</span> <span class="n">AMri</span><span class="p">,</span>
+        <span class="n">config_dir</span><span class="p">:</span> <span class="n">AConfigDir</span><span class="p">,</span>
+        <span class="n">template_designs</span><span class="p">:</span> <span class="n">ATemplateDesigns</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">initial_design</span><span class="p">:</span> <span class="n">AInitialDesign</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">use_git</span><span class="p">:</span> <span class="n">AUseGit</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">description</span><span class="p">:</span> <span class="n">ADescription</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">mri</span><span class="o">=</span><span class="n">mri</span><span class="p">,</span>
+            <span class="n">config_dir</span><span class="o">=</span><span class="n">config_dir</span><span class="p">,</span>
+            <span class="n">template_designs</span><span class="o">=</span><span class="n">template_designs</span><span class="p">,</span>
+            <span class="n">initial_design</span><span class="o">=</span><span class="n">initial_design</span><span class="p">,</span>
+            <span class="n">use_git</span><span class="o">=</span><span class="n">use_git</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># Shared contexts between Configure, Run, Pause, Seek, Resume</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">part_contexts</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Part</span><span class="p">,</span> <span class="n">Context</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># Any custom ConfigureParams subclasses requested by Parts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">part_configure_params</span><span class="p">:</span> <span class="n">PartConfigureParams</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># Params passed to configure()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">configure_params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ConfigureParams</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Progress reporting dict of completed_steps for each part</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">progress_updates</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="n">Part</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Queue so that do_run can wait to see why it was aborted and resume if</span>
+        <span class="c1"># needed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resume_queue</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Queue</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Stored for pause. If using breakpoints, it is a list of steps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">steps_per_run</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># If the list of breakpoints is not empty, this will be true</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_breakpoints</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1"># Absolute steps where the run() returns</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">breakpoint_steps</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Breakpoint index, modified in run() and pause()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">breakpoint_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># Queue so we can wait for aborts to complete</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">abort_queue</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Queue</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Create sometimes writeable attribute for the current completed scan</span>
+        <span class="c1"># step</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">completed_steps</span> <span class="o">=</span> <span class="n">NumberMeta</span><span class="p">(</span>
+            <span class="s2">&quot;int32&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Readback of number of scan steps&quot;</span><span class="p">,</span>
+            <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">Widget</span><span class="o">.</span><span class="n">METER</span><span class="o">.</span><span class="n">tag</span><span class="p">()],</span>  <span class="c1"># Widget.TEXTINPUT.tag()]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span>
+            <span class="s2">&quot;completedSteps&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">completed_steps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pause</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_writeable_in</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">completed_steps</span><span class="p">,</span> <span class="n">ss</span><span class="o">.</span><span class="n">PAUSED</span><span class="p">,</span> <span class="n">ss</span><span class="o">.</span><span class="n">ARMED</span><span class="p">)</span>
+        <span class="c1"># Create read-only attribute for the number of configured scan steps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">configured_steps</span> <span class="o">=</span> <span class="n">NumberMeta</span><span class="p">(</span>
+            <span class="s2">&quot;int32&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Number of steps currently configured&quot;</span><span class="p">,</span>
+            <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">Widget</span><span class="o">.</span><span class="n">TEXTUPDATE</span><span class="o">.</span><span class="n">tag</span><span class="p">()],</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span>
+            <span class="s2">&quot;configuredSteps&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">configured_steps</span>
+        <span class="p">)</span>
+        <span class="c1"># Create read-only attribute for the total number scan steps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_steps</span> <span class="o">=</span> <span class="n">NumberMeta</span><span class="p">(</span>
+            <span class="s2">&quot;int32&quot;</span><span class="p">,</span> <span class="s2">&quot;Readback of number of scan steps&quot;</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">Widget</span><span class="o">.</span><span class="n">TEXTUPDATE</span><span class="o">.</span><span class="n">tag</span><span class="p">()]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span><span class="s2">&quot;totalSteps&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_steps</span><span class="p">)</span>
+        <span class="c1"># Create the method models</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">add_method_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">validate</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_writeable_in</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">add_method_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">configure</span><span class="p">),</span> <span class="n">ss</span><span class="o">.</span><span class="n">READY</span><span class="p">,</span> <span class="n">ss</span><span class="o">.</span><span class="n">FINISHED</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_writeable_in</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">add_method_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="p">),</span> <span class="n">ss</span><span class="o">.</span><span class="n">ARMED</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_writeable_in</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">add_method_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">abort</span><span class="p">),</span>
+            <span class="n">ss</span><span class="o">.</span><span class="n">READY</span><span class="p">,</span>
+            <span class="n">ss</span><span class="o">.</span><span class="n">CONFIGURING</span><span class="p">,</span>
+            <span class="n">ss</span><span class="o">.</span><span class="n">ARMED</span><span class="p">,</span>
+            <span class="n">ss</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">,</span>
+            <span class="n">ss</span><span class="o">.</span><span class="n">POSTRUN</span><span class="p">,</span>
+            <span class="n">ss</span><span class="o">.</span><span class="n">PAUSED</span><span class="p">,</span>
+            <span class="n">ss</span><span class="o">.</span><span class="n">SEEKING</span><span class="p">,</span>
+            <span class="n">ss</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_writeable_in</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">add_method_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pause</span><span class="p">),</span>
+            <span class="n">ss</span><span class="o">.</span><span class="n">ARMED</span><span class="p">,</span>
+            <span class="n">ss</span><span class="o">.</span><span class="n">PAUSED</span><span class="p">,</span>
+            <span class="n">ss</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">,</span>
+            <span class="n">ss</span><span class="o">.</span><span class="n">POSTRUN</span><span class="p">,</span>
+            <span class="n">ss</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_writeable_in</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">add_method_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resume</span><span class="p">),</span> <span class="n">ss</span><span class="o">.</span><span class="n">PAUSED</span>
+        <span class="p">)</span>
+        <span class="c1"># Override reset to work from aborted too</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_writeable_in</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">get_field</span><span class="p">(</span><span class="s2">&quot;reset&quot;</span><span class="p">),</span>
+            <span class="n">ss</span><span class="o">.</span><span class="n">FAULT</span><span class="p">,</span>
+            <span class="n">ss</span><span class="o">.</span><span class="n">DISABLED</span><span class="p">,</span>
+            <span class="n">ss</span><span class="o">.</span><span class="n">ABORTED</span><span class="p">,</span>
+            <span class="n">ss</span><span class="o">.</span><span class="n">ARMED</span><span class="p">,</span>
+            <span class="n">ss</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># Allow Parts to report their status</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info_registry</span><span class="o">.</span><span class="n">add_reportable</span><span class="p">(</span><span class="n">RunProgressInfo</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_completed_steps</span><span class="p">)</span>
+        <span class="c1"># Allow Parts to request extra items from configure</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info_registry</span><span class="o">.</span><span class="n">add_reportable</span><span class="p">(</span>
+            <span class="n">ConfigureParamsInfo</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_configure_params</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_steps_per_run</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">generator</span><span class="p">:</span> <span class="n">CompoundGenerator</span><span class="p">,</span>
+        <span class="n">axes_to_move</span><span class="p">:</span> <span class="n">AAxesToMove</span><span class="p">,</span>
+        <span class="n">breakpoints</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_breakpoints</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">steps</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">axes_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">axes_to_move</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">generator</span><span class="o">.</span><span class="n">dimensions</span><span class="p">):</span>
+            <span class="c1"># If the axes_set is empty and the dimension has axes then we have</span>
+            <span class="c1"># done as many dimensions as we can, so return</span>
+            <span class="k">if</span> <span class="n">dim</span><span class="o">.</span><span class="n">axes</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">axes_set</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="c1"># Consume the axes that this generator scans</span>
+            <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">dim</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">axes_set</span><span class="p">,</span> <span class="s2">&quot;Axis </span><span class="si">%s</span><span class="s2"> is not in </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="n">axes_to_move</span><span class="p">)</span>
+                <span class="n">axes_set</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span>
+            <span class="c1"># Now multiply by the dimensions to get the number of steps</span>
+            <span class="n">steps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*=</span> <span class="n">dim</span><span class="o">.</span><span class="n">size</span>
+
+        <span class="c1"># If we have breakpoints we make a list of steps</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">breakpoints</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">total_breakpoint_steps</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">breakpoints</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="n">total_breakpoint_steps</span> <span class="o">&lt;=</span> <span class="n">steps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="p">),</span> <span class="s2">&quot;Sum of breakpoints greater than steps in scan&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">use_breakpoints</span> <span class="o">=</span> <span class="kc">True</span>
+
+            <span class="c1"># Cast to list so we can append</span>
+            <span class="n">breakpoints_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">breakpoints</span><span class="p">)</span>
+
+            <span class="c1"># Check if we need to add the final breakpoint to the inner scan</span>
+            <span class="k">if</span> <span class="n">total_breakpoint_steps</span> <span class="o">&lt;</span> <span class="n">steps</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">last_breakpoint</span> <span class="o">=</span> <span class="n">steps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">total_breakpoint_steps</span>
+                <span class="n">breakpoints_list</span> <span class="o">+=</span> <span class="p">[</span><span class="n">last_breakpoint</span><span class="p">]</span>
+
+            <span class="c1"># Repeat the set of breakpoints for each outer step</span>
+            <span class="n">breakpoints_list</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_outer_steps</span><span class="p">(</span><span class="n">generator</span><span class="p">,</span> <span class="n">axes_to_move</span><span class="p">)</span>
+
+            <span class="n">steps</span> <span class="o">=</span> <span class="n">breakpoints_list</span>
+
+            <span class="c1"># List of steps completed at end of each run</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">breakpoint_steps</span> <span class="o">=</span> <span class="p">[</span><span class="nb">sum</span><span class="p">(</span><span class="n">steps</span><span class="p">[:</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+
+        <span class="k">return</span> <span class="n">steps</span>
+
+    <span class="k">def</span> <span class="nf">_get_outer_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generator</span><span class="p">,</span> <span class="n">axes_to_move</span><span class="p">):</span>
+        <span class="n">outer_steps</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">generator</span><span class="o">.</span><span class="n">dimensions</span><span class="p">):</span>
+            <span class="n">outer_axis</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">dim</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">axes_to_move</span><span class="p">:</span>
+                    <span class="n">outer_axis</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="n">outer_axis</span><span class="p">:</span>
+                <span class="n">outer_steps</span> <span class="o">*=</span> <span class="n">dim</span><span class="o">.</span><span class="n">size</span>
+        <span class="k">return</span> <span class="n">outer_steps</span>
+
+    <span class="k">def</span> <span class="nf">do_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">do_reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">configured_steps</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">completed_steps</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_steps</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">breakpoint_index</span> <span class="o">=</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="RunnableController.update_configure_params"><a class="viewcode-back" href="../../../../../build/scanning/controllers_api.html#malcolm.modules.scanning.controllers.RunnableController.update_configure_params">[docs]</a>    <span class="k">def</span> <span class="nf">update_configure_params</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">part</span><span class="p">:</span> <span class="n">Part</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">info</span><span class="p">:</span> <span class="n">ConfigureParamsInfo</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Tell controller part needs different things passed to Configure&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">changes_squashed</span><span class="p">:</span>
+            <span class="c1"># Update the dict</span>
+            <span class="k">if</span> <span class="n">part</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">info</span><span class="p">,</span> <span class="s2">&quot;No info for part&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">part_configure_params</span><span class="p">[</span><span class="n">part</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span>
+
+            <span class="c1"># No process yet, so don&#39;t do this yet</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">process</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span>
+
+            <span class="c1"># Make a list of all the infos that the parts have contributed</span>
+            <span class="n">part_configure_infos</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">part_configure_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">info</span><span class="p">:</span>
+                    <span class="n">part_configure_infos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
+
+            <span class="c1"># Update methods from the updated configure model</span>
+            <span class="k">for</span> <span class="n">method_name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;configure&quot;</span><span class="p">,</span> <span class="s2">&quot;validate&quot;</span><span class="p">):</span>
+                <span class="c1"># Get the model of our configure method as the starting point</span>
+                <span class="n">method_meta</span> <span class="o">=</span> <span class="n">MethodMeta</span><span class="o">.</span><span class="n">from_callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">configure</span><span class="p">)</span>
+                <span class="c1"># Update the configure model from the infos</span>
+                <span class="n">update_configure_model</span><span class="p">(</span><span class="n">method_meta</span><span class="p">,</span> <span class="n">part_configure_infos</span><span class="p">)</span>
+                <span class="c1"># Put the created metas onto our block meta</span>
+                <span class="n">method</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_block</span><span class="p">[</span><span class="n">method_name</span><span class="p">]</span>
+                <span class="n">method</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">takes</span><span class="o">.</span><span class="n">set_elements</span><span class="p">(</span><span class="n">method_meta</span><span class="o">.</span><span class="n">takes</span><span class="o">.</span><span class="n">elements</span><span class="p">)</span>
+                <span class="n">method</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">takes</span><span class="o">.</span><span class="n">set_required</span><span class="p">(</span><span class="n">method_meta</span><span class="o">.</span><span class="n">takes</span><span class="o">.</span><span class="n">required</span><span class="p">)</span>
+                <span class="n">method</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">returns</span><span class="o">.</span><span class="n">set_elements</span><span class="p">(</span><span class="n">method_meta</span><span class="o">.</span><span class="n">returns</span><span class="o">.</span><span class="n">elements</span><span class="p">)</span>
+                <span class="n">method</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">returns</span><span class="o">.</span><span class="n">set_required</span><span class="p">(</span><span class="n">method_meta</span><span class="o">.</span><span class="n">returns</span><span class="o">.</span><span class="n">required</span><span class="p">)</span>
+                <span class="n">method</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">method_meta</span><span class="o">.</span><span class="n">defaults</span><span class="p">)</span>
+                <span class="n">method</span><span class="o">.</span><span class="n">set_took</span><span class="p">()</span>
+                <span class="n">method</span><span class="o">.</span><span class="n">set_returned</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">update_block_endpoints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">update_block_endpoints</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_configure_params</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_part_params</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">part_contexts</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Part</span><span class="p">,</span> <span class="n">Context</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">ConfigureParams</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PartContextParams</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">part_contexts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">part_contexts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">part_contexts</span>
+        <span class="k">if</span> <span class="n">params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configure_params</span>
+        <span class="k">for</span> <span class="n">part</span><span class="p">,</span> <span class="n">context</span> <span class="ow">in</span> <span class="n">part_contexts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">assert</span> <span class="n">params</span><span class="p">,</span> <span class="s2">&quot;No params&quot;</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">call_types</span><span class="p">:</span>
+                <span class="n">args</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">part</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">args</span>
+
+    <span class="c1"># This will be serialized, so maintain camelCase for axesToMove</span>
+    <span class="c1"># noinspection PyPep8Naming</span>
+<div class="viewcode-block" id="RunnableController.validate"><a class="viewcode-back" href="../../../../../build/scanning/controllers_api.html#malcolm.modules.scanning.controllers.RunnableController.validate">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">generator</span><span class="p">:</span> <span class="n">AGenerator</span><span class="p">,</span>
+        <span class="n">axesToMove</span><span class="p">:</span> <span class="n">AAxesToMove</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">breakpoints</span><span class="p">:</span> <span class="n">ABreakpoints</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AConfigureParams</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Validate configuration parameters and return validated parameters.</span>
+
+<span class="sd">        Doesn&#39;t take device state into account so can be run in any state</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">iterations</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="c1"># We will return this, so make sure we fill in defaults</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">default</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_block</span><span class="o">.</span><span class="n">configure</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">defaults</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
+        <span class="c1"># The validated parameters we will eventually return</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">ConfigureParams</span><span class="p">(</span><span class="n">generator</span><span class="p">,</span> <span class="n">axesToMove</span><span class="p">,</span> <span class="n">breakpoints</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># Make some tasks just for validate</span>
+        <span class="n">part_contexts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_part_contexts</span><span class="p">()</span>
+        <span class="c1"># Get any status from all parts</span>
+        <span class="n">status_part_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_hooks</span><span class="p">(</span>
+            <span class="n">ReportStatusHook</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">part_contexts</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="k">while</span> <span class="n">iterations</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Try up to 10 times to get a valid set of parameters</span>
+            <span class="n">iterations</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="c1"># Validate the params with all the parts</span>
+            <span class="n">validate_part_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_hooks</span><span class="p">(</span>
+                <span class="n">ValidateHook</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">status_part_info</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">kwargs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_part_params</span><span class="p">(</span><span class="n">part_contexts</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">tweaks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ParameterTweakInfo</span><span class="p">]</span> <span class="o">=</span> <span class="n">ParameterTweakInfo</span><span class="o">.</span><span class="n">filter_values</span><span class="p">(</span>
+                <span class="n">validate_part_info</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">tweaks</span><span class="p">:</span>
+                <span class="c1"># Check if we need to resolve generator tweaks first</span>
+                <span class="n">generator_tweaks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ParameterTweakInfo</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">tweak</span> <span class="ow">in</span> <span class="n">tweaks</span><span class="p">:</span>
+                    <span class="c1"># Collect all generator tweaks</span>
+                    <span class="k">if</span> <span class="n">tweak</span><span class="o">.</span><span class="n">parameter</span> <span class="o">==</span> <span class="s2">&quot;generator&quot;</span><span class="p">:</span>
+                        <span class="n">generator_tweaks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tweak</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">generator_tweaks</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="c1"># Resolve multiple tweaks to the generator</span>
+                    <span class="n">generator_tweak</span> <span class="o">=</span> <span class="n">resolve_generator_tweaks</span><span class="p">(</span><span class="n">generator_tweaks</span><span class="p">)</span>
+                    <span class="n">deserialized</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_block</span><span class="o">.</span><span class="n">configure</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">takes</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span>
+                        <span class="n">generator_tweak</span><span class="o">.</span><span class="n">parameter</span>
+                    <span class="p">]</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">generator_tweak</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">generator_tweak</span><span class="o">.</span><span class="n">parameter</span><span class="p">,</span> <span class="n">deserialized</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="si">}</span><span class="s2">: tweaking generator to </span><span class="si">{</span><span class="n">deserialized</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Other tweaks can be applied at the same time</span>
+                    <span class="k">for</span> <span class="n">tweak</span> <span class="ow">in</span> <span class="n">tweaks</span><span class="p">:</span>
+                        <span class="n">deserialized</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_block</span><span class="o">.</span><span class="n">configure</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">takes</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span>
+                            <span class="n">tweak</span><span class="o">.</span><span class="n">parameter</span>
+                        <span class="p">]</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">tweak</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                        <span class="nb">setattr</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">tweak</span><span class="o">.</span><span class="n">parameter</span><span class="p">,</span> <span class="n">deserialized</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="si">}</span><span class="s2">: tweaking </span><span class="si">{</span><span class="n">tweak</span><span class="o">.</span><span class="n">parameter</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">deserialized</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Consistent set, just return the params</span>
+                <span class="k">return</span> <span class="n">params</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Could not get a consistent set of parameters&quot;</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">abortable_transition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="c1"># We might have been aborted just now, so this will fail</span>
+            <span class="c1"># with an AbortedError if we were</span>
+            <span class="n">self_ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">part_contexts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">self_ctx</span><span class="p">:</span>
+                <span class="n">self_ctx</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+
+    <span class="c1"># This will be serialized, so maintain camelCase for axesToMove</span>
+    <span class="c1"># noinspection PyPep8Naming</span>
+<div class="viewcode-block" id="RunnableController.configure"><a class="viewcode-back" href="../../../../../build/scanning/controllers_api.html#malcolm.modules.scanning.controllers.RunnableController.configure">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">configure</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">generator</span><span class="p">:</span> <span class="n">AGenerator</span><span class="p">,</span>
+        <span class="n">axesToMove</span><span class="p">:</span> <span class="n">AAxesToMove</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">breakpoints</span><span class="p">:</span> <span class="n">ABreakpoints</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AConfigureParams</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Validate the params then configure the device ready for run().</span>
+
+<span class="sd">        Try to prepare the device as much as possible so that run() is quick to</span>
+<span class="sd">        start, this may involve potentially long running activities like moving</span>
+<span class="sd">        motors.</span>
+
+<span class="sd">        Normally it will return in Armed state. If the user aborts then it will</span>
+<span class="sd">        return in Aborted state. If something goes wrong it will return in Fault</span>
+<span class="sd">        state. If the user disables then it will return in Disabled state.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">generator</span><span class="p">,</span> <span class="n">axesToMove</span><span class="p">,</span> <span class="n">breakpoints</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="n">ss</span><span class="o">.</span><span class="n">CONFIGURING</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">do_configure</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">abortable_transition</span><span class="p">(</span><span class="n">ss</span><span class="o">.</span><span class="n">ARMED</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">AbortedError</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">abort_queue</span><span class="p">,</span> <span class="s2">&quot;No abort queue&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">abort_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+            <span class="k">raise</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">go_to_error_state</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">raise</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">params</span></div>
+
+    <span class="k">def</span> <span class="nf">do_configure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">ConfigureParams</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">state</span> <span class="o">==</span> <span class="n">ss</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">:</span>
+            <span class="c1"># If we were finished then do a reset before configuring</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">run_hooks</span><span class="p">(</span>
+                <span class="n">builtin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ResetHook</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_part_contexts</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">)</span>
+        <span class="c1"># Clear out any old part contexts now rather than letting gc do it</span>
+        <span class="k">for</span> <span class="n">context</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">part_contexts</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">context</span><span class="o">.</span><span class="n">unsubscribe_all</span><span class="p">()</span>
+        <span class="c1"># These are the part tasks that abort() and pause() will operate on</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">part_contexts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_part_contexts</span><span class="p">()</span>
+        <span class="c1"># So add one for ourself too so we can be aborted</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">,</span> <span class="s2">&quot;No attached process&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">part_contexts</span><span class="p">[</span><span class="bp">self</span><span class="p">]</span> <span class="o">=</span> <span class="n">Context</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">)</span>
+        <span class="c1"># Store the params for use in seek()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">configure_params</span> <span class="o">=</span> <span class="n">params</span>
+        <span class="c1"># Tell everything to get into the right state to Configure</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_hooks</span><span class="p">(</span><span class="n">PreConfigureHook</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">part_contexts</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="c1"># This will calculate what we need from the generator, possibly a long</span>
+        <span class="c1"># call</span>
+        <span class="n">params</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">prepare</span><span class="p">()</span>
+        <span class="c1"># Set the steps attributes that we will do across many run() calls</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_steps</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">completed_steps</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">configured_steps</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># TODO: We can be cleverer about this and support a different number</span>
+        <span class="c1"># of steps per run for each run by examining the generator structure</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">steps_per_run</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_steps_per_run</span><span class="p">(</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">generator</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">axesToMove</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">breakpoints</span>
+        <span class="p">)</span>
+        <span class="c1"># Get any status from all parts</span>
+        <span class="n">part_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_hooks</span><span class="p">(</span>
+            <span class="n">ReportStatusHook</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">part_contexts</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="c1"># Run the configure command on all parts, passing them info from</span>
+        <span class="c1"># ReportStatus. Parts should return any reporting info for PostConfigure</span>
+        <span class="n">completed_steps</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">breakpoint_index</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">steps_to_do</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps_per_run</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">breakpoint_index</span><span class="p">]</span>
+        <span class="n">part_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_hooks</span><span class="p">(</span>
+            <span class="n">ConfigureHook</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">completed_steps</span><span class="p">,</span> <span class="n">steps_to_do</span><span class="p">,</span> <span class="n">part_info</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">kw</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_part_params</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="c1"># Take configuration info and reflect it as attribute updates</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_hooks</span><span class="p">(</span>
+            <span class="n">PostConfigureHook</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">part_info</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">part_contexts</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="c1"># Update the completed and configured steps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">configured_steps</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">steps_to_do</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">completed_steps</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">set_limitHigh</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="c1"># Reset the progress of all child parts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">progress_updates</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resume_queue</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+
+<div class="viewcode-block" id="RunnableController.run"><a class="viewcode-back" href="../../../../../build/scanning/controllers_api.html#malcolm.modules.scanning.controllers.RunnableController.run">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Run a device where configure() has already be called</span>
+
+<span class="sd">        Normally it will return in Ready state. If setup for multiple-runs with</span>
+<span class="sd">        a single configure() then it will return in Armed state. If the user</span>
+<span class="sd">        aborts then it will return in Aborted state. If something goes wrong it</span>
+<span class="sd">        will return in Fault state. If the user disables then it will return in</span>
+<span class="sd">        Disabled state.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">configured_steps</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_steps</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="n">next_state</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">ARMED</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">next_state</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">FINISHED</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="n">ss</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">)</span>
+            <span class="n">hook</span> <span class="o">=</span> <span class="n">RunHook</span>
+            <span class="n">going</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">while</span> <span class="n">going</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">do_run</span><span class="p">(</span><span class="n">hook</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">abortable_transition</span><span class="p">(</span><span class="n">next_state</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">AbortedError</span><span class="p">:</span>
+                    <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">abort_queue</span><span class="p">,</span> <span class="s2">&quot;No abort queue&quot;</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">abort_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+                    <span class="c1"># Wait for a response on the resume_queue</span>
+                    <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">resume_queue</span><span class="p">,</span> <span class="s2">&quot;No resume queue&quot;</span>
+                    <span class="n">should_resume</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resume_queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">should_resume</span><span class="p">:</span>
+                        <span class="c1"># we need to resume</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Resuming run&quot;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># we don&#39;t need to resume, just drop out</span>
+                        <span class="k">raise</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">going</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">except</span> <span class="n">AbortedError</span><span class="p">:</span>
+            <span class="k">raise</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">go_to_error_state</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">raise</span></div>
+
+    <span class="k">def</span> <span class="nf">do_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hook</span><span class="p">):</span>
+        <span class="c1"># type: (Type[ControllerHook]) -&gt; None</span>
+
+        <span class="c1"># Run all PreRunHooks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_hooks</span><span class="p">(</span><span class="n">PreRunHook</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">part_contexts</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_hooks</span><span class="p">(</span><span class="n">hook</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">part_contexts</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">abortable_transition</span><span class="p">(</span><span class="n">ss</span><span class="o">.</span><span class="n">POSTRUN</span><span class="p">)</span>
+        <span class="n">completed_steps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configured_steps</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">if</span> <span class="n">completed_steps</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_steps</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_breakpoints</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">breakpoint_index</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">steps_to_do</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps_per_run</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">breakpoint_index</span><span class="p">]</span>
+            <span class="n">part_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_hooks</span><span class="p">(</span>
+                <span class="n">ReportStatusHook</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">part_contexts</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">completed_steps</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">completed_steps</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">run_hooks</span><span class="p">(</span>
+                <span class="n">PostRunArmedHook</span><span class="p">(</span>
+                    <span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">completed_steps</span><span class="p">,</span> <span class="n">steps_to_do</span><span class="p">,</span> <span class="n">part_info</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">kwargs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_part_params</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">configured_steps</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">completed_steps</span> <span class="o">+</span> <span class="n">steps_to_do</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">completed_steps</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">completed_steps</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">run_hooks</span><span class="p">(</span>
+                <span class="n">PostRunReadyHook</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">part_contexts</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">update_completed_steps</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">part</span><span class="p">:</span> <span class="n">Part</span><span class="p">,</span> <span class="n">completed_steps</span><span class="p">:</span> <span class="n">RunProgressInfo</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="c1"># Update</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">progress_updates</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;No progress updates&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">progress_updates</span><span class="p">[</span><span class="n">part</span><span class="p">]</span> <span class="o">=</span> <span class="n">completed_steps</span><span class="o">.</span><span class="n">steps</span>
+            <span class="n">min_completed_steps</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">progress_updates</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+            <span class="k">if</span> <span class="n">min_completed_steps</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">completed_steps</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">completed_steps</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">min_completed_steps</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RunnableController.abort"><a class="viewcode-back" href="../../../../../build/scanning/controllers_api.html#malcolm.modules.scanning.controllers.RunnableController.abort">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">abort</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Abort the current operation and block until aborted</span>
+
+<span class="sd">        Normally it will return in Aborted state. If something goes wrong it</span>
+<span class="sd">        will return in Fault state. If the user disables then it will return in</span>
+<span class="sd">        Disabled state.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">try_aborting_function</span><span class="p">(</span><span class="n">ss</span><span class="o">.</span><span class="n">ABORTING</span><span class="p">,</span> <span class="n">ss</span><span class="o">.</span><span class="n">ABORTED</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_abort</span><span class="p">)</span>
+        <span class="c1"># Tell _call_do_run not to resume</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">resume_queue</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">resume_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">do_abort</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_hooks</span><span class="p">(</span><span class="n">AbortHook</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_part_contexts</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">try_aborting_function</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">start_state</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">end_state</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># To make the running function fail we need to stop any running</span>
+            <span class="c1"># contexts (if running a hook) or make transition() fail with</span>
+            <span class="c1"># AbortedError. Both of these are accomplished here</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+                <span class="n">original_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">value</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">abort_queue</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="n">start_state</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">context</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">part_contexts</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                    <span class="n">context</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">original_state</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">ss</span><span class="o">.</span><span class="n">READY</span><span class="p">,</span> <span class="n">ss</span><span class="o">.</span><span class="n">ARMED</span><span class="p">,</span> <span class="n">ss</span><span class="o">.</span><span class="n">PAUSED</span><span class="p">,</span> <span class="n">ss</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">):</span>
+                <span class="c1"># Something was running, let it finish aborting</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">abort_queue</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">TimeoutError</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Timeout waiting while </span><span class="si">{start_state}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+                <span class="c1"># Now we&#39;ve waited for a while we can remove the error state</span>
+                <span class="c1"># for transition in case a hook triggered it rather than a</span>
+                <span class="c1"># transition</span>
+                <span class="n">self_ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">part_contexts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">self_ctx</span><span class="p">:</span>
+                    <span class="n">self_ctx</span><span class="o">.</span><span class="n">ignore_stops_before_now</span><span class="p">()</span>
+            <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">abortable_transition</span><span class="p">(</span><span class="n">end_state</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">AbortedError</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">abort_queue</span><span class="p">,</span> <span class="s2">&quot;No abort queue&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">abort_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+            <span class="k">raise</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># pylint:disable=broad-except</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">go_to_error_state</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">raise</span>
+
+    <span class="c1"># Allow camelCase as this will be serialized</span>
+    <span class="c1"># noinspection PyPep8Naming</span>
+<div class="viewcode-block" id="RunnableController.pause"><a class="viewcode-back" href="../../../../../build/scanning/controllers_api.html#malcolm.modules.scanning.controllers.RunnableController.pause">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">pause</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lastGoodStep</span><span class="p">:</span> <span class="n">ALastGoodStep</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Pause a run() so that resume() can be called later, or seek within</span>
+<span class="sd">        an Armed or Paused state.</span>
+
+<span class="sd">        The original call to run() will not be interrupted by pause(), it will</span>
+<span class="sd">        wait until the scan completes or is aborted.</span>
+
+<span class="sd">        Normally it will return in Paused state. If the scan is finished it</span>
+<span class="sd">        will return in Finished state. If the scan is armed it will return in</span>
+<span class="sd">        Armed state. If the user aborts then it will return in Aborted state.</span>
+<span class="sd">        If something goes wrong it will return in Fault state. If the user</span>
+<span class="sd">        disables then it will return in Disabled state.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">total_steps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_steps</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="c1"># We need to decide where to go</span>
+        <span class="k">if</span> <span class="n">lastGoodStep</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># If we are finished we do not need to do anything</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="n">ss</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">:</span>
+                <span class="k">return</span>
+            <span class="c1"># Otherwise set to number of completed steps</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lastGoodStep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">completed_steps</span><span class="o">.</span><span class="n">value</span>
+        <span class="c1"># Otherwise make sure we are bound to the total steps of the scan</span>
+        <span class="k">elif</span> <span class="n">lastGoodStep</span> <span class="o">&gt;=</span> <span class="n">total_steps</span><span class="p">:</span>
+            <span class="n">lastGoodStep</span> <span class="o">=</span> <span class="n">total_steps</span> <span class="o">-</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">value</span> <span class="ow">in</span> <span class="p">[</span><span class="n">ss</span><span class="o">.</span><span class="n">ARMED</span><span class="p">,</span> <span class="n">ss</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">]:</span>
+            <span class="c1"># We don&#39;t have a run process, free to go anywhere we want</span>
+            <span class="n">next_state</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">ARMED</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Need to pause within the bounds of the current run</span>
+            <span class="k">if</span> <span class="n">lastGoodStep</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">configured_steps</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="n">lastGoodStep</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="n">next_state</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">PAUSED</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">try_aborting_function</span><span class="p">(</span><span class="n">ss</span><span class="o">.</span><span class="n">SEEKING</span><span class="p">,</span> <span class="n">next_state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_pause</span><span class="p">,</span> <span class="n">lastGoodStep</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RunnableController.do_pause"><a class="viewcode-back" href="../../../../../build/scanning/controllers_api.html#malcolm.modules.scanning.controllers.RunnableController.do_pause">[docs]</a>    <span class="k">def</span> <span class="nf">do_pause</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">completed_steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Recalculates the number of configured steps</span>
+<span class="sd">        Arguments:</span>
+<span class="sd">        completed_steps -- Last good step performed</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_hooks</span><span class="p">(</span><span class="n">PauseHook</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_part_contexts</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_breakpoints</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">breakpoint_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_breakpoint_index</span><span class="p">(</span><span class="n">completed_steps</span><span class="p">)</span>
+            <span class="n">in_run_steps</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">completed_steps</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">breakpoint_steps</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">breakpoint_index</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">steps_to_do</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">breakpoint_steps</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">breakpoint_index</span><span class="p">]</span> <span class="o">-</span> <span class="n">in_run_steps</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">in_run_steps</span> <span class="o">=</span> <span class="n">completed_steps</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps_per_run</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">breakpoint_index</span><span class="p">]</span>
+            <span class="n">steps_to_do</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps_per_run</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">breakpoint_index</span><span class="p">]</span> <span class="o">-</span> <span class="n">in_run_steps</span>
+
+        <span class="n">part_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_hooks</span><span class="p">(</span>
+            <span class="n">ReportStatusHook</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">part_contexts</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">completed_steps</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">completed_steps</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_hooks</span><span class="p">(</span>
+            <span class="n">SeekHook</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">completed_steps</span><span class="p">,</span> <span class="n">steps_to_do</span><span class="p">,</span> <span class="n">part_info</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">kwargs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_part_params</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">configured_steps</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">completed_steps</span> <span class="o">+</span> <span class="n">steps_to_do</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">get_breakpoint_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">completed_steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="c1"># If the last point, then return the last index</span>
+        <span class="k">if</span> <span class="n">completed_steps</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">breakpoint_steps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">breakpoint_steps</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="c1"># Otherwise check which index we fall within</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">completed_steps</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">breakpoint_steps</span><span class="p">[</span><span class="n">index</span><span class="p">]:</span>
+            <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">index</span>
+
+<div class="viewcode-block" id="RunnableController.resume"><a class="viewcode-back" href="../../../../../build/scanning/controllers_api.html#malcolm.modules.scanning.controllers.RunnableController.resume">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">resume</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Resume a paused scan.</span>
+
+<span class="sd">        Normally it will return in Running state. If something goes wrong it</span>
+<span class="sd">        will return in Fault state.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="n">ss</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">resume_queue</span><span class="p">,</span> <span class="s2">&quot;No resume queue&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resume_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="c1"># self.run will now take over</span>
+
+    <span class="k">def</span> <span class="nf">do_disable</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Abort anything that is currently running, but don&#39;t wait</span>
+        <span class="k">for</span> <span class="n">context</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">part_contexts</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">context</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">resume_queue</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">resume_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">do_disable</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">go_to_error_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exception</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">resume_queue</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">resume_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">go_to_error_state</span><span class="p">(</span><span class="n">exception</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

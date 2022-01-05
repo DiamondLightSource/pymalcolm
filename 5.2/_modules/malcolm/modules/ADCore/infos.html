@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.modules.ADCore.infos &mdash; malcolm 5.2 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                5.2
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+  <!-- Add versions for selected branches + tags -->
+  <p class="caption">
+    <span class="caption-text">Versions</span>
+  </p>
+  <ul id="versions"/>
+  <script>
+    // Add any branches to appear in the side pane here, tags will be added below
+    // Will only appear if docs are built and pushed in gh-pages
+    var versions = ['main', 'master'];
+    var dirs = new Set();
+    function addVersion(name) {
+      if (dirs.has(name)) {
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        a.href = 'https://dls-controls.github.io/malcolm/' + name;
+        a.innerText = name;
+        li.appendChild(a)
+        document.getElementById('versions').appendChild(li);
+      }
+    }
+    Promise.all([
+      // Find gh-pages directories and populate `dirs`
+      fetch("https://api.github.com/repos/dls-controls/malcolm/contents?ref=gh-pages")
+      .then(response => response.json())
+      .then(data => data.forEach(function(e) {
+        if (e.type == "dir") dirs.add(e.name);
+      })),
+      // Add tags to `versions`
+      fetch('https://api.github.com/repos/dls-controls/malcolm/tags')
+        .then(response => response.json())
+        .then(data => data.forEach(function(e) {
+          versions.push(e.name);
+        }))
+      ]).then(_ => versions.forEach(addVersion))
+  </script>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>malcolm.modules.ADCore.infos</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for malcolm.modules.ADCore.infos</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="n">PART_NAME_RE</span><span class="p">,</span> <span class="n">Info</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules.scanning.infos</span> <span class="kn">import</span> <span class="n">DatasetType</span>
+
+<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">AttributeDatasetType</span>
+
+
+<div class="viewcode-block" id="FilePathTranslatorInfo"><a class="viewcode-back" href="../../../../build/ADCore/infos_api.html#malcolm.modules.ADCore.infos.FilePathTranslatorInfo">[docs]</a><span class="k">class</span> <span class="nc">FilePathTranslatorInfo</span><span class="p">(</span><span class="n">Info</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Translate linux filepath to windows equivalent</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        windows_drive_letter: The drive letter assigned to the windows mount</span>
+<span class="sd">        path_prefix: The location of the mount in linux (i.e. /dls or /dls_sw)</span>
+<span class="sd">        network_drive: The network drive prefix on Windows (e.g. //dc). If the</span>
+<span class="sd">        windows drive letter is an empty string, the network drive is prepended.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">windows_drive_letter</span><span class="p">,</span> <span class="n">path_prefix</span><span class="p">,</span> <span class="n">network_prefix</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">windows_drive_letter</span> <span class="o">=</span> <span class="n">windows_drive_letter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path_prefix</span> <span class="o">=</span> <span class="n">path_prefix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">network_prefix</span> <span class="o">=</span> <span class="n">network_prefix</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">translate_filepath</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">part_info</span><span class="p">,</span> <span class="n">filepath</span><span class="p">):</span>
+        <span class="n">translator</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">filter_single_value</span><span class="p">(</span>
+            <span class="n">part_info</span><span class="p">,</span>
+            <span class="s2">&quot;No or multiple FilePathTranslatorPart found: must have exactly &quot;</span>
+            <span class="s2">&quot;1 if any part in the AD chain is running on Windows&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">assert</span> <span class="n">filepath</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span>
+            <span class="n">translator</span><span class="o">.</span><span class="n">path_prefix</span>
+        <span class="p">),</span> <span class="s2">&quot;filepath </span><span class="si">%s</span><span class="s2"> does not start with expected prefix </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">filepath</span><span class="p">,</span>
+            <span class="n">translator</span><span class="o">.</span><span class="n">path_prefix</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">filepath</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="p">),</span> <span class="s2">&quot;filepath </span><span class="si">%s</span><span class="s2"> has unexpected colon (incompatible on Windows)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">translator</span><span class="o">.</span><span class="n">network_prefix</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">win_path</span> <span class="o">=</span> <span class="n">filepath</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                <span class="n">translator</span><span class="o">.</span><span class="n">path_prefix</span><span class="p">,</span>
+                <span class="n">translator</span><span class="o">.</span><span class="n">network_prefix</span> <span class="o">+</span> <span class="n">translator</span><span class="o">.</span><span class="n">path_prefix</span><span class="p">,</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">win_path</span> <span class="o">=</span> <span class="n">filepath</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                <span class="n">translator</span><span class="o">.</span><span class="n">path_prefix</span><span class="p">,</span> <span class="n">translator</span><span class="o">.</span><span class="n">windows_drive_letter</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">win_path</span></div>
+
+
+<div class="viewcode-block" id="NDArrayDatasetInfo"><a class="viewcode-back" href="../../../../build/ADCore/infos_api.html#malcolm.modules.ADCore.infos.NDArrayDatasetInfo">[docs]</a><span class="k">class</span> <span class="nc">NDArrayDatasetInfo</span><span class="p">(</span><span class="n">Info</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Declare the NDArray data this produces as being a useful dataset to store</span>
+<span class="sd">    to file</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        rank: The rank of the dataset, e.g. 2 for a 2D detector</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rank</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">=</span> <span class="n">rank</span></div>
+
+
+<div class="viewcode-block" id="CalculatedNDAttributeDatasetInfo"><a class="viewcode-back" href="../../../../build/ADCore/infos_api.html#malcolm.modules.ADCore.infos.CalculatedNDAttributeDatasetInfo">[docs]</a><span class="k">class</span> <span class="nc">CalculatedNDAttributeDatasetInfo</span><span class="p">(</span><span class="n">Info</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Declare that we have calculated some statistics from the main dataset</span>
+<span class="sd">    and these will be available</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        name: Dataset name that should be written to</span>
+<span class="sd">        attr: NDAttribute name to get data from</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attr</span> <span class="o">=</span> <span class="n">attr</span></div>
+
+
+<div class="viewcode-block" id="NDAttributeDatasetInfo"><a class="viewcode-back" href="../../../../build/ADCore/infos_api.html#malcolm.modules.ADCore.infos.NDAttributeDatasetInfo">[docs]</a><span class="k">class</span> <span class="nc">NDAttributeDatasetInfo</span><span class="p">(</span><span class="n">Info</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Declare an NDAttribute attached to this NDArray to produce a useful</span>
+<span class="sd">    dataset to store to file</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        name: Dataset name that should be written to, e.g. &quot;I0.value&quot;</span>
+<span class="sd">        type: What NeXuS dataset type it produces, e.g. DatasetType.PRIMARY</span>
+<span class="sd">        attr: NDAttribute name to get data from, e.g. &quot;COUNTER1.Diff&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="n">DatasetType</span><span class="p">,</span> <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="nb">type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attr</span> <span class="o">=</span> <span class="n">attr</span>
+
+<div class="viewcode-block" id="NDAttributeDatasetInfo.from_attribute_type"><a class="viewcode-back" href="../../../../build/ADCore/infos_api.html#malcolm.modules.ADCore.infos.NDAttributeDatasetInfo.from_attribute_type">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_attribute_type</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="n">AttributeDatasetType</span><span class="p">,</span> <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;NDAttributeDatasetInfo&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Make an Info from the AttributeDatasetType</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: Dataset name without dots, e.g. &quot;I0&quot;</span>
+<span class="sd">            type: What type it is, e.g. AttributeDatasetType.DETECTOR</span>
+<span class="sd">            attr: NDAttribute name to get data from, e.g. &quot;COUNTER1.Diff</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">PART_NAME_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="p">(</span>
+            <span class="s2">&quot;Expected Alphanumeric dataset name (dash and underscore allowed)&quot;</span>
+            <span class="o">+</span> <span class="s2">&quot; got </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">name</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">type</span> <span class="ow">is</span> <span class="n">AttributeDatasetType</span><span class="o">.</span><span class="n">DETECTOR</span><span class="p">:</span>
+            <span class="c1"># Something like I0</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.data&quot;</span> <span class="o">%</span> <span class="n">name</span>
+            <span class="n">dtype</span> <span class="o">=</span> <span class="n">DatasetType</span><span class="o">.</span><span class="n">PRIMARY</span>
+        <span class="k">elif</span> <span class="nb">type</span> <span class="ow">is</span> <span class="n">AttributeDatasetType</span><span class="o">.</span><span class="n">MONITOR</span><span class="p">:</span>
+            <span class="c1"># Something like Iref</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.data&quot;</span> <span class="o">%</span> <span class="n">name</span>
+            <span class="n">dtype</span> <span class="o">=</span> <span class="n">DatasetType</span><span class="o">.</span><span class="n">MONITOR</span>
+        <span class="k">elif</span> <span class="nb">type</span> <span class="ow">is</span> <span class="n">AttributeDatasetType</span><span class="o">.</span><span class="n">POSITION</span><span class="p">:</span>
+            <span class="c1"># Something like x</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.value&quot;</span> <span class="o">%</span> <span class="n">name</span>
+            <span class="n">dtype</span> <span class="o">=</span> <span class="n">DatasetType</span><span class="o">.</span><span class="n">POSITION_VALUE</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+                <span class="s2">&quot;Bad dataset type </span><span class="si">%r</span><span class="s2">, should be a </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">AttributeDatasetType</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>
