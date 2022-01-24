@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.ADTetrAMM.parts &mdash; malcolm 5.1+4.g449bcb48 documentation</title>
+  <title>malcolm.modules.ADTetrAMM.parts &mdash; malcolm 5.2+2.g0a1a1842 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -34,7 +34,7 @@
             <img src="../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.1
+                5.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -44,7 +44,6 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-  
               <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../index.html">Introduction</a></li>
@@ -119,42 +118,6 @@
 <li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
 </ul>
 
-  <!-- Add versions for selected branches + tags -->
-  <p class="caption">
-    <span class="caption-text">Versions</span>
-  </p>
-  <ul id="versions"/>
-  <script>
-    // Add any branches to appear in the side pane here, tags will be added below
-    // Will only appear if docs are built and pushed in gh-pages
-    var versions = ['main', 'master'];
-    var dirs = new Set();
-    function addVersion(name) {
-      if (dirs.has(name)) {
-        var li = document.createElement("li");
-        var a = document.createElement("a");
-        a.href = 'https://dls-controls.github.io/malcolm/' + name;
-        a.innerText = name;
-        li.appendChild(a)
-        document.getElementById('versions').appendChild(li);
-      }
-    }
-    Promise.all([
-      // Find gh-pages directories and populate `dirs`
-      fetch("https://api.github.com/repos/dls-controls/malcolm/contents?ref=gh-pages")
-      .then(response => response.json())
-      .then(data => data.forEach(function(e) {
-        if (e.type == "dir") dirs.add(e.name);
-      })),
-      // Add tags to `versions`
-      fetch('https://api.github.com/repos/dls-controls/malcolm/tags')
-        .then(response => response.json())
-        .then(data => data.forEach(function(e) {
-          versions.push(e.name);
-        }))
-      ]).then(_ => versions.forEach(addVersion))
-  </script>
-
         </div>
       </div>
     </nav>
@@ -185,7 +148,7 @@
 <span id="malcolm-modules-adtetramm-parts"></span><h1>malcolm.modules.ADTetrAMM.parts<a class="headerlink" href="#module-malcolm.modules.ADTetrAMM.parts" title="Permalink to this headline"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="malcolm.modules.ADTetrAMM.parts.TetrAMMDriverPart">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADTetrAMM.parts.</span></span><span class="sig-name descname"><span class="pre">TetrAMMDriverPart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name:</span> <span class="pre">Anno(name='APartName'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></em>, <em class="sig-param"><span class="pre">description='The</span> <span class="pre">name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Part</span> <span class="pre">within</span> <span class="pre">the</span> <span class="pre">Controller')</span></em>, <em class="sig-param"><span class="pre">mri:</span> <span class="pre">Anno(name='AMri'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Malcolm</span> <span class="pre">resource</span> <span class="pre">id</span> <span class="pre">of</span> <span class="pre">child</span> <span class="pre">object')</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/ADTetrAMM/parts/tetrammdriverpart.html#TetrAMMDriverPart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADTetrAMM.parts.TetrAMMDriverPart" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADTetrAMM.parts.</span></span><span class="sig-name descname"><span class="pre">TetrAMMDriverPart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">Anno(name='APartName'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Part</span> <span class="pre">within</span> <span class="pre">the</span> <span class="pre">Controller')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mri:</span> <span class="pre">Anno(name='AMri'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Malcolm</span> <span class="pre">resource</span> <span class="pre">id</span> <span class="pre">of</span> <span class="pre">child</span> <span class="pre">object')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/ADTetrAMM/parts/tetrammdriverpart.html#TetrAMMDriverPart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADTetrAMM.parts.TetrAMMDriverPart" title="Permalink to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -196,7 +159,7 @@
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="malcolm.modules.ADTetrAMM.parts.TetrAMMDriverPart.on_post_configure">
-<span class="sig-name descname"><span class="pre">on_post_configure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/ADTetrAMM/parts/tetrammdriverpart.html#TetrAMMDriverPart.on_post_configure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADTetrAMM.parts.TetrAMMDriverPart.on_post_configure" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">on_post_configure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/ADTetrAMM/parts/tetrammdriverpart.html#TetrAMMDriverPart.on_post_configure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADTetrAMM.parts.TetrAMMDriverPart.on_post_configure" title="Permalink to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p>
@@ -206,7 +169,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="malcolm.modules.ADTetrAMM.parts.TetrAMMDriverPart.on_run">
-<span class="sig-name descname"><span class="pre">on_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/ADTetrAMM/parts/tetrammdriverpart.html#TetrAMMDriverPart.on_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADTetrAMM.parts.TetrAMMDriverPart.on_run" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">on_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/ADTetrAMM/parts/tetrammdriverpart.html#TetrAMMDriverPart.on_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADTetrAMM.parts.TetrAMMDriverPart.on_run" title="Permalink to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p>
@@ -216,7 +179,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="malcolm.modules.ADTetrAMM.parts.TetrAMMDriverPart.on_post_run_ready">
-<span class="sig-name descname"><span class="pre">on_post_run_ready</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/ADTetrAMM/parts/tetrammdriverpart.html#TetrAMMDriverPart.on_post_run_ready"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADTetrAMM.parts.TetrAMMDriverPart.on_post_run_ready" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">on_post_run_ready</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/ADTetrAMM/parts/tetrammdriverpart.html#TetrAMMDriverPart.on_post_run_ready"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADTetrAMM.parts.TetrAMMDriverPart.on_post_run_ready" title="Permalink to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p>
@@ -226,7 +189,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="malcolm.modules.ADTetrAMM.parts.TetrAMMDriverPart.on_post_run_armed">
-<span class="sig-name descname"><span class="pre">on_post_run_armed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/ADTetrAMM/parts/tetrammdriverpart.html#TetrAMMDriverPart.on_post_run_armed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADTetrAMM.parts.TetrAMMDriverPart.on_post_run_armed" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">on_post_run_armed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/ADTetrAMM/parts/tetrammdriverpart.html#TetrAMMDriverPart.on_post_run_armed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADTetrAMM.parts.TetrAMMDriverPart.on_post_run_armed" title="Permalink to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p>

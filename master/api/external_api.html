@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>External modules &mdash; malcolm 5.1+4.g449bcb48 documentation</title>
+  <title>External modules &mdash; malcolm 5.2+2.g0a1a1842 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -33,7 +33,7 @@
             <img src="../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.1
+                5.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -43,7 +43,6 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-  
               <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
@@ -84,42 +83,6 @@
 <li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
 </ul>
 
-  <!-- Add versions for selected branches + tags -->
-  <p class="caption">
-    <span class="caption-text">Versions</span>
-  </p>
-  <ul id="versions"/>
-  <script>
-    // Add any branches to appear in the side pane here, tags will be added below
-    // Will only appear if docs are built and pushed in gh-pages
-    var versions = ['main', 'master'];
-    var dirs = new Set();
-    function addVersion(name) {
-      if (dirs.has(name)) {
-        var li = document.createElement("li");
-        var a = document.createElement("a");
-        a.href = 'https://dls-controls.github.io/malcolm/' + name;
-        a.innerText = name;
-        li.appendChild(a)
-        document.getElementById('versions').appendChild(li);
-      }
-    }
-    Promise.all([
-      // Find gh-pages directories and populate `dirs`
-      fetch("https://api.github.com/repos/dls-controls/malcolm/contents?ref=gh-pages")
-      .then(response => response.json())
-      .then(data => data.forEach(function(e) {
-        if (e.type == "dir") dirs.add(e.name);
-      })),
-      // Add tags to `versions`
-      fetch('https://api.github.com/repos/dls-controls/malcolm/tags')
-        .then(response => response.json())
-        .then(data => data.forEach(function(e) {
-          versions.push(e.name);
-        }))
-      ]).then(_ => versions.forEach(addVersion))
-  </script>
-
         </div>
       </div>
     </nav>
@@ -149,52 +112,52 @@
 <p>Some modules do not have external documentation, link them here.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="Array">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Array</span></span><a class="headerlink" href="#Array" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Array</span></span><a class="headerlink" href="#Array" title="Permalink to this definition"></a></dt>
 <dd><p>Container for typed immutable array, defined in
 <a class="reference external" href="https://github.com/dls-controls/annotypes/blob/master/annotypes/_array.py">https://github.com/dls-controls/annotypes/blob/master/annotypes/_array.py</a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="Anno">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Anno</span></span><a class="headerlink" href="#Anno" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Anno</span></span><a class="headerlink" href="#Anno" title="Permalink to this definition"></a></dt>
 <dd><p>Annotated type declaration, defined in
 <a class="reference external" href="https://github.com/dls-controls/annotypes/blob/master/annotypes/_anno.py">https://github.com/dls-controls/annotypes/blob/master/annotypes/_anno.py</a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="List">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">List</span></span><a class="headerlink" href="#List" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">List</span></span><a class="headerlink" href="#List" title="Permalink to this definition"></a></dt>
 <dd><p>List[typ] is a <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><code class="xref any docutils literal notranslate"><span class="pre">list</span></code></a> with elements of typ. See <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><code class="xref any docutils literal notranslate"><span class="pre">typing.List</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="Dict">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Dict</span></span><a class="headerlink" href="#Dict" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Dict</span></span><a class="headerlink" href="#Dict" title="Permalink to this definition"></a></dt>
 <dd><p>Dict[ktyp, vtyp] is a <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><code class="xref any docutils literal notranslate"><span class="pre">dict</span></code></a> with keys of ktyp and values of vtyp. See
 <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><code class="xref any docutils literal notranslate"><span class="pre">typing.Dict</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="Any">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Any</span></span><a class="headerlink" href="#Any" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Any</span></span><a class="headerlink" href="#Any" title="Permalink to this definition"></a></dt>
 <dd><p>Any Python object. See <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><code class="xref any docutils literal notranslate"><span class="pre">typing.Any</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="Callable">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Callable</span></span><a class="headerlink" href="#Callable" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Callable</span></span><a class="headerlink" href="#Callable" title="Permalink to this definition"></a></dt>
 <dd><p>A callable function or method. See <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.10)"><code class="xref any docutils literal notranslate"><span class="pre">typing.Callable</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="Union">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Union</span></span><a class="headerlink" href="#Union" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Union</span></span><a class="headerlink" href="#Union" title="Permalink to this definition"></a></dt>
 <dd><p>Union[typ1, typ2, typ3] means one of those types. See <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><code class="xref any docutils literal notranslate"><span class="pre">typing.Union</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="Tuple">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Tuple</span></span><a class="headerlink" href="#Tuple" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Tuple</span></span><a class="headerlink" href="#Tuple" title="Permalink to this definition"></a></dt>
 <dd><p>Tuple[typ1, typ2, typ3] means a 3 element <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)"><code class="xref any docutils literal notranslate"><span class="pre">tuple</span></code></a> with the given types. See
 <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.10)"><code class="xref any docutils literal notranslate"><span class="pre">typing.Tuple</span></code></a></p>
 </dd></dl>

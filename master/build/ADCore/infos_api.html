@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.ADCore.infos &mdash; malcolm 5.1+4.g449bcb48 documentation</title>
+  <title>malcolm.modules.ADCore.infos &mdash; malcolm 5.2+2.g0a1a1842 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -34,7 +34,7 @@
             <img src="../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.1
+                5.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -44,7 +44,6 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-  
               <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../index.html">Introduction</a></li>
@@ -122,42 +121,6 @@
 <li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
 </ul>
 
-  <!-- Add versions for selected branches + tags -->
-  <p class="caption">
-    <span class="caption-text">Versions</span>
-  </p>
-  <ul id="versions"/>
-  <script>
-    // Add any branches to appear in the side pane here, tags will be added below
-    // Will only appear if docs are built and pushed in gh-pages
-    var versions = ['main', 'master'];
-    var dirs = new Set();
-    function addVersion(name) {
-      if (dirs.has(name)) {
-        var li = document.createElement("li");
-        var a = document.createElement("a");
-        a.href = 'https://dls-controls.github.io/malcolm/' + name;
-        a.innerText = name;
-        li.appendChild(a)
-        document.getElementById('versions').appendChild(li);
-      }
-    }
-    Promise.all([
-      // Find gh-pages directories and populate `dirs`
-      fetch("https://api.github.com/repos/dls-controls/malcolm/contents?ref=gh-pages")
-      .then(response => response.json())
-      .then(data => data.forEach(function(e) {
-        if (e.type == "dir") dirs.add(e.name);
-      })),
-      // Add tags to `versions`
-      fetch('https://api.github.com/repos/dls-controls/malcolm/tags')
-        .then(response => response.json())
-        .then(data => data.forEach(function(e) {
-          versions.push(e.name);
-        }))
-      ]).then(_ => versions.forEach(addVersion))
-  </script>
-
         </div>
       </div>
     </nav>
@@ -188,7 +151,7 @@
 <span id="malcolm-modules-adcore-infos"></span><h1>malcolm.modules.ADCore.infos<a class="headerlink" href="#module-malcolm.modules.ADCore.infos" title="Permalink to this headline"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.infos.FilePathTranslatorInfo">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADCore.infos.</span></span><span class="sig-name descname"><span class="pre">FilePathTranslatorInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">windows_drive_letter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_prefix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network_prefix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/ADCore/infos.html#FilePathTranslatorInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADCore.infos.FilePathTranslatorInfo" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADCore.infos.</span></span><span class="sig-name descname"><span class="pre">FilePathTranslatorInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">windows_drive_letter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_prefix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network_prefix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/ADCore/infos.html#FilePathTranslatorInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADCore.infos.FilePathTranslatorInfo" title="Permalink to this definition"></a></dt>
 <dd><p>Translate linux filepath to windows equivalent</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -205,7 +168,7 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.infos.NDArrayDatasetInfo">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADCore.infos.</span></span><span class="sig-name descname"><span class="pre">NDArrayDatasetInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rank</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/ADCore/infos.html#NDArrayDatasetInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADCore.infos.NDArrayDatasetInfo" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADCore.infos.</span></span><span class="sig-name descname"><span class="pre">NDArrayDatasetInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rank</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/ADCore/infos.html#NDArrayDatasetInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADCore.infos.NDArrayDatasetInfo" title="Permalink to this definition"></a></dt>
 <dd><p>Declare the NDArray data this produces as being a useful dataset to store
 to file</p>
 <dl class="field-list simple">
@@ -217,7 +180,7 @@ to file</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.infos.CalculatedNDAttributeDatasetInfo">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADCore.infos.</span></span><span class="sig-name descname"><span class="pre">CalculatedNDAttributeDatasetInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">attr</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/ADCore/infos.html#CalculatedNDAttributeDatasetInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADCore.infos.CalculatedNDAttributeDatasetInfo" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADCore.infos.</span></span><span class="sig-name descname"><span class="pre">CalculatedNDAttributeDatasetInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">attr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/ADCore/infos.html#CalculatedNDAttributeDatasetInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADCore.infos.CalculatedNDAttributeDatasetInfo" title="Permalink to this definition"></a></dt>
 <dd><p>Declare that we have calculated some statistics from the main dataset
 and these will be available</p>
 <dl class="field-list simple">
@@ -232,7 +195,7 @@ and these will be available</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.infos.NDAttributeDatasetInfo">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADCore.infos.</span></span><span class="sig-name descname"><span class="pre">NDAttributeDatasetInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../scanning/infos_api.html#malcolm.modules.scanning.infos.DatasetType" title="malcolm.modules.scanning.infos.DatasetType"><span class="pre">malcolm.modules.scanning.infos.DatasetType</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">attr</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/ADCore/infos.html#NDAttributeDatasetInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADCore.infos.NDAttributeDatasetInfo" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADCore.infos.</span></span><span class="sig-name descname"><span class="pre">NDAttributeDatasetInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../scanning/infos_api.html#malcolm.modules.scanning.infos.DatasetType" title="malcolm.modules.scanning.infos.DatasetType"><span class="pre">malcolm.modules.scanning.infos.DatasetType</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">attr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/ADCore/infos.html#NDAttributeDatasetInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADCore.infos.NDAttributeDatasetInfo" title="Permalink to this definition"></a></dt>
 <dd><p>Declare an NDAttribute attached to this NDArray to produce a useful
 dataset to store to file</p>
 <dl class="field-list simple">
@@ -246,7 +209,7 @@ dataset to store to file</p>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.infos.NDAttributeDatasetInfo.from_attribute_type">
-<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">from_attribute_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="util_api.html#malcolm.modules.ADCore.util.AttributeDatasetType" title="malcolm.modules.ADCore.util.AttributeDatasetType"><span class="pre">malcolm.modules.ADCore.util.AttributeDatasetType</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">attr</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#malcolm.modules.ADCore.infos.NDAttributeDatasetInfo" title="malcolm.modules.ADCore.infos.NDAttributeDatasetInfo"><span class="pre">malcolm.modules.ADCore.infos.NDAttributeDatasetInfo</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/ADCore/infos.html#NDAttributeDatasetInfo.from_attribute_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADCore.infos.NDAttributeDatasetInfo.from_attribute_type" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_attribute_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="util_api.html#malcolm.modules.ADCore.util.AttributeDatasetType" title="malcolm.modules.ADCore.util.AttributeDatasetType"><span class="pre">malcolm.modules.ADCore.util.AttributeDatasetType</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">attr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#malcolm.modules.ADCore.infos.NDAttributeDatasetInfo" title="malcolm.modules.ADCore.infos.NDAttributeDatasetInfo"><span class="pre">malcolm.modules.ADCore.infos.NDAttributeDatasetInfo</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/ADCore/infos.html#NDAttributeDatasetInfo.from_attribute_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADCore.infos.NDAttributeDatasetInfo.from_attribute_type" title="Permalink to this definition"></a></dt>
 <dd><p>Make an Info from the AttributeDatasetType</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>

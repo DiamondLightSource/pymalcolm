@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.demo.util &mdash; malcolm 5.1+4.g449bcb48 documentation</title>
+  <title>malcolm.modules.demo.util &mdash; malcolm 5.2+2.g0a1a1842 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -34,7 +34,7 @@
             <img src="../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.1
+                5.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -44,7 +44,6 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-  
               <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../index.html">Introduction</a></li>
@@ -120,42 +119,6 @@
 <li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
 </ul>
 
-  <!-- Add versions for selected branches + tags -->
-  <p class="caption">
-    <span class="caption-text">Versions</span>
-  </p>
-  <ul id="versions"/>
-  <script>
-    // Add any branches to appear in the side pane here, tags will be added below
-    // Will only appear if docs are built and pushed in gh-pages
-    var versions = ['main', 'master'];
-    var dirs = new Set();
-    function addVersion(name) {
-      if (dirs.has(name)) {
-        var li = document.createElement("li");
-        var a = document.createElement("a");
-        a.href = 'https://dls-controls.github.io/malcolm/' + name;
-        a.innerText = name;
-        li.appendChild(a)
-        document.getElementById('versions').appendChild(li);
-      }
-    }
-    Promise.all([
-      // Find gh-pages directories and populate `dirs`
-      fetch("https://api.github.com/repos/dls-controls/malcolm/contents?ref=gh-pages")
-      .then(response => response.json())
-      .then(data => data.forEach(function(e) {
-        if (e.type == "dir") dirs.add(e.name);
-      })),
-      // Add tags to `versions`
-      fetch('https://api.github.com/repos/dls-controls/malcolm/tags')
-        .then(response => response.json())
-        .then(data => data.forEach(function(e) {
-          versions.push(e.name);
-        }))
-      ]).then(_ => versions.forEach(addVersion))
-  </script>
-
         </div>
       </div>
     </nav>
@@ -192,7 +155,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="malcolm.modules.demo.util.interesting_pattern">
-<span class="sig-prename descclassname"><span class="pre">malcolm.modules.demo.util.</span></span><span class="sig-name descname"><span class="pre">interesting_pattern</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">scanpointgenerator.core.point.Point</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/demo/util.html#interesting_pattern"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.demo.util.interesting_pattern" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">malcolm.modules.demo.util.</span></span><span class="sig-name descname"><span class="pre">interesting_pattern</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">scanpointgenerator.core.point.Point</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/demo/util.html#interesting_pattern"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.demo.util.interesting_pattern" title="Permalink to this definition"></a></dt>
 <dd><p>This function is interesting in x and y in range -10..10. Given a Point,
 use the x and y values contained in it to make a float value in range 0..1</p>
 </dd></dl>

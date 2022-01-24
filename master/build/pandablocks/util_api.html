@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.pandablocks.util &mdash; malcolm 5.1+4.g449bcb48 documentation</title>
+  <title>malcolm.modules.pandablocks.util &mdash; malcolm 5.2+2.g0a1a1842 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -34,7 +34,7 @@
             <img src="../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.1
+                5.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -44,7 +44,6 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-  
               <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../index.html">Introduction</a></li>
@@ -121,42 +120,6 @@
 <li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
 </ul>
 
-  <!-- Add versions for selected branches + tags -->
-  <p class="caption">
-    <span class="caption-text">Versions</span>
-  </p>
-  <ul id="versions"/>
-  <script>
-    // Add any branches to appear in the side pane here, tags will be added below
-    // Will only appear if docs are built and pushed in gh-pages
-    var versions = ['main', 'master'];
-    var dirs = new Set();
-    function addVersion(name) {
-      if (dirs.has(name)) {
-        var li = document.createElement("li");
-        var a = document.createElement("a");
-        a.href = 'https://dls-controls.github.io/malcolm/' + name;
-        a.innerText = name;
-        li.appendChild(a)
-        document.getElementById('versions').appendChild(li);
-      }
-    }
-    Promise.all([
-      // Find gh-pages directories and populate `dirs`
-      fetch("https://api.github.com/repos/dls-controls/malcolm/contents?ref=gh-pages")
-      .then(response => response.json())
-      .then(data => data.forEach(function(e) {
-        if (e.type == "dir") dirs.add(e.name);
-      })),
-      // Add tags to `versions`
-      fetch('https://api.github.com/repos/dls-controls/malcolm/tags')
-        .then(response => response.json())
-        .then(data => data.forEach(function(e) {
-          versions.push(e.name);
-        }))
-      ]).then(_ => versions.forEach(addVersion))
-  </script>
-
         </div>
       </div>
     </nav>
@@ -187,7 +150,7 @@
 <span id="malcolm-modules-pandablocks-util"></span><h1>malcolm.modules.pandablocks.util<a class="headerlink" href="#module-malcolm.modules.pandablocks.util" title="Permalink to this headline"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="malcolm.modules.pandablocks.util.BitsTable">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.pandablocks.util.</span></span><span class="sig-name descname"><span class="pre">BitsTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name:</span> <span class="pre">Union[Anno(name='ABitNames',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='Block</span> <span class="pre">and</span> <span class="pre">Field</span> <span class="pre">name</span> <span class="pre">for</span> <span class="pre">the</span> <span class="pre">Bit'),</span> <span class="pre">Sequence[str]],</span> <span class="pre">value:</span> <span class="pre">Union[Anno(name='ABitValues',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;,</span> <span class="pre">description='Current</span> <span class="pre">value</span> <span class="pre">for</span> <span class="pre">the</span> <span class="pre">Bit'),</span> <span class="pre">Sequence[bool]],</span> <span class="pre">capture:</span> <span class="pre">Union[Anno(name='ABitCaptures',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;,</span> <span class="pre">description='Request</span> <span class="pre">this</span> <span class="pre">field</span> <span class="pre">is</span> <span class="pre">captured</span> <span class="pre">in</span> <span class="pre">PCAP'),</span> <span class="pre">Sequence[bool]]</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/pandablocks/util.html#BitsTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pandablocks.util.BitsTable" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.pandablocks.util.</span></span><span class="sig-name descname"><span class="pre">BitsTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name:</span> <span class="pre">Union[Anno(name='ABitNames',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='Block</span> <span class="pre">and</span> <span class="pre">Field</span> <span class="pre">name</span> <span class="pre">for</span> <span class="pre">the</span> <span class="pre">Bit'),</span> <span class="pre">Sequence[str]],</span> <span class="pre">value:</span> <span class="pre">Union[Anno(name='ABitValues',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;,</span> <span class="pre">description='Current</span> <span class="pre">value</span> <span class="pre">for</span> <span class="pre">the</span> <span class="pre">Bit'),</span> <span class="pre">Sequence[bool]],</span> <span class="pre">capture:</span> <span class="pre">Union[Anno(name='ABitCaptures',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;,</span> <span class="pre">description='Request</span> <span class="pre">this</span> <span class="pre">field</span> <span class="pre">is</span> <span class="pre">captured</span> <span class="pre">in</span> <span class="pre">PCAP'),</span> <span class="pre">Sequence[bool]]</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/pandablocks/util.html#BitsTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pandablocks.util.BitsTable" title="Permalink to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -201,58 +164,58 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="malcolm.modules.pandablocks.util.PositionCapture">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.pandablocks.util.</span></span><span class="sig-name descname"><span class="pre">PositionCapture</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/pandablocks/util.html#PositionCapture"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pandablocks.util.PositionCapture" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.pandablocks.util.</span></span><span class="sig-name descname"><span class="pre">PositionCapture</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/pandablocks/util.html#PositionCapture"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pandablocks.util.PositionCapture" title="Permalink to this definition"></a></dt>
 <dd><p>What to capture, if anything, with PCAP</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.pandablocks.util.PositionCapture.NO">
-<span class="sig-name descname"><span class="pre">NO</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'No'</span></em><a class="headerlink" href="#malcolm.modules.pandablocks.util.PositionCapture.NO" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">NO</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'No'</span></em><a class="headerlink" href="#malcolm.modules.pandablocks.util.PositionCapture.NO" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.pandablocks.util.PositionCapture.VALUE">
-<span class="sig-name descname"><span class="pre">VALUE</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'Value'</span></em><a class="headerlink" href="#malcolm.modules.pandablocks.util.PositionCapture.VALUE" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">VALUE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Value'</span></em><a class="headerlink" href="#malcolm.modules.pandablocks.util.PositionCapture.VALUE" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.pandablocks.util.PositionCapture.DIFF">
-<span class="sig-name descname"><span class="pre">DIFF</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'Diff'</span></em><a class="headerlink" href="#malcolm.modules.pandablocks.util.PositionCapture.DIFF" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">DIFF</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Diff'</span></em><a class="headerlink" href="#malcolm.modules.pandablocks.util.PositionCapture.DIFF" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.pandablocks.util.PositionCapture.SUM">
-<span class="sig-name descname"><span class="pre">SUM</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'Sum'</span></em><a class="headerlink" href="#malcolm.modules.pandablocks.util.PositionCapture.SUM" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">SUM</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Sum'</span></em><a class="headerlink" href="#malcolm.modules.pandablocks.util.PositionCapture.SUM" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.pandablocks.util.PositionCapture.MEAN">
-<span class="sig-name descname"><span class="pre">MEAN</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'Mean'</span></em><a class="headerlink" href="#malcolm.modules.pandablocks.util.PositionCapture.MEAN" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">MEAN</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Mean'</span></em><a class="headerlink" href="#malcolm.modules.pandablocks.util.PositionCapture.MEAN" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.pandablocks.util.PositionCapture.MIN">
-<span class="sig-name descname"><span class="pre">MIN</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'Min'</span></em><a class="headerlink" href="#malcolm.modules.pandablocks.util.PositionCapture.MIN" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">MIN</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Min'</span></em><a class="headerlink" href="#malcolm.modules.pandablocks.util.PositionCapture.MIN" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.pandablocks.util.PositionCapture.MAX">
-<span class="sig-name descname"><span class="pre">MAX</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'Max'</span></em><a class="headerlink" href="#malcolm.modules.pandablocks.util.PositionCapture.MAX" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">MAX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Max'</span></em><a class="headerlink" href="#malcolm.modules.pandablocks.util.PositionCapture.MAX" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.pandablocks.util.PositionCapture.MIN_MAX">
-<span class="sig-name descname"><span class="pre">MIN_MAX</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'Min</span> <span class="pre">Max'</span></em><a class="headerlink" href="#malcolm.modules.pandablocks.util.PositionCapture.MIN_MAX" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">MIN_MAX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Min</span> <span class="pre">Max'</span></em><a class="headerlink" href="#malcolm.modules.pandablocks.util.PositionCapture.MIN_MAX" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.pandablocks.util.PositionCapture.MIN_MAX_MEAN">
-<span class="sig-name descname"><span class="pre">MIN_MAX_MEAN</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'Min</span> <span class="pre">Max</span> <span class="pre">Mean'</span></em><a class="headerlink" href="#malcolm.modules.pandablocks.util.PositionCapture.MIN_MAX_MEAN" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">MIN_MAX_MEAN</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Min</span> <span class="pre">Max</span> <span class="pre">Mean'</span></em><a class="headerlink" href="#malcolm.modules.pandablocks.util.PositionCapture.MIN_MAX_MEAN" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="malcolm.modules.pandablocks.util.PositionsTable">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.pandablocks.util.</span></span><span class="sig-name descname"><span class="pre">PositionsTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name:</span> <span class="pre">Union[Anno(name='APositionNames',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='Block</span> <span class="pre">and</span> <span class="pre">Field</span> <span class="pre">name</span> <span class="pre">for</span> <span class="pre">the</span> <span class="pre">Position'),</span> <span class="pre">Sequence[str]],</span> <span class="pre">value:</span> <span class="pre">Union[Anno(name='APositionValues',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;,</span> <span class="pre">description='Current</span> <span class="pre">scaled</span> <span class="pre">value</span> <span class="pre">for</span> <span class="pre">the</span> <span class="pre">Position'),</span> <span class="pre">Sequence[float]],</span> <span class="pre">units:</span> <span class="pre">Union[Anno(name='APositionUnits',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='Units</span> <span class="pre">for</span> <span class="pre">the</span> <span class="pre">scaled</span> <span class="pre">value</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Position'),</span> <span class="pre">Sequence[str]],</span> <span class="pre">scale:</span> <span class="pre">Union[Anno(name='APositionScales',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;,</span> <span class="pre">description='Scale</span> <span class="pre">factor</span> <span class="pre">to</span> <span class="pre">calculate</span> <span class="pre">scaled</span> <span class="pre">value</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Position'),</span> <span class="pre">Sequence[float]],</span> <span class="pre">offset:</span> <span class="pre">Union[Anno(name='APositionOffsets',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;,</span> <span class="pre">description='Offset</span> <span class="pre">to</span> <span class="pre">calculate</span> <span class="pre">scaled</span> <span class="pre">value</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Position'),</span> <span class="pre">Sequence[float]],</span> <span class="pre">capture:</span> <span class="pre">Union[Anno(name='APositionCaptures',</span> <span class="pre">typ=&lt;enum</span> <span class="pre">'PositionCapture'&gt;,</span> <span class="pre">description='Whether</span> <span class="pre">and</span> <span class="pre">what</span> <span class="pre">to</span> <span class="pre">capture</span> <span class="pre">with</span> <span class="pre">PCAP'),</span> <span class="pre">Sequence[malcolm.modules.pandablocks.util.PositionCapture]]</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/pandablocks/util.html#PositionsTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pandablocks.util.PositionsTable" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.pandablocks.util.</span></span><span class="sig-name descname"><span class="pre">PositionsTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name:</span> <span class="pre">Union[Anno(name='APositionNames',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='Block</span> <span class="pre">and</span> <span class="pre">Field</span> <span class="pre">name</span> <span class="pre">for</span> <span class="pre">the</span> <span class="pre">Position'),</span> <span class="pre">Sequence[str]],</span> <span class="pre">value:</span> <span class="pre">Union[Anno(name='APositionValues',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;,</span> <span class="pre">description='Current</span> <span class="pre">scaled</span> <span class="pre">value</span> <span class="pre">for</span> <span class="pre">the</span> <span class="pre">Position'),</span> <span class="pre">Sequence[float]],</span> <span class="pre">units:</span> <span class="pre">Union[Anno(name='APositionUnits',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='Units</span> <span class="pre">for</span> <span class="pre">the</span> <span class="pre">scaled</span> <span class="pre">value</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Position'),</span> <span class="pre">Sequence[str]],</span> <span class="pre">scale:</span> <span class="pre">Union[Anno(name='APositionScales',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;,</span> <span class="pre">description='Scale</span> <span class="pre">factor</span> <span class="pre">to</span> <span class="pre">calculate</span> <span class="pre">scaled</span> <span class="pre">value</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Position'),</span> <span class="pre">Sequence[float]],</span> <span class="pre">offset:</span> <span class="pre">Union[Anno(name='APositionOffsets',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;,</span> <span class="pre">description='Offset</span> <span class="pre">to</span> <span class="pre">calculate</span> <span class="pre">scaled</span> <span class="pre">value</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Position'),</span> <span class="pre">Sequence[float]],</span> <span class="pre">capture:</span> <span class="pre">Union[Anno(name='APositionCaptures',</span> <span class="pre">typ=&lt;enum</span> <span class="pre">'PositionCapture'&gt;,</span> <span class="pre">description='Whether</span> <span class="pre">and</span> <span class="pre">what</span> <span class="pre">to</span> <span class="pre">capture</span> <span class="pre">with</span> <span class="pre">PCAP'),</span> <span class="pre">Sequence[malcolm.modules.pandablocks.util.PositionCapture]]</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/pandablocks/util.html#PositionsTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pandablocks.util.PositionsTable" title="Permalink to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">

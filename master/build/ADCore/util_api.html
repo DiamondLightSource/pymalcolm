@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.ADCore.util &mdash; malcolm 5.1+4.g449bcb48 documentation</title>
+  <title>malcolm.modules.ADCore.util &mdash; malcolm 5.2+2.g0a1a1842 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -34,7 +34,7 @@
             <img src="../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.1
+                5.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -44,7 +44,6 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-  
               <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../index.html">Introduction</a></li>
@@ -122,42 +121,6 @@
 <li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
 </ul>
 
-  <!-- Add versions for selected branches + tags -->
-  <p class="caption">
-    <span class="caption-text">Versions</span>
-  </p>
-  <ul id="versions"/>
-  <script>
-    // Add any branches to appear in the side pane here, tags will be added below
-    // Will only appear if docs are built and pushed in gh-pages
-    var versions = ['main', 'master'];
-    var dirs = new Set();
-    function addVersion(name) {
-      if (dirs.has(name)) {
-        var li = document.createElement("li");
-        var a = document.createElement("a");
-        a.href = 'https://dls-controls.github.io/malcolm/' + name;
-        a.innerText = name;
-        li.appendChild(a)
-        document.getElementById('versions').appendChild(li);
-      }
-    }
-    Promise.all([
-      // Find gh-pages directories and populate `dirs`
-      fetch("https://api.github.com/repos/dls-controls/malcolm/contents?ref=gh-pages")
-      .then(response => response.json())
-      .then(data => data.forEach(function(e) {
-        if (e.type == "dir") dirs.add(e.name);
-      })),
-      // Add tags to `versions`
-      fetch('https://api.github.com/repos/dls-controls/malcolm/tags')
-        .then(response => response.json())
-        .then(data => data.forEach(function(e) {
-          versions.push(e.name);
-        }))
-      ]).then(_ => versions.forEach(addVersion))
-  </script>
-
         </div>
       </div>
     </nav>
@@ -188,26 +151,26 @@
 <span id="malcolm-modules-adcore-util"></span><h1>malcolm.modules.ADCore.util<a class="headerlink" href="#module-malcolm.modules.ADCore.util" title="Permalink to this headline"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.util.AttributeDatasetType">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADCore.util.</span></span><span class="sig-name descname"><span class="pre">AttributeDatasetType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/ADCore/util.html#AttributeDatasetType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADCore.util.AttributeDatasetType" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADCore.util.</span></span><span class="sig-name descname"><span class="pre">AttributeDatasetType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/ADCore/util.html#AttributeDatasetType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADCore.util.AttributeDatasetType" title="Permalink to this definition"></a></dt>
 <dd><p>Used to signal from a detector driver that it is producing an NDAttribute
 that should be published to the user, and what its NeXus type is</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.util.AttributeDatasetType.DETECTOR">
-<span class="sig-name descname"><span class="pre">DETECTOR</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'detector'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.AttributeDatasetType.DETECTOR" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">DETECTOR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'detector'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.AttributeDatasetType.DETECTOR" title="Permalink to this definition"></a></dt>
 <dd><p>Primary data that is directly relevant to the user, like a transmission
 diode.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.util.AttributeDatasetType.MONITOR">
-<span class="sig-name descname"><span class="pre">MONITOR</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'monitor'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.AttributeDatasetType.MONITOR" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">MONITOR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'monitor'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.AttributeDatasetType.MONITOR" title="Permalink to this definition"></a></dt>
 <dd><p>Data that only makes sense when considered with detector data, like a
 measure of beam current with an ion chamber</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.util.AttributeDatasetType.POSITION">
-<span class="sig-name descname"><span class="pre">POSITION</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'position'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.AttributeDatasetType.POSITION" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">POSITION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'position'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.AttributeDatasetType.POSITION" title="Permalink to this definition"></a></dt>
 <dd><p>Readback position of a motor that is taking part in the experiment</p>
 </dd></dl>
 
@@ -215,29 +178,29 @@ measure of beam current with an ion chamber</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.util.DataType">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADCore.util.</span></span><span class="sig-name descname"><span class="pre">DataType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/ADCore/util.html#DataType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADCore.util.DataType" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADCore.util.</span></span><span class="sig-name descname"><span class="pre">DataType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/ADCore/util.html#DataType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADCore.util.DataType" title="Permalink to this definition"></a></dt>
 <dd><p>The datatype that should be used for the NDAttribute</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.util.DataType.INT">
-<span class="sig-name descname"><span class="pre">INT</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'INT'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.DataType.INT" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">INT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'INT'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.DataType.INT" title="Permalink to this definition"></a></dt>
 <dd><p>int32</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.util.DataType.DOUBLE">
-<span class="sig-name descname"><span class="pre">DOUBLE</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'DOUBLE'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.DataType.DOUBLE" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">DOUBLE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'DOUBLE'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.DataType.DOUBLE" title="Permalink to this definition"></a></dt>
 <dd><p>float64</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.util.DataType.STRING">
-<span class="sig-name descname"><span class="pre">STRING</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'STRING'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.DataType.STRING" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">STRING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'STRING'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.DataType.STRING" title="Permalink to this definition"></a></dt>
 <dd><p>string</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.util.DataType.DBRNATIVE">
-<span class="sig-name descname"><span class="pre">DBRNATIVE</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'DBR_NATIVE'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.DataType.DBRNATIVE" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">DBRNATIVE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'DBR_NATIVE'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.DataType.DBRNATIVE" title="Permalink to this definition"></a></dt>
 <dd><p>Whatever native type the PV has</p>
 </dd></dl>
 
@@ -245,17 +208,17 @@ measure of beam current with an ion chamber</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.util.SourceType">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADCore.util.</span></span><span class="sig-name descname"><span class="pre">SourceType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/ADCore/util.html#SourceType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADCore.util.SourceType" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADCore.util.</span></span><span class="sig-name descname"><span class="pre">SourceType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/ADCore/util.html#SourceType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADCore.util.SourceType" title="Permalink to this definition"></a></dt>
 <dd><p>Where to get the NDAttribute data from</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.util.SourceType.PARAM">
-<span class="sig-name descname"><span class="pre">PARAM</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'paramAttribute'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.SourceType.PARAM" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">PARAM</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'paramAttribute'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.SourceType.PARAM" title="Permalink to this definition"></a></dt>
 <dd><p>From an asyn parameter of this driver</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.util.SourceType.PV">
-<span class="sig-name descname"><span class="pre">PV</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'PVAttribute'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.SourceType.PV" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">PV</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'PVAttribute'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.SourceType.PV" title="Permalink to this definition"></a></dt>
 <dd><p>From a PV name</p>
 </dd></dl>
 
@@ -263,65 +226,65 @@ measure of beam current with an ion chamber</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.util.StatisticsName">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADCore.util.</span></span><span class="sig-name descname"><span class="pre">StatisticsName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/ADCore/util.html#StatisticsName"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADCore.util.StatisticsName" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADCore.util.</span></span><span class="sig-name descname"><span class="pre">StatisticsName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/ADCore/util.html#StatisticsName"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADCore.util.StatisticsName" title="Permalink to this definition"></a></dt>
 <dd><p>The types of statistics calculated by the areaDetector NDPluginStats</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.util.StatisticsName.MIN">
-<span class="sig-name descname"><span class="pre">MIN</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'MIN_VALUE'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.StatisticsName.MIN" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">MIN</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'MIN_VALUE'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.StatisticsName.MIN" title="Permalink to this definition"></a></dt>
 <dd><p>Minimum counts in any element</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.util.StatisticsName.MIN_X">
-<span class="sig-name descname"><span class="pre">MIN_X</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'MIN_X'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.StatisticsName.MIN_X" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">MIN_X</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'MIN_X'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.StatisticsName.MIN_X" title="Permalink to this definition"></a></dt>
 <dd><p>X position of minimum counts</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.util.StatisticsName.MIN_Y">
-<span class="sig-name descname"><span class="pre">MIN_Y</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'MIN_Y'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.StatisticsName.MIN_Y" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">MIN_Y</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'MIN_Y'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.StatisticsName.MIN_Y" title="Permalink to this definition"></a></dt>
 <dd><p>Y position of minimum counts</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.util.StatisticsName.MAX">
-<span class="sig-name descname"><span class="pre">MAX</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'MAX_VALUE'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.StatisticsName.MAX" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">MAX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'MAX_VALUE'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.StatisticsName.MAX" title="Permalink to this definition"></a></dt>
 <dd><p>Maximum counts in any element</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.util.StatisticsName.MAX_X">
-<span class="sig-name descname"><span class="pre">MAX_X</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'MAX_X'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.StatisticsName.MAX_X" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">MAX_X</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'MAX_X'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.StatisticsName.MAX_X" title="Permalink to this definition"></a></dt>
 <dd><p>X position of maximum counts</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.util.StatisticsName.MAX_Y">
-<span class="sig-name descname"><span class="pre">MAX_Y</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'MAX_Y'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.StatisticsName.MAX_Y" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">MAX_Y</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'MAX_Y'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.StatisticsName.MAX_Y" title="Permalink to this definition"></a></dt>
 <dd><p>Y position of maximum counts</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.util.StatisticsName.MEAN">
-<span class="sig-name descname"><span class="pre">MEAN</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'MEAN_VALUE'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.StatisticsName.MEAN" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">MEAN</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'MEAN_VALUE'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.StatisticsName.MEAN" title="Permalink to this definition"></a></dt>
 <dd><p>Mean counts of all elements</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.util.StatisticsName.SIGMA">
-<span class="sig-name descname"><span class="pre">SIGMA</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'SIGMA_VALUE'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.StatisticsName.SIGMA" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">SIGMA</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SIGMA_VALUE'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.StatisticsName.SIGMA" title="Permalink to this definition"></a></dt>
 <dd><p>Sigma of all elements</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.util.StatisticsName.SUM">
-<span class="sig-name descname"><span class="pre">SUM</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'TOTAL'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.StatisticsName.SUM" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">SUM</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'TOTAL'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.StatisticsName.SUM" title="Permalink to this definition"></a></dt>
 <dd><p>Sum of all elements</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.util.StatisticsName.NET">
-<span class="sig-name descname"><span class="pre">NET</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'NET'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.StatisticsName.NET" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">NET</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'NET'</span></em><a class="headerlink" href="#malcolm.modules.ADCore.util.StatisticsName.NET" title="Permalink to this definition"></a></dt>
 <dd><p>Sum of all elements not in background region</p>
 </dd></dl>
 
@@ -329,7 +292,7 @@ measure of beam current with an ion chamber</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="malcolm.modules.ADCore.util.ExtraAttributesTable">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADCore.util.</span></span><span class="sig-name descname"><span class="pre">ExtraAttributesTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name:</span> <span class="pre">Union[Anno(name='AAttributeNames',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='NDAttribute</span> <span class="pre">name</span> <span class="pre">to</span> <span class="pre">be</span> <span class="pre">exported'),</span> <span class="pre">Sequence[str]],</span> <span class="pre">sourceId:</span> <span class="pre">Union[Anno(name='ASourceIds',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='source</span> <span class="pre">ID</span> <span class="pre">for</span> <span class="pre">attribute</span> <span class="pre">(PV</span> <span class="pre">name</span> <span class="pre">for</span> <span class="pre">PVAttribute,asyn</span> <span class="pre">param</span> <span class="pre">name</span> <span class="pre">for</span> <span class="pre">paramAttribute)'),</span> <span class="pre">Sequence[str]],</span> <span class="pre">description:</span> <span class="pre">Union[Anno(name='ADescriptions',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='PV</span> <span class="pre">descriptions'),</span> <span class="pre">Sequence[str]],</span> <span class="pre">sourceType:</span> <span class="pre">Union[Anno(name='ASourceTypes',</span> <span class="pre">typ=&lt;enum</span> <span class="pre">'SourceType'&gt;,</span> <span class="pre">description='Type</span> <span class="pre">of</span> <span class="pre">attribute</span> <span class="pre">source'),</span> <span class="pre">Sequence[malcolm.modules.ADCore.util.SourceType]],</span> <span class="pre">dataType:</span> <span class="pre">Union[Anno(name='ADataTypes',</span> <span class="pre">typ=&lt;enum</span> <span class="pre">'DataType'&gt;,</span> <span class="pre">description='Type</span> <span class="pre">of</span> <span class="pre">attribute</span> <span class="pre">data'),</span> <span class="pre">Sequence[malcolm.modules.ADCore.util.DataType]],</span> <span class="pre">datasetType:</span> <span class="pre">Union[Anno(name='AAttributeTypes',</span> <span class="pre">typ=&lt;enum</span> <span class="pre">'AttributeDatasetType'&gt;,</span> <span class="pre">description='Types</span> <span class="pre">of</span> <span class="pre">attribute</span> <span class="pre">dataset'),</span> <span class="pre">Sequence[malcolm.modules.ADCore.util.AttributeDatasetType]]</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/ADCore/util.html#ExtraAttributesTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADCore.util.ExtraAttributesTable" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADCore.util.</span></span><span class="sig-name descname"><span class="pre">ExtraAttributesTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name:</span> <span class="pre">Union[Anno(name='AAttributeNames',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='NDAttribute</span> <span class="pre">name</span> <span class="pre">to</span> <span class="pre">be</span> <span class="pre">exported'),</span> <span class="pre">Sequence[str]],</span> <span class="pre">sourceId:</span> <span class="pre">Union[Anno(name='ASourceIds',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='source</span> <span class="pre">ID</span> <span class="pre">for</span> <span class="pre">attribute</span> <span class="pre">(PV</span> <span class="pre">name</span> <span class="pre">for</span> <span class="pre">PVAttribute,asyn</span> <span class="pre">param</span> <span class="pre">name</span> <span class="pre">for</span> <span class="pre">paramAttribute)'),</span> <span class="pre">Sequence[str]],</span> <span class="pre">description:</span> <span class="pre">Union[Anno(name='ADescriptions',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='PV</span> <span class="pre">descriptions'),</span> <span class="pre">Sequence[str]],</span> <span class="pre">sourceType:</span> <span class="pre">Union[Anno(name='ASourceTypes',</span> <span class="pre">typ=&lt;enum</span> <span class="pre">'SourceType'&gt;,</span> <span class="pre">description='Type</span> <span class="pre">of</span> <span class="pre">attribute</span> <span class="pre">source'),</span> <span class="pre">Sequence[malcolm.modules.ADCore.util.SourceType]],</span> <span class="pre">dataType:</span> <span class="pre">Union[Anno(name='ADataTypes',</span> <span class="pre">typ=&lt;enum</span> <span class="pre">'DataType'&gt;,</span> <span class="pre">description='Type</span> <span class="pre">of</span> <span class="pre">attribute</span> <span class="pre">data'),</span> <span class="pre">Sequence[malcolm.modules.ADCore.util.DataType]],</span> <span class="pre">datasetType:</span> <span class="pre">Union[Anno(name='AAttributeTypes',</span> <span class="pre">typ=&lt;enum</span> <span class="pre">'AttributeDatasetType'&gt;,</span> <span class="pre">description='Types</span> <span class="pre">of</span> <span class="pre">attribute</span> <span class="pre">dataset'),</span> <span class="pre">Sequence[malcolm.modules.ADCore.util.AttributeDatasetType]]</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/ADCore/util.html#ExtraAttributesTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADCore.util.ExtraAttributesTable" title="Permalink to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.asyn.parts &mdash; malcolm 5.1+4.g449bcb48 documentation</title>
+  <title>malcolm.modules.asyn.parts &mdash; malcolm 5.2+2.g0a1a1842 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -34,7 +34,7 @@
             <img src="../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.1
+                5.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -44,7 +44,6 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-  
               <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../index.html">Introduction</a></li>
@@ -118,42 +117,6 @@
 <li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
 </ul>
 
-  <!-- Add versions for selected branches + tags -->
-  <p class="caption">
-    <span class="caption-text">Versions</span>
-  </p>
-  <ul id="versions"/>
-  <script>
-    // Add any branches to appear in the side pane here, tags will be added below
-    // Will only appear if docs are built and pushed in gh-pages
-    var versions = ['main', 'master'];
-    var dirs = new Set();
-    function addVersion(name) {
-      if (dirs.has(name)) {
-        var li = document.createElement("li");
-        var a = document.createElement("a");
-        a.href = 'https://dls-controls.github.io/malcolm/' + name;
-        a.innerText = name;
-        li.appendChild(a)
-        document.getElementById('versions').appendChild(li);
-      }
-    }
-    Promise.all([
-      // Find gh-pages directories and populate `dirs`
-      fetch("https://api.github.com/repos/dls-controls/malcolm/contents?ref=gh-pages")
-      .then(response => response.json())
-      .then(data => data.forEach(function(e) {
-        if (e.type == "dir") dirs.add(e.name);
-      })),
-      // Add tags to `versions`
-      fetch('https://api.github.com/repos/dls-controls/malcolm/tags')
-        .then(response => response.json())
-        .then(data => data.forEach(function(e) {
-          versions.push(e.name);
-        }))
-      ]).then(_ => versions.forEach(addVersion))
-  </script>
-
         </div>
       </div>
     </nav>
@@ -184,7 +147,7 @@
 <span id="malcolm-modules-asyn-parts"></span><h1>malcolm.modules.asyn.parts<a class="headerlink" href="#module-malcolm.modules.asyn.parts" title="Permalink to this headline"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="malcolm.modules.asyn.parts.AsynSourcePortPart">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.asyn.parts.</span></span><span class="sig-name descname"><span class="pre">AsynSourcePortPart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name:</span> <span class="pre">Anno(name='APartName'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></em>, <em class="sig-param"><span class="pre">description='The</span> <span class="pre">name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Part</span> <span class="pre">within</span> <span class="pre">the</span> <span class="pre">Controller')</span></em>, <em class="sig-param"><span class="pre">description:</span> <span class="pre">Anno(name='AMetaDescription'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Description</span> <span class="pre">of</span> <span class="pre">what</span> <span class="pre">this</span> <span class="pre">element</span> <span class="pre">represents')</span></em>, <em class="sig-param"><span class="pre">rbv:</span> <span class="pre">Anno(name='ARbv'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Override</span> <span class="pre">for</span> <span class="pre">rbv')</span></em>, <em class="sig-param"><span class="pre">port_type:</span> <span class="pre">Anno(name='APortType'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;enum</span> <span class="pre">'Port'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Source</span> <span class="pre">Port</span> <span class="pre">type')</span></em>, <em class="sig-param"><span class="pre">group:</span> <span class="pre">Optional[Anno(name='AGroup'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></em>, <em class="sig-param"><span class="pre">description='If</span> <span class="pre">given</span></em>, <em class="sig-param"><span class="pre">which</span> <span class="pre">GUI</span> <span class="pre">group</span> <span class="pre">should</span> <span class="pre">we</span> <span class="pre">attach</span> <span class="pre">to')]</span> <span class="pre">=</span> <span class="pre">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/asyn/parts/asynsourceportpart.html#AsynSourcePortPart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.asyn.parts.AsynSourcePortPart" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.asyn.parts.</span></span><span class="sig-name descname"><span class="pre">AsynSourcePortPart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">Anno(name='APartName'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Part</span> <span class="pre">within</span> <span class="pre">the</span> <span class="pre">Controller')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description:</span> <span class="pre">Anno(name='AMetaDescription'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Description</span> <span class="pre">of</span> <span class="pre">what</span> <span class="pre">this</span> <span class="pre">element</span> <span class="pre">represents')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rbv:</span> <span class="pre">Anno(name='ARbv'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Override</span> <span class="pre">for</span> <span class="pre">rbv')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port_type:</span> <span class="pre">Anno(name='APortType'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;enum</span> <span class="pre">'Port'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Source</span> <span class="pre">Port</span> <span class="pre">type')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group:</span> <span class="pre">Optional[Anno(name='AGroup'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='If</span> <span class="pre">given</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">which</span> <span class="pre">GUI</span> <span class="pre">group</span> <span class="pre">should</span> <span class="pre">we</span> <span class="pre">attach</span> <span class="pre">to')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/asyn/parts/asynsourceportpart.html#AsynSourcePortPart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.asyn.parts.AsynSourcePortPart" title="Permalink to this definition"></a></dt>
 <dd><p>Defines a string <a class="reference internal" href="../../api/core_api.html#malcolm.core.Attribute" title="malcolm.core.Attribute"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Attribute</span></code></a> representing a asyn port that should be
 depicted as an Source Port on a Block</p>
 <dl class="field-list simple">

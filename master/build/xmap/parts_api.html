@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.xmap.parts &mdash; malcolm 5.1+4.g449bcb48 documentation</title>
+  <title>malcolm.modules.xmap.parts &mdash; malcolm 5.2+2.g0a1a1842 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -34,7 +34,7 @@
             <img src="../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.1
+                5.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -44,7 +44,6 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-  
               <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../index.html">Introduction</a></li>
@@ -119,42 +118,6 @@
 <li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
 </ul>
 
-  <!-- Add versions for selected branches + tags -->
-  <p class="caption">
-    <span class="caption-text">Versions</span>
-  </p>
-  <ul id="versions"/>
-  <script>
-    // Add any branches to appear in the side pane here, tags will be added below
-    // Will only appear if docs are built and pushed in gh-pages
-    var versions = ['main', 'master'];
-    var dirs = new Set();
-    function addVersion(name) {
-      if (dirs.has(name)) {
-        var li = document.createElement("li");
-        var a = document.createElement("a");
-        a.href = 'https://dls-controls.github.io/malcolm/' + name;
-        a.innerText = name;
-        li.appendChild(a)
-        document.getElementById('versions').appendChild(li);
-      }
-    }
-    Promise.all([
-      // Find gh-pages directories and populate `dirs`
-      fetch("https://api.github.com/repos/dls-controls/malcolm/contents?ref=gh-pages")
-      .then(response => response.json())
-      .then(data => data.forEach(function(e) {
-        if (e.type == "dir") dirs.add(e.name);
-      })),
-      // Add tags to `versions`
-      fetch('https://api.github.com/repos/dls-controls/malcolm/tags')
-        .then(response => response.json())
-        .then(data => data.forEach(function(e) {
-          versions.push(e.name);
-        }))
-      ]).then(_ => versions.forEach(addVersion))
-  </script>
-
         </div>
       </div>
     </nav>
@@ -185,7 +148,7 @@
 <span id="malcolm-modules-xmap-parts"></span><h1>malcolm.modules.xmap.parts<a class="headerlink" href="#module-malcolm.modules.xmap.parts" title="Permalink to this headline"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="malcolm.modules.xmap.parts.XmapDriverPart">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.xmap.parts.</span></span><span class="sig-name descname"><span class="pre">XmapDriverPart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name:</span> <span class="pre">Anno(name='APartName'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></em>, <em class="sig-param"><span class="pre">description='The</span> <span class="pre">name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Part</span> <span class="pre">within</span> <span class="pre">the</span> <span class="pre">Controller')</span></em>, <em class="sig-param"><span class="pre">mri:</span> <span class="pre">Anno(name='AMri'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Malcolm</span> <span class="pre">resource</span> <span class="pre">id</span> <span class="pre">of</span> <span class="pre">child</span> <span class="pre">object')</span></em>, <em class="sig-param"><span class="pre">soft_trigger_modes:</span> <span class="pre">Optional[Union[Anno(name='ASoftTriggerModes'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></em>, <em class="sig-param"><span class="pre">description='List</span> <span class="pre">of</span> <span class="pre">trigger</span> <span class="pre">modes</span> <span class="pre">that</span> <span class="pre">do</span> <span class="pre">not</span> <span class="pre">use</span> <span class="pre">hardware</span> <span class="pre">triggers')</span></em>, <em class="sig-param"><span class="pre">Sequence[str]]]</span> <span class="pre">=</span> <span class="pre">None</span></em>, <em class="sig-param"><span class="pre">main_dataset_useful:</span> <span class="pre">Anno(name='AMainDatasetUseful'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Is</span> <span class="pre">main</span> <span class="pre">detector</span> <span class="pre">dataset</span> <span class="pre">useful</span> <span class="pre">to</span> <span class="pre">publish</span> <span class="pre">in</span> <span class="pre">DatasetTable?')</span> <span class="pre">=</span> <span class="pre">True</span></em>, <em class="sig-param"><span class="pre">runs_on_windows:</span> <span class="pre">Anno(name='APartRunsOnWindows'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Is</span> <span class="pre">the</span> <span class="pre">IOC</span> <span class="pre">this</span> <span class="pre">part</span> <span class="pre">connects</span> <span class="pre">to</span> <span class="pre">running</span> <span class="pre">on</span> <span class="pre">Windows?')</span> <span class="pre">=</span> <span class="pre">False</span></em>, <em class="sig-param"><span class="pre">required_version:</span> <span class="pre">Optional[Anno(name='AVersionRequirement'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Minimum</span> <span class="pre">required</span> <span class="pre">version</span> <span class="pre">for</span> <span class="pre">compatibility')]</span> <span class="pre">=</span> <span class="pre">None</span></em>, <em class="sig-param"><span class="pre">min_acquire_period:</span> <span class="pre">Anno(name='AMinAcquirePeriod'</span></em>, <em class="sig-param"><span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;</span></em>, <em class="sig-param"><span class="pre">description='Minimum</span> <span class="pre">acquire</span> <span class="pre">period</span> <span class="pre">the</span> <span class="pre">detector</span> <span class="pre">is</span> <span class="pre">capable</span> <span class="pre">of')</span> <span class="pre">=</span> <span class="pre">0.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/xmap/parts/xmapdriverpart.html#XmapDriverPart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.xmap.parts.XmapDriverPart" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.xmap.parts.</span></span><span class="sig-name descname"><span class="pre">XmapDriverPart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">Anno(name='APartName'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Part</span> <span class="pre">within</span> <span class="pre">the</span> <span class="pre">Controller')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mri:</span> <span class="pre">Anno(name='AMri'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Malcolm</span> <span class="pre">resource</span> <span class="pre">id</span> <span class="pre">of</span> <span class="pre">child</span> <span class="pre">object')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">soft_trigger_modes:</span> <span class="pre">Optional[Union[Anno(name='ASoftTriggerModes'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='List</span> <span class="pre">of</span> <span class="pre">trigger</span> <span class="pre">modes</span> <span class="pre">that</span> <span class="pre">do</span> <span class="pre">not</span> <span class="pre">use</span> <span class="pre">hardware</span> <span class="pre">triggers')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Sequence[str]]]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">main_dataset_useful:</span> <span class="pre">Anno(name='AMainDatasetUseful'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Is</span> <span class="pre">main</span> <span class="pre">detector</span> <span class="pre">dataset</span> <span class="pre">useful</span> <span class="pre">to</span> <span class="pre">publish</span> <span class="pre">in</span> <span class="pre">DatasetTable?')</span> <span class="pre">=</span> <span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs_on_windows:</span> <span class="pre">Anno(name='APartRunsOnWindows'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Is</span> <span class="pre">the</span> <span class="pre">IOC</span> <span class="pre">this</span> <span class="pre">part</span> <span class="pre">connects</span> <span class="pre">to</span> <span class="pre">running</span> <span class="pre">on</span> <span class="pre">Windows?')</span> <span class="pre">=</span> <span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">required_version:</span> <span class="pre">Optional[Anno(name='AVersionRequirement'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Minimum</span> <span class="pre">required</span> <span class="pre">version</span> <span class="pre">for</span> <span class="pre">compatibility')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_acquire_period:</span> <span class="pre">Anno(name='AMinAcquirePeriod'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Minimum</span> <span class="pre">acquire</span> <span class="pre">period</span> <span class="pre">the</span> <span class="pre">detector</span> <span class="pre">is</span> <span class="pre">capable</span> <span class="pre">of')</span> <span class="pre">=</span> <span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/xmap/parts/xmapdriverpart.html#XmapDriverPart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.xmap.parts.XmapDriverPart" title="Permalink to this definition"></a></dt>
 <dd><p>Part for using xmap_driver_block in a scan</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>

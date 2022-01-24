@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Datasets and Detectors &mdash; malcolm 5.1+4.g449bcb48 documentation</title>
+  <title>Datasets and Detectors &mdash; malcolm 5.2+2.g0a1a1842 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -34,7 +34,7 @@
             <img src="../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.1
+                5.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -44,7 +44,6 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-  
               <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
@@ -84,42 +83,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
 </ul>
-
-  <!-- Add versions for selected branches + tags -->
-  <p class="caption">
-    <span class="caption-text">Versions</span>
-  </p>
-  <ul id="versions"/>
-  <script>
-    // Add any branches to appear in the side pane here, tags will be added below
-    // Will only appear if docs are built and pushed in gh-pages
-    var versions = ['main', 'master'];
-    var dirs = new Set();
-    function addVersion(name) {
-      if (dirs.has(name)) {
-        var li = document.createElement("li");
-        var a = document.createElement("a");
-        a.href = 'https://dls-controls.github.io/malcolm/' + name;
-        a.innerText = name;
-        li.appendChild(a)
-        document.getElementById('versions').appendChild(li);
-      }
-    }
-    Promise.all([
-      // Find gh-pages directories and populate `dirs`
-      fetch("https://api.github.com/repos/dls-controls/malcolm/contents?ref=gh-pages")
-      .then(response => response.json())
-      .then(data => data.forEach(function(e) {
-        if (e.type == "dir") dirs.add(e.name);
-      })),
-      // Add tags to `versions`
-      fetch('https://api.github.com/repos/dls-controls/malcolm/tags')
-        .then(response => response.json())
-        .then(data => data.forEach(function(e) {
-          versions.push(e.name);
-        }))
-      ]).then(_ => versions.forEach(addVersion))
-  </script>
 
         </div>
       </div>
@@ -173,48 +136,48 @@ rules are applied:
 - util depends on hooks and infos (not vice versa)</p>
 <dl class="py class">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.util.</span></span><span class="sig-name descname"><span class="pre">DatasetType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/scanning/infos.html#DatasetType"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.util.</span></span><span class="sig-name descname"><span class="pre">DatasetType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/scanning/infos.html#DatasetType"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>NeXus type of a produced dataset</p>
 <dl class="py attribute">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">PRIMARY</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'primary'</span></em></dt>
+<span class="sig-name descname"><span class="pre">PRIMARY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'primary'</span></em></dt>
 <dd><p>Detector data, like the 2D data from an imaging detector</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">SECONDARY</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'secondary'</span></em></dt>
+<span class="sig-name descname"><span class="pre">SECONDARY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'secondary'</span></em></dt>
 <dd><p>Calculated from detector data, like the sum of each frame</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">MONITOR</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'monitor'</span></em></dt>
+<span class="sig-name descname"><span class="pre">MONITOR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'monitor'</span></em></dt>
 <dd><p>Data that only makes sense when considered with detector data, like a
 measure of beam current with an ion chamber</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">POSITION_SET</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'position_set'</span></em></dt>
+<span class="sig-name descname"><span class="pre">POSITION_SET</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'position_set'</span></em></dt>
 <dd><p>The demand positions of an axis as specified by the generator</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">POSITION_VALUE</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'position_value'</span></em></dt>
+<span class="sig-name descname"><span class="pre">POSITION_VALUE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'position_value'</span></em></dt>
 <dd><p>The readback positions of an axis that moves during the scan</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">POSITION_MIN</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'position_min'</span></em></dt>
+<span class="sig-name descname"><span class="pre">POSITION_MIN</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'position_min'</span></em></dt>
 <dd><p>The minimum value of the readback position of an axis in each frame</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">POSITION_MAX</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'position_max'</span></em></dt>
+<span class="sig-name descname"><span class="pre">POSITION_MAX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'position_max'</span></em></dt>
 <dd><p>The maximum value of the readback position of an axis in each frame</p>
 </dd></dl>
 
