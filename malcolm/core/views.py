@@ -186,7 +186,12 @@ class Block(View):
         )
 
     def when_value_matches(
-        self, attr, good_value, bad_values=None, timeout=None, event_timeout=None
+        self,
+        attr,
+        good_value,
+        bad_values=None,
+        timeout=None,
+        event_timeout=None,
     ):
         future = self.when_value_matches_async(attr, good_value, bad_values)
         self._context.wait_all_futures(

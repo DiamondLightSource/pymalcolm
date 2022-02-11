@@ -22,12 +22,19 @@ env:
 # Jobs
 jobs:
   build:
-    name: "Code CI"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ '3.7' ]
+        python-version: ["3.7"]
+        pipenv: ["skip-lock"] # Use latest available dependencies
+        # Extra job for publishing using Pipfile.lock
+        include:
+          - python-version: "3.7"
+            pipenv: "deploy"
+            publish: true
+
+    name: build/${{ matrix.python-version }}/${{ matrix.pipenv }}
 
     steps:
     - name: Checkout source
@@ -71,7 +78,7 @@ jobs:
       run: |
         env
         pip install pipenv
-        pipenv install --dev --deploy --python ${{ matrix.python-version }} && pipenv graph
+        pipenv install --dev --${{ matrix.pipenv }} --python ${{ matrix.python-version }} && pipenv graph
 
     - name: Create Sdist and Wheel
       # for reproducible builds set SOURCE_DATE_EPOCH to the date of the last commit
@@ -79,7 +86,7 @@ jobs:
       # Also use the same version of wheel as inside DLS
       run: |
         export SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct)
-        pip install "wheel==0.33.1"
+        pip install "wheel==0.37.0"
         python setup.py sdist bdist_wheel
 
     - name: Flake8
@@ -91,17 +98,18 @@ jobs:
         pipenv run tests
 
     - name: Coverage
-      uses: codecov/codecov-action@v1
+      if: matrix.publish
+      uses: codecov/codecov-action@v2
       with:
         fail_ci_if_error: true # optional (default = false)
         files: ./coverage.xml
 
     - name: Publish Sdist and Wheel to PyPI
       # Only once when on a tag
-      if: matrix.python-version == '3.7' && startsWith(github.ref, 'refs/tags')
+      if: matrix.publish && startsWith(github.ref, 'refs/tags')
       # We pin to the SHA, not the tag, for security reasons.
       # https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/security-hardening-for-github-actions#using-third-party-actions
-      uses: pypa/gh-action-pypi-publish@54b39fb9371c0b3a6f9f14bb8a67394defc7a806  # v1.4.1
+      uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29  # v1.4.2
       with:
         user: __token__
         password: ${{ secrets.pypi_token }}

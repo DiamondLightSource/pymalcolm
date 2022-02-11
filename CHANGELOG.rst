@@ -3,8 +3,43 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
-Unreleased
-----------
+`5.2`_ - 2022-01-05
+-------------------
+
+Changed:
+
+- DetectorDriverPart's attributesFile is no longer saved in a design. This stops
+  the warning when a populated Attributes to Capture table on the web GUI
+  creates its own attributes file and overwrites the attributeFile value saved
+  in the design (if present). If wanting to capture additional NDAttributes you
+  can now either use the Attributes to Capture table and save it to your design,
+  or alternatively create the attributes XML file via iocbuilder and set the
+  attributes filepath at IOC startup.
+
+Fixed:
+
+- Fixed bug with PmacChildPart when performing large scans with start of row
+  triggering. If the profile generation completed with more than 4,000 points
+  to upload, then during Run you would encounter an error "Why do we still have
+  points?". This is because the logic expected the profile to be able to written
+  in a single write (i.e. under 2000 points). Now multiple profile writes are
+  allowed when the brick is not providing a trigger at every point.
+
+`5.1`_ - 2021-12-16
+-------------------
+
+Changed:
+
+- PmacChildPart's profile generation is now split into two methods based on the
+  trigger type. The loop performance has been improved, reducing configure
+  times by ~20% for small scans and ~40% for large scans when profile point
+  generation dominates. A Yield has also been added so the thread suspends
+  after each batch so it doesn't block other threads for the entire profile
+  calculation, which previously caused timeout problems with other components.
+- HDFWriterPart now looks at the number of frames written to the HDF5 file to
+  track progress and check for stalling issues. This means a scan will now fail
+  instead of succeed if the file plugin receives all frames but doesn't write
+  them.
 
 Fixed:
 
@@ -698,6 +733,8 @@ Added:
 
 - Initial release with hello world and websocket comms
 
+.. _5.2: https://github.com/dls-controls/pymalcolm/compare/5.1...5.2
+.. _5.1: https://github.com/dls-controls/pymalcolm/compare/5.0...5.1
 .. _5.0: https://github.com/dls-controls/pymalcolm/compare/4.6...5.0
 .. _4.6: https://github.com/dls-controls/pymalcolm/compare/4.5...4.6
 .. _4.5: https://github.com/dls-controls/pymalcolm/compare/4.4...4.5

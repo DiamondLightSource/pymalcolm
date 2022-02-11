@@ -158,6 +158,9 @@ def all_points_same_velocities(points: Points) -> Array[bool]:
         v2 = velocities[1:]
         results[axis_name] = np.isclose(v1, v2)
     result = and_all_axes(results)
+    # If we have no axes then all velocities are the same
+    if result is None:
+        result = np.ones(len(points), dtype=bool)
     return result
 
 
@@ -174,6 +177,9 @@ def all_points_joined(points: Points) -> Array[bool]:
         lowers = points.lower[axis_name][1:]
         results[axis_name] = np.logical_and(uppers == lowers, no_delay)
     result = and_all_axes(results)
+    # If we have no axes then all points are joined
+    if result is None:
+        result = np.ones(len(points), dtype=bool)
     return result
 
 

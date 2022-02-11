@@ -1,7 +1,7 @@
 Malcolm
 =======
 
-|code_ci| |docs_ci| |coverage| |health| |pypi_version|
+|code_ci| |docs_ci| |coverage| |pypi_version|
 
 Malcolm is a middlelayer framework that implements high level configure/run
 behaviour of control system components like those used in continuous scans. 
@@ -58,10 +58,6 @@ APACHE License. (see `LICENSE`_)
 .. |pypi_version| image:: https://img.shields.io/pypi/v/malcolm.svg
     :target: https://pypi.python.org/pypi/malcolm/
     :alt: Latest PyPI version
-
-.. |health| image:: https://api.codacy.com/project/badge/Grade/9b277852ec9347329f35dc41d068c151
-   :target: https://app.codacy.com/app/dls-controls/pymalcolm?utm_source=github.com&utm_medium=referral&utm_content=dls-controls/pymalcolm&utm_campaign=Badge_Grade_Dashboard
-   :alt: Code Health
 
 .. _CHANGELOG:
     https://github.com/dls-controls/pymalcolm/blob/master/CHANGELOG.rst

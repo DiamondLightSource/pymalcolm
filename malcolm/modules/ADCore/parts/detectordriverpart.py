@@ -50,12 +50,13 @@ AMri = builtin.parts.AMri
 
 # We will set these attributes on the child block, so don't save them
 @builtin.util.no_save(
+    "acquirePeriod",
+    "arrayCallbacks",
     "arrayCounter",
+    "attributesFile",
+    "exposure",
     "imageMode",
     "numImages",
-    "arrayCallbacks",
-    "exposure",
-    "acquirePeriod",
 )
 class DetectorDriverPart(builtin.parts.ChildPart):
     def __init__(

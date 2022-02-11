@@ -3,10 +3,10 @@ import shutil
 from xml.etree import ElementTree
 
 import cothread
-from mock import MagicMock, call
+from mock import MagicMock, call, patch
 from scanpointgenerator import CompoundGenerator, LineGenerator, SpiralGenerator
 
-from malcolm.core import Context, Future, Process
+from malcolm.core import Context, Future, Process, TimeoutError
 from malcolm.modules.ADCore.blocks import hdf_writer_block
 from malcolm.modules.ADCore.infos import (
     CalculatedNDAttributeDatasetInfo,
@@ -357,18 +357,19 @@ class TestHDFWriterPart(ChildTestCase):
     def test_run(self):
         self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
-        self.o.done_when_reaches = 38
-        self.o.completed_offset = 0
-        # Say that we're getting the first frame
-        self.o.array_future = Future(None)
-        self.o.array_future.set_result(None)
+        self.o.done_when_captured = 38
+        # Need a registrar object or we get AssertionError
         self.o.registrar = MagicMock()
-        # run waits for this value, so say we have finished immediately
-        self.set_attributes(self.child, uniqueId=self.o.done_when_reaches)
+        # Run waits for this value, so say we have finished immediately
+        self.set_attributes(self.child, numCapturedReadback=self.o.done_when_captured)
         self.mock_when_value_matches(self.child)
+
+        # Run
         self.o.on_run(self.context)
+
+        # Check calls
         assert self.child.handled_requests.mock_calls == [
-            call.when_value_matches("uniqueId", 38, None)
+            call.when_value_matches("numCapturedReadback", 38, None)
         ]
         assert self.o.registrar.report.called_once
         assert self.o.registrar.report.call_args_list[0][0][0].steps == 38
@@ -376,40 +377,65 @@ class TestHDFWriterPart(ChildTestCase):
     def test_run_and_flush(self):
         self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
 
-        def set_unique_id():
+        def set_num_captured():
             # Sleep for 2.5 seconds to ensure 2 flushes, and then set value to finish
             cothread.Sleep(2.5)
-            self.set_attributes(self.child, uniqueId=self.o.done_when_reaches)
+            self.set_attributes(
+                self.child, numCapturedReadback=self.o.done_when_captured
+            )
 
-        self.o.done_when_reaches = 38
-        self.o.completed_offset = 0
+        self.o.done_when_captured = 5
         # Say that we're getting the first frame
-        self.o.array_future = Future(None)
-        self.o.array_future.set_result(None)
+        self.o.first_array_future = Future(None)
+        self.o.first_array_future.set_result(None)
         self.o.start_future = Future(None)
+        # Need a registrar object or we get AssertionError
         self.o.registrar = MagicMock()
-        self.o.frame_timeout = 60
+        # Reduce frame timeout so we don't hang on this test for too long
+        self.o.frame_timeout = 5
         # Spawn process to finish it after a few seconds
-        self.process.spawn(set_unique_id)
+        self.process.spawn(set_num_captured)
+
         # Run
         self.o.on_run(self.context)
+
+        # Check calls
         assert self.child.handled_requests.mock_calls == [
             call.post("flushNow"),
             call.post("flushNow"),
         ]
         assert self.o.registrar.report.called_once
         assert self.o.registrar.report.call_args_list[0][0][0].steps == 0
-        assert self.o.registrar.report.call_args_list[1][0][0].steps == 38
+        assert self.o.registrar.report.call_args_list[1][0][0].steps == 5
 
-    def test_seek(self):
-        self.mock_when_value_matches(self.child)
+    def test_run_raises_TimeoutError_for_stalled_writer(self):
         self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
-        self.o.done_when_reaches = 10
+        self.o.done_when_captured = 10
+        # Need a registrar object or we get AssertionError
+        self.o.registrar = MagicMock()
+        self.o.start_future = MagicMock()
+        # Mock the last update
+        self.o.last_capture_update = MagicMock()
+        self.o.last_capture_update.return_value = 0.0
+        # Set a short timeout for testing
+        self.o.frame_timeout = 0.1
+
+        # Now check the error is raised
+        self.assertRaises(TimeoutError, self.o.on_run, self.context)
+
+    def test_seek(self):
+        self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
+        self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
+        # Num captured readback usually reads a bit higher than the completed steps
+        # after a pause is requested
         completed_steps = 4
+        self.set_attributes(self.child, numCapturedReadback=6)
+        # Call the seek
         steps_to_do = 3
-        self.o.on_seek(completed_steps, steps_to_do)
-        assert self.o.done_when_reaches == 13
+        self.o.on_seek(self.context, completed_steps, steps_to_do)
+        # We expect done when captured to be the current captured readback + steps to do
+        assert self.o.done_when_captured == 9
 
     def test_post_run_ready(self):
         self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
@@ -460,3 +486,21 @@ class TestHDFWriterPart(ChildTestCase):
         child.xmlErrorMsg.value = "XML description file cannot be opened"
 
         self.assertRaises(AssertionError, self.o._check_xml_is_valid, child)
+
+    @patch("malcolm.modules.ADCore.parts.hdfwriterpart.time.time")
+    def test_has_file_writing_stalled(self, time_mock):
+        self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
+
+        # First case - no last capture update so return False
+        assert self.o._has_file_writing_stalled() is False
+
+        # Set up the attributes and mock for the last two cases
+        self.o.last_capture_update = 10.0
+        self.o.frame_timeout = 60.0
+        time_mock.side_effect = [30.0, 71.0]
+
+        # Second case - last capture update is within frame timeout
+        assert self.o._has_file_writing_stalled() is False
+
+        # Final case - last capture update is outside frame timeout
+        assert self.o._has_file_writing_stalled() is True

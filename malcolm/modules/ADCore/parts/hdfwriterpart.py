@@ -371,12 +371,12 @@ class HDFWriterPart(builtin.parts.ChildPart):
         super().__init__(name, mri)
         # Future for the start action
         self.start_future: Optional[Future] = None
-        self.array_future: Optional[Future] = None
-        self.done_when_reaches = 0
-        # This is when uniqueId last updated
-        self.last_id_update: Optional[float] = None
-        # CompletedSteps = arrayCounter + self.uniqueid_offset
-        self.uniqueid_offset = 0
+        self.first_array_future: Optional[Future] = None
+        self.done_when_captured = 0
+        # This is when the readback for number of frames captured last updated
+        self.last_capture_update: Optional[float] = None
+        # Store number of frames captured for progress reporting
+        self.num_captured_offset = 0
         # The HDF5 layout file we write to say where the datasets go
         self.layout_filename: Optional[str] = None
         self.runs_on_windows = runs_on_windows
@@ -436,9 +436,9 @@ class HDFWriterPart(builtin.parts.ChildPart):
         formatName: scanning.hooks.AFormatName = "det",
         fileTemplate: scanning.hooks.AFileTemplate = "%s.h5",
     ) -> scanning.hooks.UInfos:
-        # On initial configure, expect to get the demanded number of frames
-        self.done_when_reaches = completed_steps + steps_to_do
-        self.uniqueid_offset = 0
+        # What the capture readback value should say at the end of the run
+        self.done_when_captured = completed_steps + steps_to_do
+        self.num_captured_offset = 0
         # Calculate how long to wait before marking this scan as stalled
         self.frame_timeout = FRAME_TIMEOUT
         if generator.duration > 0:
@@ -494,12 +494,13 @@ class HDFWriterPart(builtin.parts.ChildPart):
         context.wait_all_futures(futures)
         # Reset numCapture back to 0
         child.numCapture.put_value(0)
-        # Start the plugin
+        # Create a future for the file capture
         self.start_future = child.start_async()
-        # Start a future waiting for the first array
-        self.array_future = child.when_value_matches_async(
+        # Create a future waiting for the first array
+        self.first_array_future = child.when_value_matches_async(
             "arrayCounterReadback", greater_than_zero
         )
+        # Check XML
         self._check_xml_is_valid(child)
         # Return the dataset information
         dataset_infos = list(
@@ -516,38 +517,54 @@ class HDFWriterPart(builtin.parts.ChildPart):
     @add_call_types
     def on_seek(
         self,
+        context: scanning.hooks.AContext,
         completed_steps: scanning.hooks.ACompletedSteps,
         steps_to_do: scanning.hooks.AStepsToDo,
     ) -> None:
-        # This is rewinding or setting up for another batch, so the detector
-        # will skip to a uniqueID that has not been produced yet
-        self.uniqueid_offset = completed_steps - self.done_when_reaches
-        self.done_when_reaches += steps_to_do
+        # Reset array counter to zero so we can check for the first frame
+        # to arrive in the plugin
+        child = context.block_view(self.mri)
+        child.arrayCounter.put_value(0)
+        # Calculate the expected number of captured frames. This is in case
+        # pausing has resulted in extra frames that will be overwritten
+        # using the position plugin when resuming.
+        num_captured = child.numCapturedReadback.value
+        # Offset for progress updates
+        self.num_captured_offset = num_captured - completed_steps
+        # Expected captured readback after this batch
+        self.done_when_captured = num_captured + steps_to_do
 
     @add_call_types
     def on_run(self, context: scanning.hooks.AContext) -> None:
-        context.wait_all_futures(self.array_future)
-        context.unsubscribe_all()
-        self.last_id_update = None
+        # Wait for the first array to arrive in the plugin without a timeout
+        context.wait_all_futures(self.first_array_future)
+
+        # Get the child block
         child = context.block_view(self.mri)
-        child.uniqueId.subscribe_value(self.update_completed_steps)
-        f_done = child.when_value_matches_async("uniqueId", self.done_when_reaches)
+
+        # Update progress based on number of frames written
+        child.numCapturedReadback.subscribe_value(self.update_completed_steps)
+
+        # Wait for the number of captured frames to reach the target
+        f_done = child.when_value_matches_async(
+            "numCapturedReadback", self.done_when_captured
+        )
+        self.last_capture_update = None
         while True:
             try:
+                # Use a regular timeout so we can request a manual flush every second
                 context.wait_all_futures(f_done, timeout=1)
             except TimeoutError:
                 # This is ok, means we aren't done yet, so flush
                 self._flush_if_still_writing(child)
-                # Check it hasn't been too long
-                if self.last_id_update:
-                    if time.time() > self.last_id_update + self.frame_timeout:
-                        raise TimeoutError(
-                            "HDF writer stalled, last updated at %s"
-                            % (self.last_id_update)
-                        )
-                # TODO: what happens if we miss the last frame?
+                # Check it hasn't been too long since the last frame was written
+                if self._has_file_writing_stalled():
+                    timeout_message = self._get_file_writing_stalled_error_message(
+                        child
+                    )
+                    raise TimeoutError(timeout_message)
             else:
-                return
+                break
 
     def _flush_if_still_writing(self, child):
         # Check that the start_future hasn't errored
@@ -557,6 +574,22 @@ class HDFWriterPart(builtin.parts.ChildPart):
         else:
             # Flush the hdf frames to disk
             child.flushNow()
+
+    def _has_file_writing_stalled(self) -> bool:
+        if self.last_capture_update:
+            return time.time() > self.last_capture_update + self.frame_timeout
+        return False
+
+    def _get_file_writing_stalled_error_message(self, child) -> str:
+        unique_id = child.uniqueId.value
+        num_captured = child.numCapturedReadback.value - self.num_captured_offset
+        frames_expected = self.done_when_captured - self.num_captured_offset
+        return (
+            f"{self.name}: writing stalled at {num_captured}/{frames_expected} "
+            f"captured (readback offset is {self.num_captured_offset}). "
+            f"Last update was {self.last_capture_update}, "
+            f"last uniqueId received in plugin was {unique_id}"
+        )
 
     @add_call_types
     def on_post_run_ready(self, context: scanning.hooks.AContext) -> None:
@@ -570,10 +603,10 @@ class HDFWriterPart(builtin.parts.ChildPart):
         child.stop()
 
     def update_completed_steps(self, value: int) -> None:
-        completed_steps = value + self.uniqueid_offset
-        self.last_id_update = time.time()
-        assert self.registrar, "No registrar assigned"
+        completed_steps = value - self.num_captured_offset
+        self.last_capture_update = time.time()
         # Stop negative values being reported for first call when subscribing
         # when we have a non-zero offset.
         if completed_steps >= 0:
+            assert self.registrar, "No registrar assigned"
             self.registrar.report(scanning.infos.RunProgressInfo(completed_steps))

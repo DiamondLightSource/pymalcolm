@@ -66,16 +66,20 @@ class ChildTestCase(unittest.TestCase):
         return child
 
     def mock_when_value_matches(self, child):
-        def handle_when_value_matches_async(attr, good_value, bad_values=None):
+        def handle_when_value_matches_async(
+            attr, good_value, bad_values=None, **kwargs
+        ):
             # tell the mock we were called
-            child.handled_requests.when_value_matches(attr, good_value, bad_values)
+            child.handled_requests.when_value_matches(
+                attr, good_value, bad_values, **kwargs
+            )
             # poke the value we are looking for into the attribute so
             # that old_when_matches will immediately succeed
             # If it's callable then rely on the test code to do this
             if not callable(good_value):
                 self.set_attributes(child, **{attr: good_value})
             # now run the original code
-            return self.old_when_matches_async(attr, good_value, bad_values)
+            return self.old_when_matches_async(attr, good_value, bad_values, **kwargs)
 
         def block_view(context=None, old=child.block_view):
             self._context = context

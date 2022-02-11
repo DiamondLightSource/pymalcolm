@@ -64,6 +64,11 @@
     rbv_suffix: _RBV
 
 - ca.parts.CALongPart:
+    name: numCapturedReadback
+    description: Number of frames captured
+    rbv: $(prefix):NumCaptured_RBV
+
+- ca.parts.CALongPart:
     name: flushDataPerNFrames
     description: Number of frames to capture between HDF dataset flushes
     pv: $(prefix):NumFramesFlush
