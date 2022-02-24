@@ -75,7 +75,7 @@ health_attribute_tuple = (
 empty_map_meta_tuple: Tuple[str, str, List] = (
     "S",
     "malcolm:core/MapMeta:1.0",
-    [("elements", ("S", None, [])), ("required", "as")],
+    [("elements", ("S", "structure", [])), ("required", "as")],
 )
 
 empty_method_meta_tuple = (
@@ -83,7 +83,7 @@ empty_method_meta_tuple = (
     "malcolm:core/MethodMeta:1.1",
     [
         ("takes", empty_map_meta_tuple),
-        ("defaults", ("S", None, [])),
+        ("defaults", ("S", "structure", [])),
         ("description", "s"),
         ("tags", "as"),
         ("writeable", "?"),
@@ -96,7 +96,7 @@ empty_method_log_tuple = (
     "S",
     "malcolm:core/MethodLog:1.0",
     [
-        ("value", ("S", None, [])),
+        ("value", ("S", "structure", [])),
         ("present", "as"),
         ("alarm", alarm_tuple),
         ("timeStamp", ts_tuple),
@@ -535,9 +535,9 @@ class TestPVAServer(unittest.TestCase):
     def testGetSubfield(self):
         counter = self.ctxt.get("TESTCOUNTER", "meta.fields")
         # PvaPy clears the typeid for a substructure
-        self.assertEqual(counter.getID(), "structure")
-        self.assertEqual(len(counter.items()), 1)
-        self.assertEqual(len(counter.meta.items()), 1)
+        self.assertEqual(counter.getID(), "malcolm:core/Block:1.0")
+        self.assertEqual(len(counter.items()), 6)
+        self.assertEqual(len(counter.meta.items()), 5)
         self.assertEqual(len(counter.meta.fields), 5)
         fields_code = dict(counter.meta.type().items())["fields"]
         self.assertEqual(fields_code, "as")
@@ -558,8 +558,8 @@ class TestPVAServer(unittest.TestCase):
     #   pvget TESTCOUNTER.meta -r fields
     def testGetDottedSubfield(self):
         meta = self.ctxt.get("TESTCOUNTER.meta", "fields")
-        self.assertEqual(meta.getID(), "structure")
-        self.assertEqual(len(meta.items()), 1)
+        self.assertEqual(meta.getID(), "malcolm:core/BlockMeta:1.0")
+        self.assertEqual(len(meta.items()), 5)
         self.assertEqual(len(meta.fields), 5)
         fields_code = dict(meta.type().aspy()[2])["fields"]
         self.assertEqual(fields_code, "as")
@@ -670,7 +670,7 @@ class TestPVAServer(unittest.TestCase):
         m = self.ctxt.monitor("TESTCOUNTER", q.put, "meta.fields")
         self.addCleanup(m.close)
         counter = q.get(timeout=1)
-        self.assertEqual(counter.getID(), "structure")
+        self.assertEqual(counter.getID(), "malcolm:core/Block:1.0")
         # P4P only says leaves have changed
         self.assertEqual(counter.changedSet(), {"meta.fields"})
         self.assertEqual(
