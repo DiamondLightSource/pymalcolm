@@ -3,6 +3,29 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
+Unreleased
+----------
+
+Changed:
+
+- Implemented Double Buffering, using both Sequencer tables available on the PandA
+  to be able to scan over the 2000 max number of rows, and to decrease the
+  configuration time for long scans.
+
+  See the updated "template_double_seq_pcomp" for the new reccomended
+  design. It is also reccomended to set repeats on both of the SEQ tables to be
+  '1', although the PandASeqTriggerPart does also set this when it is needed.
+
+  This has a **breaking change** for old PandA designs as seqReset now has to be
+  exported. Otherwise Stack scans where each inner scan is small enough that the
+  points will not fill 2 SEQ tables (<8192 points or 30s per inner scan), but large
+  enough that it will use more than 1 (>4096 points, 15s per inner scan) will fail.
+
+Fixed:
+
+- Fixed bug where, during a 3D scan, the first point of all inner scans after the
+  first previously triggered immediately even if the outer axes was still moving.
+
 `5.2`_ - 2022-01-05
 -------------------
 
