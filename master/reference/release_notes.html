@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Change Log &mdash; malcolm 5.2+4.gb96e6ff8 documentation</title>
+  <title>Change Log &mdash; malcolm 5.2+61.g4ff379f1 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -71,6 +71,7 @@
 <li class="toctree-l1"><a class="reference internal" href="triggering.html">Trajectory Scan Triggering</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Change Log</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#unreleased">Unreleased</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id1">5.2 - 2022-01-05</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id2">5.1 - 2021-12-16</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id3">5.0 - 2021-11-30</a></li>
@@ -161,6 +162,28 @@
 <h1>Change Log<a class="headerlink" href="#change-log" title="Permalink to this headline"></a></h1>
 <p>All notable changes to this project will be documented in this file.
 This project adheres to <a class="reference external" href="http://semver.org/">Semantic Versioning</a> after 2-1.</p>
+<section id="unreleased">
+<h2>Unreleased<a class="headerlink" href="#unreleased" title="Permalink to this headline"></a></h2>
+<p>Changed:</p>
+<ul>
+<li><p>Implemented Double Buffering, using both Sequencer tables available on the PandA
+to be able to scan over the 2000 max number of rows, and to decrease the
+configuration time for long scans.</p>
+<p>See the updated “template_double_seq_pcomp” for the new reccomended
+design. It is also reccomended to set repeats on both of the SEQ tables to be
+‘1’, although the PandASeqTriggerPart does also set this when it is needed.</p>
+<p>This has a <strong>breaking change</strong> for old PandA designs as seqReset now has to be
+exported. Otherwise Stack scans where each inner scan is small enough that the
+points will not fill 2 SEQ tables (&lt;8192 points or 30s per inner scan), but large
+enough that it will use more than 1 (&gt;4096 points, 15s per inner scan) will fail.</p>
+</li>
+</ul>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>Fixed bug where, during a 3D scan, the first point of all inner scans after the
+first previously triggered immediately even if the outer axes was still moving.</p></li>
+</ul>
+</section>
 <section id="id1">
 <h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/5.1...5.2">5.2</a> - 2022-01-05<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
 <p>Changed:</p>

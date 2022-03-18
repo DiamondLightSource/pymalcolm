@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.ADPandABlocks.util &mdash; malcolm 5.2+4.gb96e6ff8 documentation</title>
+  <title>malcolm.modules.ADPandABlocks.util &mdash; malcolm 5.2+61.g4ff379f1 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
@@ -106,7 +106,8 @@
            <div itemprop="articleBody">
              
   <h1>Source code for malcolm.modules.ADPandABlocks.util</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+<span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">Array</span>
@@ -116,9 +117,10 @@
 
 
 <div class="viewcode-block" id="Trigger"><a class="viewcode-back" href="../../../../build/ADPandABlocks/util_api.html#malcolm.modules.ADPandABlocks.util.Trigger">[docs]</a><span class="k">class</span> <span class="nc">Trigger</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Convenience Enum for setting sequencer tables, will be translated into</span>
-<span class="sd">    integer values by the TablePart. The strings must match what comes from the</span>
-<span class="sd">    PandA&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Convenience Enum for setting sequencer table trigger values.</span>
+
+<span class="sd">    These will be translated into integer values by the `TablePart`. The strings must</span>
+<span class="sd">    match those that come from the PandA.&quot;&quot;&quot;</span>
 
     <span class="n">IMMEDIATE</span> <span class="o">=</span> <span class="s2">&quot;Immediate&quot;</span>
     <span class="n">BITA_0</span> <span class="o">=</span> <span class="s2">&quot;BITA=0&quot;</span>
@@ -162,8 +164,32 @@
 <span class="n">UPositionCaptures</span> <span class="o">=</span> <span class="n">pandablocks</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">UPositionCaptures</span>
 
 
+<span class="n">SequencerRow</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span>
+    <span class="s2">&quot;SequencerRow&quot;</span><span class="p">,</span>
+    <span class="p">[</span>
+        <span class="s2">&quot;repeats&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;trigger&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;position&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;time1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;outa1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;outb1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;outc1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;outd1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;oute1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;outf1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;time2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;outa2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;outb2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;outc2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;outd2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;oute2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;outf2&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+
+
 <div class="viewcode-block" id="SequencerTable"><a class="viewcode-back" href="../../../../build/ADPandABlocks/util_api.html#malcolm.modules.ADPandABlocks.util.SequencerTable">[docs]</a><span class="k">class</span> <span class="nc">SequencerTable</span><span class="p">(</span><span class="n">Table</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Convenience Table object for building sequencer tables&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Convenience `Table` class for building sequencer tables.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
