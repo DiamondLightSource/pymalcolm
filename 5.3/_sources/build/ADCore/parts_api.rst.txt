@@ -1,0 +1,6 @@
+
+malcolm.modules.ADCore.parts
+============================
+
+.. automodule:: malcolm.modules.ADCore.parts
+    :members:

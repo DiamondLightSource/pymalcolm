@@ -1,0 +1,14 @@
+
+pandablocks
+===========
+
+.. module:: malcolm.modules.pandablocks
+
+.. toctree::
+    :maxdepth: 1
+    :caption: malcolm.modules.pandablocks
+
+    blocks <blocks_api.rst>
+    controllers <controllers_api.rst>
+    parts <parts_api.rst>
+    util <util_api.rst>

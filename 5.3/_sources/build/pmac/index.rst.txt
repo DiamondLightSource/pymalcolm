@@ -1,0 +1,15 @@
+
+pmac
+====
+
+.. module:: malcolm.modules.pmac
+
+.. toctree::
+    :maxdepth: 1
+    :caption: malcolm.modules.pmac
+
+    blocks <blocks_api.rst>
+    includes <includes_api.rst>
+    infos <infos_api.rst>
+    parts <parts_api.rst>
+    util <util_api.rst>

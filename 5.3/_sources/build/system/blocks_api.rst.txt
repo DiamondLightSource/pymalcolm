@@ -1,0 +1,6 @@
+
+malcolm.modules.system.blocks
+=============================
+
+.. automodule:: malcolm.modules.system.blocks
+    :members:

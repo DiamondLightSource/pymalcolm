@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Malcolm &mdash; malcolm 5.3 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Hello World Tutorial" href="tutorials/hello.html" />
+    <link rel="prev" title="Contents" href="contents.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="contents.html" class="icon icon-home"> malcolm
+            <img src="_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                5.3
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#what-can-malcolm-do">What can Malcolm do?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-is-the-documentation-structured">How is the documentation structured?</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#configuring-malcolm-to-work-with-your-hardware">Configuring Malcolm to work with your hardware</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#controlling-malcolm-via-comms-protocols">Controlling Malcolm via comms protocols</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#installation-guide">Installation Guide</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#using-pipenv">Using pipenv</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#using-pip">Using pip</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="contents.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Malcolm</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="malcolm">
+<h1>Malcolm<a class="headerlink" href="#malcolm" title="Permalink to this headline"></a></h1>
+<p>Malcolm is a middlelayer framework that implements high level configure/run
+behaviour of control system components like those used in continuous scans.
+This <a class="reference external" href="https://github.com/dls-controls/pymalcolm">repository</a> contains a Python implementation (pymalcolm) allowing the
+creation of Malcolm servers and clients. There is also a <a class="reference external" href="https://github.com/dls-controls/malcolmjs">malcolmjs</a>
+JavaScript client and a Java client in <a class="reference external" href="http://www.opengda.org/">GDA</a>.</p>
+<p>Malcolm was created as part of the <a class="reference external" href="https://indico.esss.lu.se/event/357/session/8/contribution/63">Mapping project</a> at <a class="reference external" href="https://www.diamond.ac.uk/">Diamond Light Source</a>
+in order to improve the performance of continuous scanning, providing a system
+that could scan arbitrary trajectories like spirals and grids within polygonal
+regions.</p>
+<section id="what-can-malcolm-do">
+<h2>What can Malcolm do?<a class="headerlink" href="#what-can-malcolm-do" title="Permalink to this headline"></a></h2>
+<p>Malcolm provides a layer on top of <a class="reference external" href="https://epics.anl.gov/">EPICS</a> that wraps up groups of <a class="reference external" href="https://docs.epics-controls.org/en/latest/specs/ca_protocol.html#process-variables">PVs</a> and
+presents a higher level scanning interface to <a class="reference external" href="http://www.opengda.org/">GDA</a> via <a class="reference external" href="http://epics-pvdata.sourceforge.net/arch.html#Network">pvAccess</a>.</p>
+<div class="graphviz"><object data="_images/graphviz-b565fb8195fb62f75521b30fdeee2677ddcd2791.svg" type="image/svg+xml" class="graphviz">
+<p class="warning">digraph malcolm_dls_usage {
+bgcolor=transparent
+node [fontname=Arial fontsize=10 shape=box style=filled fillcolor=&quot;#8BC4E9&quot;]
+edge [fontname=Arial fontsize=10 arrowhead=vee]
+
+{rank=same;Detector EPICS &quot;HDF File&quot;}
+
+Malcolm [shape=doublecircle]
+
+GDA -&gt; Malcolm [label=&quot;scan.configure()\nscan.run()&quot;]
+Malcolm -&gt; EPICS [label=&quot;caput\ncamonitor&quot;]
+Detector -&gt; EPICS [label=&quot;Frame data&quot;]
+EPICS -&gt; &quot;HDF File&quot; [label=&quot;Frame data&quot;]
+EPICS -&gt; &quot;Motor Controller&quot; [label=&quot;Motion trajectory&quot;]
+}</p></object></div>
+<p>Malcolm was developed for continuous scanning and the diagram above shows
+how Diamond uses it, but it can also be used in other ways:</p>
+<ul class="simple">
+<li><p>As a library that can be used in continuous scanning scripts without acting
+as a server</p></li>
+<li><p>As a webserver, exposing a web GUI for configuring the underlying hardware
+that communicates to Malcolm using <a class="reference external" href="https://www.json.org/">JSON</a> over <a class="reference external" href="https://en.wikipedia.org/wiki/WebSocket">websockets</a></p></li>
+<li><p>As a distributed object system, using either <a class="reference external" href="http://epics-pvdata.sourceforge.net/arch.html#Network">pvAccess</a> or <a class="reference external" href="https://en.wikipedia.org/wiki/WebSocket">websockets</a> to
+communicate and synchronise objects between multiple Malcolm processes</p></li>
+</ul>
+</section>
+<section id="how-is-the-documentation-structured">
+<h2>How is the documentation structured?<a class="headerlink" href="#how-is-the-documentation-structured" title="Permalink to this headline"></a></h2>
+<p>The documentation is structured into a series of <a class="reference internal" href="contents.html#tutorials-doc"><span class="std std-ref">Tutorials</span></a> and some
+general <a class="reference internal" href="contents.html#reference-doc"><span class="std std-ref">Reference</span></a> documentation. End users and developers need different
+documentation, so links for various categories of user are listed below:</p>
+<section id="configuring-malcolm-to-work-with-your-hardware">
+<h3>Configuring Malcolm to work with your hardware<a class="headerlink" href="#configuring-malcolm-to-work-with-your-hardware" title="Permalink to this headline"></a></h3>
+<p>Work through the <a class="reference internal" href="contents.html#tutorials-doc"><span class="std std-ref">Tutorials</span></a> then look at the <a class="reference internal" href="build/modules_api.html#module-malcolm.modules" title="malcolm.modules"><code class="xref any py py-mod docutils literal notranslate"><span class="pre">malcolm.modules</span></code></a> API
+documentation to see what arguments need to be passed to each object in the YAML
+file.</p>
+</section>
+<section id="controlling-malcolm-via-comms-protocols">
+<h3>Controlling Malcolm via comms protocols<a class="headerlink" href="#controlling-malcolm-via-comms-protocols" title="Permalink to this headline"></a></h3>
+<p>Read the <a class="reference internal" href="tutorials/hello.html#hello-tutorial"><span class="std std-ref">Hello World Tutorial</span></a>, then look at the <a class="reference internal" href="reference/structure.html#block-structure"><span class="std std-ref">Block Structure</span></a> and
+<a class="reference internal" href="reference/messages.html#message-structure"><span class="std std-ref">Message Structure</span></a> sections. The <a class="reference internal" href="build/pva/index.html#module-malcolm.modules.pva" title="malcolm.modules.pva"><code class="xref any py py-mod docutils literal notranslate"><span class="pre">malcolm.modules.pva</span></code></a> module contains some
+pvAccess specific documentation. The <a class="reference internal" href="build/scanning/util_api.html#malcolm.modules.scanning.util.RunnableStates" title="malcolm.modules.scanning.util.RunnableStates"><code class="xref any py py-class docutils literal notranslate"><span class="pre">RunnableStates</span></code></a> statemachine will also
+be of interest.</p>
+</section>
+</section>
+<section id="installation-guide">
+<span id="id1"></span><h2>Installation Guide<a class="headerlink" href="#installation-guide" title="Permalink to this headline"></a></h2>
+<section id="using-pipenv">
+<h3>Using pipenv<a class="headerlink" href="#using-pipenv" title="Permalink to this headline"></a></h3>
+<p>We now use <a class="reference external" href="https://www.python.org/dev/peps/pep-0440">pipenv</a> to generate the environment for Malcolm at Diamond. This
+should also work in any environment where pipenv is available.</p>
+<p>First download the source code:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git clone git://github.com/dls-controls/pymalcolm.git
+$ cd pymalcolm
+</pre></div>
+</div>
+<p>To be able to use Malcolm run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pipenv install
+</pre></div>
+</div>
+<p>For development you will need additional development packages:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pipenv install --dev
+</pre></div>
+</div>
+<p>Then you can use the entry point to run Malcolm:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pipenv run imalcolm
+</pre></div>
+</div>
+<p>Note: Malcolm is now installed as an editable module by default to make
+development easier.</p>
+</section>
+<section id="using-pip">
+<h3>Using pip<a class="headerlink" href="#using-pip" title="Permalink to this headline"></a></h3>
+<p>Otherwise you can install Malcolm using pip in any venv:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install malcolm
+</pre></div>
+</div>
+<p>Which then gives you the entry point (assuming the venv is activated):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ imalcolm
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="contents.html" class="btn btn-neutral float-left" title="Contents" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tutorials/hello.html" class="btn btn-neutral float-right" title="Hello World Tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

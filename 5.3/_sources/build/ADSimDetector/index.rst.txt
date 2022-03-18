@@ -1,0 +1,11 @@
+
+ADSimDetector
+=============
+
+.. module:: malcolm.modules.ADSimDetector
+
+.. toctree::
+    :maxdepth: 1
+    :caption: malcolm.modules.ADSimDetector
+
+    blocks <blocks_api.rst>

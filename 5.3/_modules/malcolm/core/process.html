@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.core.process &mdash; malcolm 5.3 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                5.3
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>malcolm.core.process</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for malcolm.core.process</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">Array</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.compat</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+
+<span class="kn">from</span> <span class="nn">.concurrency</span> <span class="kn">import</span> <span class="n">Spawned</span>
+<span class="kn">from</span> <span class="nn">.controller</span> <span class="kn">import</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span> <span class="n">Controller</span>
+<span class="kn">from</span> <span class="nn">.errors</span> <span class="kn">import</span> <span class="ne">TimeoutError</span>
+<span class="kn">from</span> <span class="nn">.hook</span> <span class="kn">import</span> <span class="n">AHookable</span><span class="p">,</span> <span class="n">Hook</span><span class="p">,</span> <span class="n">start_hooks</span><span class="p">,</span> <span class="n">wait_hooks</span>
+<span class="kn">from</span> <span class="nn">.info</span> <span class="kn">import</span> <span class="n">Info</span>
+<span class="kn">from</span> <span class="nn">.loggable</span> <span class="kn">import</span> <span class="n">Loggable</span>
+
+<span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># Clear spawned handles after how many spawns?</span>
+<span class="n">SPAWN_CLEAR_COUNT</span> <span class="o">=</span> <span class="mi">1000</span>
+
+<span class="c1"># States for how far in start procedure we&#39;ve got</span>
+<span class="n">STOPPED</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">STARTING</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">STARTED</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">STOPPING</span> <span class="o">=</span> <span class="mi">3</span>
+
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;The list of currently published Controller mris&quot;</span><span class="p">):</span>
+    <span class="n">APublished</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+
+
+<span class="k">class</span> <span class="nc">UnpublishedInfo</span><span class="p">(</span><span class="n">Info</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mri</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mri</span> <span class="o">=</span> <span class="n">mri</span>
+
+
+<div class="viewcode-block" id="ProcessPublishHook"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.ProcessPublishHook">[docs]</a><span class="k">class</span> <span class="nc">ProcessPublishHook</span><span class="p">(</span><span class="n">Hook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Called when a new block is added&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">:</span> <span class="n">AHookable</span><span class="p">,</span> <span class="n">published</span><span class="p">:</span> <span class="n">APublished</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">published</span><span class="o">=</span><span class="n">published</span><span class="p">)</span></div>
+
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Each of these reports that the controller should not be published&quot;</span><span class="p">):</span>
+    <span class="n">AUnpublishedInfos</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="n">UnpublishedInfo</span><span class="p">]]</span>
+<span class="n">UUnpublishedInfos</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span>
+    <span class="n">AUnpublishedInfos</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">UnpublishedInfo</span><span class="p">],</span> <span class="n">UnpublishedInfo</span><span class="p">,</span> <span class="kc">None</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="ProcessStartHook"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.ProcessStartHook">[docs]</a><span class="k">class</span> <span class="nc">ProcessStartHook</span><span class="p">(</span><span class="n">Hook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Called at start() to start all child controllers&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ProcessStartHook.validate_return"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.ProcessStartHook.validate_return">[docs]</a>    <span class="k">def</span> <span class="nf">validate_return</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ret</span><span class="p">:</span> <span class="n">UUnpublishedInfos</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AUnpublishedInfos</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Check that all returns are UnpublishedInfo objects indicating</span>
+<span class="sd">        that the controller shouldn&#39;t be published via any server comms&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">AUnpublishedInfos</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ProcessStopHook"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.ProcessStopHook">[docs]</a><span class="k">class</span> <span class="nc">ProcessStopHook</span><span class="p">(</span><span class="n">Hook</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Called at stop() to gracefully stop all child controllers&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="Process"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.Process">[docs]</a><span class="k">class</span> <span class="nc">Process</span><span class="p">(</span><span class="n">Loggable</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Hosts a number of Controllers and provides spawn capabilities&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Process&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_logger</span><span class="p">(</span><span class="n">process_name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_controllers</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>  <span class="c1"># mri -&gt; Controller</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_unpublished</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>  <span class="c1"># [mri] for unpublishable controllers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">STOPPED</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spawned</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Spawned</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spawn_count</span> <span class="o">=</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="Process.start"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.Process.start">[docs]</a>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Start the process going</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            timeout (float): Maximum amount of time to wait for each spawned</span>
+<span class="sd">                process. None means forever</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">STOPPED</span><span class="p">,</span> <span class="s2">&quot;Process already started&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">STARTING</span>
+        <span class="n">should_publish</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_controllers</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_controllers</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">timeout</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">should_publish</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_publish_controllers</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">STARTED</span></div>
+
+    <span class="k">def</span> <span class="nf">_start_controllers</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">controller_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Controller</span><span class="p">],</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="c1"># Start just the given controller_list</span>
+        <span class="n">infos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_hook</span><span class="p">(</span><span class="n">ProcessStartHook</span><span class="p">,</span> <span class="n">controller_list</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">info</span><span class="p">:</span> <span class="n">UnpublishedInfo</span>
+        <span class="n">new_unpublished</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">UnpublishedInfo</span><span class="o">.</span><span class="n">filter_values</span><span class="p">(</span><span class="n">infos</span><span class="p">):</span>
+            <span class="n">new_unpublished</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_unpublished</span> <span class="o">|=</span> <span class="n">new_unpublished</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">controller_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_unpublished</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">_publish_controllers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="n">is_child</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">add_controller</span><span class="p">(</span><span class="n">controller</span><span class="p">:</span> <span class="n">Controller</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OrderedDict</span><span class="p">:</span>
+            <span class="n">children</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+            <span class="n">tree</span><span class="p">[</span><span class="n">controller</span><span class="o">.</span><span class="n">mri</span><span class="p">]</span> <span class="o">=</span> <span class="n">children</span>
+            <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">controller</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="n">part_mri</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="s2">&quot;mri&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="n">is_child</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">part_mri</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">part_mri</span> <span class="ow">in</span> <span class="n">tree</span><span class="p">:</span>
+                    <span class="n">children</span><span class="p">[</span><span class="n">part_mri</span><span class="p">]</span> <span class="o">=</span> <span class="n">tree</span><span class="p">[</span><span class="n">part_mri</span><span class="p">]</span>
+                <span class="k">elif</span> <span class="n">part_mri</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controllers</span><span class="p">:</span>
+                    <span class="n">children</span><span class="p">[</span><span class="n">part_mri</span><span class="p">]</span> <span class="o">=</span> <span class="n">add_controller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_controllers</span><span class="p">[</span><span class="n">part_mri</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">tree</span><span class="p">[</span><span class="n">controller</span><span class="o">.</span><span class="n">mri</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controllers</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">mri</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">is_child</span><span class="p">:</span>
+                <span class="n">add_controller</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+
+        <span class="n">published</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">def</span> <span class="nf">walk</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">not_at_this_level</span><span class="o">=</span><span class="p">()):</span>
+            <span class="n">to_do</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">not_at_this_level</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">published</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unpublished</span><span class="p">:</span>
+                    <span class="n">published</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">v</span><span class="p">:</span>
+                    <span class="n">to_do</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">to_do</span><span class="p">:</span>
+                <span class="n">walk</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+
+        <span class="n">walk</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">not_at_this_level</span><span class="o">=</span><span class="n">is_child</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_run_hook</span><span class="p">(</span><span class="n">ProcessPublishHook</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">published</span><span class="o">=</span><span class="n">published</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_run_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hook</span><span class="p">,</span> <span class="n">controller_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># Run the given hook waiting til all hooked functions are complete</span>
+        <span class="c1"># but swallowing any errors</span>
+        <span class="k">if</span> <span class="n">controller_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">controller_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controllers</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="n">hooks</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">hook</span><span class="p">(</span><span class="n">controller</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">set_spawn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spawn</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">controller</span> <span class="ow">in</span> <span class="n">controller_list</span>
+        <span class="p">]</span>
+        <span class="n">hook_queue</span><span class="p">,</span> <span class="n">hook_spawned</span> <span class="o">=</span> <span class="n">start_hooks</span><span class="p">(</span><span class="n">hooks</span><span class="p">)</span>
+        <span class="n">infos</span> <span class="o">=</span> <span class="n">wait_hooks</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="n">hook_queue</span><span class="p">,</span> <span class="n">hook_spawned</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">exception_check</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="n">problems</span> <span class="o">=</span> <span class="p">[</span><span class="n">mri</span> <span class="k">for</span> <span class="n">mri</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">infos</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="n">problems</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Problem running </span><span class="si">%s</span><span class="s2"> on </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">hook</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">problems</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">infos</span>
+
+<div class="viewcode-block" id="Process.stop"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.Process.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Stop the process and wait for it to finish</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            timeout (float): Maximum amount of time to wait for each spawned</span>
+<span class="sd">                object. None means forever</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">STARTED</span><span class="p">,</span> <span class="s2">&quot;Process not started&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">STOPPING</span>
+        <span class="c1"># Allow every controller a chance to clean up</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_run_hook</span><span class="p">(</span><span class="n">ProcessStopHook</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spawned</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">s</span><span class="o">.</span><span class="n">ready</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="s2">&quot;Waiting for </span><span class="si">%s</span><span class="s2"> *</span><span class="si">%s</span><span class="s2"> **</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">_function</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">_args</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">_kwargs</span>
+                <span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">s</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">TimeoutError</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">&quot;Timeout waiting for </span><span class="si">%s</span><span class="s2"> *</span><span class="si">%s</span><span class="s2"> **</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">_function</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">_args</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">_kwargs</span>
+                <span class="p">)</span>
+                <span class="k">raise</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spawned</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_controllers</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_unpublished</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">STOPPED</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Done process.stop()&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Process.spawn"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.Process.spawn">[docs]</a>    <span class="k">def</span> <span class="nf">spawn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Spawned</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Runs the function in a worker thread, returning a Result object</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            function: Function to run</span>
+<span class="sd">            args: Positional arguments to run the function with</span>
+<span class="sd">            kwargs: Keyword arguments to run the function with</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Spawned: Something you can call wait(timeout) on to see when it&#39;s</span>
+<span class="sd">                finished executing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">!=</span> <span class="n">STOPPED</span><span class="p">,</span> <span class="s2">&quot;Can&#39;t spawn when process stopped&quot;</span>
+        <span class="n">spawned</span> <span class="o">=</span> <span class="n">Spawned</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spawned</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spawned</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spawn_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="c1"># Filter out things that are ready to avoid memory leaks</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spawn_count</span> <span class="o">&gt;</span> <span class="n">SPAWN_CLEAR_COUNT</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_clear_spawn_list</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">spawned</span></div>
+
+    <span class="k">def</span> <span class="nf">_clear_spawn_list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spawn_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spawned</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spawned</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">s</span><span class="o">.</span><span class="n">ready</span><span class="p">()]</span>
+
+<div class="viewcode-block" id="Process.add_controllers"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.Process.add_controllers">[docs]</a>    <span class="k">def</span> <span class="nf">add_controllers</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">controllers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Controller</span><span class="p">],</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Add many controllers to be hosted by this process</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            controllers (List[Controller]): List of its controller</span>
+<span class="sd">            timeout (float): Maximum amount of time to wait for each spawned</span>
+<span class="sd">                object. None means forever</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">controller</span> <span class="ow">in</span> <span class="n">controllers</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">controller</span><span class="o">.</span><span class="n">mri</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controllers</span><span class="p">,</span> <span class="p">(</span>
+                <span class="s2">&quot;Controller already exists for </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">controller</span><span class="o">.</span><span class="n">mri</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_controllers</span><span class="p">[</span><span class="n">controller</span><span class="o">.</span><span class="n">mri</span><span class="p">]</span> <span class="o">=</span> <span class="n">controller</span>
+            <span class="n">controller</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">:</span>
+            <span class="n">should_publish</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_controllers</span><span class="p">(</span><span class="n">controllers</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">STARTED</span> <span class="ow">and</span> <span class="n">should_publish</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_publish_controllers</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Process.add_controller"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.Process.add_controller">[docs]</a>    <span class="k">def</span> <span class="nf">add_controller</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">controller</span><span class="p">:</span> <span class="n">Controller</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Add a controller to be hosted by this process</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            controller (Controller): Its controller</span>
+<span class="sd">            timeout (float): Maximum amount of time to wait for each spawned</span>
+<span class="sd">                object. None means forever</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_controllers</span><span class="p">([</span><span class="n">controller</span><span class="p">],</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">mri_list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_controllers</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Process.get_controller"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.Process.get_controller">[docs]</a>    <span class="k">def</span> <span class="nf">get_controller</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mri</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Controller</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get controller which can make Block views for this mri&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controllers</span><span class="p">[</span><span class="n">mri</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No controller registered for mri &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">mri</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Process.block_view"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.Process.block_view">[docs]</a>    <span class="k">def</span> <span class="nf">block_view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mri</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get a Block view from a Controller with given mri&quot;&quot;&quot;</span>
+        <span class="n">controller</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_controller</span><span class="p">(</span><span class="n">mri</span><span class="p">)</span>
+        <span class="n">block</span> <span class="o">=</span> <span class="n">controller</span><span class="o">.</span><span class="n">block_view</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">block</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

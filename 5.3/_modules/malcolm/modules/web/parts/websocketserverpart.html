@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.modules.web.parts.websocketserverpart &mdash; malcolm 5.3 documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../../../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                5.3
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+      <li>malcolm.modules.web.parts.websocketserverpart</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for malcolm.modules.web.parts.websocketserverpart</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">fcntl</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">struct</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">cothread</span>
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">add_call_types</span><span class="p">,</span> <span class="n">deserialize_object</span><span class="p">,</span> <span class="n">json_decode</span><span class="p">,</span> <span class="n">json_encode</span>
+<span class="kn">from</span> <span class="nn">tornado.websocket</span> <span class="kn">import</span> <span class="n">WebSocketError</span><span class="p">,</span> <span class="n">WebSocketHandler</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Delta</span><span class="p">,</span>
+    <span class="n">Error</span><span class="p">,</span>
+    <span class="n">FieldError</span><span class="p">,</span>
+    <span class="n">Part</span><span class="p">,</span>
+    <span class="n">PartRegistrar</span><span class="p">,</span>
+    <span class="n">Post</span><span class="p">,</span>
+    <span class="n">Put</span><span class="p">,</span>
+    <span class="n">Queue</span><span class="p">,</span>
+    <span class="n">Request</span><span class="p">,</span>
+    <span class="n">Response</span><span class="p">,</span>
+    <span class="n">Subscribe</span><span class="p">,</span>
+    <span class="n">Unsubscribe</span><span class="p">,</span>
+    <span class="n">Update</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules</span> <span class="kn">import</span> <span class="n">builtin</span>
+
+<span class="kn">from</span> <span class="nn">..hooks</span> <span class="kn">import</span> <span class="n">ReportHandlersHook</span><span class="p">,</span> <span class="n">UHandlerInfos</span>
+<span class="kn">from</span> <span class="nn">..infos</span> <span class="kn">import</span> <span class="n">HandlerInfo</span>
+<span class="kn">from</span> <span class="nn">..util</span> <span class="kn">import</span> <span class="n">IOLoopHelper</span>
+
+<span class="c1"># Create a module level logger</span>
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1"># Signals we can send to get info</span>
+<span class="n">SIOCGIFADDR</span> <span class="o">=</span> <span class="mh">0x8915</span>
+<span class="n">SIOCGIFNETMASK</span> <span class="o">=</span> <span class="mh">0x891B</span>
+
+<span class="c1"># Where we get info about interfaces on Linux</span>
+<span class="n">SYSNET</span> <span class="o">=</span> <span class="s2">&quot;/sys/class/net&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">get_if_info</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="n">ifname</span><span class="p">):</span>
+    <span class="c1"># Use an ioctl to get interface address or netmask</span>
+    <span class="n">packed_ifname</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="s2">&quot;256s&quot;</span><span class="p">,</span> <span class="n">ifname</span><span class="p">[:</span><span class="mi">15</span><span class="p">]</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
+    <span class="n">info</span> <span class="o">=</span> <span class="n">fcntl</span><span class="o">.</span><span class="n">ioctl</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="n">sig</span><span class="p">,</span> <span class="n">packed_ifname</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s2">&quot;!I&quot;</span><span class="p">,</span> <span class="n">info</span><span class="p">[</span><span class="mi">20</span><span class="p">:</span><span class="mi">24</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">get_ip_validator</span><span class="p">(</span><span class="n">ifname</span><span class="p">):</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_DGRAM</span><span class="p">)</span>
+    <span class="n">ifaddr</span> <span class="o">=</span> <span class="n">get_if_info</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">SIOCGIFADDR</span><span class="p">,</span> <span class="n">ifname</span><span class="p">)</span>
+    <span class="n">ifnetmask</span> <span class="o">=</span> <span class="n">get_if_info</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">SIOCGIFNETMASK</span><span class="p">,</span> <span class="n">ifname</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">validator</span><span class="p">(</span><span class="n">remoteaddr</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">remoteaddr</span> <span class="o">&amp;</span> <span class="n">ifnetmask</span> <span class="o">==</span> <span class="n">ifaddr</span> <span class="o">&amp;</span> <span class="n">ifnetmask</span>
+
+    <span class="k">return</span> <span class="n">validator</span>
+
+
+<span class="c1"># For some reason tornado doesn&#39;t make us implement all abstract methods</span>
+<span class="c1"># noinspection PyAbstractClass</span>
+<span class="k">class</span> <span class="nc">MalcWebSocketHandler</span><span class="p">(</span><span class="n">WebSocketHandler</span><span class="p">):</span>
+    <span class="n">_registrar</span><span class="p">:</span> <span class="n">PartRegistrar</span>
+    <span class="n">_id_to_mri</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
+    <span class="n">_validators</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_writeable</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_queue</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Queue</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_counter</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">registrar</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validators</span><span class="o">=</span><span class="p">()):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_registrar</span> <span class="o">=</span> <span class="n">registrar</span>
+        <span class="c1"># {id: mri}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_id_to_mri</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validators</span> <span class="o">=</span> <span class="n">validators</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">on_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="c1"># called in tornado&#39;s thread</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_writeable</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ipv4_ip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">remote_ip</span>
+            <span class="k">if</span> <span class="n">ipv4_ip</span> <span class="o">==</span> <span class="s2">&quot;::1&quot;</span><span class="p">:</span>
+                <span class="c1"># Special case IPV6 loopback</span>
+                <span class="n">ipv4_ip</span> <span class="o">=</span> <span class="s2">&quot;127.0.0.1&quot;</span>
+            <span class="n">remoteaddr</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s2">&quot;!I&quot;</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">inet_aton</span><span class="p">(</span><span class="n">ipv4_ip</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validators</span><span class="p">:</span>
+                <span class="c1"># Work out if the remote ip is within the netmask of any of our</span>
+                <span class="c1"># interfaces. If not, Put and Post are forbidden</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_writeable</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">v</span><span class="p">(</span><span class="n">remoteaddr</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validators</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_writeable</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;Puts and Posts are </span><span class="si">%s</span><span class="s2"> from </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;allowed&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_writeable</span> <span class="k">else</span> <span class="s2">&quot;forbidden&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">remote_ip</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">msg_id</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">json_decode</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">msg_id</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">FieldError</span><span class="p">(</span><span class="s2">&quot;id field not present in JSON message&quot;</span><span class="p">)</span>
+            <span class="n">request</span> <span class="o">=</span> <span class="n">deserialize_object</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">Request</span><span class="p">)</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">set_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_response</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">Subscribe</span><span class="p">):</span>
+                <span class="k">assert</span> <span class="n">msg_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id_to_mri</span><span class="p">,</span> <span class="p">(</span>
+                    <span class="s2">&quot;Duplicate subscription ID </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">msg_id</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_id_to_mri</span><span class="p">[</span><span class="n">msg_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">Unsubscribe</span><span class="p">):</span>
+                <span class="n">mri</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id_to_mri</span><span class="p">[</span><span class="n">msg_id</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">mri</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="p">(</span><span class="n">Put</span><span class="p">,</span> <span class="n">Post</span><span class="p">))</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_writeable</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Put/Post is forbidden from </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">remote_ip</span>
+                <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_registrar</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">builtin</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">RequestInfo</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">mri</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Error handling message:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+            <span class="n">error</span> <span class="o">=</span> <span class="n">Error</span><span class="p">(</span><span class="n">msg_id</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="n">error_message</span> <span class="o">=</span> <span class="n">error</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_message</span><span class="p">(</span><span class="n">json_encode</span><span class="p">(</span><span class="n">error_message</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">on_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+        <span class="c1"># called from cothread</span>
+        <span class="n">IOLoopHelper</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_on_response</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
+        <span class="c1"># Wait for completion once every 10 message</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_counter</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_on_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># called from tornado thread</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">json_encode</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">WebSocketError</span><span class="p">:</span>
+            <span class="c1"># The websocket is dead. If the response was a Delta or Update, then</span>
+            <span class="c1"># unsubscribe so the local controller doesn&#39;t keep on trying to</span>
+            <span class="c1"># respond</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="p">(</span><span class="n">Delta</span><span class="p">,</span> <span class="n">Update</span><span class="p">)):</span>
+                <span class="c1"># Websocket is dead so we can clear the subscription key.</span>
+                <span class="c1"># Subsequent updates may come in before the unsubscribe, but</span>
+                <span class="c1"># ignore them as we can&#39;t do anything about it</span>
+                <span class="n">mri</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id_to_mri</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">mri</span><span class="p">:</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;WebSocket Error: unsubscribing from stale handle&quot;</span><span class="p">)</span>
+                    <span class="n">unsubscribe</span> <span class="o">=</span> <span class="n">Unsubscribe</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+                    <span class="n">unsubscribe</span><span class="o">.</span><span class="n">set_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_response</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registrar</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_registrar</span><span class="o">.</span><span class="n">report</span><span class="p">(</span>
+                            <span class="n">builtin</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">RequestInfo</span><span class="p">(</span><span class="n">unsubscribe</span><span class="p">,</span> <span class="n">mri</span><span class="p">)</span>
+                        <span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="p">,</span> <span class="s2">&quot;No queue&quot;</span>
+            <span class="n">cothread</span><span class="o">.</span><span class="n">Callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">put</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="c1"># http://stackoverflow.com/q/24851207</span>
+    <span class="c1"># TODO: remove this when the web gui is hosted from the box</span>
+    <span class="k">def</span> <span class="nf">check_origin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">origin</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Part name and subdomain name to host websocket on&quot;</span><span class="p">):</span>
+    <span class="n">AName</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;If True, check any client is in the same subnet as the host&quot;</span><span class="p">):</span>
+    <span class="n">ASubnetValidation</span> <span class="o">=</span> <span class="nb">bool</span>
+
+
+<div class="viewcode-block" id="WebsocketServerPart"><a class="viewcode-back" href="../../../../../build/web/parts_api.html#malcolm.modules.web.parts.WebsocketServerPart">[docs]</a><span class="k">class</span> <span class="nc">WebsocketServerPart</span><span class="p">(</span><span class="n">Part</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">AName</span> <span class="o">=</span> <span class="s2">&quot;ws&quot;</span><span class="p">,</span> <span class="n">subnet_validation</span><span class="p">:</span> <span class="n">ASubnetValidation</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subnet_validation</span> <span class="o">=</span> <span class="n">subnet_validation</span>
+
+    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">registrar</span><span class="p">:</span> <span class="n">PartRegistrar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">registrar</span><span class="p">)</span>
+        <span class="c1"># Hooks</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="n">ReportHandlersHook</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_report_handlers</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">is_interface_up</span><span class="p">(</span><span class="n">ifname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SYSNET</span><span class="p">,</span> <span class="n">ifname</span><span class="p">,</span> <span class="s2">&quot;operstate&quot;</span><span class="p">))</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">state</span> <span class="o">!=</span> <span class="s2">&quot;down</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="WebsocketServerPart.on_report_handlers"><a class="viewcode-back" href="../../../../../build/web/parts_api.html#malcolm.modules.web.parts.WebsocketServerPart.on_report_handlers">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_report_handlers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">UHandlerInfos</span><span class="p">:</span>
+        <span class="n">validators</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">subnet_validation</span><span class="p">:</span>
+            <span class="c1"># Try creating an ip validator for every interface that is up</span>
+            <span class="k">for</span> <span class="n">ifname</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">SYSNET</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_interface_up</span><span class="p">(</span><span class="n">ifname</span><span class="p">):</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">validators</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_ip_validator</span><span class="p">(</span><span class="n">ifname</span><span class="p">))</span>
+                    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">exception_message</span><span class="p">:</span>
+                        <span class="c1"># Ignore any interfaces that fail</span>
+                        <span class="nb">print</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> - failed to create IP validator for </span><span class="si">{</span><span class="n">ifname</span><span class="si">}</span><span class="s2">&quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot; (skipping): </span><span class="si">{</span><span class="n">exception_message</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+            <span class="c1"># Check we have at least one created validator</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">validators</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Failed to create any IP validators!&quot;</span>
+
+        <span class="n">info</span> <span class="o">=</span> <span class="n">HandlerInfo</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">MalcWebSocketHandler</span><span class="p">,</span>
+            <span class="n">registrar</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">registrar</span><span class="p">,</span>
+            <span class="n">validators</span><span class="o">=</span><span class="n">validators</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">info</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

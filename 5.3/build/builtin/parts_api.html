@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.modules.builtin.parts &mdash; malcolm 5.3 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="util" href="util_api.html" />
+    <link rel="prev" title="malcolm.modules.builtin.parameters" href="parameters_api.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                5.3
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../modules_api.html">malcolm.modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../ADAndor/index.html">ADAndor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADCore/index.html">ADCore</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADEiger/index.html">ADEiger</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADEthercat/index.html">ADEthercat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADMerlin/index.html">ADMerlin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADOdin/index.html">ADOdin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADPandABlocks/index.html">ADPandABlocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADPco/index.html">ADPco</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADPilatus/index.html">ADPilatus</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADSimDetector/index.html">ADSimDetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADTetrAMM/index.html">ADTetrAMM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../adUtil/index.html">adUtil</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../aravisGigE/index.html">aravisGigE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../asyn/index.html">asyn</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">builtin</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="blocks_api.html">blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="controllers_api.html">controllers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="defines_api.html">defines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="hooks_api.html">hooks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="infos_api.html">infos</a></li>
+<li class="toctree-l3"><a class="reference internal" href="parameters_api.html">parameters</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">parts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="util_api.html">util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../ca/index.html">ca</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demo/index.html">demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dtacq/index.html">dtacq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pandablocks/index.html">pandablocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pmac/index.html">pmac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../profiling/index.html">profiling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pva/index.html">pva</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../scanning/index.html">scanning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../system/index.html">system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../web/index.html">web</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../xmap/index.html">xmap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../xspress3/index.html">xspress3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../zebra/index.html">zebra</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../modules_api.html">malcolm.modules</a> &raquo;</li>
+          <li><a href="index.html">builtin</a> &raquo;</li>
+      <li>malcolm.modules.builtin.parts</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/build/builtin/parts_api.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-malcolm.modules.builtin.parts">
+<span id="malcolm-modules-builtin-parts"></span><h1>malcolm.modules.builtin.parts<a class="headerlink" href="#module-malcolm.modules.builtin.parts" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.parts.BlockPart">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.builtin.parts.</span></span><span class="sig-name descname"><span class="pre">BlockPart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">Anno(name='APartName'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Part</span> <span class="pre">within</span> <span class="pre">the</span> <span class="pre">Controller')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description:</span> <span class="pre">Anno(name='AMetaDescription'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Description</span> <span class="pre">of</span> <span class="pre">what</span> <span class="pre">this</span> <span class="pre">element</span> <span class="pre">represents')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">writeable:</span> <span class="pre">Anno(name='AWriteable'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Is</span> <span class="pre">the</span> <span class="pre">attribute</span> <span class="pre">writeable?')</span> <span class="pre">=</span> <span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config:</span> <span class="pre">Anno(name='AConfig'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'int'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='If</span> <span class="pre">writeable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">which</span> <span class="pre">iteration</span> <span class="pre">should</span> <span class="pre">this</span> <span class="pre">field</span> <span class="pre">be</span> <span class="pre">loaded/saved</span> <span class="pre">in?</span> <span class="pre">0</span> <span class="pre">means</span> <span class="pre">do</span> <span class="pre">not</span> <span class="pre">restore')</span> <span class="pre">=</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group:</span> <span class="pre">Optional[Anno(name='AGroup'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='If</span> <span class="pre">given</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">which</span> <span class="pre">GUI</span> <span class="pre">group</span> <span class="pre">should</span> <span class="pre">we</span> <span class="pre">attach</span> <span class="pre">to')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widget:</span> <span class="pre">Optional[Anno(name='AWidget'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;enum</span> <span class="pre">'Widget'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='If</span> <span class="pre">given</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use</span> <span class="pre">this</span> <span class="pre">widget</span> <span class="pre">instead</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">default')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value:</span> <span class="pre">Anno(name='AValue'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Initial</span> <span class="pre">value</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">created</span> <span class="pre">attribute')</span> <span class="pre">=</span> <span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/builtin/parts/blockpart.html#BlockPart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.builtin.parts.BlockPart" title="Permalink to this definition"></a></dt>
+<dd><p>Create a single string SinkPort for connecting to another Block</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – The name of the Part within the Controller</p></li>
+<li><p><strong>description</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Description of what this element represents</p></li>
+<li><p><strong>writeable</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Is the attribute writeable?</p></li>
+<li><p><strong>config</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – If writeable, which iteration should this field be loaded/saved in? 0 means do not restore</p></li>
+<li><p><strong>group</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – If given, which GUI group should we attach to</p></li>
+<li><p><strong>widget</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Widget" title="malcolm.core.Widget"><em>Widget</em></a>) – If given, use this widget instead of the default</p></li>
+<li><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Initial value of the created attribute</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.parts.ChildPart">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.builtin.parts.</span></span><span class="sig-name descname"><span class="pre">ChildPart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">Anno(name='APartName'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Part</span> <span class="pre">within</span> <span class="pre">the</span> <span class="pre">Controller')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mri:</span> <span class="pre">Anno(name='AMri'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Malcolm</span> <span class="pre">resource</span> <span class="pre">id</span> <span class="pre">of</span> <span class="pre">child</span> <span class="pre">object')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_visibility:</span> <span class="pre">Optional[Anno(name='AInitialVisibility'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Whether</span> <span class="pre">the</span> <span class="pre">part</span> <span class="pre">is</span> <span class="pre">initially</span> <span class="pre">visible</span> <span class="pre">with</span> <span class="pre">no</span> <span class="pre">config</span> <span class="pre">loaded</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">None</span> <span class="pre">means</span> <span class="pre">only</span> <span class="pre">if</span> <span class="pre">child</span> <span class="pre">Source/Sink</span> <span class="pre">Ports</span> <span class="pre">connect</span> <span class="pre">to</span> <span class="pre">another</span> <span class="pre">Block')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stateful:</span> <span class="pre">Anno(name='AStateful'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='If</span> <span class="pre">the</span> <span class="pre">child</span> <span class="pre">is</span> <span class="pre">a</span> <span class="pre">StatefulController</span> <span class="pre">then</span> <span class="pre">this</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">True')</span> <span class="pre">=</span> <span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/builtin/parts/childpart.html#ChildPart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.builtin.parts.ChildPart" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – The name of the Part within the Controller</p></li>
+<li><p><strong>mri</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Malcolm resource id of child object</p></li>
+<li><p><strong>initial_visibility</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Whether the part is initially visible with no config loaded, None means only if child Source/Sink Ports connect to another Block</p></li>
+<li><p><strong>stateful</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – If the child is a StatefulController then this should be True</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.parts.ChildPart.no_save_attribute_names">
+<span class="sig-name descname"><span class="pre">no_save_attribute_names</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#malcolm.modules.builtin.parts.ChildPart.no_save_attribute_names" title="Permalink to this definition"></a></dt>
+<dd><p>A set containing all the Attribute names of our child Block that we will
+put to, so shouldn’t be saved. Set this in subclasses using <a class="reference internal" href="util_api.html#malcolm.modules.builtin.util.no_save" title="malcolm.modules.builtin.util.no_save"><code class="xref any py py-func docutils literal notranslate"><span class="pre">no_save</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.parts.ChildPart.notify_dispatch_request">
+<span class="sig-name descname"><span class="pre">notify_dispatch_request</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/core_api.html#malcolm.core.Request" title="malcolm.core.request.Request"><span class="pre">malcolm.core.request.Request</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/builtin/parts/childpart.html#ChildPart.notify_dispatch_request"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.builtin.parts.ChildPart.notify_dispatch_request" title="Permalink to this definition"></a></dt>
+<dd><p>Will be called when a context passed to a hooked function is about
+to dispatch a request</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.parts.ChildPart.on_init">
+<span class="sig-name descname"><span class="pre">on_init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/builtin/parts/childpart.html#ChildPart.on_init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.builtin.parts.ChildPart.on_init" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.parts.ChildPart.on_disable">
+<span class="sig-name descname"><span class="pre">on_disable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/builtin/parts/childpart.html#ChildPart.on_disable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.builtin.parts.ChildPart.on_disable" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.parts.ChildPart.on_reset">
+<span class="sig-name descname"><span class="pre">on_reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/builtin/parts/childpart.html#ChildPart.on_reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.builtin.parts.ChildPart.on_reset" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.parts.ChildPart.on_halt">
+<span class="sig-name descname"><span class="pre">on_halt</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/builtin/parts/childpart.html#ChildPart.on_halt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.builtin.parts.ChildPart.on_halt" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.parts.ChildPart.on_layout">
+<span class="sig-name descname"><span class="pre">on_layout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ports:</span> <span class="pre">Anno(name='APortMap'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=(&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotypes._array.Array[malcolm.modules.builtin.infos.PortInfo])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">PortInfos</span> <span class="pre">for</span> <span class="pre">all</span> <span class="pre">the</span> <span class="pre">parts')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layout:</span> <span class="pre">Anno(name='ALayoutTable'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.modules.builtin.util.LayoutTable'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='A</span> <span class="pre">possibly</span> <span class="pre">partial</span> <span class="pre">set</span> <span class="pre">of</span> <span class="pre">changes</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">layout</span> <span class="pre">table</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">acted</span> <span class="pre">on')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional[Union[Anno(name='ALayoutInfos',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.modules.builtin.infos.LayoutInfo'&gt;,</span> <span class="pre">description='The</span> <span class="pre">current</span> <span class="pre">layout</span> <span class="pre">information'),</span> <span class="pre">Sequence[malcolm.modules.builtin.infos.LayoutInfo],</span> <span class="pre">malcolm.modules.builtin.infos.LayoutInfo]]</span></span></span><a class="reference internal" href="../../_modules/malcolm/modules/builtin/parts/childpart.html#ChildPart.on_layout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.builtin.parts.ChildPart.on_layout" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+<li><p><strong>ports</strong> – The PortInfos for all the parts</p></li>
+<li><p><strong>layout</strong> (<a class="reference internal" href="util_api.html#malcolm.modules.builtin.util.LayoutTable" title="malcolm.modules.builtin.util.LayoutTable"><em>LayoutTable</em></a>) – A possibly partial set of changes to the layout table that should be acted on</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The current layout information</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="infos_api.html#malcolm.modules.builtin.infos.LayoutInfo" title="malcolm.modules.builtin.infos.LayoutInfo">LayoutInfo</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.parts.ChildPart.on_load">
+<span class="sig-name descname"><span class="pre">on_load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">structure:</span> <span class="pre">Anno(name='AStructure'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=(&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typing.Any)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">serialized</span> <span class="pre">structure</span> <span class="pre">to</span> <span class="pre">load')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init:</span> <span class="pre">Anno(name='AInit'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Whether</span> <span class="pre">this</span> <span class="pre">operation</span> <span class="pre">is</span> <span class="pre">taking</span> <span class="pre">place</span> <span class="pre">at</span> <span class="pre">init')</span> <span class="pre">=</span> <span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/builtin/parts/childpart.html#ChildPart.on_load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.builtin.parts.ChildPart.on_load" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+<li><p><strong>structure</strong> – The serialized structure to load</p></li>
+<li><p><strong>init</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Whether this operation is taking place at init</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.parts.ChildPart.on_save">
+<span class="sig-name descname"><span class="pre">on_save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks'))</span> <span class="pre">-&gt;</span> <span class="pre">Anno(name='AStructure'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=(&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typing.Any)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">serialized</span> <span class="pre">structure</span> <span class="pre">to</span> <span class="pre">load'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/builtin/parts/childpart.html#ChildPart.on_save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.builtin.parts.ChildPart.on_save" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.parts.ChildPart.reload">
+<span class="sig-name descname"><span class="pre">reload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/builtin/parts/childpart.html#ChildPart.reload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.builtin.parts.ChildPart.reload" title="Permalink to this definition"></a></dt>
+<dd><p>If we have done a save or load with the child having a particular
+design then make sure the child now has that design.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.parts.ChildPart.sever_sink_ports">
+<span class="sig-name descname"><span class="pre">sever_sink_ports</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ports:</span> <span class="pre">Anno(name='APortMap'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=(&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotypes._array.Array[malcolm.modules.builtin.infos.PortInfo])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">PortInfos</span> <span class="pre">for</span> <span class="pre">all</span> <span class="pre">the</span> <span class="pre">parts')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connected_to:</span> <span class="pre">Optional[str]</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/builtin/parts/childpart.html#ChildPart.sever_sink_ports"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.builtin.parts.ChildPart.sever_sink_ports" title="Permalink to this definition"></a></dt>
+<dd><p>Conditionally sever Sink Ports of the child. If connected_to
+is then None then sever all, otherwise restrict to connected_to’s
+Source Ports</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – The context to use</p></li>
+<li><p><strong>ports</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a>) – {part_name: [PortInfo]}</p></li>
+<li><p><strong>connected_to</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Restrict severing to this part</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.parts.ChildPart.calculate_part_visibility">
+<span class="sig-name descname"><span class="pre">calculate_part_visibility</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ports:</span> <span class="pre">Anno(name='APortMap'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=(&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotypes._array.Array[malcolm.modules.builtin.infos.PortInfo])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">PortInfos</span> <span class="pre">for</span> <span class="pre">all</span> <span class="pre">the</span> <span class="pre">parts')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/builtin/parts/childpart.html#ChildPart.calculate_part_visibility"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.builtin.parts.ChildPart.calculate_part_visibility" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate what is connected to what</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ports</strong> – {part_name: [PortInfo]} from other ports</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.parts.ChoicePart">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.builtin.parts.</span></span><span class="sig-name descname"><span class="pre">ChoicePart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name:</span> <span class="pre">Anno(name='APartName',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='The</span> <span class="pre">name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Part</span> <span class="pre">within</span> <span class="pre">the</span> <span class="pre">Controller'),</span> <span class="pre">description:</span> <span class="pre">Anno(name='AMetaDescription',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='Description</span> <span class="pre">of</span> <span class="pre">what</span> <span class="pre">this</span> <span class="pre">element</span> <span class="pre">represents'),</span> <span class="pre">choices:</span> <span class="pre">Union[Anno(name='AChoices',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='Possible</span> <span class="pre">choices</span> <span class="pre">for</span> <span class="pre">this</span> <span class="pre">attribute'),</span> <span class="pre">Sequence[enum.Enum],</span> <span class="pre">Sequence[str],</span> <span class="pre">str],</span> <span class="pre">value:</span> <span class="pre">Anno(name='AValue',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='Initial</span> <span class="pre">value</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">created</span> <span class="pre">attribute'),</span> <span class="pre">writeable:</span> <span class="pre">Anno(name='AWriteable',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;,</span> <span class="pre">description='Is</span> <span class="pre">the</span> <span class="pre">attribute</span> <span class="pre">writeable?')</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">config:</span> <span class="pre">Anno(name='AConfig',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'int'&gt;,</span> <span class="pre">description='If</span> <span class="pre">writeable,</span> <span class="pre">which</span> <span class="pre">iteration</span> <span class="pre">should</span> <span class="pre">this</span> <span class="pre">field</span> <span class="pre">be</span> <span class="pre">loaded/saved</span> <span class="pre">in?</span> <span class="pre">0</span> <span class="pre">means</span> <span class="pre">do</span> <span class="pre">not</span> <span class="pre">restore')</span> <span class="pre">=</span> <span class="pre">1,</span> <span class="pre">group:</span> <span class="pre">Optional[Anno(name='AGroup',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='If</span> <span class="pre">given,</span> <span class="pre">which</span> <span class="pre">GUI</span> <span class="pre">group</span> <span class="pre">should</span> <span class="pre">we</span> <span class="pre">attach</span> <span class="pre">to')]</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">widget:</span> <span class="pre">Optional[Anno(name='AWidget',</span> <span class="pre">typ=&lt;enum</span> <span class="pre">'Widget'&gt;,</span> <span class="pre">description='If</span> <span class="pre">given,</span> <span class="pre">use</span> <span class="pre">this</span> <span class="pre">widget</span> <span class="pre">instead</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">default')]</span> <span class="pre">=</span> <span class="pre">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/builtin/parts/choicepart.html#ChoicePart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.builtin.parts.ChoicePart" title="Permalink to this definition"></a></dt>
+<dd><p>Create a single choice Attribute on the Block</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – The name of the Part within the Controller</p></li>
+<li><p><strong>description</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Description of what this element represents</p></li>
+<li><p><strong>choices</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Possible choices for this attribute</p></li>
+<li><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Initial value of the created attribute</p></li>
+<li><p><strong>writeable</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Is the attribute writeable?</p></li>
+<li><p><strong>config</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – If writeable, which iteration should this field be loaded/saved in? 0 means do not restore</p></li>
+<li><p><strong>group</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – If given, which GUI group should we attach to</p></li>
+<li><p><strong>widget</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Widget" title="malcolm.core.Widget"><em>Widget</em></a>) – If given, use this widget instead of the default</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.parts.Float64Part">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.builtin.parts.</span></span><span class="sig-name descname"><span class="pre">Float64Part</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">Anno(name='APartName'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Part</span> <span class="pre">within</span> <span class="pre">the</span> <span class="pre">Controller')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description:</span> <span class="pre">Anno(name='AMetaDescription'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Description</span> <span class="pre">of</span> <span class="pre">what</span> <span class="pre">this</span> <span class="pre">element</span> <span class="pre">represents')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">writeable:</span> <span class="pre">Anno(name='AWriteable'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Is</span> <span class="pre">the</span> <span class="pre">attribute</span> <span class="pre">writeable?')</span> <span class="pre">=</span> <span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config:</span> <span class="pre">Anno(name='AConfig'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'int'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='If</span> <span class="pre">writeable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">which</span> <span class="pre">iteration</span> <span class="pre">should</span> <span class="pre">this</span> <span class="pre">field</span> <span class="pre">be</span> <span class="pre">loaded/saved</span> <span class="pre">in?</span> <span class="pre">0</span> <span class="pre">means</span> <span class="pre">do</span> <span class="pre">not</span> <span class="pre">restore')</span> <span class="pre">=</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group:</span> <span class="pre">Optional[Anno(name='AGroup'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='If</span> <span class="pre">given</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">which</span> <span class="pre">GUI</span> <span class="pre">group</span> <span class="pre">should</span> <span class="pre">we</span> <span class="pre">attach</span> <span class="pre">to')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widget:</span> <span class="pre">Optional[Anno(name='AWidget'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;enum</span> <span class="pre">'Widget'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='If</span> <span class="pre">given</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use</span> <span class="pre">this</span> <span class="pre">widget</span> <span class="pre">instead</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">default')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value:</span> <span class="pre">Anno(name='AValue'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Initial</span> <span class="pre">value</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">created</span> <span class="pre">attribute')</span> <span class="pre">=</span> <span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit_low:</span> <span class="pre">Union[Anno(name='ALimitLow'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'numpy.float64'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">lower</span> <span class="pre">bound</span> <span class="pre">of</span> <span class="pre">range</span> <span class="pre">within</span> <span class="pre">which</span> <span class="pre">the</span> <span class="pre">value</span> <span class="pre">must</span> <span class="pre">be</span> <span class="pre">set')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">float]</span> <span class="pre">=</span> <span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit_high:</span> <span class="pre">Union[Anno(name='ALimitHigh'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'numpy.float64'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">upper</span> <span class="pre">bound</span> <span class="pre">of</span> <span class="pre">range</span> <span class="pre">within</span> <span class="pre">which</span> <span class="pre">the</span> <span class="pre">value</span> <span class="pre">must</span> <span class="pre">be</span> <span class="pre">set')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">float]</span> <span class="pre">=</span> <span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precision:</span> <span class="pre">Union[Anno(name='APrecision'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'numpy.int32'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Number</span> <span class="pre">of</span> <span class="pre">significant</span> <span class="pre">figures</span> <span class="pre">to</span> <span class="pre">display')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int]</span> <span class="pre">=</span> <span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units:</span> <span class="pre">Anno(name='AUnits'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">units</span> <span class="pre">for</span> <span class="pre">the</span> <span class="pre">value')</span> <span class="pre">=</span> <span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/builtin/parts/float64part.html#Float64Part"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.builtin.parts.Float64Part" title="Permalink to this definition"></a></dt>
+<dd><p>Create a single float64 Attribute on the Block</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – The name of the Part within the Controller</p></li>
+<li><p><strong>description</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Description of what this element represents</p></li>
+<li><p><strong>writeable</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Is the attribute writeable?</p></li>
+<li><p><strong>config</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – If writeable, which iteration should this field be loaded/saved in? 0 means do not restore</p></li>
+<li><p><strong>group</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – If given, which GUI group should we attach to</p></li>
+<li><p><strong>widget</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Widget" title="malcolm.core.Widget"><em>Widget</em></a>) – If given, use this widget instead of the default</p></li>
+<li><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Initial value of the created attribute</p></li>
+<li><p><strong>limit_low</strong> (<em>float64</em>) – The lower bound of range within which the value must be set</p></li>
+<li><p><strong>limit_high</strong> (<em>float64</em>) – The upper bound of range within which the value must be set</p></li>
+<li><p><strong>precision</strong> (<em>int32</em>) – Number of significant figures to display</p></li>
+<li><p><strong>units</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – The units for the value</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.parts.GroupPart">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.builtin.parts.</span></span><span class="sig-name descname"><span class="pre">GroupPart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">Anno(name='APartName'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Part</span> <span class="pre">within</span> <span class="pre">the</span> <span class="pre">Controller')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description:</span> <span class="pre">Anno(name='AMetaDescription'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Description</span> <span class="pre">of</span> <span class="pre">what</span> <span class="pre">this</span> <span class="pre">element</span> <span class="pre">represents')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/builtin/parts/grouppart.html#GroupPart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.builtin.parts.GroupPart" title="Permalink to this definition"></a></dt>
+<dd><p>Part representing a GUI group other Attributes attach to</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – The name of the Part within the Controller</p></li>
+<li><p><strong>description</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Description of what this element represents</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.parts.HelpPart">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.builtin.parts.</span></span><span class="sig-name descname"><span class="pre">HelpPart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">help_url:</span> <span class="pre">Anno(name='AHelpUrl'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">URL</span> <span class="pre">that</span> <span class="pre">gives</span> <span class="pre">some</span> <span class="pre">help</span> <span class="pre">documentation</span> <span class="pre">for</span> <span class="pre">this</span> <span class="pre">Block')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">Anno(name='APartName'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Part</span> <span class="pre">within</span> <span class="pre">the</span> <span class="pre">Controller')</span> <span class="pre">=</span> <span class="pre">'help'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description:</span> <span class="pre">Anno(name='ADesc'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">description</span> <span class="pre">of</span> <span class="pre">what</span> <span class="pre">the</span> <span class="pre">help</span> <span class="pre">documentation</span> <span class="pre">is</span> <span class="pre">about')</span> <span class="pre">=</span> <span class="pre">'Help</span> <span class="pre">documentation</span> <span class="pre">for</span> <span class="pre">the</span> <span class="pre">Block'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/builtin/parts/helppart.html#HelpPart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.builtin.parts.HelpPart" title="Permalink to this definition"></a></dt>
+<dd><p>Part representing a link to some help documentation for the GUI</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>help_url</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – The URL that gives some help documentation for this Block</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – The name of the Part within the Controller</p></li>
+<li><p><strong>description</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – The description of what the help documentation is about</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.parts.IconPart">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.builtin.parts.</span></span><span class="sig-name descname"><span class="pre">IconPart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">svg:</span> <span class="pre">Anno(name='ASvg'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='If</span> <span class="pre">given</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span> <span class="pre">to</span> <span class="pre">svg</span> <span class="pre">for</span> <span class="pre">initial</span> <span class="pre">value')</span> <span class="pre">=</span> <span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/builtin/parts/iconpart.html#IconPart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.builtin.parts.IconPart" title="Permalink to this definition"></a></dt>
+<dd><p>Part representing a the icon a GUI should display</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>svg</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – If given, path to svg for initial value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.parts.LabelPart">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.builtin.parts.</span></span><span class="sig-name descname"><span class="pre">LabelPart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value:</span> <span class="pre">Optional[Anno(name='ALabelValue'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Initial</span> <span class="pre">value</span> <span class="pre">of</span> <span class="pre">Block</span> <span class="pre">label')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/builtin/parts/labelpart.html#LabelPart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.builtin.parts.LabelPart" title="Permalink to this definition"></a></dt>
+<dd><p>Part representing a the title of the Block a GUI should display</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Initial value of Block label</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.builtin.parts.StringPart">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.builtin.parts.</span></span><span class="sig-name descname"><span class="pre">StringPart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">Anno(name='APartName'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Part</span> <span class="pre">within</span> <span class="pre">the</span> <span class="pre">Controller')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description:</span> <span class="pre">Anno(name='AMetaDescription'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Description</span> <span class="pre">of</span> <span class="pre">what</span> <span class="pre">this</span> <span class="pre">element</span> <span class="pre">represents')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">writeable:</span> <span class="pre">Anno(name='AWriteable'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Is</span> <span class="pre">the</span> <span class="pre">attribute</span> <span class="pre">writeable?')</span> <span class="pre">=</span> <span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config:</span> <span class="pre">Anno(name='AConfig'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'int'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='If</span> <span class="pre">writeable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">which</span> <span class="pre">iteration</span> <span class="pre">should</span> <span class="pre">this</span> <span class="pre">field</span> <span class="pre">be</span> <span class="pre">loaded/saved</span> <span class="pre">in?</span> <span class="pre">0</span> <span class="pre">means</span> <span class="pre">do</span> <span class="pre">not</span> <span class="pre">restore')</span> <span class="pre">=</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group:</span> <span class="pre">Optional[Anno(name='AGroup'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='If</span> <span class="pre">given</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">which</span> <span class="pre">GUI</span> <span class="pre">group</span> <span class="pre">should</span> <span class="pre">we</span> <span class="pre">attach</span> <span class="pre">to')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widget:</span> <span class="pre">Optional[Anno(name='AWidget'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;enum</span> <span class="pre">'Widget'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='If</span> <span class="pre">given</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use</span> <span class="pre">this</span> <span class="pre">widget</span> <span class="pre">instead</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">default')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value:</span> <span class="pre">Anno(name='AValue'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Initial</span> <span class="pre">value</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">created</span> <span class="pre">attribute')</span> <span class="pre">=</span> <span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/builtin/parts/stringpart.html#StringPart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.builtin.parts.StringPart" title="Permalink to this definition"></a></dt>
+<dd><p>Create a single string Attribute on the Block</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – The name of the Part within the Controller</p></li>
+<li><p><strong>description</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Description of what this element represents</p></li>
+<li><p><strong>writeable</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Is the attribute writeable?</p></li>
+<li><p><strong>config</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – If writeable, which iteration should this field be loaded/saved in? 0 means do not restore</p></li>
+<li><p><strong>group</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – If given, which GUI group should we attach to</p></li>
+<li><p><strong>widget</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Widget" title="malcolm.core.Widget"><em>Widget</em></a>) – If given, use this widget instead of the default</p></li>
+<li><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Initial value of the created attribute</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="parameters_api.html" class="btn btn-neutral float-left" title="malcolm.modules.builtin.parameters" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="util_api.html" class="btn btn-neutral float-right" title="util" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>
