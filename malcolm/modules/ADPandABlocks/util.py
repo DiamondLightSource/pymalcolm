@@ -1,3 +1,4 @@
+from collections import namedtuple
 from typing import Union
 
 import numpy as np
@@ -8,9 +9,10 @@ from malcolm.modules import ADCore, pandablocks
 
 
 class Trigger:
-    """Convenience Enum for setting sequencer tables, will be translated into
-    integer values by the TablePart. The strings must match what comes from the
-    PandA"""
+    """Convenience Enum for setting sequencer table trigger values.
+
+    These will be translated into integer values by the `TablePart`. The strings must
+    match those that come from the PandA."""
 
     IMMEDIATE = "Immediate"
     BITA_0 = "BITA=0"
@@ -54,8 +56,32 @@ UPositionOffsets = pandablocks.util.UPositionOffsets
 UPositionCaptures = pandablocks.util.UPositionCaptures
 
 
+SequencerRow = namedtuple(
+    "SequencerRow",
+    [
+        "repeats",
+        "trigger",
+        "position",
+        "time1",
+        "outa1",
+        "outb1",
+        "outc1",
+        "outd1",
+        "oute1",
+        "outf1",
+        "time2",
+        "outa2",
+        "outb2",
+        "outc2",
+        "outd2",
+        "oute2",
+        "outf2",
+    ],
+)
+
+
 class SequencerTable(Table):
-    """Convenience Table object for building sequencer tables"""
+    """Convenience `Table` class for building sequencer tables."""
 
     def __init__(
         self,
