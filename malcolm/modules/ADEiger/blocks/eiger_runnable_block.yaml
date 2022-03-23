@@ -63,9 +63,10 @@
     mri: $(mri_prefix):$(writer_suffix)
     prefix: $(pv_prefix):$(writer_suffix)
 
-- ADOdin.parts.OdinWriterPart:
+- ADEiger.parts.EigerOdinWriterPart:
     name: WRITER
     mri: $(mri_prefix):$(writer_suffix)
+    eiger_mri: $(mri_prefix):DRV
 
 - scanning.parts.DatasetTablePart:
     name: DSET
