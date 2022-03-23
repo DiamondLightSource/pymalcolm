@@ -50,3 +50,9 @@
     name: fanFramesSent
     description: Number of frames sent
     rbv: $(fan_prefix):FramesSent_RBV
+
+# Can be used to set Odin datatype, which must match the Eiger bitdepth
+- ca.parts.CALongPart:
+    name: bitdepth
+    description: Eiger bitdepth - determined by driver (mainly based on exposure time)
+    rbv: $(prefix):BitDepthImage_RBV

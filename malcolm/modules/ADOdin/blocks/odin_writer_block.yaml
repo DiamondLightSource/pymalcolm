@@ -77,7 +77,8 @@
 - ca.parts.CAStringPart:
     name: dataType
     description: type of the pixel data
-    rbv: $(prefix):DataType
+    pv: $(prefix):DataType
+    rbv_suffix: _RBV
 
 #- ca.parts.CALongPa#-rt:
 #    name: flushData# PerNFrames
