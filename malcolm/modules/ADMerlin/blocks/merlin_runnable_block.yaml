@@ -15,6 +15,16 @@
     description: Beamline specific label for the detector
     default: Merlin
 
+- builtin.parameters.string:
+    name: readout_time
+    description: Readout time of the detector
+    default: 1e-3
+
+- builtin.parameters.string:
+    name: frequency_accuracy
+    description: Frequency accuracy of the detector
+    default: 50
+
 - builtin.defines.docstring:
     value: |
       Device block corresponding to Merlin + stat + pos + hdf writer.
@@ -43,7 +53,8 @@
 
 - scanning.parts.ExposureDeadtimePart:
     name: DEADTIME
-    readout_time: 1e-3
+    readout_time: $(readout_time)
+    frequency_accuracy: $(frequency_accuracy)
 
 - ADCore.blocks.stats_plugin_block:
     mri: $(mri_prefix):STAT
