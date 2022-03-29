@@ -92,7 +92,9 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
                 return None
         # Otherwise just let the DetectorDriverPart validate for us
         else:
-            return super().on_validate(context, generator, frames_per_step=frames_per_step)
+            return super().on_validate(
+                context, generator, frames_per_step=frames_per_step
+            )
 
     def setup_detector(
         self,
