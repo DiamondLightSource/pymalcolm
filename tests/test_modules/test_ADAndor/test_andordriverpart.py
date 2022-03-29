@@ -353,8 +353,8 @@ class TestAndorDetectorDriverPart(ChildTestCase):
             AssertionError, self.andor_driver_part.on_validate, self.context, generator
         )
 
-    @patch("malcolm.modules.ADCore.parts.DetectorDriverPart.on_validate")
-    def test_validate_calls_parent_method(self, mock_super_validate):
+    @patch("malcolm.modules.ADCore.parts.DetectorDriverPart.on_validate", autospec=True)
+    def test_validate_succeeds_via_parent_method(self, mock_super_validate):
         generator = self._get_static_generator(5.0)
         generator_zero_duration = self._get_static_generator(0.0)
 
@@ -369,10 +369,20 @@ class TestAndorDetectorDriverPart(ChildTestCase):
 
         # Check the mock method was called with the correct args
         expected_calls = [
-            call(generator, frames_per_step=1),
-            call(generator, frames_per_step=2),
-            call(generator_zero_duration, frames_per_step=1),
-            call(generator_zero_duration, frames_per_step=2),
+            call(self.andor_driver_part, self.context, generator, frames_per_step=1),
+            call(self.andor_driver_part, self.context, generator, frames_per_step=2),
+            call(
+                self.andor_driver_part,
+                self.context,
+                generator_zero_duration,
+                frames_per_step=1,
+            ),
+            call(
+                self.andor_driver_part,
+                self.context,
+                generator_zero_duration,
+                frames_per_step=2,
+            ),
         ]
         mock_super_validate.assert_has_calls(expected_calls)
 
