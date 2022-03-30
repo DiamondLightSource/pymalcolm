@@ -3,8 +3,19 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
+`5.4`_ - 2022-03-30
+-------------------
+
+Changed:
+
+- Removed rank padding on secondary and attribute datasets. Before this change,
+  AreaDetector drivers using the HDF5 file writer would pad these data with an
+  additional 1x1 dimension on top of the scan shape. This makes it simpler for
+  plotting and visualisation. This change requires a minimum ADCore version of
+  3.12 for the HDF5 file writing plugins.
+
 `5.3`_ - 2022-03-18
-----------
+-------------------
 
 Changed:
 
@@ -756,6 +767,7 @@ Added:
 
 - Initial release with hello world and websocket comms
 
+.. _5.4: https://github.com/dls-controls/pymalcolm/compare/5.3...5.4
 .. _5.3: https://github.com/dls-controls/pymalcolm/compare/5.2...5.3
 .. _5.2: https://github.com/dls-controls/pymalcolm/compare/5.1...5.2
 .. _5.1: https://github.com/dls-controls/pymalcolm/compare/5.0...5.1
