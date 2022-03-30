@@ -1,0 +1,6 @@
+
+malcolm.modules.scanning.parts
+==============================
+
+.. automodule:: malcolm.modules.scanning.parts
+    :members:

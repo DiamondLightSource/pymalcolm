@@ -1,0 +1,6 @@
+
+malcolm.modules.ADOdin.parts
+============================
+
+.. automodule:: malcolm.modules.ADOdin.parts
+    :members:

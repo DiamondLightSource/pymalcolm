@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Message Structure &mdash; malcolm 5.4 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Supported Tags" href="tags.html" />
+    <link rel="prev" title="Block Structure" href="structure.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../contents.html" class="icon icon-home"> malcolm
+            <img src="../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                5.4
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure.html">Block Structure</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Message Structure</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#get">Get</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#put">Put</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#post">Post</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#subscribe">Subscribe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#unsubscribe">Unsubscribe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#return">Return</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#error">Error</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#update">Update</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#delta">Delta</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../contents.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Message Structure</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/reference/messages.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="message-structure">
+<span id="id1"></span><h1>Message Structure<a class="headerlink" href="#message-structure" title="Permalink to this headline"></a></h1>
+<p>The communication between Blocks in the same Process is by calling passing
+<a class="reference internal" href="../api/core_api.html#malcolm.core.Request" title="malcolm.core.Request"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Request</span></code></a> objects to the blocks, and being called back with <a class="reference internal" href="../api/core_api.html#malcolm.core.Response" title="malcolm.core.Response"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Response</span></code></a> objects.
+When the Blocks are in different Processes, a serialization method and transport
+protocol is needed. The simplest is JSON serialization over websockets, and this
+is what is described below. The structures will also be accessible via pvData
+over pvAccess, with the communication layer providing translation of the
+messages to and from their Python dictionary equivalents.</p>
+<p>The protocol is asymmetric, with different message types from client to server
+than for server to client. Each client sent message contains an integer id which
+will be contained in any server response. This id must be unique within the
+scope of the client connection.</p>
+<p>A Malcolm client makes a connection via one of the supported communication
+protocols, and within that connection can communicate to the server by sending
+the following message types:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#get">Get</a>: Get the structure of a Block or part of one</p></li>
+<li><p><a class="reference internal" href="#put">Put</a>: Put a value to an Attribute</p></li>
+<li><p><a class="reference internal" href="#post">Post</a>: Call a method of a Block</p></li>
+<li><p><a class="reference internal" href="#subscribe">Subscribe</a>: Subscribe to changes in a Block or part of one</p></li>
+<li><p><a class="reference internal" href="#unsubscribe">Unsubscribe</a>: Cancel one <a class="reference internal" href="#subscribe">Subscribe</a></p></li>
+</ul>
+<p>A Malcolm server recieves messages from a number of clients, and sends the
+following message types back:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#return">Return</a>: Provide a return value to a <a class="reference internal" href="#post">Post</a>, <a class="reference internal" href="#get">Get</a>, <a class="reference internal" href="#put">Put</a>,
+<a class="reference internal" href="#unsubscribe">Unsubscribe</a>, and indicate the cancellation of a <a class="reference internal" href="#subscribe">Subscribe</a></p></li>
+<li><p><a class="reference internal" href="#error">Error</a>: Return an error to any one of the client side requests</p></li>
+<li><p><a class="reference internal" href="#update">Update</a>: Return a complete updated value to a subscription</p></li>
+<li><p><a class="reference internal" href="#delta">Delta</a>: Return incremental changes to a subscription</p></li>
+</ul>
+<section id="get">
+<h2>Get<a class="headerlink" href="#get" title="Permalink to this headline"></a></h2>
+<p>This message will ask the server to serialize the <code class="docutils literal notranslate"><span class="pre">path</span></code> and send it back
+as a <a class="reference internal" href="#return">Return</a> message. It will receive an <a class="reference internal" href="#error">Error</a> message if the <code class="docutils literal notranslate"><span class="pre">path</span></code>
+doesn’t exist.</p>
+<p>Dictionary with members:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>typeid</dt><dd><p>String <code class="docutils literal notranslate"><span class="pre">malcolm:core/Get:1.0</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>id</dt><dd><p>Integer id which will be contained in any server response.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>path</dt><dd><p>List of strings specifying the path to the Block the Block or substructure
+of the Block that should be returned. The first element will be the name of
+the Block, and any subsequent elements will be paths to traverse within the
+Block structure. See <a class="reference internal" href="structure.html#block-structure"><span class="std std-ref">Block Structure</span></a> for more details.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="toggle docutils container">
+<div class="header docutils container">
+<p><strong>Example</strong>: Get the current value of the state attribute of
+<code class="docutils literal notranslate"><span class="pre">BL18I:XSPRESS3</span></code>:</p>
+</div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;typeid&quot;</span><span class="o">:</span> <span class="s2">&quot;malcolm:core/Get:1.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="o">:</span> <span class="mf">32</span><span class="p">,</span>
+    <span class="s2">&quot;path&quot;</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;BL18I:XSPRESS3&quot;</span><span class="p">,</span> <span class="s2">&quot;state&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="toggle docutils container">
+<div class="header docutils container">
+<p><strong>Example</strong>: Get the entire <code class="docutils literal notranslate"><span class="pre">BL18I:XSPRESS3</span></code> structure:</p>
+</div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;typeid&quot;</span><span class="o">:</span> <span class="s2">&quot;malcolm:core/Get:1.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="o">:</span> <span class="mf">32</span><span class="p">,</span>
+    <span class="s2">&quot;path&quot;</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;BL18I:XSPRESS3&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="put">
+<h2>Put<a class="headerlink" href="#put" title="Permalink to this headline"></a></h2>
+<p>This message will ask the server to put <code class="docutils literal notranslate"><span class="pre">value</span></code> to the <code class="docutils literal notranslate"><span class="pre">path</span></code> of the
+<code class="docutils literal notranslate"><span class="pre">block</span></code>. It will get a <a class="reference internal" href="#return">Return</a> message when complete or an <a class="reference internal" href="#error">Error</a> message
+if the <code class="docutils literal notranslate"><span class="pre">block</span></code> or <code class="docutils literal notranslate"><span class="pre">path</span></code> don’t exist or aren’t writeable. Only the value
+fields of writeable Attributes accept Puts.</p>
+<p>Dictionary with members:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>typeid</dt><dd><p>String <code class="docutils literal notranslate"><span class="pre">malcolm:core/Put:1.0</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>id</dt><dd><p>Integer id which will be contained in any server response.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>path</dt><dd><p>List of strings specifying the path to the substructure of the Block that
+should be modified. The first element will be the name of the Block, and
+subsequent elements will be paths to traverse within the Block structure.
+See <a class="reference internal" href="structure.html#block-structure"><span class="std std-ref">Block Structure</span></a> for more details.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>value</dt><dd><p>Object value to be set. This will be the dictionary representation of the
+Attribute value type. For simple types this will just be a String or
+Integer. See <a class="reference internal" href="structure.html#block-structure"><span class="std std-ref">Block Structure</span></a> for how more complex structures are
+represented.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="toggle docutils container">
+<div class="header docutils container">
+<p><strong>Example</strong>: Put the file path of an HDF Writer object:</p>
+</div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;typeid&quot;</span><span class="o">:</span> <span class="s2">&quot;malcolm:core/Put:1.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="o">:</span> <span class="mf">35</span><span class="p">,</span>
+    <span class="s2">&quot;path&quot;</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;BL18I:XSPRESS3:HDF&quot;</span><span class="p">,</span> <span class="s2">&quot;filePath&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;value&quot;</span><span class="o">:</span> <span class="s2">&quot;/path/to/file.h5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get&quot;</span><span class="o">:</span> <span class="kc">false</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="post">
+<h2>Post<a class="headerlink" href="#post" title="Permalink to this headline"></a></h2>
+<p>This message will ask the server to post to an <code class="docutils literal notranslate"><span class="pre">path</span></code> of a <code class="docutils literal notranslate"><span class="pre">block</span></code> with
+some <code class="docutils literal notranslate"><span class="pre">parameters</span></code>. This is typically used to call a method. It will get a
+<a class="reference internal" href="#return">Return</a> message when complete or an <a class="reference internal" href="#error">Error</a> message if the <code class="docutils literal notranslate"><span class="pre">block</span></code> or
+<code class="docutils literal notranslate"><span class="pre">path</span></code> don’t exist or aren’t Methods.</p>
+<p>Dictionary with members:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>typeid</dt><dd><p>String <code class="docutils literal notranslate"><span class="pre">malcolm:core/Post:1.0</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>id</dt><dd><p>Integer id which will be contained in any server response.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>path</dt><dd><p>List of strings specifying the path to the substructure
+of the Block that should be posted to. The first element will be the name of
+the Block, and the second will be the Method name. See <a class="reference internal" href="structure.html#block-structure"><span class="std std-ref">Block Structure</span></a> for
+more details.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>parameters</dt><dd><p>Dictionary of parameters that should be Posted. The keys of the dictionary
+are string parameter names, and the types of the values should match those
+described in the <code class="docutils literal notranslate"><span class="pre">takes</span></code> element of the Method. See <a class="reference internal" href="structure.html#block-structure"><span class="std std-ref">Block Structure</span></a> for
+details.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="toggle docutils container">
+<div class="header docutils container">
+<p><strong>Example</strong>: Call the configure() method of <code class="docutils literal notranslate"><span class="pre">BL18I:XSPRESS3</span></code>:</p>
+</div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;typeid&quot;</span><span class="o">:</span> <span class="s2">&quot;malcolm:core/Post:1.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="o">:</span> <span class="mf">2</span><span class="p">,</span>
+    <span class="s2">&quot;path&quot;</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;BL18I:XSPRESS3&quot;</span><span class="p">,</span> <span class="s2">&quot;configure&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;parameters&quot;</span><span class="o">:</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;filePath&quot;</span><span class="o">:</span> <span class="s2">&quot;/path/to/file.h5&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;exposure&quot;</span><span class="o">:</span> <span class="mf">0.1</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="subscribe">
+<h2>Subscribe<a class="headerlink" href="#subscribe" title="Permalink to this headline"></a></h2>
+<p>This message will ask the server to respond with a message every time the
+<code class="docutils literal notranslate"><span class="pre">block</span></code> (or <code class="docutils literal notranslate"><span class="pre">path</span></code> of the <code class="docutils literal notranslate"><span class="pre">block</span></code>) changes. If <code class="docutils literal notranslate"><span class="pre">delta</span></code> then the
+server will respond with a <a class="reference internal" href="#delta">Delta</a> message listing what has changed, otherwise
+it will respond with a <a class="reference internal" href="#update">Update</a> message with the entire structure each time.
+The first message received will give the current value, and subsequent messages
+will be sent whenever it changes. It will receive an <a class="reference internal" href="#error">Error</a> message if the
+<code class="docutils literal notranslate"><span class="pre">block</span></code> or <code class="docutils literal notranslate"><span class="pre">path</span></code> don’t exist, or if the Block or substructure of the
+Block disappears while the subscription is active. When <a class="reference internal" href="#unsubscribe">Unsubscribe</a> is called
+with the same id, a <a class="reference internal" href="#return">Return</a> message will be received on that id with no value.</p>
+<p>Dictionary with members:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>typeid</dt><dd><p>String <code class="docutils literal notranslate"><span class="pre">malcolm:core/Subscribe:1.0</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>id</dt><dd><p>Integer id which will be contained in any server response.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>path</dt><dd><p>List of strings specifying the path to the Block the Block or substructure
+of the Block that should be returned. The first element will be the name of
+the Block, and any subsequent elements will be paths to traverse within the
+Block structure. See <a class="reference internal" href="structure.html#block-structure"><span class="std std-ref">Block Structure</span></a> for more details.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>delta (optional)</dt><dd><p>If given and is true then send <a class="reference internal" href="#delta">Delta</a> messages on updates, otherwise
+send <a class="reference internal" href="#update">Update</a> messages.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="toggle docutils container">
+<div class="header docutils container">
+<p><strong>Example</strong>: Subscribe to the value of the state attribute of
+<code class="docutils literal notranslate"><span class="pre">BL18I:XSPRESS3</span></code>:</p>
+</div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;typeid&quot;</span><span class="o">:</span> <span class="s2">&quot;malcolm:core/Subscribe:1.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="o">:</span> <span class="mf">19</span><span class="p">,</span>
+    <span class="s2">&quot;path&quot;</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;BL18I:XSPRESS3&quot;</span><span class="p">,</span> <span class="s2">&quot;state&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="toggle docutils container">
+<div class="header docutils container">
+<p><strong>Example</strong>: Subscribe to deltas in the entire <code class="docutils literal notranslate"><span class="pre">BL18I:XSPRESS3</span></code>
+structure:</p>
+</div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;typeid&quot;</span><span class="o">:</span> <span class="s2">&quot;malcolm:core/Subscribe:1.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="o">:</span> <span class="mf">11</span><span class="p">,</span>
+    <span class="s2">&quot;path&quot;</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;BL18I:XSPRESS3&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;delta&quot;</span><span class="o">:</span> <span class="kc">true</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="unsubscribe">
+<h2>Unsubscribe<a class="headerlink" href="#unsubscribe" title="Permalink to this headline"></a></h2>
+<p>This message will ask the server to stop sending notifications to a particular
+subscription. It will receive an <a class="reference internal" href="#error">Error</a> message if the id is not for a valid
+subscription. A <a class="reference internal" href="#return">Return</a> message will be received on that id with no value if
+successful.</p>
+<p>Dictionary with members:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>typeid</dt><dd><p>String <code class="docutils literal notranslate"><span class="pre">malcolm:core/Unsubscribe:1.0</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>id</dt><dd><p>Integer id which was given in the <a class="reference internal" href="#subscribe">Subscribe</a> method.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="toggle docutils container">
+<div class="header docutils container">
+<p><strong>Example</strong>: Unsubscribe from subscription id 0:</p>
+</div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;typeid&quot;</span><span class="o">:</span> <span class="s2">&quot;malcolm:core/Unsubscribe:1.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="o">:</span> <span class="mf">32</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="return">
+<h2>Return<a class="headerlink" href="#return" title="Permalink to this headline"></a></h2>
+<p>This message is sent to signify completion of an operation:</p>
+<ul class="simple">
+<li><p>In response to a <a class="reference internal" href="#get">Get</a> to return the serialized version of an path</p></li>
+<li><p>In response to a <a class="reference internal" href="#put">Put</a> or <a class="reference internal" href="#unsubscribe">Unsubscribe</a> with no value to indicate successful
+completion</p></li>
+<li><p>In response to a <a class="reference internal" href="#post">Post</a> with the return value of that Method call, or no
+value if nothing is returned</p></li>
+</ul>
+<p>Dictionary with members:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>typeid</dt><dd><p>String <code class="docutils literal notranslate"><span class="pre">malcolm:core/Return:1.0</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>id</dt><dd><p>Integer id from original client <a class="reference internal" href="#get">Get</a>, <a class="reference internal" href="#put">Put</a>, <a class="reference internal" href="#post">Post</a> or <a class="reference internal" href="#unsubscribe">Unsubscribe</a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>value (optional)</dt><dd><p>Object return value if it exists. For <a class="reference internal" href="#get">Get</a> this will be the structure of
+the path. For <a class="reference internal" href="#post">Post</a> this will be described by the <code class="docutils literal notranslate"><span class="pre">returns</span></code> element
+of the Method. See <a class="reference internal" href="structure.html#block-structure"><span class="std std-ref">Block Structure</span></a> for more details.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="toggle docutils container">
+<div class="header docutils container">
+<p><strong>Example</strong>: The return of a <a class="reference internal" href="#get">Get</a> of a Blocks’s state Attribute value:</p>
+</div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;typeid&quot;</span><span class="o">:</span> <span class="s2">&quot;malcolm:core/Return:1.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="o">:</span> <span class="mf">32</span><span class="p">,</span>
+    <span class="s2">&quot;value&quot;</span><span class="o">:</span> <span class="s2">&quot;Running&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="toggle docutils container">
+<div class="header docutils container">
+<p><strong>Example</strong>: The successful completion of a <a class="reference internal" href="#put">Put</a> or <a class="reference internal" href="#unsubscribe">Unsubscribe</a>:</p>
+</div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;typeid&quot;</span><span class="o">:</span> <span class="s2">&quot;malcolm:core/Return:1.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="o">:</span> <span class="mf">35</span><span class="p">,</span>
+    <span class="s2">&quot;value&quot;</span><span class="o">:</span> <span class="kc">null</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="error">
+<h2>Error<a class="headerlink" href="#error" title="Permalink to this headline"></a></h2>
+<p>This message is sent for a number of reasons:</p>
+<ul class="simple">
+<li><p>The client has sent a badly formed message</p></li>
+<li><p>The client has asked to interact with a nonexistant block or path</p></li>
+<li><p>The <a class="reference internal" href="#put">Put</a> or <a class="reference internal" href="#post">Post</a> operation has thrown an error</p></li>
+</ul>
+<p>Dictionary with members:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>typeid</dt><dd><p>String <code class="docutils literal notranslate"><span class="pre">malcolm:core/Error:1.0</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>id</dt><dd><p>Integer id from original client message. If the id cannot be determined
+from the original message, -1 will be used.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>message</dt><dd><p>Human readable error message</p>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="toggle docutils container">
+<div class="header docutils container">
+<p><strong>Example</strong>: Get on nonexistant block</p>
+</div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;typeid&quot;</span><span class="o">:</span> <span class="s2">&quot;malcolm:core/Error:1.0&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;id&quot;</span><span class="o">:</span> <span class="mf">2</span><span class="p">,</span>
+  <span class="s2">&quot;message&quot;</span><span class="o">:</span> <span class="s2">&quot;Non-existant block &#39;foo&#39;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="update">
+<h2>Update<a class="headerlink" href="#update" title="Permalink to this headline"></a></h2>
+<p>This message is sent in response to a <a class="reference internal" href="#subscribe">Subscribe</a> without the delta option. It
+contains the serialized version of a Block or substructure of a Block.</p>
+<p>Dictionary with members:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>typeid</dt><dd><p>String <code class="docutils literal notranslate"><span class="pre">malcolm:core/Update:1.0</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>id</dt><dd><p>Integer id from original client <a class="reference internal" href="#subscribe">Subscribe</a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>value</dt><dd><p>Object current value of subscribed path. This will be the dictionary
+representation of the Attribute value type. For simple types this will just
+be a String or Integer. See <a class="reference internal" href="structure.html#block-structure"><span class="std std-ref">Block Structure</span></a> for how more complex structures
+are represented.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="toggle docutils container">
+<div class="header docutils container">
+<p><strong>Example</strong>: A message sent when monitoring the state Attribute value of
+a block:</p>
+</div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;typeid&quot;</span><span class="o">:</span> <span class="s2">&quot;malcolm:core/Update:1.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="o">:</span> <span class="mf">19</span><span class="p">,</span>
+    <span class="s2">&quot;value&quot;</span><span class="o">:</span> <span class="s2">&quot;Running&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="delta">
+<h2>Delta<a class="headerlink" href="#delta" title="Permalink to this headline"></a></h2>
+<p>This message is sent in response to a <a class="reference internal" href="#subscribe">Subscribe</a> with the delta option. It
+contains a list of <a class="reference external" href="http://json-delta.readthedocs.org/en/latest/philosophy.html?highlight=stanzas">json_delta</a> style stanzas of the difference between the last
+transmitted value (if any) and the current value.</p>
+<p>Dictionary with members:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>typeid</dt><dd><p>String <code class="docutils literal notranslate"><span class="pre">malcolm:core/Delta:1.0</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>id</dt><dd><p>Integer id from original client <a class="reference internal" href="#subscribe">Subscribe</a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>changes</dt><dd><p>List of [<code class="docutils literal notranslate"><span class="pre">key</span> <span class="pre">path</span></code>, optional <code class="docutils literal notranslate"><span class="pre">update</span></code>] stanzas.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">key</span> <span class="pre">path</span></code> is a path to the changed element within the subscribed path.
+This means that the original subscription path + this key path describes
+the full path to the changed element</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">update</span></code> is the optional new value that should appear at <code class="docutils literal notranslate"><span class="pre">key</span> <span class="pre">path</span></code>.
+If it doesn’t exist then this stanza is an instruction to delete the node
+the key path points to.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="toggle docutils container">
+<div class="header docutils container">
+<p><strong>Example</strong>: A message sent when monitoring the top level Block, and
+the state Attribute’s value changed:</p>
+</div>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;typeid&quot;</span><span class="o">:</span> <span class="s2">&quot;malcolm:core/Delta:1.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="o">:</span> <span class="mf">0</span><span class="p">,</span>
+    <span class="s2">&quot;changes&quot;</span><span class="o">:</span>
+        <span class="p">[</span>
+            <span class="p">[[</span><span class="s2">&quot;state&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">],</span> <span class="s2">&quot;Running&quot;</span><span class="p">]</span>
+        <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="structure.html" class="btn btn-neutral float-left" title="Block Structure" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tags.html" class="btn btn-neutral float-right" title="Supported Tags" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

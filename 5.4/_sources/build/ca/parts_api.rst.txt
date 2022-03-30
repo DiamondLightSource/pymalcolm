@@ -1,0 +1,6 @@
+
+malcolm.modules.ca.parts
+========================
+
+.. automodule:: malcolm.modules.ca.parts
+    :members:

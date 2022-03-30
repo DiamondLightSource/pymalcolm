@@ -1,0 +1,6 @@
+
+malcolm.modules.aravisGigE.blocks
+=================================
+
+.. automodule:: malcolm.modules.aravisGigE.blocks
+    :members:

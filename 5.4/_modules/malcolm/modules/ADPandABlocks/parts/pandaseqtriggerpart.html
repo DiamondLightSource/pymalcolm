@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.modules.ADPandABlocks.parts.pandaseqtriggerpart &mdash; malcolm 5.4 documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../../../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                5.4
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+      <li>malcolm.modules.ADPandABlocks.parts.pandaseqtriggerpart</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for malcolm.modules.ADPandABlocks.parts.pandaseqtriggerpart</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">itemgetter</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">add_call_types</span>
+<span class="kn">from</span> <span class="nn">scanpointgenerator</span> <span class="kn">import</span> <span class="n">CompoundGenerator</span><span class="p">,</span> <span class="n">Point</span><span class="p">,</span> <span class="n">Points</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="n">APartName</span><span class="p">,</span> <span class="n">Block</span><span class="p">,</span> <span class="n">Context</span><span class="p">,</span> <span class="n">PartRegistrar</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules</span> <span class="kn">import</span> <span class="n">builtin</span><span class="p">,</span> <span class="n">pmac</span><span class="p">,</span> <span class="n">scanning</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules.pmac.util</span> <span class="kn">import</span> <span class="n">MinTurnaround</span><span class="p">,</span> <span class="n">get_min_turnaround</span>
+
+<span class="kn">from</span> <span class="nn">..doublebuffer</span> <span class="kn">import</span> <span class="n">MIN_PULSE</span><span class="p">,</span> <span class="n">TICK</span><span class="p">,</span> <span class="n">DoubleBuffer</span><span class="p">,</span> <span class="n">SequencerRows</span>
+<span class="kn">from</span> <span class="nn">..util</span> <span class="kn">import</span> <span class="n">Trigger</span>
+
+<span class="c1"># The SEQ.table attributes that should be present in PANDA.exports</span>
+<span class="n">SEQ_TABLES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;seqTableA&quot;</span><span class="p">,</span> <span class="s2">&quot;seqTableB&quot;</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Scannable name for sequencer input&quot;</span><span class="p">):</span>
+    <span class="n">APos</span> <span class="o">=</span> <span class="nb">str</span>
+
+<span class="c1"># Pull re-used annotypes into our namespace in case we are subclassed</span>
+<span class="n">APartName</span> <span class="o">=</span> <span class="n">APartName</span>
+<span class="n">AMri</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">AMri</span>
+<span class="n">AInitialVisibility</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">AInitialVisibility</span>
+
+<span class="c1"># SeqTriggers processing batch size</span>
+<span class="n">BATCH_SIZE</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5000</span>
+
+
+<span class="k">class</span> <span class="nc">SeqTriggers</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;A class that generates Sequencer (SEQ) block triggers from a Points generator.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">generator</span><span class="p">:</span> <span class="n">CompoundGenerator</span><span class="p">,</span>
+        <span class="n">axis_mapping</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pmac</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">MotorInfo</span><span class="p">],</span>
+        <span class="n">trigger_enums</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
+        <span class="n">min_turnaround</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="p">:</span> <span class="n">CompoundGenerator</span> <span class="o">=</span> <span class="n">generator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pmac</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">MotorInfo</span><span class="p">]</span> <span class="o">=</span> <span class="n">axis_mapping</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trigger_enums</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">trigger_enums</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_turnaround</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">min_turnaround</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_point</span><span class="p">:</span> <span class="n">Point</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_what_moves_most</span><span class="p">(</span>
+        <span class="n">point</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span> <span class="n">axis_mapping</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pmac</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">MotorInfo</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Return the axis from `axis_mapping` that moves most for this point.&quot;&quot;&quot;</span>
+        <span class="c1"># TODO: should use new velocity calcs when Giles has finished</span>
+        <span class="c1"># {axis_name: abs(diff_cts)}</span>
+        <span class="n">diffs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># {axis_name: (compare_cts, increasing)}</span>
+        <span class="n">compare_increasing</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">axis_mapping</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">compare_cts</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">in_cts</span><span class="p">(</span><span class="n">point</span><span class="o">.</span><span class="n">lower</span><span class="p">[</span><span class="n">s</span><span class="p">])</span>
+            <span class="n">centre_cts</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">in_cts</span><span class="p">(</span><span class="n">point</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">s</span><span class="p">])</span>
+            <span class="n">diff_cts</span> <span class="o">=</span> <span class="n">centre_cts</span> <span class="o">-</span> <span class="n">compare_cts</span>
+            <span class="k">if</span> <span class="n">diff_cts</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">diffs</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">diff_cts</span><span class="p">)</span>
+                <span class="n">compare_increasing</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">compare_cts</span><span class="p">,</span> <span class="n">diff_cts</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="n">diffs</span><span class="p">,</span> <span class="p">(</span>
+            <span class="s2">&quot;Can&#39;t work out a compare point for </span><span class="si">%s</span><span class="s2">, maybe none of the axes &quot;</span>
+            <span class="s2">&quot;connected to the PandA are moving during the scan point?&quot;</span> <span class="o">%</span> <span class="n">point</span><span class="o">.</span><span class="n">positions</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Sort on abs(diff), take the biggest</span>
+        <span class="n">axis_name</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">diffs</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="n">itemgetter</span><span class="p">(</span><span class="mi">1</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">compare_cts</span><span class="p">,</span> <span class="n">increasing</span> <span class="o">=</span> <span class="n">compare_increasing</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">axis_name</span><span class="p">,</span> <span class="n">compare_cts</span><span class="p">,</span> <span class="n">increasing</span>
+
+    <span class="k">def</span> <span class="nf">_how_long_moving_wrong_way</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">axis_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">point</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span> <span class="n">increasing</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return the duration that the given axis is moving in the opposite direction from</span>
+<span class="sd">        that required for `point`, during the prior turnaround.&quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_turnaround</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: no MinTurnaround assigned&quot;</span>
+        <span class="n">min_turnaround</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_turnaround</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">point</span><span class="o">.</span><span class="n">delay_after</span><span class="p">)</span>
+        <span class="n">time_arrays</span><span class="p">,</span> <span class="n">velocity_arrays</span> <span class="o">=</span> <span class="n">pmac</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">profile_between_points</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">last_point</span><span class="p">,</span>
+            <span class="n">point</span><span class="p">,</span>
+            <span class="n">min_turnaround</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">min_turnaround</span><span class="o">.</span><span class="n">interval</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span>
+        <span class="n">time_array</span> <span class="o">=</span> <span class="n">time_arrays</span><span class="p">[</span><span class="n">info</span><span class="o">.</span><span class="n">scannable</span><span class="p">]</span>
+        <span class="n">velocity_array</span> <span class="o">=</span> <span class="n">velocity_arrays</span><span class="p">[</span><span class="n">info</span><span class="o">.</span><span class="n">scannable</span><span class="p">]</span>
+
+        <span class="c1"># Work backwards through the velocity array until we are going the</span>
+        <span class="c1"># opposite way</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="n">velocity_array</span><span class="p">))):</span>
+            <span class="c1"># Divide v by resolution so it is in counts</span>
+            <span class="n">v</span> <span class="o">/=</span> <span class="n">info</span><span class="o">.</span><span class="n">resolution</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">increasing</span> <span class="ow">and</span> <span class="n">v</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="n">increasing</span> <span class="ow">and</span> <span class="n">v</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="c1"># The axis is stationary or going the wrong way at this</span>
+                <span class="c1"># point, so we should be blind before then</span>
+                <span class="k">assert</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">velocity_array</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span>
+                    <span class="s2">&quot;Last point of </span><span class="si">%s</span><span class="s2"> is wrong direction&quot;</span> <span class="o">%</span> <span class="n">velocity_array</span>
+                <span class="p">)</span>
+                <span class="k">break</span>
+        <span class="n">blind</span> <span class="o">=</span> <span class="n">time_array</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">blind</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_row_indices</span><span class="p">(</span><span class="n">points</span><span class="p">:</span> <span class="n">Points</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Generate list of start and end indices for separate rows.</span>
+
+<span class="sd">        The first point (index 0) is not registered as a separate row. This is because</span>
+<span class="sd">        for the first row of a scan the triggering is handled separately, and for later</span>
+<span class="sd">        batches of points the initial value is from a previous row.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">points_joined</span> <span class="o">=</span> <span class="n">pmac</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">all_points_joined</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">points_joined</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">points_joined</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">start_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">points_joined</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">start_indices</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">start_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+
+        <span class="c1"># end_index = start_index + size</span>
+        <span class="n">end_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">start_indices</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">start_indices</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+            <span class="n">end_indices</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">start_indices</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="n">end_indices</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">start_indices</span><span class="p">,</span> <span class="n">end_indices</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_create_immediate_rows</span><span class="p">(</span><span class="n">durations</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">SequencerRows</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Generate sequencer rows with &#39;Immediate&#39; trigger type, from `durations`.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">durations</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">SequencerRows</span><span class="p">()</span>
+
+        <span class="n">pairwise_equal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">durations</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="n">pairwise_equal</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Initial duration starts first row</span>
+
+        <span class="n">np</span><span class="o">.</span><span class="n">not_equal</span><span class="p">(</span><span class="n">durations</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">durations</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">out</span><span class="o">=</span><span class="n">pairwise_equal</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+        <span class="n">start_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">pairwise_equal</span><span class="p">)</span>
+        <span class="n">seq_durations</span> <span class="o">=</span> <span class="n">durations</span><span class="p">[</span><span class="n">start_indices</span><span class="p">]</span>
+        <span class="n">seq_lengths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">start_indices</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">durations</span><span class="p">)))</span>
+
+        <span class="n">rows</span> <span class="o">=</span> <span class="n">SequencerRows</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">duration</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">seq_durations</span><span class="p">,</span> <span class="n">seq_lengths</span><span class="p">):</span>
+            <span class="n">half_frame</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">duration</span> <span class="o">/</span> <span class="n">TICK</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span>
+            <span class="n">rows</span><span class="o">.</span><span class="n">add_seq_entry</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="n">half_duration</span><span class="o">=</span><span class="n">half_frame</span><span class="p">,</span> <span class="n">live</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">rows</span>
+
+    <span class="k">def</span> <span class="nf">_create_triggered_rows</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="p">:</span> <span class="n">Points</span><span class="p">,</span> <span class="n">start_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">end_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">add_blind</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SequencerRows</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Generate sequencer rows corresponding to a triggered points row.&quot;&quot;&quot;</span>
+        <span class="n">initial_point</span><span class="p">:</span> <span class="n">Point</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">start_index</span><span class="p">]</span>
+        <span class="n">half_frame</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">initial_point</span><span class="o">.</span><span class="n">duration</span> <span class="o">/</span> <span class="n">TICK</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span>
+
+        <span class="n">rows</span> <span class="o">=</span> <span class="n">SequencerRows</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trigger_enums</span><span class="p">:</span>
+            <span class="c1"># Position compare</span>
+            <span class="c1"># First row, or rows not joined</span>
+            <span class="c1"># Work out which axis moves most during this point</span>
+            <span class="n">axis_name</span><span class="p">,</span> <span class="n">compare_cts</span><span class="p">,</span> <span class="n">increasing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_what_moves_most</span><span class="p">(</span>
+                <span class="n">initial_point</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">add_blind</span><span class="p">:</span>
+                <span class="c1"># How long to be blind for during the turnaround</span>
+                <span class="n">blind</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_how_long_moving_wrong_way</span><span class="p">(</span>
+                    <span class="n">axis_name</span><span class="p">,</span> <span class="n">initial_point</span><span class="p">,</span> <span class="n">increasing</span>
+                <span class="p">)</span>
+                <span class="n">half_blind</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">blind</span> <span class="o">/</span> <span class="n">TICK</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span>
+                <span class="n">rows</span><span class="o">.</span><span class="n">add_seq_entry</span><span class="p">(</span><span class="n">half_duration</span><span class="o">=</span><span class="n">half_blind</span><span class="p">,</span> <span class="n">dead</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="c1"># Create a compare point for the next row</span>
+            <span class="n">rows</span><span class="o">.</span><span class="n">add_seq_entry</span><span class="p">(</span>
+                <span class="n">trigger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trigger_enums</span><span class="p">[(</span><span class="n">axis_name</span><span class="p">,</span> <span class="n">increasing</span><span class="p">)],</span>
+                <span class="n">position</span><span class="o">=</span><span class="n">compare_cts</span><span class="p">,</span>
+                <span class="n">half_duration</span><span class="o">=</span><span class="n">half_frame</span><span class="p">,</span>
+                <span class="n">live</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Row trigger coming in on BITA</span>
+
+            <span class="k">if</span> <span class="n">add_blind</span><span class="p">:</span>
+                <span class="c1"># Produce dead pulse as soon as row has finished</span>
+                <span class="n">rows</span><span class="o">.</span><span class="n">add_seq_entry</span><span class="p">(</span>
+                    <span class="n">half_duration</span><span class="o">=</span><span class="n">MIN_PULSE</span><span class="p">,</span> <span class="n">dead</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">trigger</span><span class="o">=</span><span class="n">Trigger</span><span class="o">.</span><span class="n">BITA_0</span>
+                <span class="p">)</span>
+
+            <span class="n">rows</span><span class="o">.</span><span class="n">add_seq_entry</span><span class="p">(</span><span class="n">trigger</span><span class="o">=</span><span class="n">Trigger</span><span class="o">.</span><span class="n">BITA_1</span><span class="p">,</span> <span class="n">half_duration</span><span class="o">=</span><span class="n">half_frame</span><span class="p">,</span> <span class="n">live</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">rows</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_create_immediate_rows</span><span class="p">(</span><span class="n">points</span><span class="o">.</span><span class="n">duration</span><span class="p">[</span><span class="n">start_index</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:</span> <span class="n">end_index</span><span class="p">])</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">rows</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_overlapping_points_range</span><span class="p">(</span><span class="n">generator</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Points</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Yield a series of `Points` objects that cover the given range.</span>
+
+<span class="sd">        Yielded points overlap by one point to indicate whether the start of a given</span>
+<span class="sd">        batch corresponds to the middle of a row.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">start</span> <span class="o">==</span> <span class="n">end</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">low_index</span> <span class="o">=</span> <span class="n">start</span>
+        <span class="n">high_index</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">start</span> <span class="o">+</span> <span class="n">BATCH_SIZE</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">generator</span><span class="o">.</span><span class="n">get_points</span><span class="p">(</span><span class="n">low_index</span><span class="p">,</span> <span class="n">high_index</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">high_index</span> <span class="o">==</span> <span class="n">end</span><span class="p">:</span>
+                <span class="k">break</span>
+
+            <span class="n">low_index</span> <span class="o">=</span> <span class="n">high_index</span> <span class="o">-</span> <span class="mi">1</span>  <span class="c1"># Include final point from previous range</span>
+            <span class="n">high_index</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">low_index</span> <span class="o">+</span> <span class="n">BATCH_SIZE</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_rows</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loaded_up_to</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">scan_up_to</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">SequencerRows</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Yield a series of `SequencerRows` that correspond to the given range.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">points</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_overlapping_points_range</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="p">,</span> <span class="n">loaded_up_to</span><span class="p">,</span> <span class="n">scan_up_to</span>
+        <span class="p">):</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span><span class="p">:</span>
+                <span class="c1"># No position compare or row triggering required</span>
+                <span class="n">durations</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">duration</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_point</span> <span class="k">else</span> <span class="n">points</span><span class="o">.</span><span class="n">duration</span>
+                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_immediate_rows</span><span class="p">(</span><span class="n">durations</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">last_point</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">start_indices</span><span class="p">,</span> <span class="n">end_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_row_indices</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+
+                <span class="c1"># Handle the first scan row from the current batch of points</span>
+                <span class="n">end</span> <span class="o">=</span> <span class="n">start_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">start_indices</span><span class="o">.</span><span class="n">size</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_point</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="c1"># This is the beginning of the scan</span>
+                    <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_triggered_rows</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">last_point</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">end</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># This is the beginning of subsequent batches.</span>
+                    <span class="c1"># Sequence table rows are only added here if the previous batch</span>
+                    <span class="c1"># of points finished in the middle of a continuous scan row.</span>
+                    <span class="c1"># The first point of the current batch is from the previous batch.</span>
+                    <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_immediate_rows</span><span class="p">(</span><span class="n">points</span><span class="o">.</span><span class="n">duration</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">end</span><span class="p">])</span>
+
+                <span class="c1"># Remaining scan rows from the current batch of points.</span>
+                <span class="k">for</span> <span class="n">start_i</span><span class="p">,</span> <span class="n">end_i</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">start_indices</span><span class="p">,</span> <span class="n">end_indices</span><span class="p">):</span>
+                    <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_triggered_rows</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">start_i</span><span class="p">,</span> <span class="n">end_i</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">last_point</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">end_i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">rows</span> <span class="o">=</span> <span class="n">SequencerRows</span><span class="p">()</span>
+        <span class="c1"># add one last dead frame signal</span>
+        <span class="n">rows</span><span class="o">.</span><span class="n">add_seq_entry</span><span class="p">(</span><span class="n">half_duration</span><span class="o">=</span><span class="n">MIN_PULSE</span><span class="p">,</span> <span class="n">dead</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># add continuous loop to prevent sequencer switch</span>
+        <span class="n">rows</span><span class="o">.</span><span class="n">add_seq_entry</span><span class="p">(</span><span class="n">count</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">rows</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_point</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<span class="k">def</span> <span class="nf">_get_blocks</span><span class="p">(</span><span class="n">context</span><span class="p">:</span> <span class="n">Context</span><span class="p">,</span> <span class="n">panda_mri</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Block</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Get panda, seqA, and seqB Blocks using the given context.&quot;&quot;&quot;</span>
+    <span class="c1"># {part_name: export_name}</span>
+    <span class="n">panda</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="n">panda_mri</span><span class="p">)</span>
+    <span class="n">seq_part_names</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">source</span><span class="p">,</span> <span class="n">export</span> <span class="ow">in</span> <span class="n">panda</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">rows</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">export</span> <span class="ow">in</span> <span class="n">SEQ_TABLES</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">source</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span>
+                <span class="s2">&quot;.table&quot;</span>
+            <span class="p">),</span> <span class="s2">&quot;Expected export </span><span class="si">%s</span><span class="s2"> to come from SEQx.table, got </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">export</span><span class="p">,</span> <span class="n">source</span><span class="p">)</span>
+            <span class="n">seq_part_names</span><span class="p">[</span><span class="n">source</span><span class="p">[:</span> <span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="s2">&quot;.table&quot;</span><span class="p">)]]</span> <span class="o">=</span> <span class="n">export</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="nb">tuple</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">seq_part_names</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span> <span class="o">==</span> <span class="n">SEQ_TABLES</span>
+    <span class="p">),</span> <span class="s2">&quot;Expected exported attributes </span><span class="si">%s</span><span class="s2">, got </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+        <span class="n">SEQ_TABLES</span><span class="p">,</span>
+        <span class="n">panda</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">export</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="c1"># {export_name: mri}</span>
+    <span class="n">seq_mris</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">mri</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">panda</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">rows</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">seq_part_names</span><span class="p">:</span>
+            <span class="n">export</span> <span class="o">=</span> <span class="n">seq_part_names</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+            <span class="n">seq_mris</span><span class="p">[</span><span class="n">export</span><span class="p">]</span> <span class="o">=</span> <span class="n">mri</span>
+    <span class="k">assert</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">seq_mris</span><span class="p">)</span> <span class="o">==</span> <span class="nb">sorted</span><span class="p">(</span>
+        <span class="n">seq_part_names</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+    <span class="p">),</span> <span class="s2">&quot;Couldn&#39;t find MRI for some of </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">seq_part_names</span><span class="o">.</span><span class="n">values</span><span class="p">(),)</span>
+    <span class="n">blocks</span> <span class="o">=</span> <span class="p">[</span><span class="n">panda</span><span class="p">]</span>
+    <span class="n">blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="n">seq_mris</span><span class="p">[</span><span class="n">x</span><span class="p">])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">SEQ_TABLES</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">blocks</span>
+
+
+<span class="k">def</span> <span class="nf">doing_pcomp</span><span class="p">(</span><span class="n">row_trigger_value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Indicate whether the row_trigger is for position compare.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">row_trigger_value</span> <span class="o">==</span> <span class="s2">&quot;Position Compare&quot;</span>
+
+
+<div class="viewcode-block" id="PandASeqTriggerPart"><a class="viewcode-back" href="../../../../../build/ADPandABlocks/parts_api.html#malcolm.modules.ADPandABlocks.parts.PandASeqTriggerPart">[docs]</a><span class="k">class</span> <span class="nc">PandASeqTriggerPart</span><span class="p">(</span><span class="n">builtin</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">ChildPart</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Part for operating a pair of Sequencer (SEQ) blocks in a PandA to do position</span>
+<span class="sd">    compare at the start of each row, and time based pulses within the row.</span>
+
+<span class="sd">    Needs the following exports:</span>
+
+<span class="sd">    - seqTableA: table Attribute of the first SEQ block</span>
+<span class="sd">    - seqTableB: table Attribute of the second SEQ block</span>
+<span class="sd">    - seqSetEnable: forceSet Method of an SRGATE that is used to gate both SEQs</span>
+<span class="sd">    - seqReset: forceRst Method of an SRGATE that is used to gate both SEQs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">APartName</span><span class="p">,</span> <span class="n">mri</span><span class="p">:</span> <span class="n">AMri</span><span class="p">,</span> <span class="n">initial_visibility</span><span class="p">:</span> <span class="n">AInitialVisibility</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">name</span><span class="p">,</span> <span class="n">mri</span><span class="p">,</span> <span class="n">initial_visibility</span><span class="o">=</span><span class="n">initial_visibility</span><span class="p">,</span> <span class="n">stateful</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="c1"># Stored generator for positions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AGenerator</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># The last index we have loaded</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loaded_up_to</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># The last scan point index of the current run</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scan_up_to</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># If we are currently loading then block loading more points</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loading</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1"># What is the mapping of scannable name to MotorInfo</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pmac</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">MotorInfo</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># The minimum turnaround time for non-joined points</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_turnaround</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MinTurnaround</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># {(scannable, increasing): trigger_enum}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trigger_enums</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># The panda Block we will be prodding</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">panda</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># The DoubleBuffer object used to load tables during a scan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_seq_table</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DoubleBuffer</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">registrar</span><span class="p">:</span> <span class="n">PartRegistrar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">registrar</span><span class="p">)</span>
+        <span class="c1"># Hooks</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ReportStatusHook</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_report_status</span><span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ConfigureHook</span><span class="p">,</span>
+                <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">SeekHook</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">on_configure</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">PreRunHook</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_pre_run</span><span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">RunHook</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_run</span><span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="n">builtin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ResetHook</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_reset</span><span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AbortHook</span><span class="p">,</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">PauseHook</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_abort</span>
+        <span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">PostRunArmedHook</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_inner_scan</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PandASeqTriggerPart.on_report_status"><a class="viewcode-back" href="../../../../../build/ADPandABlocks/parts_api.html#malcolm.modules.ADPandABlocks.parts.PandASeqTriggerPart.on_report_status">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_report_status</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">UInfos</span><span class="p">:</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+        <span class="c1"># Work out if we need the motor controller to send start of row triggers</span>
+        <span class="c1"># or no triggers</span>
+        <span class="k">if</span> <span class="n">doing_pcomp</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">rowTrigger</span><span class="o">.</span><span class="n">value</span><span class="p">):</span>
+            <span class="c1"># Doing position compare, don&#39;t need any triggers</span>
+            <span class="n">trigger</span> <span class="o">=</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">MotionTrigger</span><span class="o">.</span><span class="n">NONE</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Waiting for bit at the start of each row, so need this signal</span>
+            <span class="n">trigger</span> <span class="o">=</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">MotionTrigger</span><span class="o">.</span><span class="n">ROW_GATE</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">MotionTriggerInfo</span><span class="p">(</span><span class="n">trigger</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">info</span></div>
+
+<div class="viewcode-block" id="PandASeqTriggerPart.setup_pcomp_dicts"><a class="viewcode-back" href="../../../../../build/ADPandABlocks/parts_api.html#malcolm.modules.ADPandABlocks.parts.PandASeqTriggerPart.setup_pcomp_dicts">[docs]</a>    <span class="k">def</span> <span class="nf">setup_pcomp_dicts</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">seqa</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">seqb</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">axis_mapping</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pmac</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">MotorInfo</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Setup the axis mapping and trigger enum attributes for position compare.&quot;&quot;&quot;</span>
+        <span class="c1"># Check that both sequencers are pointing to the same encoders</span>
+        <span class="n">seq_pos</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">suff</span> <span class="ow">in</span> <span class="s2">&quot;abc&quot;</span><span class="p">:</span>
+            <span class="c1"># Something like INENC1.VAL or ZERO</span>
+            <span class="n">seqa_pos_inp</span> <span class="o">=</span> <span class="n">seqa</span><span class="p">[</span><span class="s2">&quot;pos&quot;</span> <span class="o">+</span> <span class="n">suff</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+            <span class="n">seqb_pos_inp</span> <span class="o">=</span> <span class="n">seqb</span><span class="p">[</span><span class="s2">&quot;pos&quot;</span> <span class="o">+</span> <span class="n">suff</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="n">seqa_pos_inp</span> <span class="o">==</span> <span class="n">seqb_pos_inp</span>
+            <span class="p">),</span> <span class="s2">&quot;SeqA Pos</span><span class="si">%s</span><span class="s2"> = </span><span class="si">%s</span><span class="s2"> != SeqB Pos</span><span class="si">%s</span><span class="s2"> = </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">suff</span><span class="p">,</span>
+                <span class="n">seqa_pos_inp</span><span class="p">,</span>
+                <span class="n">suff</span><span class="p">,</span>
+                <span class="n">seqb_pos_inp</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">seq_pos</span><span class="p">[</span><span class="n">seqa_pos_inp</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;POS</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">suff</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+
+        <span class="c1"># Fix the mres and offsets from the panda positions table</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda</span><span class="p">,</span> <span class="s2">&quot;No PandA&quot;</span>
+        <span class="n">positions_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">positions_table</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">pos</span> <span class="o">=</span> <span class="n">seq_pos</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="c1"># This is a position not connected to the seq, this is fine</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># This is a position that we can compare on, check its</span>
+                <span class="c1"># dataset name which is the scannable name</span>
+                <span class="n">scannable</span> <span class="o">=</span> <span class="n">positions_table</span><span class="o">.</span><span class="n">datasetName</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">info</span> <span class="o">=</span> <span class="n">axis_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">scannable</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">info</span><span class="p">:</span>
+                    <span class="c1"># We are asked to scan this, so correct its resolution</span>
+                    <span class="c1"># and store</span>
+                    <span class="n">info</span><span class="o">.</span><span class="n">resolution</span> <span class="o">=</span> <span class="n">positions_table</span><span class="o">.</span><span class="n">scale</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="n">info</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="n">positions_table</span><span class="o">.</span><span class="n">offset</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span><span class="p">[</span><span class="n">scannable</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">trigger_enums</span><span class="p">[(</span><span class="n">scannable</span><span class="p">,</span> <span class="kc">True</span><span class="p">)]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&gt;=POSITION&quot;</span> <span class="o">%</span> <span class="n">pos</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">trigger_enums</span><span class="p">[(</span><span class="n">scannable</span><span class="p">,</span> <span class="kc">False</span><span class="p">)]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&lt;=POSITION&quot;</span> <span class="o">%</span> <span class="n">pos</span>
+        <span class="c1"># Check we have at least one entry</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span><span class="p">,</span> <span class="p">(</span>
+            <span class="s2">&quot;None of the seq inputs </span><span class="si">%s</span><span class="s2"> can be mapped to scannable names &quot;</span>
+            <span class="s2">&quot;in </span><span class="si">%s</span><span class="s2">. Did you define datasetName entries for these rows in &quot;</span>
+            <span class="s2">&quot;the PandA positions table?&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">seq_pos</span><span class="p">),</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">axis_mapping</span><span class="p">))</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="PandASeqTriggerPart.reset_seq"><a class="viewcode-back" href="../../../../../build/ADPandABlocks/parts_api.html#malcolm.modules.ADPandABlocks.parts.PandASeqTriggerPart.reset_seq">[docs]</a>    <span class="k">def</span> <span class="nf">reset_seq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reset the PandA sequencer using the given context.</span>
+
+<span class="sd">        We need to use the correct context when calling this function, as it will</span>
+<span class="sd">        otherwise get blocked.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">panda</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">panda_mri</span><span class="p">)</span>
+        <span class="n">panda</span><span class="o">.</span><span class="n">seqReset</span><span class="p">()</span></div>
+
+    <span class="c1"># Allow CamelCase as these parameters will be serialized</span>
+    <span class="c1"># noinspection PyPep8Naming</span>
+<div class="viewcode-block" id="PandASeqTriggerPart.on_configure"><a class="viewcode-back" href="../../../../../build/ADPandABlocks/parts_api.html#malcolm.modules.ADPandABlocks.parts.PandASeqTriggerPart.on_configure">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_configure</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">,</span>
+        <span class="n">completed_steps</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ACompletedSteps</span><span class="p">,</span>
+        <span class="n">steps_to_do</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AStepsToDo</span><span class="p">,</span>
+        <span class="n">part_info</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">APartInfo</span><span class="p">,</span>
+        <span class="n">generator</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AGenerator</span><span class="p">,</span>
+        <span class="n">axesToMove</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AAxesToMove</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">unsubscribe_all</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">generator</span> <span class="o">=</span> <span class="n">generator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loaded_up_to</span> <span class="o">=</span> <span class="n">completed_steps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scan_up_to</span> <span class="o">=</span> <span class="n">completed_steps</span> <span class="o">+</span> <span class="n">steps_to_do</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loading</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># Get the panda and the pmac we will be using</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">panda_mri</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">panda</span><span class="o">.</span><span class="n">value</span>  <span class="c1"># Retain for use during reset / abort</span>
+
+        <span class="n">pmac_mri</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">pmac</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">row_trigger</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">rowTrigger</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="c1"># See if there is a minimum turnaround</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_turnaround</span> <span class="o">=</span> <span class="n">get_min_turnaround</span><span class="p">(</span><span class="n">part_info</span><span class="p">)</span>
+
+        <span class="c1"># Get panda Block, and the sequencer Blocks so we can do some checking</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">panda</span><span class="p">,</span> <span class="n">seqa</span><span class="p">,</span> <span class="n">seqb</span> <span class="o">=</span> <span class="n">_get_blocks</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda_mri</span><span class="p">)</span>
+
+        <span class="c1"># Fill in motor infos and trigger lookups</span>
+        <span class="n">motion_axes</span> <span class="o">=</span> <span class="n">pmac</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">get_motion_axes</span><span class="p">(</span><span class="n">generator</span><span class="p">,</span> <span class="n">axesToMove</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trigger_enums</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="n">motion_axes</span><span class="p">:</span>
+            <span class="c1"># Need to fill in the axis mapping</span>
+            <span class="n">axis_mapping</span> <span class="o">=</span> <span class="n">pmac</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">cs_axis_mapping</span><span class="p">(</span>
+                <span class="n">context</span><span class="p">,</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="n">pmac_mri</span><span class="p">)</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">motion_axes</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">doing_pcomp</span><span class="p">(</span><span class="n">row_trigger</span><span class="p">):</span>
+                <span class="c1"># We need to do position compare, so only place the infos into</span>
+                <span class="c1"># axis_mapping that our sequencer can see</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">setup_pcomp_dicts</span><span class="p">(</span><span class="n">seqa</span><span class="p">,</span> <span class="n">seqb</span><span class="p">,</span> <span class="n">axis_mapping</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># We rely on the inputs coming into SEQ bitA</span>
+                <span class="k">assert</span> <span class="p">(</span>
+                    <span class="n">seqa</span><span class="p">[</span><span class="s2">&quot;bita&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">seqb</span><span class="p">[</span><span class="s2">&quot;bita&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">!=</span> <span class="s2">&quot;ZERO&quot;</span>
+                <span class="p">),</span> <span class="s2">&quot;SEQ.bita inputs need to point to the same non-zero input&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span> <span class="o">=</span> <span class="n">axis_mapping</span>
+
+        <span class="c1"># TODO:</span>
+        <span class="c1"># Check that the sequencer blocks have the correct wiring, delays, and</span>
+        <span class="c1"># setup monitors on the active field</span>
+        <span class="k">assert</span> <span class="n">seqa</span>
+        <span class="k">assert</span> <span class="n">seqb</span>
+
+        <span class="n">seq_triggers</span> <span class="o">=</span> <span class="n">SeqTriggers</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trigger_enums</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">min_turnaround</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">rows_gen</span> <span class="o">=</span> <span class="n">seq_triggers</span><span class="o">.</span><span class="n">get_rows</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loaded_up_to</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan_up_to</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_seq_table</span> <span class="o">=</span> <span class="n">DoubleBuffer</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">seqa</span><span class="p">,</span> <span class="n">seqb</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_seq_table</span><span class="p">,</span> <span class="s2">&quot;No DoubleBuffer&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_seq_table</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">rows_gen</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PandASeqTriggerPart.on_pre_run"><a class="viewcode-back" href="../../../../../build/ADPandABlocks/parts_api.html#malcolm.modules.ADPandABlocks.parts.PandASeqTriggerPart.on_pre_run">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_pre_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda</span><span class="p">,</span> <span class="s2">&quot;No PandA&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_seq_table</span><span class="p">,</span> <span class="s2">&quot;No DoubleBuffer&quot;</span>
+        <span class="c1"># If there are MotorInfo&#39;s enable seqTableA here so ready to receive the</span>
+        <span class="c1"># first signal (once the motors have moved to the first point).</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">panda</span><span class="o">.</span><span class="n">seqSetEnable</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="PandASeqTriggerPart.on_run"><a class="viewcode-back" href="../../../../../build/ADPandABlocks/parts_api.html#malcolm.modules.ADPandABlocks.parts.PandASeqTriggerPart.on_run">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># When there are no MotorInfo&#39;s the first row will have Trigger.IMMEDIATE</span>
+        <span class="c1"># so don&#39;t enable seqTableA until running.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">panda</span><span class="o">.</span><span class="n">seqSetEnable</span><span class="p">()</span>
+        <span class="n">futures</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_seq_table</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">wait_all_futures</span><span class="p">(</span><span class="n">futures</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PandASeqTriggerPart.on_reset"><a class="viewcode-back" href="../../../../../build/ADPandABlocks/parts_api.html#malcolm.modules.ADPandABlocks.parts.PandASeqTriggerPart.on_reset">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">builtin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_reset</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_abort</span><span class="p">(</span><span class="n">context</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PandASeqTriggerPart.on_abort"><a class="viewcode-back" href="../../../../../build/ADPandABlocks/parts_api.html#malcolm.modules.ADPandABlocks.parts.PandASeqTriggerPart.on_abort">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_abort</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">builtin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reset_seq</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
+            <span class="c1"># Ensure we can reset or abort if different design is used for PandA</span>
+            <span class="k">pass</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_seq_table</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db_seq_table</span><span class="o">.</span><span class="n">clean_up</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="PandASeqTriggerPart.post_inner_scan"><a class="viewcode-back" href="../../../../../build/ADPandABlocks/parts_api.html#malcolm.modules.ADPandABlocks.parts.PandASeqTriggerPart.post_inner_scan">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">post_inner_scan</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">,</span>
+        <span class="n">completed_steps</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ACompletedSteps</span><span class="p">,</span>
+        <span class="n">steps_to_do</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AStepsToDo</span><span class="p">,</span>
+        <span class="n">part_info</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">APartInfo</span><span class="p">,</span>
+        <span class="n">generator</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AGenerator</span><span class="p">,</span>
+        <span class="n">axesToMove</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AAxesToMove</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_abort</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_configure</span><span class="p">(</span>
+            <span class="n">context</span><span class="p">,</span> <span class="n">completed_steps</span><span class="p">,</span> <span class="n">steps_to_do</span><span class="p">,</span> <span class="n">part_info</span><span class="p">,</span> <span class="n">generator</span><span class="p">,</span> <span class="n">axesToMove</span>
+        <span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

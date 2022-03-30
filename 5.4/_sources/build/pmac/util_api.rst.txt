@@ -1,0 +1,6 @@
+
+malcolm.modules.pmac.util
+=========================
+
+.. automodule:: malcolm.modules.pmac.util
+    :members:

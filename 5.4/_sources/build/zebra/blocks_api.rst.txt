@@ -1,0 +1,6 @@
+
+malcolm.modules.zebra.blocks
+============================
+
+.. automodule:: malcolm.modules.zebra.blocks
+    :members:

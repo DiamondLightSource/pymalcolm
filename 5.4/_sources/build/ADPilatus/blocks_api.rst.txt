@@ -1,0 +1,6 @@
+
+malcolm.modules.ADPilatus.blocks
+================================
+
+.. automodule:: malcolm.modules.ADPilatus.blocks
+    :members:

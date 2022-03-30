@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.modules.scanning.infos &mdash; malcolm 5.4 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                5.4
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>malcolm.modules.scanning.infos</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for malcolm.modules.scanning.infos</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="n">Info</span><span class="p">,</span> <span class="n">VMeta</span>
+
+
+<div class="viewcode-block" id="DatasetType"><a class="viewcode-back" href="../../../../reference/infos.html#malcolm.modules.scanning.infos.DatasetType">[docs]</a><span class="k">class</span> <span class="nc">DatasetType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;NeXus type of a produced dataset&quot;&quot;&quot;</span>
+
+    <span class="c1">#: Detector data, like the 2D data from an imaging detector</span>
+    <span class="n">PRIMARY</span> <span class="o">=</span> <span class="s2">&quot;primary&quot;</span>
+    <span class="c1">#: Calculated from detector data, like the sum of each frame</span>
+    <span class="n">SECONDARY</span> <span class="o">=</span> <span class="s2">&quot;secondary&quot;</span>
+    <span class="c1">#: Data that only makes sense when considered with detector data, like a</span>
+    <span class="c1">#: measure of beam current with an ion chamber</span>
+    <span class="n">MONITOR</span> <span class="o">=</span> <span class="s2">&quot;monitor&quot;</span>
+    <span class="c1">#: The demand positions of an axis as specified by the generator</span>
+    <span class="n">POSITION_SET</span> <span class="o">=</span> <span class="s2">&quot;position_set&quot;</span>
+    <span class="c1">#: The readback positions of an axis that moves during the scan</span>
+    <span class="n">POSITION_VALUE</span> <span class="o">=</span> <span class="s2">&quot;position_value&quot;</span>
+    <span class="c1">#: The minimum value of the readback position of an axis in each frame</span>
+    <span class="n">POSITION_MIN</span> <span class="o">=</span> <span class="s2">&quot;position_min&quot;</span>
+    <span class="c1">#: The maximum value of the readback position of an axis in each frame</span>
+    <span class="n">POSITION_MAX</span> <span class="o">=</span> <span class="s2">&quot;position_max&quot;</span></div>
+
+
+<div class="viewcode-block" id="ParameterTweakInfo"><a class="viewcode-back" href="../../../../reference/infos.html#malcolm.modules.scanning.infos.ParameterTweakInfo">[docs]</a><span class="k">class</span> <span class="nc">ParameterTweakInfo</span><span class="p">(</span><span class="n">Info</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Info about a configure() parameter that needs to be tweaked</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        parameter: Parameter name, e.g. &quot;generator&quot;</span>
+<span class="sd">        value: The value it should be changed to</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameter</span> <span class="o">=</span> <span class="n">parameter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="ConfigureParamsInfo"><a class="viewcode-back" href="../../../../tutorials/detector.html#malcolm.modules.scanning.infos.ConfigureParamsInfo">[docs]</a><span class="k">class</span> <span class="nc">ConfigureParamsInfo</span><span class="p">(</span><span class="n">Info</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Info about the parameters that should be passed to the Part in configure.</span>
+<span class="sd">    The Controller will validate these when Block.configure() is called, and</span>
+<span class="sd">    pass them to all Parts that have registered interest in them.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        metas: Metas for the extra parameters</span>
+<span class="sd">        required: List of required parameters</span>
+<span class="sd">        defaults: Default values for parameters</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">metas</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">VMeta</span><span class="p">],</span> <span class="n">required</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">defaults</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metas</span> <span class="o">=</span> <span class="n">metas</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">required</span> <span class="o">=</span> <span class="n">required</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">defaults</span> <span class="o">=</span> <span class="n">defaults</span></div>
+
+
+<div class="viewcode-block" id="RunProgressInfo"><a class="viewcode-back" href="../../../../reference/infos.html#malcolm.modules.scanning.infos.RunProgressInfo">[docs]</a><span class="k">class</span> <span class="nc">RunProgressInfo</span><span class="p">(</span><span class="n">Info</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Info about how far the current run has progressed</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        steps: The number of completed steps</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">steps</span> <span class="o">=</span> <span class="n">steps</span></div>
+
+
+<div class="viewcode-block" id="MinTurnaroundInfo"><a class="viewcode-back" href="../../../../reference/infos.html#malcolm.modules.scanning.infos.MinTurnaroundInfo">[docs]</a><span class="k">class</span> <span class="nc">MinTurnaroundInfo</span><span class="p">(</span><span class="n">Info</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Info about the minimum time gap that should be left between points</span>
+<span class="sd">    that are not joined together</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        gap: The minimum time gap in seconds</span>
+<span class="sd">        interval: the minimum interval between two turnaround points</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gap</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">interval</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gap</span> <span class="o">=</span> <span class="n">gap</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="n">interval</span></div>
+
+
+<div class="viewcode-block" id="DatasetProducedInfo"><a class="viewcode-back" href="../../../../tutorials/detector.html#malcolm.modules.scanning.infos.DatasetProducedInfo">[docs]</a><span class="k">class</span> <span class="nc">DatasetProducedInfo</span><span class="p">(</span><span class="n">Info</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Declare that we will write the following dataset to file</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        name: Dataset name</span>
+<span class="sd">        filename: Filename relative to the fileDir we were given</span>
+<span class="sd">        type: What NeXuS dataset type it produces</span>
+<span class="sd">        rank: The rank of the dataset including generator dims</span>
+<span class="sd">        path: The path of the dataset within the file</span>
+<span class="sd">        uniqueid: The path of the UniqueID dataset within the file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="nb">type</span><span class="p">:</span> <span class="n">DatasetType</span><span class="p">,</span>
+        <span class="n">rank</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">uniqueid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="nb">type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">=</span> <span class="n">rank</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uniqueid</span> <span class="o">=</span> <span class="n">uniqueid</span></div>
+
+
+<div class="viewcode-block" id="MotionTrigger"><a class="viewcode-back" href="../../../../reference/infos.html#malcolm.modules.scanning.infos.MotionTrigger">[docs]</a><span class="k">class</span> <span class="nc">MotionTrigger</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Request from a trigger source to the motion controller of what triggers</span>
+<span class="sd">    it needs&quot;&quot;&quot;</span>
+
+    <span class="n">NONE</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1">#: No Triggers required</span>
+    <span class="n">ROW_GATE</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1">#: Trigger that spans each continuous joined section</span>
+    <span class="n">EVERY_POINT</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1">#: One trigger for each point</span></div>
+
+
+<div class="viewcode-block" id="MotionTriggerInfo"><a class="viewcode-back" href="../../../../reference/infos.html#malcolm.modules.scanning.infos.MotionTriggerInfo">[docs]</a><span class="k">class</span> <span class="nc">MotionTriggerInfo</span><span class="p">(</span><span class="n">Info</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Declare that we need triggers of a certain sort from the motor controller</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        trigger: What type is required</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trigger</span><span class="p">:</span> <span class="n">MotionTrigger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trigger</span> <span class="o">=</span> <span class="n">trigger</span></div>
+
+
+<div class="viewcode-block" id="DetectorMutiframeInfo"><a class="viewcode-back" href="../../../../reference/infos.html#malcolm.modules.scanning.infos.DetectorMutiframeInfo">[docs]</a><span class="k">class</span> <span class="nc">DetectorMutiframeInfo</span><span class="p">(</span><span class="n">Info</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Declare that we are able to produce mutiple frames per point for this</span>
+<span class="sd">    detector</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mri: The mri of the detector in the DetectorTable</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mri</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mri</span> <span class="o">=</span> <span class="n">mri</span></div>
+
+
+<div class="viewcode-block" id="ExposureDeadtimeInfo"><a class="viewcode-back" href="../../../../reference/infos.html#malcolm.modules.scanning.infos.ExposureDeadtimeInfo">[docs]</a><span class="k">class</span> <span class="nc">ExposureDeadtimeInfo</span><span class="p">(</span><span class="n">Info</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Detector exposure time should be generator.duration - deadtime</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        readout_time: The per frame readout time of the detector</span>
+<span class="sd">        frequency_accuracy: The crystal accuracy in ppm</span>
+<span class="sd">        min_exposure: The minimum exposure time this detector supports</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">readout_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">frequency_accuracy</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">min_exposure</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readout_time</span> <span class="o">=</span> <span class="n">readout_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frequency_accuracy</span> <span class="o">=</span> <span class="n">frequency_accuracy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_exposure</span> <span class="o">=</span> <span class="n">min_exposure</span>
+
+<div class="viewcode-block" id="ExposureDeadtimeInfo.calculate_exposure"><a class="viewcode-back" href="../../../../reference/infos.html#malcolm.modules.scanning.infos.ExposureDeadtimeInfo.calculate_exposure">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_exposure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">exposure</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Calculate the exposure to set the detector to given the duration of</span>
+<span class="sd">        the frame and the readout_time and frequency_accuracy&quot;&quot;&quot;</span>
+        <span class="c1"># If duration and exposure time are zero, return the minimum exposure time</span>
+        <span class="k">if</span> <span class="n">exposure</span> <span class="o">==</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">duration</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_exposure</span>
+        <span class="n">max_exposure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_maximum_exposure</span><span class="p">(</span><span class="n">duration</span><span class="p">)</span>
+        <span class="c1"># If exposure time is 0, then use the max_exposure for this duration</span>
+        <span class="k">if</span> <span class="n">exposure</span> <span class="o">&lt;=</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">exposure</span> <span class="o">&gt;</span> <span class="n">max_exposure</span><span class="p">:</span>
+            <span class="n">exposure</span> <span class="o">=</span> <span class="n">max_exposure</span>
+        <span class="k">elif</span> <span class="n">exposure</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_exposure</span><span class="p">:</span>
+            <span class="n">exposure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_exposure</span>
+        <span class="k">return</span> <span class="n">exposure</span></div>
+
+<div class="viewcode-block" id="ExposureDeadtimeInfo.calculate_minimum_duration"><a class="viewcode-back" href="../../../../reference/infos.html#malcolm.modules.scanning.infos.ExposureDeadtimeInfo.calculate_minimum_duration">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_minimum_duration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposure</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Calculate the minimum frame duration required for the frame&quot;&quot;&quot;</span>
+        <span class="n">denominator</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency_accuracy</span> <span class="o">/</span> <span class="mf">1000000.0</span><span class="p">)</span>
+        <span class="n">min_duration</span> <span class="o">=</span> <span class="p">(</span><span class="n">exposure</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">readout_time</span><span class="p">)</span> <span class="o">/</span> <span class="n">denominator</span>
+        <span class="k">return</span> <span class="n">min_duration</span></div>
+
+<div class="viewcode-block" id="ExposureDeadtimeInfo.calculate_maximum_exposure"><a class="viewcode-back" href="../../../../reference/infos.html#malcolm.modules.scanning.infos.ExposureDeadtimeInfo.calculate_maximum_exposure">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_maximum_exposure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Calculate the maximum possible exposure based on a duration&quot;&quot;&quot;</span>
+        <span class="n">exposure</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">duration</span>
+            <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">readout_time</span>
+            <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency_accuracy</span> <span class="o">*</span> <span class="n">duration</span> <span class="o">/</span> <span class="mf">1000000.0</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">exposure</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_exposure</span><span class="p">:</span>
+            <span class="n">exposure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_exposure</span>
+        <span class="k">return</span> <span class="n">exposure</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

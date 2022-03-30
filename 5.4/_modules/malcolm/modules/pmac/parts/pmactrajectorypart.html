@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.modules.pmac.parts.pmactrajectorypart &mdash; malcolm 5.4 documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../../../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                5.4
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+      <li>malcolm.modules.pmac.parts.pmactrajectorypart</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for malcolm.modules.pmac.parts.pmactrajectorypart</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">Array</span><span class="p">,</span> <span class="n">add_call_types</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+    <span class="n">Display</span><span class="p">,</span>
+    <span class="n">IncompatibleError</span><span class="p">,</span>
+    <span class="n">NumberMeta</span><span class="p">,</span>
+    <span class="n">PartRegistrar</span><span class="p">,</span>
+    <span class="n">Widget</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules</span> <span class="kn">import</span> <span class="n">builtin</span>
+
+<span class="kn">from</span> <span class="nn">..util</span> <span class="kn">import</span> <span class="n">CS_AXIS_NAMES</span>
+
+<span class="c1"># recommended trajectory program number and lowest allowed program number</span>
+<span class="n">TRAJECTORY_PROGRAM_NUM</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">FALLBACK_TRAJ_PROGRAM_NUM</span> <span class="o">=</span> <span class="mi">2</span>
+
+<span class="c1"># The maximum number of points in a single trajectory scan</span>
+<span class="n">MAX_NUM_POINTS</span> <span class="o">=</span> <span class="mi">4000000</span>
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;The Asyn Port name of the Co-ordinate system port we want to scan&quot;</span><span class="p">):</span>
+    <span class="n">ACSPort</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;The relative time points to scan in microseconds&quot;</span><span class="p">):</span>
+    <span class="n">ATimeArray</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;The velocity mode of each point&quot;</span><span class="p">):</span>
+    <span class="n">AVelocityMode</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Which user program to run for each point&quot;</span><span class="p">):</span>
+    <span class="n">AUserPrograms</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;The position the axis should be at for each point in the scan&quot;</span><span class="p">):</span>
+    <span class="n">ADemandTrajectory</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]</span>
+
+<span class="c1"># Pull re-used annotypes into our namespace in case we are subclassed</span>
+<span class="n">APartName</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">APartName</span>
+<span class="n">AMri</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">AMri</span>
+
+
+<span class="k">def</span> <span class="nf">_zeros_or_right_length</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">num_points</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">array</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_points</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="p">)</span> <span class="o">==</span> <span class="n">num_points</span><span class="p">,</span> <span class="s2">&quot;Array </span><span class="si">%s</span><span class="s2"> should be </span><span class="si">%d</span><span class="s2"> points long&quot;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">array</span><span class="p">,</span>
+            <span class="n">num_points</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">array</span>
+
+
+<span class="c1"># We will set these attributes on the child block, so don&#39;t save them</span>
+<div class="viewcode-block" id="PmacTrajectoryPart"><a class="viewcode-back" href="../../../../../build/pmac/parts_api.html#malcolm.modules.pmac.parts.PmacTrajectoryPart">[docs]</a><span class="nd">@builtin</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">no_save</span><span class="p">(</span>
+    <span class="s2">&quot;numPoints&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;enableCallbacks&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;computeStatistics&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;timeArray&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;cs&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;velocityMode&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;userPrograms&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pointsToBuild&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nd">@builtin</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">no_save</span><span class="p">(</span><span class="s2">&quot;use</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">CS_AXIS_NAMES</span><span class="p">)</span>
+<span class="nd">@builtin</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">no_save</span><span class="p">(</span><span class="s2">&quot;positions</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">CS_AXIS_NAMES</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">PmacTrajectoryPart</span><span class="p">(</span><span class="n">builtin</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">ChildPart</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">APartName</span><span class="p">,</span>
+        <span class="n">mri</span><span class="p">:</span> <span class="n">AMri</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">mri</span><span class="p">,</span> <span class="n">initial_visibility</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># The total number of points we have written</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_points</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">points_scanned</span> <span class="o">=</span> <span class="n">NumberMeta</span><span class="p">(</span>
+            <span class="s2">&quot;int32&quot;</span><span class="p">,</span> <span class="s2">&quot;The number of points scanned&quot;</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">Widget</span><span class="o">.</span><span class="n">METER</span><span class="o">.</span><span class="n">tag</span><span class="p">()]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">registrar</span><span class="p">:</span> <span class="n">PartRegistrar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">registrar</span><span class="p">)</span>
+        <span class="c1"># Add methods</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">add_method_model</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_profile</span><span class="p">,</span> <span class="s2">&quot;writeProfile&quot;</span><span class="p">,</span> <span class="n">needs_context</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">add_method_model</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">execute_profile</span><span class="p">,</span> <span class="s2">&quot;executeProfile&quot;</span><span class="p">,</span> <span class="n">needs_context</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">add_method_model</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">abort_profile</span><span class="p">,</span> <span class="s2">&quot;abortProfile&quot;</span><span class="p">,</span> <span class="n">needs_context</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="c1"># Add Attributes</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span><span class="s2">&quot;pointsScanned&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">points_scanned</span><span class="p">)</span>
+
+    <span class="c1"># Serialized, so use camelCase</span>
+    <span class="c1"># noinspection PyPep8Naming</span>
+<div class="viewcode-block" id="PmacTrajectoryPart.write_profile"><a class="viewcode-back" href="../../../../../build/pmac/parts_api.html#malcolm.modules.pmac.parts.PmacTrajectoryPart.write_profile">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">write_profile</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="n">builtin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">,</span>
+        <span class="n">timeArray</span><span class="p">:</span> <span class="n">ATimeArray</span><span class="p">,</span>
+        <span class="n">csPort</span><span class="p">:</span> <span class="n">ACSPort</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">velocityMode</span><span class="p">:</span> <span class="n">AVelocityMode</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">userPrograms</span><span class="p">:</span> <span class="n">AUserPrograms</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">a</span><span class="p">:</span> <span class="n">ADemandTrajectory</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">b</span><span class="p">:</span> <span class="n">ADemandTrajectory</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">c</span><span class="p">:</span> <span class="n">ADemandTrajectory</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">u</span><span class="p">:</span> <span class="n">ADemandTrajectory</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">v</span><span class="p">:</span> <span class="n">ADemandTrajectory</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">w</span><span class="p">:</span> <span class="n">ADemandTrajectory</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">:</span> <span class="n">ADemandTrajectory</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">y</span><span class="p">:</span> <span class="n">ADemandTrajectory</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">z</span><span class="p">:</span> <span class="n">ADemandTrajectory</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+
+        <span class="c1"># make sure a matching trajectory program is installed on the pmac</span>
+        <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">trajectoryProgVersion</span><span class="o">.</span><span class="n">value</span> <span class="o">!=</span> <span class="n">TRAJECTORY_PROGRAM_NUM</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">trajectoryProgVersion</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;=</span> <span class="n">FALLBACK_TRAJ_PROGRAM_NUM</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;pmac trajectory program is version </span><span class="si">{</span><span class="n">FALLBACK_TRAJ_PROGRAM_NUM</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="s2">&quot; version </span><span class="si">{TRAJECTORY_PROGRAM_NUM}</span><span class="s2"> is recommended&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="p">(</span>
+                    <span class="n">IncompatibleError</span><span class="p">(</span>
+                        <span class="s2">&quot;pmac trajectory program </span><span class="si">{}</span><span class="s2"> detected. &quot;</span>
+                        <span class="s2">&quot;Malcolm requires </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="n">child</span><span class="o">.</span><span class="n">trajectoryProgVersion</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">TRAJECTORY_PROGRAM_NUM</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+
+        <span class="c1"># The axes taking part in the scan</span>
+        <span class="n">use_axes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">CS_AXIS_NAMES</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">locals</span><span class="p">()[</span><span class="n">axis</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">use_axes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">csPort</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># This is a build</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">buildProfile</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">total_points</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">child</span><span class="o">.</span><span class="n">numPoints</span><span class="o">.</span><span class="n">put_value</span><span class="p">(</span><span class="n">MAX_NUM_POINTS</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">child</span><span class="o">.</span><span class="n">cs</span><span class="o">.</span><span class="n">put_value</span><span class="p">(</span><span class="n">csPort</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Cannot set CS to </span><span class="si">%s</span><span class="s2">, did you use a compound_motor_block &quot;</span>
+                    <span class="s2">&quot;for a raw motor?</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">csPort</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="c1"># Tell the trajectory scans which of the arrays to use</span>
+            <span class="n">arrays</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;use</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">axis</span><span class="p">:</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">use_axes</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">CS_AXIS_NAMES</span><span class="p">}</span>
+            <span class="n">child</span><span class="o">.</span><span class="n">put_attribute_values</span><span class="p">(</span><span class="n">arrays</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># This is an append</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">appendProfile</span>
+
+        <span class="c1"># Fill in the arrays</span>
+        <span class="n">num_points</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">timeArray</span><span class="p">)</span>
+        <span class="n">attribute_values</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">timeArray</span><span class="o">=</span><span class="n">timeArray</span><span class="p">,</span>
+            <span class="n">pointsToBuild</span><span class="o">=</span><span class="n">num_points</span><span class="p">,</span>
+            <span class="n">velocityMode</span><span class="o">=</span><span class="n">_zeros_or_right_length</span><span class="p">(</span><span class="n">velocityMode</span><span class="p">,</span> <span class="n">num_points</span><span class="p">),</span>
+            <span class="n">userPrograms</span><span class="o">=</span><span class="n">_zeros_or_right_length</span><span class="p">(</span><span class="n">userPrograms</span><span class="p">,</span> <span class="n">num_points</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">use_axes</span><span class="p">:</span>
+            <span class="n">demand</span> <span class="o">=</span> <span class="nb">locals</span><span class="p">()[</span><span class="n">axis</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span>
+            <span class="n">attribute_values</span><span class="p">[</span><span class="s2">&quot;positions</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">axis</span><span class="p">]</span> <span class="o">=</span> <span class="n">demand</span>
+        <span class="n">child</span><span class="o">.</span><span class="n">put_attribute_values</span><span class="p">(</span><span class="n">attribute_values</span><span class="p">)</span>
+        <span class="c1"># Write the profile</span>
+        <span class="n">action</span><span class="p">()</span>
+        <span class="c1"># Record how many points we have now written in total</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_points</span> <span class="o">+=</span> <span class="n">num_points</span></div>
+
+    <span class="k">def</span> <span class="nf">set_scan_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">points_scanned</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">set_display</span><span class="p">(</span><span class="n">Display</span><span class="p">(</span><span class="n">limitHigh</span><span class="o">=</span><span class="n">value</span><span class="p">))</span>
+
+<div class="viewcode-block" id="PmacTrajectoryPart.execute_profile"><a class="viewcode-back" href="../../../../../build/pmac/parts_api.html#malcolm.modules.pmac.parts.PmacTrajectoryPart.execute_profile">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">execute_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">builtin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+        <span class="n">fs1</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span>
+            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">,</span> <span class="s2">&quot;pointsScanned&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">points_scanned</span><span class="o">.</span><span class="n">set_value</span>
+        <span class="p">)</span>
+        <span class="n">fs2</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span>
+            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">,</span> <span class="s2">&quot;pointsBuilt&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_scan_length</span>
+        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">child</span><span class="o">.</span><span class="n">executeProfile</span><span class="p">()</span>
+            <span class="c1"># Now wait for up to 2*min_delta time to make sure any</span>
+            <span class="c1"># update_completed_steps come in</span>
+            <span class="n">child</span><span class="o">.</span><span class="n">when_value_matches</span><span class="p">(</span>
+                <span class="s2">&quot;pointsScanned&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_points</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span>
+            <span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">context</span><span class="o">.</span><span class="n">unsubscribe</span><span class="p">(</span><span class="n">fs1</span><span class="p">)</span>
+            <span class="n">context</span><span class="o">.</span><span class="n">unsubscribe</span><span class="p">(</span><span class="n">fs2</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PmacTrajectoryPart.abort_profile"><a class="viewcode-back" href="../../../../../build/pmac/parts_api.html#malcolm.modules.pmac.parts.PmacTrajectoryPart.abort_profile">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">abort_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">builtin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+        <span class="n">child</span><span class="o">.</span><span class="n">abortProfile</span><span class="p">()</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

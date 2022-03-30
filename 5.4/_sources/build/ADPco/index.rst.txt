@@ -1,0 +1,11 @@
+
+ADPco
+=====
+
+.. module:: malcolm.modules.ADPco
+
+.. toctree::
+    :maxdepth: 1
+    :caption: malcolm.modules.ADPco
+
+    blocks <blocks_api.rst>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Overview: module code &mdash; malcolm 5.4 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../contents.html" class="icon icon-home"> malcolm
+            <img src="../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                5.4
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../contents.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Overview: module code</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>All modules for which code is available</h1>
+<ul><li><a href="cothread/cothread.html">cothread.cothread</a></li>
+<li><a href="malcolm/core/alarm.html">malcolm.core.alarm</a></li>
+<li><a href="malcolm/core/camel.html">malcolm.core.camel</a></li>
+<li><a href="malcolm/core/concurrency.html">malcolm.core.concurrency</a></li>
+<li><a href="malcolm/core/context.html">malcolm.core.context</a></li>
+<li><a href="malcolm/core/controller.html">malcolm.core.controller</a></li>
+<li><a href="malcolm/core/define.html">malcolm.core.define</a></li>
+<li><a href="malcolm/core/errors.html">malcolm.core.errors</a></li>
+<li><a href="malcolm/core/future.html">malcolm.core.future</a></li>
+<li><a href="malcolm/core/hook.html">malcolm.core.hook</a></li>
+<li><a href="malcolm/core/info.html">malcolm.core.info</a></li>
+<li><a href="malcolm/core/loggable.html">malcolm.core.loggable</a></li>
+<li><a href="malcolm/core/models.html">malcolm.core.models</a></li>
+<li><a href="malcolm/core/notifier.html">malcolm.core.notifier</a></li>
+<li><a href="malcolm/core/part.html">malcolm.core.part</a></li>
+<li><a href="malcolm/core/process.html">malcolm.core.process</a></li>
+<li><a href="malcolm/core/request.html">malcolm.core.request</a></li>
+<li><a href="malcolm/core/response.html">malcolm.core.response</a></li>
+<li><a href="malcolm/core/table.html">malcolm.core.table</a></li>
+<li><a href="malcolm/core/tags.html">malcolm.core.tags</a></li>
+<li><a href="malcolm/core/timestamp.html">malcolm.core.timestamp</a></li>
+<li><a href="malcolm/core/views.html">malcolm.core.views</a></li>
+<li><a href="malcolm/modules/ADAndor/parts/andordriverpart.html">malcolm.modules.ADAndor.parts.andordriverpart</a></li>
+<li><a href="malcolm/modules/ADCore/infos.html">malcolm.modules.ADCore.infos</a></li>
+<li><a href="malcolm/modules/ADCore/parts/detectordriverpart.html">malcolm.modules.ADCore.parts.detectordriverpart</a></li>
+<li><a href="malcolm/modules/ADCore/parts/filepathtranslatorpart.html">malcolm.modules.ADCore.parts.filepathtranslatorpart</a></li>
+<li><a href="malcolm/modules/ADCore/parts/hdfwriterpart.html">malcolm.modules.ADCore.parts.hdfwriterpart</a></li>
+<li><a href="malcolm/modules/ADCore/parts/positionlabellerpart.html">malcolm.modules.ADCore.parts.positionlabellerpart</a></li>
+<li><a href="malcolm/modules/ADCore/parts/statspluginpart.html">malcolm.modules.ADCore.parts.statspluginpart</a></li>
+<li><a href="malcolm/modules/ADCore/util.html">malcolm.modules.ADCore.util</a></li>
+<li><a href="malcolm/modules/ADEiger/parts/eigerdriverpart.html">malcolm.modules.ADEiger.parts.eigerdriverpart</a></li>
+<li><a href="malcolm/modules/ADEthercat/parts/ethercatdriverpart.html">malcolm.modules.ADEthercat.parts.ethercatdriverpart</a></li>
+<li><a href="malcolm/modules/ADOdin/parts/odinwriterpart.html">malcolm.modules.ADOdin.parts.odinwriterpart</a></li>
+<li><a href="malcolm/modules/ADPandABlocks/controllers/pandarunnablecontroller.html">malcolm.modules.ADPandABlocks.controllers.pandarunnablecontroller</a></li>
+<li><a href="malcolm/modules/ADPandABlocks/parts/kinematicssavupart.html">malcolm.modules.ADPandABlocks.parts.kinematicssavupart</a></li>
+<li><a href="malcolm/modules/ADPandABlocks/parts/pandapulsetriggerpart.html">malcolm.modules.ADPandABlocks.parts.pandapulsetriggerpart</a></li>
+<li><a href="malcolm/modules/ADPandABlocks/parts/pandaseqtriggerpart.html">malcolm.modules.ADPandABlocks.parts.pandaseqtriggerpart</a></li>
+<li><a href="malcolm/modules/ADPandABlocks/util.html">malcolm.modules.ADPandABlocks.util</a></li>
+<li><a href="malcolm/modules/ADTetrAMM/parts/tetrammdriverpart.html">malcolm.modules.ADTetrAMM.parts.tetrammdriverpart</a></li>
+<li><a href="malcolm/modules/adUtil/parts/reframepluginpart.html">malcolm.modules.adUtil.parts.reframepluginpart</a></li>
+<li><a href="malcolm/modules/asyn/parts/asynsourceportpart.html">malcolm.modules.asyn.parts.asynsourceportpart</a></li>
+<li><a href="malcolm/modules/builtin/controllers/basiccontroller.html">malcolm.modules.builtin.controllers.basiccontroller</a></li>
+<li><a href="malcolm/modules/builtin/controllers/clientcomms.html">malcolm.modules.builtin.controllers.clientcomms</a></li>
+<li><a href="malcolm/modules/builtin/controllers/managercontroller.html">malcolm.modules.builtin.controllers.managercontroller</a></li>
+<li><a href="malcolm/modules/builtin/controllers/proxycontroller.html">malcolm.modules.builtin.controllers.proxycontroller</a></li>
+<li><a href="malcolm/modules/builtin/controllers/servercomms.html">malcolm.modules.builtin.controllers.servercomms</a></li>
+<li><a href="malcolm/modules/builtin/controllers/statefulcontroller.html">malcolm.modules.builtin.controllers.statefulcontroller</a></li>
+<li><a href="malcolm/modules/builtin/defines.html">malcolm.modules.builtin.defines</a></li>
+<li><a href="malcolm/modules/builtin/hooks.html">malcolm.modules.builtin.hooks</a></li>
+<li><a href="malcolm/modules/builtin/infos.html">malcolm.modules.builtin.infos</a></li>
+<li><a href="malcolm/modules/builtin/parameters.html">malcolm.modules.builtin.parameters</a></li>
+<li><a href="malcolm/modules/builtin/parts/blockpart.html">malcolm.modules.builtin.parts.blockpart</a></li>
+<li><a href="malcolm/modules/builtin/parts/childpart.html">malcolm.modules.builtin.parts.childpart</a></li>
+<li><a href="malcolm/modules/builtin/parts/choicepart.html">malcolm.modules.builtin.parts.choicepart</a></li>
+<li><a href="malcolm/modules/builtin/parts/float64part.html">malcolm.modules.builtin.parts.float64part</a></li>
+<li><a href="malcolm/modules/builtin/parts/grouppart.html">malcolm.modules.builtin.parts.grouppart</a></li>
+<li><a href="malcolm/modules/builtin/parts/helppart.html">malcolm.modules.builtin.parts.helppart</a></li>
+<li><a href="malcolm/modules/builtin/parts/iconpart.html">malcolm.modules.builtin.parts.iconpart</a></li>
+<li><a href="malcolm/modules/builtin/parts/labelpart.html">malcolm.modules.builtin.parts.labelpart</a></li>
+<li><a href="malcolm/modules/builtin/parts/stringpart.html">malcolm.modules.builtin.parts.stringpart</a></li>
+<li><a href="malcolm/modules/builtin/util.html">malcolm.modules.builtin.util</a></li>
+<li><a href="malcolm/modules/ca/parts/caactionpart.html">malcolm.modules.ca.parts.caactionpart</a></li>
+<li><a href="malcolm/modules/ca/parts/cabooleanpart.html">malcolm.modules.ca.parts.cabooleanpart</a></li>
+<li><a href="malcolm/modules/ca/parts/cachararraypart.html">malcolm.modules.ca.parts.cachararraypart</a></li>
+<li><a href="malcolm/modules/ca/parts/cachoicepart.html">malcolm.modules.ca.parts.cachoicepart</a></li>
+<li><a href="malcolm/modules/ca/parts/cadoublearraypart.html">malcolm.modules.ca.parts.cadoublearraypart</a></li>
+<li><a href="malcolm/modules/ca/parts/cadoublepart.html">malcolm.modules.ca.parts.cadoublepart</a></li>
+<li><a href="malcolm/modules/ca/parts/calongarraypart.html">malcolm.modules.ca.parts.calongarraypart</a></li>
+<li><a href="malcolm/modules/ca/parts/calongpart.html">malcolm.modules.ca.parts.calongpart</a></li>
+<li><a href="malcolm/modules/ca/parts/castringpart.html">malcolm.modules.ca.parts.castringpart</a></li>
+<li><a href="malcolm/modules/ca/parts/cawaveformtablepart.html">malcolm.modules.ca.parts.cawaveformtablepart</a></li>
+<li><a href="malcolm/modules/ca/util.html">malcolm.modules.ca.util</a></li>
+<li><a href="malcolm/modules/demo/parts/countermovepart.html">malcolm.modules.demo.parts.countermovepart</a></li>
+<li><a href="malcolm/modules/demo/parts/counterpart.html">malcolm.modules.demo.parts.counterpart</a></li>
+<li><a href="malcolm/modules/demo/parts/filewritepart.html">malcolm.modules.demo.parts.filewritepart</a></li>
+<li><a href="malcolm/modules/demo/parts/hellopart.html">malcolm.modules.demo.parts.hellopart</a></li>
+<li><a href="malcolm/modules/demo/parts/motionchildpart.html">malcolm.modules.demo.parts.motionchildpart</a></li>
+<li><a href="malcolm/modules/demo/util.html">malcolm.modules.demo.util</a></li>
+<li><a href="malcolm/modules/pandablocks/controllers/pandablockcontroller.html">malcolm.modules.pandablocks.controllers.pandablockcontroller</a></li>
+<li><a href="malcolm/modules/pandablocks/controllers/pandamanagercontroller.html">malcolm.modules.pandablocks.controllers.pandamanagercontroller</a></li>
+<li><a href="malcolm/modules/pandablocks/util.html">malcolm.modules.pandablocks.util</a></li>
+<li><a href="malcolm/modules/pmac/infos.html">malcolm.modules.pmac.infos</a></li>
+<li><a href="malcolm/modules/pmac/parts/beamselectorpart.html">malcolm.modules.pmac.parts.beamselectorpart</a></li>
+<li><a href="malcolm/modules/pmac/parts/compoundmotorsinkportspart.html">malcolm.modules.pmac.parts.compoundmotorsinkportspart</a></li>
+<li><a href="malcolm/modules/pmac/parts/cspart.html">malcolm.modules.pmac.parts.cspart</a></li>
+<li><a href="malcolm/modules/pmac/parts/cssourceportspart.html">malcolm.modules.pmac.parts.cssourceportspart</a></li>
+<li><a href="malcolm/modules/pmac/parts/motorpremovepart.html">malcolm.modules.pmac.parts.motorpremovepart</a></li>
+<li><a href="malcolm/modules/pmac/parts/pmacchildpart.html">malcolm.modules.pmac.parts.pmacchildpart</a></li>
+<li><a href="malcolm/modules/pmac/parts/pmacstatuspart.html">malcolm.modules.pmac.parts.pmacstatuspart</a></li>
+<li><a href="malcolm/modules/pmac/parts/pmactrajectorypart.html">malcolm.modules.pmac.parts.pmactrajectorypart</a></li>
+<li><a href="malcolm/modules/pmac/parts/rawmotorsinkportspart.html">malcolm.modules.pmac.parts.rawmotorsinkportspart</a></li>
+<li><a href="malcolm/modules/pmac/util.html">malcolm.modules.pmac.util</a></li>
+<li><a href="malcolm/modules/profiling/parts/profilingviewerpart.html">malcolm.modules.profiling.parts.profilingviewerpart</a></li>
+<li><a href="malcolm/modules/pva/controllers/pvaclientcomms.html">malcolm.modules.pva.controllers.pvaclientcomms</a></li>
+<li><a href="malcolm/modules/pva/controllers/pvaservercomms.html">malcolm.modules.pva.controllers.pvaservercomms</a></li>
+<li><a href="malcolm/modules/scanning/controllers/runnablecontroller.html">malcolm.modules.scanning.controllers.runnablecontroller</a></li>
+<li><a href="malcolm/modules/scanning/hooks.html">malcolm.modules.scanning.hooks</a></li>
+<li><a href="malcolm/modules/scanning/infos.html">malcolm.modules.scanning.infos</a></li>
+<li><a href="malcolm/modules/scanning/parts/attributeprerunpart.html">malcolm.modules.scanning.parts.attributeprerunpart</a></li>
+<li><a href="malcolm/modules/scanning/parts/datasettablepart.html">malcolm.modules.scanning.parts.datasettablepart</a></li>
+<li><a href="malcolm/modules/scanning/parts/detectorchildpart.html">malcolm.modules.scanning.parts.detectorchildpart</a></li>
+<li><a href="malcolm/modules/scanning/parts/directorymonitorpart.html">malcolm.modules.scanning.parts.directorymonitorpart</a></li>
+<li><a href="malcolm/modules/scanning/parts/doubletriggerpart.html">malcolm.modules.scanning.parts.doubletriggerpart</a></li>
+<li><a href="malcolm/modules/scanning/parts/exposuredeadtimepart.html">malcolm.modules.scanning.parts.exposuredeadtimepart</a></li>
+<li><a href="malcolm/modules/scanning/parts/minturnaroundpart.html">malcolm.modules.scanning.parts.minturnaroundpart</a></li>
+<li><a href="malcolm/modules/scanning/parts/scanrunnerpart.html">malcolm.modules.scanning.parts.scanrunnerpart</a></li>
+<li><a href="malcolm/modules/scanning/parts/simultaneousaxespart.html">malcolm.modules.scanning.parts.simultaneousaxespart</a></li>
+<li><a href="malcolm/modules/scanning/parts/unrollingpart.html">malcolm.modules.scanning.parts.unrollingpart</a></li>
+<li><a href="malcolm/modules/scanning/util.html">malcolm.modules.scanning.util</a></li>
+<li><a href="malcolm/modules/system/controllers/ProcessController.html">malcolm.modules.system.controllers.ProcessController</a></li>
+<li><a href="malcolm/modules/system/defines.html">malcolm.modules.system.defines</a></li>
+<li><a href="malcolm/modules/system/parts/dirparsepart.html">malcolm.modules.system.parts.dirparsepart</a></li>
+<li><a href="malcolm/modules/system/parts/iociconpart.html">malcolm.modules.system.parts.iociconpart</a></li>
+<li><a href="malcolm/modules/web/controllers/httpservercomms.html">malcolm.modules.web.controllers.httpservercomms</a></li>
+<li><a href="malcolm/modules/web/controllers/websocketclientcomms.html">malcolm.modules.web.controllers.websocketclientcomms</a></li>
+<li><a href="malcolm/modules/web/hooks.html">malcolm.modules.web.hooks</a></li>
+<li><a href="malcolm/modules/web/infos.html">malcolm.modules.web.infos</a></li>
+<li><a href="malcolm/modules/web/parts/guiserverpart.html">malcolm.modules.web.parts.guiserverpart</a></li>
+<li><a href="malcolm/modules/web/parts/restfulserverpart.html">malcolm.modules.web.parts.restfulserverpart</a></li>
+<li><a href="malcolm/modules/web/parts/websocketserverpart.html">malcolm.modules.web.parts.websocketserverpart</a></li>
+<li><a href="malcolm/modules/web/util.html">malcolm.modules.web.util</a></li>
+<li><a href="malcolm/modules/xmap/parts/xmapdriverpart.html">malcolm.modules.xmap.parts.xmapdriverpart</a></li>
+<li><a href="malcolm/yamlutil.html">malcolm.yamlutil</a></li>
+</ul>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+
+malcolm.modules.web.hooks
+=========================
+
+.. automodule:: malcolm.modules.web.hooks
+    :members:

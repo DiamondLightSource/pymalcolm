@@ -1,0 +1,6 @@
+
+malcolm.modules.web.controllers
+===============================
+
+.. automodule:: malcolm.modules.web.controllers
+    :members:

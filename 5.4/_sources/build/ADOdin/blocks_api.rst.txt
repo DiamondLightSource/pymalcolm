@@ -1,0 +1,6 @@
+
+malcolm.modules.ADOdin.blocks
+=============================
+
+.. automodule:: malcolm.modules.ADOdin.blocks
+    :members:
