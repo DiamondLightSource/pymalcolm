@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.ADCore.parts.detectordriverpart &mdash; malcolm 5.2+62.g063ac2e3 documentation</title>
+  <title>malcolm.modules.ADCore.parts.detectordriverpart &mdash; malcolm 5.3+9.ga65b4b57 documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -31,7 +31,7 @@
             <img src="../../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.2
+                5.3
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -111,7 +111,6 @@
 <span class="kn">from</span> <span class="nn">xml.etree</span> <span class="kn">import</span> <span class="n">cElementTree</span> <span class="k">as</span> <span class="n">ET</span>
 
 <span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">Array</span><span class="p">,</span> <span class="n">add_call_types</span>
-<span class="kn">from</span> <span class="nn">packaging.version</span> <span class="kn">import</span> <span class="n">Version</span>
 <span class="kn">from</span> <span class="nn">scanpointgenerator</span> <span class="kn">import</span> <span class="n">CompoundGenerator</span>
 
 <span class="kn">from</span> <span class="nn">malcolm.compat</span> <span class="kn">import</span> <span class="n">et_to_string</span>
@@ -121,7 +120,6 @@
     <span class="n">BadValueError</span><span class="p">,</span>
     <span class="n">Context</span><span class="p">,</span>
     <span class="n">Future</span><span class="p">,</span>
-    <span class="n">IncompatibleError</span><span class="p">,</span>
     <span class="n">Info</span><span class="p">,</span>
     <span class="n">NumberMeta</span><span class="p">,</span>
     <span class="n">PartRegistrar</span><span class="p">,</span>
@@ -136,16 +134,16 @@
 <span class="kn">from</span> <span class="nn">..util</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">FRAME_TIMEOUT</span><span class="p">,</span>
     <span class="n">APartRunsOnWindows</span><span class="p">,</span>
+    <span class="n">AVersionRequirement</span><span class="p">,</span>
     <span class="n">DataType</span><span class="p">,</span>
     <span class="n">ExtraAttributesTable</span><span class="p">,</span>
     <span class="n">SourceType</span><span class="p">,</span>
+    <span class="n">check_driver_version</span><span class="p">,</span>
     <span class="n">make_xml_filename</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Minimum acquire period the detector is capable of&quot;</span><span class="p">):</span>
     <span class="n">AMinAcquirePeriod</span> <span class="o">=</span> <span class="nb">float</span>
-<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Minimum required version for compatibility&quot;</span><span class="p">):</span>
-    <span class="n">AVersionRequirement</span> <span class="o">=</span> <span class="nb">str</span>
 <span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Is main detector dataset useful to publish in DatasetTable?&quot;</span><span class="p">):</span>
     <span class="n">AMainDatasetUseful</span> <span class="o">=</span> <span class="nb">bool</span>
 <span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;List of trigger modes that do not use hardware triggers&quot;</span><span class="p">):</span>
@@ -371,10 +369,15 @@
 <div class="viewcode-block" id="DetectorDriverPart.on_validate"><a class="viewcode-back" href="../../../../../build/ADCore/parts_api.html#malcolm.modules.ADCore.parts.DetectorDriverPart.on_validate">[docs]</a>    <span class="nd">@add_call_types</span>
     <span class="k">def</span> <span class="nf">on_validate</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">,</span>
         <span class="n">generator</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AGenerator</span><span class="p">,</span>
         <span class="n">frames_per_step</span><span class="p">:</span> <span class="n">ADetectorFramesPerStep</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">UParameterTweakInfos</span><span class="p">:</span>
         <span class="c1"># Check if we have a minimum acquire period</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">required_version</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+            <span class="n">check_driver_version</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">driverVersion</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">required_version</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_acquire_period</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
             <span class="n">duration</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">duration</span>
             <span class="c1"># Check if we need to guess the generator duration</span>
@@ -432,23 +435,6 @@
             <span class="n">need_keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;exposure&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">need_keys</span>
 
-    <span class="k">def</span> <span class="nf">check_driver_version</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">required_version</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">required_version</span> <span class="o">=</span> <span class="n">Version</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">required_version</span><span class="p">)</span>
-            <span class="n">running_version</span> <span class="o">=</span> <span class="n">Version</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">driverVersion</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-            <span class="k">if</span> <span class="p">(</span>
-                <span class="n">required_version</span><span class="o">.</span><span class="n">major</span> <span class="o">!=</span> <span class="n">running_version</span><span class="o">.</span><span class="n">major</span>
-                <span class="ow">or</span> <span class="n">running_version</span><span class="o">.</span><span class="n">minor</span> <span class="o">&lt;</span> <span class="n">required_version</span><span class="o">.</span><span class="n">minor</span>
-            <span class="p">):</span>
-                <span class="k">raise</span> <span class="p">(</span>
-                    <span class="n">IncompatibleError</span><span class="p">(</span>
-                        <span class="s2">&quot;Detector driver v</span><span class="si">{}</span><span class="s2"> detected. &quot;</span>
-                        <span class="s2">&quot;Malcolm requires v</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                            <span class="n">child</span><span class="o">.</span><span class="n">driverVersion</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">required_version</span>
-                        <span class="p">)</span>
-                    <span class="p">)</span>
-                <span class="p">)</span>
-
     <span class="c1"># Allow CamelCase as fileDir parameter will be serialized</span>
     <span class="c1"># noinspection PyPep8Naming</span>
 <div class="viewcode-block" id="DetectorDriverPart.on_seek"><a class="viewcode-back" href="../../../../../build/ADCore/parts_api.html#malcolm.modules.ADCore.parts.DetectorDriverPart.on_seek">[docs]</a>    <span class="nd">@add_call_types</span>
@@ -505,7 +491,6 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">context</span><span class="o">.</span><span class="n">unsubscribe_all</span><span class="p">()</span>
         <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">check_driver_version</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
 
         <span class="c1"># Calculate how long to wait before marking this scan as stalled</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">frame_timeout</span> <span class="o">=</span> <span class="n">FRAME_TIMEOUT</span>
