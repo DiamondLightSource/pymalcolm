@@ -99,7 +99,7 @@ class SeqTriggers:
                 # The axis is stationary or going the wrong way at this
                 # point, so we should be blind before then
                 assert i < len(velocity_array) - 1, (
-                    "Last point of %s is wrong direction" % velocity_array
+                    f"Last point of {velocity_array} is wrong direction"
                 )
                 break
         blind = time_array[i]
@@ -270,14 +270,11 @@ def _get_blocks(context: Context, panda_mri: str) -> List[Block]:
         if export in SEQ_TABLES:
             assert source.endswith(
                 ".table"
-            ), "Expected export %s to come from SEQx.table, got %s" % (export, source)
+            ), f"Expected export {export} to come from SEQx.table, got {source}"
             seq_part_names[source[: -len(".table")]] = export
     assert (
         tuple(sorted(seq_part_names.values())) == SEQ_TABLES
-    ), "Expected exported attributes %s, got %s" % (
-        SEQ_TABLES,
-        panda.exports.value.export,
-    )
+    ), f"Expected exported attributes {SEQ_TABLES}, got {panda.exports.value.export}"
     # {export_name: mri}
     seq_mris = {}
     for name, mri, _, _, _ in panda.layout.value.rows():
@@ -286,7 +283,7 @@ def _get_blocks(context: Context, panda_mri: str) -> List[Block]:
             seq_mris[export] = mri
     assert sorted(seq_mris) == sorted(
         seq_part_names.values()
-    ), "Couldn't find MRI for some of %s" % (seq_part_names.values(),)
+    ), f"Couldn't find MRI for some of {seq_part_names.values()}"
     blocks = [panda]
     blocks += [context.block_view(seq_mris[x]) for x in SEQ_TABLES]
     return blocks
@@ -381,13 +378,8 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
             seqb_pos_inp = seqb["pos" + suff].value
             assert (
                 seqa_pos_inp == seqb_pos_inp
-            ), "SeqA Pos%s = %s != SeqB Pos%s = %s" % (
-                suff,
-                seqa_pos_inp,
-                suff,
-                seqb_pos_inp,
-            )
-            seq_pos[seqa_pos_inp] = "POS%s" % suff.upper()
+            ), f"SeqA Pos{suff} = {seqa_pos_inp} != SeqB Pos{suff} = {seqb_pos_inp}"
+            seq_pos[seqa_pos_inp] = f"POS{suff.upper()}"
 
         # Fix the mres and offsets from the panda positions table
         assert self.panda, "No PandA"
@@ -409,8 +401,8 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
                     info.resolution = positions_table.scale[i]
                     info.offset = positions_table.offset[i]
                     self.axis_mapping[scannable] = info
-                    self.trigger_enums[(scannable, True)] = "%s>=POSITION" % pos
-                    self.trigger_enums[(scannable, False)] = "%s<=POSITION" % pos
+                    self.trigger_enums[(scannable, True)] = f"{pos}>=POSITION"
+                    self.trigger_enums[(scannable, False)] = f"{pos}<=POSITION"
         # Check we have at least one entry
         assert self.axis_mapping, (
             "None of the seq inputs %s can be mapped to scannable names "

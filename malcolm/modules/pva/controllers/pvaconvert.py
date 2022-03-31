@@ -50,7 +50,7 @@ def convert_to_type_tuple_value(value: Any) -> Tuple[Any, Any]:
             spec = "a" + type_specifiers[value.typ]
             value_for_set = value.seq
     elif isinstance(value, np.ndarray):
-        assert len(value.shape) == 1, "Expected 1d array, got {}".format(value.shape)
+        assert len(value.shape) == 1, f"Expected 1d array, got {value.shape}"
         spec = "a" + type_specifiers[value.dtype.type]
         value_for_set = value
     elif isinstance(value, list):
@@ -123,7 +123,7 @@ def convert_dict_to_value(d: Dict) -> Value:
         try:
             typ = Type(fields, typeid)
         except RuntimeError as e:
-            raise RuntimeError("%s when doing Type(%s, %s)" % (e, fields, typeid))
+            raise RuntimeError(f"{e} when doing Type({fields}, {typeid})")
         val = Value(typ, value_for_set)
     return val
 

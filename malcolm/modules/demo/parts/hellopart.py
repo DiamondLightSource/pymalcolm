@@ -24,7 +24,7 @@ class HelloPart(Part):
         """Optionally sleep <sleep> seconds, then return a greeting to <name>"""
         print("Manufacturing greeting...")
         sleep_for(sleep)
-        greeting = "Hello %s" % name
+        greeting = f"Hello {name}"
         return greeting
 
     def error(self):

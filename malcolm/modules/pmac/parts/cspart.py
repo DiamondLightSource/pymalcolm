@@ -74,7 +74,7 @@ class CSPart(builtin.parts.ChildPart):
         for axis in CS_AXIS_NAMES:
             demand = locals()[axis.lower()]
             if demand is not None:
-                attribute_values["demand%s" % axis] = demand
+                attribute_values[f"demand{axis}"] = demand
         fs = child.put_attribute_values_async(attribute_values)
         # Wait for the demand to have been received by the PV
         for attr, value in sorted(attribute_values.items()):

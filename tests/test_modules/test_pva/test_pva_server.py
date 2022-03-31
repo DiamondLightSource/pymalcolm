@@ -162,7 +162,7 @@ counter_block_t = Type(
 counter_dict = {
     "meta": {
         "description": "Hardware Block simulating a single float64 counter",
-        "tags": ["version:pymalcolm:%s" % __version__],
+        "tags": [f"version:pymalcolm:{__version__}"],
         "writeable": True,
         "label": "TESTCOUNTER",
         "fields": ["health", "counter", "delta", "zero", "increment"],
@@ -387,7 +387,7 @@ hello_block_t = Type(
 hello_dict = {
     "meta": {
         "description": "Hardware Block with a greet() Method",
-        "tags": ["version:pymalcolm:%s" % __version__],
+        "tags": [f"version:pymalcolm:{__version__}"],
         "writeable": True,
         "label": "TESTHELLO",
         "fields": ["health", "greet", "error"],
@@ -469,7 +469,7 @@ class TestPVAServer(unittest.TestCase):
 
     def setUp(self):
         TestPVAServer.SEQ += 1
-        self.process = Process("proc%s" % TestPVAServer.SEQ)
+        self.process = Process(f"proc{TestPVAServer.SEQ}")
         self.hello = hello_block(mri="TESTHELLO")[-1]
         self.process.add_controller(self.hello)
         self.counter = counter_block(mri="TESTCOUNTER")[-1]

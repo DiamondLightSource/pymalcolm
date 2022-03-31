@@ -63,7 +63,7 @@ def make_meta(subtyp, description, tags, writeable=True, labels=None):
     elif subtyp == "lut":
         meta = StringMeta(description)
     else:
-        raise ValueError("Unknown subtype %r" % subtyp)
+        raise ValueError(f"Unknown subtype {subtyp!r}")
     meta.set_writeable(writeable)
     tags.append(meta.default_widget().tag())
     meta.set_tags(tags)
@@ -79,7 +79,7 @@ class PandABlockController(builtin.controllers.BasicController):
         block_data: ABlockData,
         doc_url_base: ADocUrlBase,
     ) -> None:
-        super().__init__(mri="%s:%s" % (mri_prefix, block_name))
+        super().__init__(mri=f"{mri_prefix}:{block_name}")
         # Store
         self.client = client
         self.mri_prefix = mri_prefix
@@ -147,7 +147,7 @@ class PandABlockController(builtin.controllers.BasicController):
         if len(split) == 2:
             block_name, field_name = split
             attr_name = snake_to_camel(field_name.replace(".", "_"))
-            block_mri = "%s:%s" % (self.mri_prefix, block_name)
+            block_mri = f"{self.mri_prefix}:{block_name}"
             tags.append(linked_value_tag(block_mri, attr_name))
         mux_meta.set_tags(tags)
 
@@ -166,10 +166,10 @@ class PandABlockController(builtin.controllers.BasicController):
         icon_part = icon_cls(self.client, self.block_name, svg_path)
         self.add_part(icon_part)
         label = self.block_data.description
-        metadata_field = "LABEL_%s" % self.block_name
+        metadata_field = f"LABEL_{self.block_name}"
         if block_number:
             # If we have multiple blocks, make the labels unique
-            label += " %s" % block_number
+            label += f" {block_number}"
         else:
             # If we only have one block, the metadata field still has numbers
             metadata_field += "1"
@@ -178,7 +178,7 @@ class PandABlockController(builtin.controllers.BasicController):
         self.field_parts["LABEL"] = label_part
         self.add_part(
             builtin.parts.HelpPart(
-                "%s/build/%s_doc.html" % (self.doc_url_base, block_type.lower())
+                f"{self.doc_url_base}/build/{block_type.lower()}_doc.html"
             )
         )
         return icon_part
@@ -215,7 +215,7 @@ class PandABlockController(builtin.controllers.BasicController):
             # Some attributes are handled by the top level busses table
             # so mark as present but ignored
             for suffix in ("CAPTURE", "UNITS", "SCALE", "OFFSET", "DATA_DELAY"):
-                self.field_parts["%s.%s" % (field_name, suffix)] = None
+                self.field_parts[f"{field_name}.{suffix}"] = None
         elif typ == "ext_out":
             if subtyp == "bits":
                 # Bits is handled by the top level table, so mark it as being
@@ -231,12 +231,12 @@ class PandABlockController(builtin.controllers.BasicController):
         elif typ == "table":
             self._make_table(field_name, field_data)
         else:
-            raise ValueError("Unknown type %r subtype %r" % (typ, subtyp))
+            raise ValueError(f"Unknown type {typ!r} subtype {subtyp!r}")
 
     def _make_group(self, attr_name: str) -> str:
         if attr_name not in self.parts:
             self.add_part(
-                builtin.parts.GroupPart(attr_name, "All %s attributes" % attr_name)
+                builtin.parts.GroupPart(attr_name, f"All {attr_name} attributes")
             )
         group = group_tag(attr_name)
         return group
@@ -308,7 +308,7 @@ class PandABlockController(builtin.controllers.BasicController):
             port_type = Port.BOOL
         else:
             port_type = Port.INT32
-        flow_tag = port_type.source_port_tag("%s.%s" % (self.block_name, field_name))
+        flow_tag = port_type.source_port_tag(f"{self.block_name}.{field_name}")
         meta = make_meta(
             typ, field_data.description, tags=[group, flow_tag], writeable=False
         )
@@ -317,7 +317,7 @@ class PandABlockController(builtin.controllers.BasicController):
     def _make_ext_capture(self, field_name: str, field_data: FieldData) -> None:
         group = self._make_group("outputs")
         meta = ChoiceMeta(
-            "Capture %s in PCAP?" % field_name,
+            f"Capture {field_name} in PCAP?",
             field_data.labels,
             tags=[group, Widget.COMBO.tag()],
         )

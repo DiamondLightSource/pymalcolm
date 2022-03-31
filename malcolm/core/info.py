@@ -17,7 +17,7 @@ class Info:
     def __repr__(self):
         spec = inspect.getfullargspec(self.__init__)
         args = ", ".join(repr(getattr(self, x)) for x in spec.args[1:])
-        return "%s(%s)" % (self.__class__.__name__, args)
+        return f"{self.__class__.__name__}({args})"
 
     @classmethod
     def filter_parts(cls: Type[T], part_info: PartInfo) -> Dict[str, List[T]]:

@@ -54,7 +54,7 @@ class StatsPluginPart(builtin.parts.ChildPart):
         ]
 
     def statistic_attr(self) -> str:
-        return "STATS_%s" % self.statistic.value
+        return f"STATS_{self.statistic.value}"
 
     def _make_attributes_xml(self):
         # Make a root element with an NXEntry
@@ -65,7 +65,7 @@ class StatsPluginPart(builtin.parts.ChildPart):
             addr="0",
             datatype="DOUBLE",
             type="PARAM",
-            description="%s of the array" % self.statistic.name.title(),
+            description=f"{self.statistic.name.title()} of the array",
             name=self.statistic_attr(),
             source=self.statistic.value,
         )

@@ -193,7 +193,7 @@ def no_save(*attribute_names):
             else:
                 additions.add(attribute_name)
         bad = [x for x in additions if not isinstance(x, str)]
-        assert not bad, "Cannot add non-string attribute names to no_save: %s" % bad
+        assert not bad, f"Cannot add non-string attribute names to no_save: {bad}"
         existing = cls.no_save_attribute_names or set()
         cls.no_save_attribute_names = existing | additions
         return cls
@@ -212,10 +212,10 @@ class SVGIcon:
     def find_parent_child(self, id):
         child = None
         # Find the first parent which has a child with id i
-        parent = self.root.find(".//*[@id=%r]/.." % id)
+        parent = self.root.find(f".//*[@id={id!r}]/..")
         # Find the child and remove it
         if parent:
-            child = parent.find("./*[@id=%r]" % id)
+            child = parent.find(f"./*[@id={id!r}]")
         return parent, child
 
     def remove_elements(self, ids: Iterable[str]) -> None:

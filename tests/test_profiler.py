@@ -33,7 +33,7 @@ class ProfilerTest(unittest.TestCase):
             self.assertTrue(stack in counts)
             ratio = float(counts[stack]) / float(count)
             output.append(
-                "%s: expected %s, got %s (%s)" % (stack, count, counts[stack], ratio)
+                f"{stack}: expected {count}, got {counts[stack]} ({ratio})"
             )
             if not (0.70 <= ratio <= 1.25):
                 failed = True
@@ -41,7 +41,7 @@ class ProfilerTest(unittest.TestCase):
             for line in output:
                 logging.warning(line)
             for key in set(counts.keys()) - set(expected.keys()):
-                logging.warning("unexpected key: %s: got %s" % (key, counts[key]))
+                logging.warning(f"unexpected key: {key}: got {counts[key]}")
             self.fail("collected data did not meet expectations")
 
     def test_collector(self):

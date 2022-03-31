@@ -158,7 +158,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
                 self.q_value_mapping[q_value] = mapping.scannable
 
         assert "." in self.nxs_full_filename, (
-            "File extension for %r should be supplied" % self.nxs_full_filename
+            f"File extension for {self.nxs_full_filename!r} should be supplied"
         )
 
         self.pos_table = context.block_view(self.panda_mri).positions.value
@@ -188,7 +188,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
                         self.use_min_max = False
 
             # Check there was a dataset for the axis
-            assert dataset_i, "No value dataset for %s" % scannable
+            assert dataset_i, f"No value dataset for {scannable}"
 
         if self.use_min_max:
             dtypes["min"] = scanning.infos.DatasetType.POSITION_MIN
@@ -223,7 +223,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
                     elif info.type == scanning.infos.DatasetType.POSITION_VALUE:
                         value_i = info
             # Always make sure .value is there
-            assert value_i, "No value dataset for %s" % scannable
+            assert value_i, f"No value dataset for {scannable}"
             self.p_vars.append(
                 PVar(
                     path=value_i.path,
@@ -295,7 +295,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
                         self.savu_variables[split_var[0]] = split_var[1]
         except IndexError:
             raise ValueError(
-                "Error getting kinematic input variables from %s" % raw_input_vars
+                f"Error getting kinematic input variables from {raw_input_vars}"
             )
 
     def create_files(self):
@@ -385,7 +385,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
                     layout = h5py.VirtualLayout(shape=self.shape, dtype=np.float64)
                     v_source = h5py.VirtualSource(
                         self.savu_full_filename,
-                        "/entry/final_result_q%s/data" % datatype,
+                        f"/entry/final_result_q{datatype}/data",
                         shape=virtual_shape,
                     )
                     layout[:] = v_source[i]
@@ -408,7 +408,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
             for dim in self.generator.dimensions:
                 for axis in dim.axes:
                     f.create_dataset(
-                        name="/entry/%s_set/%s.value_set" % (axis, axis),
+                        name=f"/entry/{axis}_set/{axis}.value_set",
                         dtype=np.float64,
                         data=[p for p in dim.get_positions(axis)],
                     )

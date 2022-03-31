@@ -24,14 +24,14 @@ def _calc_visibility(
         if (5 - i) > nargs:
             # invisible
             invis.add(inp)
-            invis.add("not%s" % inp)
-            invis.add("edge%s" % inp)
+            invis.add(f"not{inp}")
+            invis.add(f"edge{inp}")
         else:
             # visible
             if negations[i] == "1":
                 args.append(~LUT_CONSTANTS[inp] & (2 ** 32 - 1))
             else:
-                invis.add("not%s" % inp)
+                invis.add(f"not{inp}")
                 args.append(LUT_CONSTANTS[inp])
 
     # Insert into table
@@ -59,13 +59,13 @@ def _generate_lut_elements() -> Dict[int, Set[str]]:
         for inp in "ABCDE":
             if inp != ninp:
                 invis.add(inp)
-                invis.add("edge%s" % inp)
-            invis.add("not%s" % inp)
+                invis.add(f"edge{inp}")
+            invis.add(f"not{inp}")
         lut_elements[~LUT_CONSTANTS[ninp] & (2 ** 32 - 1)] = invis
     # And catchall for LUT in 0
     invis = {"AND", "OR", "NOT"}
     for inp in "ABCDE":
-        invis.add("not%s" % inp)
+        invis.add(f"not{inp}")
     lut_elements[0] = invis
     return lut_elements
 

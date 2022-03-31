@@ -131,7 +131,7 @@ class TestBlockHandler(unittest.TestCase):
         put_instance_mock.set_callback.assert_called_once()
 
         self.op_mock.done.assert_called_once_with(
-            error="str: {msg}".format(msg=error_message)
+            error=f"str: {error_message}"
         )
 
 
@@ -153,7 +153,7 @@ class TestPvaServerComms(unittest.TestCase):
         self.assertEqual(
             True,
             self.pva_server_comms.testChannel(
-                "{channel}.{field}".format(channel=channel_name, field=field)
+                f"{channel_name}.{field}"
             ),
         )
 
@@ -169,7 +169,7 @@ class TestPvaServerComms(unittest.TestCase):
         self.assertEqual(
             False,
             self.pva_server_comms.testChannel(
-                "{channel}.{field}".format(channel=channel_name, field=field)
+                f"{channel_name}.{field}"
             ),
         )
 

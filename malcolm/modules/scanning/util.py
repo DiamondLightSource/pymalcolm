@@ -84,7 +84,7 @@ class PointGeneratorMeta(VMeta):
         elif isinstance(value, dict):
             return CompoundGenerator.from_dict(value)
         else:
-            raise TypeError("Value %s must be a Generator object or dictionary" % value)
+            raise TypeError(f"Value {value} must be a Generator object or dictionary")
 
 
 with Anno("Dataset names"):

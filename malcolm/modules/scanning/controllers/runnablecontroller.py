@@ -248,7 +248,7 @@ class RunnableController(builtin.controllers.ManagerController):
                 break
             # Consume the axes that this generator scans
             for axis in dim.axes:
-                assert axis in axes_set, "Axis %s is not in %s" % (axis, axes_to_move)
+                assert axis in axes_set, f"Axis {axis} is not in {axes_to_move}"
                 axes_set.remove(axis)
             # Now multiply by the dimensions to get the number of steps
             steps[0] *= dim.size

@@ -223,7 +223,7 @@ class Process(Loggable):
         """
         for controller in controllers:
             assert controller.mri not in self._controllers, (
-                "Controller already exists for %s" % controller.mri
+                f"Controller already exists for {controller.mri}"
             )
             self._controllers[controller.mri] = controller
             controller.setup(self)
@@ -251,7 +251,7 @@ class Process(Loggable):
         try:
             return self._controllers[mri]
         except KeyError:
-            raise ValueError("No controller registered for mri '%s'" % mri)
+            raise ValueError(f"No controller registered for mri '{mri}'")
 
     def block_view(self, mri: str) -> Any:
         """Get a Block view from a Controller with given mri"""

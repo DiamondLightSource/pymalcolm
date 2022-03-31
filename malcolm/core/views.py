@@ -37,7 +37,7 @@ class View:
             return KeyError(item)
 
     def __setattr__(self, name, value):
-        raise NameError("Cannot set attribute %s on view" % name)
+        raise NameError(f"Cannot set attribute {name} on view")
 
 
 def _make_get_property(cls, endpoint):
@@ -98,7 +98,7 @@ class Attribute(View):
         return self._context.make_view(self._controller, self._data, "timeStamp")
 
     def __repr__(self):
-        return "<%s value=%r>" % (self.__class__.__name__, self.value)
+        return f"<{self.__class__.__name__} value={self.value!r}>"
 
 
 class Method(View):
@@ -163,7 +163,7 @@ class Block(View):
             child: Method = getattr(self, endpoint)
             return child.post_async(*args, **kwargs)
 
-        object.__setattr__(self, "%s_async" % endpoint, post_async)
+        object.__setattr__(self, f"{endpoint}_async", post_async)
 
     def put_attribute_values_async(self, params):
         futures = []
@@ -174,7 +174,7 @@ class Block(View):
             # Assume we are already ordered
             items = params.items()
         for attr, value in items:
-            assert hasattr(self, attr), "Block does not have attribute %s" % attr
+            assert hasattr(self, attr), f"Block does not have attribute {attr}"
             future = self._context.put_async(self._data.path + [attr, "value"], value)
             futures.append(future)
         return futures

@@ -145,8 +145,8 @@ class TestOdinWriterPart(ChildTestCase):
             value = i + 1
             f_num = i % 4 + 1
             idx = int(i / 4)
-            name = "/data/odin123_raw_data_{:06d}.h5".format(f_num)
-            print("updating index {} in file {} with value {}".format(idx, name, value))
+            name = f"/data/odin123_raw_data_{f_num:06d}.h5"
+            print(f"updating index {idx} in file {name} with value {value}")
             raw = h5py.File(name, "r+", libver="latest")
 
             # set values in the data

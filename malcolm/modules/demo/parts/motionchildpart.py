@@ -115,5 +115,5 @@ class MotionChildPart(builtin.parts.ChildPart):
             self.registrar.report(scanning.infos.RunProgressInfo(i + 1))
             # If this is the exception step then blow up
             assert i + 1 != self._exception_step, (
-                "Raising exception at step %s" % self._exception_step
+                f"Raising exception at step {self._exception_step}"
             )

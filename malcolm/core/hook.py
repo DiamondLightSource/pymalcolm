@@ -137,7 +137,7 @@ class Hook(Generic[T], WithCallTypes):
         demanded = args_gen(supplied)
         assert set(supplied).issuperset(
             demanded
-        ), "Hook demanded arguments %s, but only supplied %s" % (demanded, supplied)
+        ), f"Hook demanded arguments {demanded}, but only supplied {supplied}"
         kwargs = {k: self._kwargs[k] for k in demanded}
         assert self._spawn, "No spawned function"
         self.spawned = self._spawn(self._run, func, kwargs)
@@ -160,12 +160,12 @@ class Hook(Generic[T], WithCallTypes):
 
     def stop(self) -> None:
         """Override this if we can stop"""
-        raise RuntimeError("%s cannot be stopped" % self.name)
+        raise RuntimeError(f"{self.name} cannot be stopped")
 
     def validate_return(self, ret: T) -> Any:
         """Override this if the function is expected to return something to
         to validate its value"""
-        assert not ret, "Expected no return, got %s" % (ret,)
+        assert not ret, f"Expected no return, got {ret}"
         return None
 
 

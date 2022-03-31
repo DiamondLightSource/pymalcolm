@@ -174,7 +174,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
                 return child.validate(**params)
             except Exception as e:
                 raise BadValueError(
-                    "Validate of %s failed: %s" % (self.mri, stringify_error(e))
+                    f"Validate of {self.mri} failed: {stringify_error(e)}"
                 )
 
         # Check something else is multiplying out triggers
@@ -192,7 +192,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
                 )
             # Check that if we are told to set exposure that we take it
             if "exposure" in kwargs and not multiframe and not takes_exposure:
-                raise BadValueError("Detector %s doesn't take exposure" % self.name)
+                raise BadValueError(f"Detector {self.name} doesn't take exposure")
             # If asked to guess frames per step, do so
             if frames_per_step < 1:
                 if kwargs.get("exposure", 0) == 0:
@@ -265,11 +265,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
         for enable, name, mri, exposure, frames in detectors.rows():
             if name == self.name and enable:
                 # Found a row saying to take part
-                assert mri == self.mri, "%s has mri %s, passed %s" % (
-                    name,
-                    self.mri,
-                    mri,
-                )
+                assert mri == self.mri, f"{name} has mri {self.mri}, passed {mri}"
                 break
         else:
             # Didn't find a row or no frames, don't take part
@@ -328,7 +324,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
             return None
         else:
             assert self.frames_per_step > 0, (
-                "Zero frames per step for %s, this shouldn't happen" % self.name
+                f"Zero frames per step for {self.name}, this shouldn't happen"
             )
         child = context.block_view(self.mri)
         if (

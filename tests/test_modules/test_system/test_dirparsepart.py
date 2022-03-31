@@ -11,7 +11,7 @@ from malcolm.modules.system.parts import DirParsePart
 
 deps = ["TEST=/a/test\n", "DEP1=$(TEST)/some/dependency\n"]
 
-now = "%s" % time.time()
+now = f"{time.time()}"
 
 
 class MockPv(str):
@@ -25,7 +25,7 @@ class ManyAlarms:
 
     def __next__(self):
         self.i += 1
-        return Alarm(message="Alarm #%s" % self.i)
+        return Alarm(message=f"Alarm #{self.i}")
 
 
 def reset_alarms(mock):
@@ -46,7 +46,7 @@ class TestDirParsePart(unittest.TestCase):
         self.p = Process("process1")
         self.context = Context(self.p)
         self.c1 = RunnableController(mri="SYS", config_dir="/tmp", use_git=False)
-        self.tmp_dir = "/tmp/%s-%s" % (now, os.getpid())
+        self.tmp_dir = f"/tmp/{now}-{os.getpid()}"
         os.mkdir(self.tmp_dir)
         os.mkdir(self.tmp_dir + "/configure")
 

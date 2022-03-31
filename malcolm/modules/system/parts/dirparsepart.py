@@ -171,7 +171,7 @@ class DirParsePart(Part):
                 dependency_table["path"] = []
                 for k1, v1 in dependencies.items():
                     for k2, v2 in dependencies.items():
-                        dependencies[k2] = v2.replace("$(%s)" % k1, v1)
+                        dependencies[k2] = v2.replace(f"$({k1})", v1)
 
                 for k1, v1 in dependencies.items():
                     dependency_table["module"] += [k1]

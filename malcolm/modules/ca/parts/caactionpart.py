@@ -84,7 +84,7 @@ class CAActionPart(Part):
         try:
             for v in ca_values:
                 if not isinstance(v, util.catools.ca_nothing):
-                    assert v.ok, "CA connect failed with %s" % v.state_strings[v.state]
+                    assert v.ok, f"CA connect failed with {v.state_strings[v.state]}"
                 else:
                     raise AssertionError("CA connect failed")
         except AssertionError as e:

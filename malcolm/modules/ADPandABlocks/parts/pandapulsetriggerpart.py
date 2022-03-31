@@ -44,7 +44,7 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
             name, mri, initial_visibility=initial_visibility, stateful=False
         )
         assert CAMEL_RE.match(name), (
-            "PandAPulseTriggerPart name %r should be camelCase" % name
+            f"PandAPulseTriggerPart name {name!r} should be camelCase"
         )
         # The stored generator duration and detector framesPerStep from
         # configure
@@ -123,15 +123,14 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
                 if enable:
                     assert (
                         frames_per_step > 0
-                    ), "Zero frames per step for %s, how did this happen?" % (mri)
+                    ), f"Zero frames per step for {mri}, how did this happen?"
                     self.frames_per_step = frames_per_step
                 else:
                     self.frames_per_step = 0
                 break
         else:
             raise BadValueError(
-                "Detector table %s doesn't contain row for %s"
-                % (detectors, detector_mri)
+                f"Detector table {detectors} doesn't contain row for {detector_mri}"
             )
 
         # Check that the Attributes we expect are exported
@@ -144,7 +143,7 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
                 part_name = source.split(".")[0]
                 if pulse_name:
                     assert part_name == pulse_name, (
-                        "Export %s defined for a different pulse block" % export
+                        f"Export {export} defined for a different pulse block"
                     )
                 else:
                     pulse_name = part_name
@@ -160,7 +159,7 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
         for name, mri, _, _, _ in self.panda.layout.value.rows():
             if name == pulse_name:
                 pulse_mri = mri
-        assert pulse_mri, "Can't find mri for pulse block %r" % pulse_name
+        assert pulse_mri, f"Can't find mri for pulse block {pulse_name!r}"
 
         # Check that the Attributes have the right units for all except Pulses
         pulse_block = context.block_view(pulse_mri)
@@ -181,10 +180,7 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
             detector_state = self.detector.state.value
             assert (
                 detector_state == "Armed"
-            ), "Expected %s to be Armed, but it is %s" % (
-                self.detector.mri,
-                detector_state,
-            )
+            ), f"Expected {self.detector.mri} to be Armed, but it is {detector_state}"
             # We are taking part, so calculate pulse values
             step = float(self.generator_duration) / self.frames_per_step
             try:
@@ -192,7 +188,7 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
             except KeyError:
                 # No exposure, so assume a very tiny readout time
                 width = step - 1e-6
-            assert width < step, "Width %s is not less than Step %s" % (width, step)
+            assert width < step, f"Width {width} is not less than Step {step}"
             # Calculate delay of pulse
             if self.zero_delay:
                 delay = 0.0

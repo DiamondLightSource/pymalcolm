@@ -7,7 +7,7 @@ from .. import __version__
 
 def version_tag():
     """Tag with the current version of pymalcolm"""
-    return "version:pymalcolm:%s" % __version__
+    return f"version:pymalcolm:{__version__}"
 
 
 class Widget(Enum):
@@ -37,7 +37,7 @@ class Widget(Enum):
             Widget.LED.tag() -> "widget:led"
         """
         assert self != Widget.NONE, "Widget.NONE has no widget tag"
-        return "widget:%s" % self.value
+        return f"widget:{self.value}"
 
 
 port_tag_re = re.compile(r"(source|sink)Port:(.*):(.*)")
@@ -60,7 +60,7 @@ class Port(Enum):
             disconnected_value: What value should the Attribute be set to
                 when the port is disconnected
         """
-        return "sinkPort:%s:%s" % (self.value, disconnected_value)
+        return f"sinkPort:{self.value}:{disconnected_value}"
 
     def source_port_tag(self, connected_value):
         """Add a tag indicating this is a Source Port of the given type
@@ -69,7 +69,7 @@ class Port(Enum):
             connected_value: What value should a Sink Port be set to if
                 it is connected to this port
         """
-        return "sourcePort:%s:%s" % (self.value, connected_value)
+        return f"sourcePort:{self.value}:{connected_value}"
 
     def with_source_port_tag(self, tags, connected_value):
         """Add a Source Port tag to the tags list, removing any other Source
@@ -102,7 +102,7 @@ class Port(Enum):
 
 def group_tag(group_name: str) -> str:
     """Marks this field as belonging to a group"""
-    tag = "group:%s" % group_name
+    tag = f"group:{group_name}"
     return tag
 
 
@@ -115,7 +115,7 @@ def without_group_tags(tags: Sequence[str]) -> List[str]:
 def linked_value_tag(mri: str, attribute_name: str) -> str:
     """Marks this field as having another attribute in another Block that
     should be displayed below it as a linked value"""
-    tag = "linkedvalue:%s:%s" % (attribute_name, mri)
+    tag = f"linkedvalue:{attribute_name}:{mri}"
     return tag
 
 
@@ -136,7 +136,7 @@ def badge_value_tag(mri: str, attribute_name: str, display: str = "plus") -> str
         display: The type of formatting to apply to the badge value:
             "plus": If value < 1 then hide, otherwise display +%d
     """
-    tag = "badgevalue:%s:%s:%s" % (display, attribute_name, mri)
+    tag = f"badgevalue:{display}:{attribute_name}:{mri}"
     return tag
 
 

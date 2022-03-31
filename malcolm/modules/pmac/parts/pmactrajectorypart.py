@@ -60,8 +60,8 @@ def _zeros_or_right_length(array, num_points):
     "userPrograms",
     "pointsToBuild",
 )
-@builtin.util.no_save("use%s" % x for x in CS_AXIS_NAMES)
-@builtin.util.no_save("positions%s" % x for x in CS_AXIS_NAMES)
+@builtin.util.no_save(f"use{x}" for x in CS_AXIS_NAMES)
+@builtin.util.no_save(f"positions{x}" for x in CS_AXIS_NAMES)
 class PmacTrajectoryPart(builtin.parts.ChildPart):
     def __init__(
         self,
@@ -147,7 +147,7 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
                     "for a raw motor?\n%s" % (csPort, e)
                 )
             # Tell the trajectory scans which of the arrays to use
-            arrays = {"use%s" % axis: axis in use_axes for axis in CS_AXIS_NAMES}
+            arrays = {f"use{axis}": axis in use_axes for axis in CS_AXIS_NAMES}
             child.put_attribute_values(arrays)
         else:
             # This is an append
@@ -163,7 +163,7 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
         )
         for axis in use_axes:
             demand = locals()[axis.lower()]
-            attribute_values["positions%s" % axis] = demand
+            attribute_values[f"positions{axis}"] = demand
         child.put_attribute_values(attribute_values)
         # Write the profile
         action()

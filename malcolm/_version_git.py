@@ -33,9 +33,9 @@ def get_version_from_git(path=None):
         try:
             cmd_out = check_output(CMD.split(), stderr=STDOUT, cwd=path)
         except Exception as e:
-            sys.stderr.write("%s: %s\n" % (type(e).__name__, str(e)))
+            sys.stderr.write(f"{type(e).__name__}: {str(e)}\n")
             if isinstance(e, CalledProcessError):
-                sys.stderr.write("-> %s" % e.output.decode())
+                sys.stderr.write(f"-> {e.output.decode()}")
             return "0.0+unknown", None, e
         else:
             out = cmd_out.decode().strip()
@@ -53,7 +53,7 @@ def get_version_from_git(path=None):
     tag = tag.replace("-", ".")
     if plus != "0" or suffix:
         # Not on a tag, add additional info
-        tag = "%(tag)s+%(plus)s.g%(sha1)s%(suffix)s" % locals()
+        tag = f"{locals()['tag']}+{locals()['plus']}.g{locals()['sha1']}{locals()['suffix']}"
     return tag, sha1, None
 
 
@@ -76,9 +76,9 @@ def get_cmdclass(build_py=None, sdist=None):
                 for line in lines:
                     # Replace GIT_* with static versions
                     if line.startswith("GIT_SHA1 = "):
-                        f.write("GIT_SHA1 = '%s'\n" % git_sha1)
+                        f.write(f"GIT_SHA1 = '{git_sha1}'\n")
                     elif line.startswith("GIT_REFS = "):
-                        f.write("GIT_REFS = 'tag: %s'\n" % __version__)
+                        f.write(f"GIT_REFS = 'tag: {__version__}'\n")
                     else:
                         f.write(line)
 

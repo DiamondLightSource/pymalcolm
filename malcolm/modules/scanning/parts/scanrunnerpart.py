@@ -226,7 +226,7 @@ class ScanRunnerPart(ChildPart):
                 self.set_runner_state(RunnerStates.FAULT)
                 self.runner_status_message.value = "Unidentified key in YAML"
                 raise ValueError(
-                    "Unidentified object in YAML: {key}".format(key=key_name)
+                    f"Unidentified object in YAML: {key_name}"
                 )
 
         # Count the number of scans configured
@@ -248,14 +248,12 @@ class ScanRunnerPart(ChildPart):
             self.set_runner_state(RunnerStates.FAULT)
             self.runner_status_message.set_value("Could not create directory")
             raise IOError(
-                "ERROR: unable to create directory: {dir}".format(dir=directory)
+                f"ERROR: unable to create directory: {directory}"
             )
 
     def create_and_get_sub_directory(self, root_directory: str) -> str:
         today_str = self.get_current_datetime(time_separator="-")
-        sub_directory = "{root}/{scan_mri}-{date}".format(
-            root=root_directory, scan_mri=self.mri, date=today_str
-        )
+        sub_directory = f"{root_directory}/{self.mri}-{today_str}"
         self.create_directory(sub_directory)
         return sub_directory
 
@@ -291,7 +289,7 @@ class ScanRunnerPart(ChildPart):
         sub_directory = self.create_and_get_sub_directory(root_directory)
 
         # Top-level report filepath
-        report_filepath = "{root}/report.txt".format(root=sub_directory)
+        report_filepath = f"{sub_directory}/report.txt"
 
         # Reset counters and set state
         self.scans_completed.set_value(0)
@@ -314,9 +312,7 @@ class ScanRunnerPart(ChildPart):
         self.runner_status_message.set_value("Scans complete")
 
     def create_and_get_set_directory(self, sub_directory: str, set_name: str) -> str:
-        set_directory = "{sub_directory}/scanset-{set_name}".format(
-            sub_directory=sub_directory, set_name=set_name
-        )
+        set_directory = f"{sub_directory}/scanset-{set_name}"
         self.create_directory(set_directory)
         return set_directory
 
@@ -347,9 +343,7 @@ class ScanRunnerPart(ChildPart):
     def create_and_get_scan_directory(
         self, set_directory: str, scan_number: int
     ) -> str:
-        scan_directory = "{set_directory}/scan-{scan_number}".format(
-            set_directory=set_directory, scan_number=scan_number
-        )
+        scan_directory = f"{set_directory}/scan-{scan_number}"
         self.create_directory(scan_directory)
         return scan_directory
 
@@ -367,9 +361,7 @@ class ScanRunnerPart(ChildPart):
         generator: CompoundGenerator,
     ) -> None:
         self.runner_status_message.set_value(
-            "Running {set_name}: {scan_no}".format(
-                set_name=set_name, scan_no=scan_number
-            )
+            f"Running {set_name}: {scan_number}"
         )
         assert self.context, "No context found"
 
@@ -466,15 +458,13 @@ class ScanRunnerPart(ChildPart):
         try:
             with open(report_filepath, "a+") as report_file:
                 report_file.write(
-                    "{report_string}\n".format(report_string=report_string)
+                    f"{report_string}\n"
                 )
         except IOError:
             self.set_runner_state(RunnerStates.FAULT)
             self.runner_status_message.set_value("Error writing report file")
             raise IOError(
-                "Could not write to report file {filepath}".format(
-                    filepath=report_filepath
-                )
+                f"Could not write to report file {report_filepath}"
             )
 
     @staticmethod
