@@ -198,7 +198,7 @@ class ScanRunnerPart(ChildPart):
     @staticmethod
     def get_current_datetime(time_separator: str = ":") -> str:
         return datetime.now().strftime(
-            "%Y-%m-%d-%H{sep}%M{sep}%S".format(sep=time_separator)
+            f"%Y-%m-%d-%H{time_separator}%M{time_separator}%S"
         )
 
     # noinspection PyPep8Naming
@@ -439,12 +439,9 @@ class ScanRunnerPart(ChildPart):
         end_time: str,
     ) -> str:
 
-        report_str = "{set:<30}{no:<10}{outcome:<14}{start:<20}{end}".format(
-            set=set_name,
-            no=scan_number,
-            outcome=self.get_enum_label(scan_outcome),
-            start=start_time,
-            end=end_time,
+        report_str = (
+            f"{set_name:<30}{scan_number:<10}{self.get_enum_label(scan_outcome):<14}"
+            f"{start_time:<20}{end_time}"
         )
         return report_str
 
