@@ -42,9 +42,7 @@ class PvaClientComms(builtin.controllers.ClientComms):
         if isinstance(ob, Model) or model_children:
             # Recurse down
             for k in ob:
-                self._update_settable_fields(
-                    update_fields, f"{dotted_path}.{k}", ob[k]
-                )
+                self._update_settable_fields(update_fields, f"{dotted_path}.{k}", ob[k])
         else:
             # This is a terminal field, add to the set
             update_fields.add(dotted_path)

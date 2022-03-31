@@ -147,7 +147,7 @@ def config_tag(iteration: int = 1) -> str:
         iteration: All iterations are sorted in increasing order and done in
             batches of the same iteration number
     """
-    tag = "config:%d" % iteration
+    tag = f"config:{iteration:d}"
     return tag
 
 

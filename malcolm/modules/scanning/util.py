@@ -44,7 +44,7 @@ class ConfigureParams(Serializable):
         generator: AGenerator,
         axesToMove: UAxesToMove = None,
         breakpoints: ABreakpoints = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         if kwargs:
             # Got some additional args to report

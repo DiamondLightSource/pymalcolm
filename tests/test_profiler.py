@@ -32,9 +32,7 @@ class ProfilerTest(unittest.TestCase):
             # calls.
             self.assertTrue(stack in counts)
             ratio = float(counts[stack]) / float(count)
-            output.append(
-                f"{stack}: expected {count}, got {counts[stack]} ({ratio})"
-            )
+            output.append(f"{stack}: expected {count}, got {counts[stack]} ({ratio})")
             if not (0.70 <= ratio <= 1.25):
                 failed = True
         if failed:

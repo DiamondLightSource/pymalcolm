@@ -42,10 +42,9 @@ def _zeros_or_right_length(array, num_points):
     if array is None:
         array = np.zeros(num_points, np.int32)
     else:
-        assert len(array) == num_points, "Array %s should be %d points long" % (
-            array,
-            num_points,
-        )
+        assert (
+            len(array) == num_points
+        ), f"Array {array} should be {num_points} points long"
     return array
 
 
@@ -117,15 +116,13 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
             if child.trajectoryProgVersion.value >= FALLBACK_TRAJ_PROGRAM_NUM:
                 self.log.warning(
                     f"pmac trajectory program is version {FALLBACK_TRAJ_PROGRAM_NUM}"
-                    " version {TRAJECTORY_PROGRAM_NUM} is recommended"
+                    f" version {TRAJECTORY_PROGRAM_NUM} is recommended"
                 )
             else:
                 raise (
                     IncompatibleError(
-                        "pmac trajectory program {} detected. "
-                        "Malcolm requires {}".format(
-                            child.trajectoryProgVersion.value, TRAJECTORY_PROGRAM_NUM
-                        )
+                        f"pmac trajectory program {child.trajectoryProgVersion.value} "
+                        f"detected. Malcolm requires {TRAJECTORY_PROGRAM_NUM}"
                     )
                 )
 
@@ -143,8 +140,8 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
                 child.cs.put_value(csPort)
             except ValueError as e:
                 raise ValueError(
-                    "Cannot set CS to %s, did you use a compound_motor_block "
-                    "for a raw motor?\n%s" % (csPort, e)
+                    f"Cannot set CS to {csPort}, did you use a compound_motor_block "
+                    f"for a raw motor?\n{e}"
                 )
             # Tell the trajectory scans which of the arrays to use
             arrays = {f"use{axis}": axis in use_axes for axis in CS_AXIS_NAMES}

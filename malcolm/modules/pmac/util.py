@@ -101,9 +101,7 @@ def cs_axis_mapping(
     cs_axis_counts = Counter([x.cs_axis for x in axis_mapping.values()])
     # Any cs_axis defs that are used for more that one raw motor
     overlap = [k for k, v in cs_axis_counts.items() if v > 1]
-    assert not overlap, (
-        f"CS axis defs {overlap} have more that one raw motor attached"
-    )
+    assert not overlap, f"CS axis defs {overlap} have more that one raw motor attached"
     return axis_mapping
 
 

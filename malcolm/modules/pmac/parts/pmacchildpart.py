@@ -469,9 +469,9 @@ class PmacChildPart(builtin.parts.ChildPart):
                 # points left in the profile due to sparse generation, so skip the
                 # check.
                 if self.output_triggers == scanning.infos.MotionTrigger.EVERY_POINT:
-                    assert not self.profile["timeArray"], (
-                        f"Why do we still have points? {self.profile}"
-                    )
+                    assert not self.profile[
+                        "timeArray"
+                    ], f"Why do we still have points? {self.profile}"
                 self.loading = False
 
     def write_profile_points(self, child, cs_port=None):

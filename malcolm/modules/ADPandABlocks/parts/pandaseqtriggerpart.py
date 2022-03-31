@@ -98,9 +98,9 @@ class SeqTriggers:
             if (increasing and v <= 0) or (not increasing and v >= 0):
                 # The axis is stationary or going the wrong way at this
                 # point, so we should be blind before then
-                assert i < len(velocity_array) - 1, (
-                    f"Last point of {velocity_array} is wrong direction"
-                )
+                assert (
+                    i < len(velocity_array) - 1
+                ), f"Last point of {velocity_array} is wrong direction"
                 break
         blind = time_array[i]
         return blind

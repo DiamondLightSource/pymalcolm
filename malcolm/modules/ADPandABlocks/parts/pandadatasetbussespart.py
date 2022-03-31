@@ -81,9 +81,9 @@ class PandADatasetBussesPart(pandablocks.parts.PandABussesPart):
                         )
                 # There should now be 1 or 0 suffixes left to report
                 if suffixes:
-                    assert len(suffixes) == 1, (
-                        f"Cannot deal with capture value {capture.value!r}"
-                    )
+                    assert (
+                        len(suffixes) == 1
+                    ), f"Cannot deal with capture value {capture.value!r}"
                     suffix = suffixes[0]
                     ret.append(
                         ADCore.infos.NDAttributeDatasetInfo.from_attribute_type(

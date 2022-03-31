@@ -53,9 +53,9 @@ ControllerHook = builtin.hooks.ControllerHook
 
 
 def check_array_info(anno: Array, value: Any) -> T:
-    assert anno.is_array and issubclass(anno.typ, Info), (
-        f"Expected Anno wrapping Array[something], got {anno}"
-    )
+    assert anno.is_array and issubclass(
+        anno.typ, Info
+    ), f"Expected Anno wrapping Array[something], got {anno}"
     ret = anno(value)
     bad = [x for x in ret if not isinstance(x, anno.typ)]
     assert not bad, f"Passed objects {bad} that are not of type {anno.typ}"

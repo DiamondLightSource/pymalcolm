@@ -261,7 +261,7 @@ class PandABussesPart(Part):
                 self._handle_bit(k, v, bit_column_changes)
                 or self._handle_pos(k, v, pos_column_changes)
                 or self._handle_pcap(k, v, bit_column_changes)
-            ), (f"Don't know how to handle {k}")
+            ), f"Don't know how to handle {k}"
         # Update the tables
         assert self.bits, "No bits"
         if bit_column_changes:

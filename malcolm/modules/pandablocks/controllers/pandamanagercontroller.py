@@ -207,9 +207,9 @@ class PandAManagerController(builtin.controllers.ManagerController):
         self.handle_changes(self._client.get_changes())
         # Then once more to let bit_outs toggle back
         self.handle_changes(())
-        assert not self._bit_out_changes, (
-            f"There are still bit_out changes {self._bit_out_changes}"
-        )
+        assert (
+            not self._bit_out_changes
+        ), f"There are still bit_out changes {self._bit_out_changes}"
 
     def _make_busses(self) -> PandABussesPart:
         return PandABussesPart("busses", self._client)

@@ -157,9 +157,9 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
                 q_value = pmac.util.CS_AXIS_NAMES.index(mapping.cs_axis) + 1
                 self.q_value_mapping[q_value] = mapping.scannable
 
-        assert "." in self.nxs_full_filename, (
-            f"File extension for {self.nxs_full_filename!r} should be supplied"
-        )
+        assert (
+            "." in self.nxs_full_filename
+        ), f"File extension for {self.nxs_full_filename!r} should be supplied"
 
         self.pos_table = context.block_view(self.panda_mri).positions.value
         assert self.pos_table, "No pos table"
@@ -345,7 +345,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
 
             # Link to external P values
             for p_var in self.p_vars:
-                savu_file[u"/entry/inputs/" + p_var.p_number] = h5py.ExternalLink(
+                savu_file["/entry/inputs/" + p_var.p_number] = h5py.ExternalLink(
                     p_var.file, p_var.path
                 )
 
