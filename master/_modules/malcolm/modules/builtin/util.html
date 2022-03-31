@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.builtin.util &mdash; malcolm 5.3+9.ga65b4b57 documentation</title>
+  <title>malcolm.modules.builtin.util &mdash; malcolm 5.4+3.gdc54803c documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
@@ -31,7 +31,7 @@
             <img src="../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.3
+                5.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -301,7 +301,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">additions</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">attribute_name</span><span class="p">)</span>
         <span class="n">bad</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">additions</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">str</span><span class="p">)]</span>
-        <span class="k">assert</span> <span class="ow">not</span> <span class="n">bad</span><span class="p">,</span> <span class="s2">&quot;Cannot add non-string attribute names to no_save: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">bad</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">bad</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Cannot add non-string attribute names to no_save: </span><span class="si">{</span><span class="n">bad</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="n">existing</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">no_save_attribute_names</span> <span class="ow">or</span> <span class="nb">set</span><span class="p">()</span>
         <span class="bp">cls</span><span class="o">.</span><span class="n">no_save_attribute_names</span> <span class="o">=</span> <span class="n">existing</span> <span class="o">|</span> <span class="n">additions</span>
         <span class="k">return</span> <span class="bp">cls</span>
@@ -320,10 +320,10 @@
     <span class="k">def</span> <span class="nf">find_parent_child</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
         <span class="n">child</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="c1"># Find the first parent which has a child with id i</span>
-        <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;.//*[@id=</span><span class="si">%r</span><span class="s2">]/..&quot;</span> <span class="o">%</span> <span class="nb">id</span><span class="p">)</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;.//*[@id=</span><span class="si">{</span><span class="nb">id</span><span class="si">!r}</span><span class="s2">]/..&quot;</span><span class="p">)</span>
         <span class="c1"># Find the child and remove it</span>
         <span class="k">if</span> <span class="n">parent</span><span class="p">:</span>
-            <span class="n">child</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;./*[@id=</span><span class="si">%r</span><span class="s2">]&quot;</span> <span class="o">%</span> <span class="nb">id</span><span class="p">)</span>
+            <span class="n">child</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;./*[@id=</span><span class="si">{</span><span class="nb">id</span><span class="si">!r}</span><span class="s2">]&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">parent</span><span class="p">,</span> <span class="n">child</span>
 
     <span class="k">def</span> <span class="nf">remove_elements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>

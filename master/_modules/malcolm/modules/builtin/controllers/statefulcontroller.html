@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.builtin.controllers.statefulcontroller &mdash; malcolm 5.3+9.ga65b4b57 documentation</title>
+  <title>malcolm.modules.builtin.controllers.statefulcontroller &mdash; malcolm 5.4+3.gdc54803c documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -31,7 +31,7 @@
             <img src="../../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.3
+                5.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -225,7 +225,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">check_field_writeable</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">NotWriteableError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">, maybe because Block state = </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">, maybe because Block state = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="k">raise</span> <span class="n">NotWriteableError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
 <div class="viewcode-block" id="StatefulController.transition"><a class="viewcode-back" href="../../../../../build/builtin/controllers_api.html#malcolm.modules.builtin.controllers.StatefulController.transition">[docs]</a>    <span class="k">def</span> <span class="nf">transition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
@@ -255,9 +255,7 @@
                 <span class="k">for</span> <span class="n">child</span><span class="p">,</span> <span class="n">writeable</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_children_writeable</span><span class="p">[</span><span class="n">state</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                     <span class="n">child</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">set_writeable</span><span class="p">(</span><span class="n">writeable</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                    <span class="s2">&quot;Cannot transition from </span><span class="si">%s</span><span class="s2"> to </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">initial_state</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
-                <span class="p">)</span></div>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot transition from </span><span class="si">{</span><span class="n">initial_state</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">try_stateful_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_state</span><span class="p">,</span> <span class="n">end_state</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>

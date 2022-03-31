@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.ADCore.parts.statspluginpart &mdash; malcolm 5.3+9.ga65b4b57 documentation</title>
+  <title>malcolm.modules.ADCore.parts.statspluginpart &mdash; malcolm 5.4+3.gdc54803c documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -31,7 +31,7 @@
             <img src="../../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.3
+                5.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -162,7 +162,7 @@
         <span class="p">]</span></div>
 
     <span class="k">def</span> <span class="nf">statistic_attr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;STATS_</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">statistic</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;STATS_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">statistic</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span>
 
     <span class="k">def</span> <span class="nf">_make_attributes_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Make a root element with an NXEntry</span>
@@ -173,7 +173,7 @@
             <span class="n">addr</span><span class="o">=</span><span class="s2">&quot;0&quot;</span><span class="p">,</span>
             <span class="n">datatype</span><span class="o">=</span><span class="s2">&quot;DOUBLE&quot;</span><span class="p">,</span>
             <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;PARAM&quot;</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> of the array&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">statistic</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span>
+            <span class="n">description</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">statistic</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">title</span><span class="p">()</span><span class="si">}</span><span class="s2"> of the array&quot;</span><span class="p">,</span>
             <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">statistic_attr</span><span class="p">(),</span>
             <span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">statistic</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
         <span class="p">)</span>

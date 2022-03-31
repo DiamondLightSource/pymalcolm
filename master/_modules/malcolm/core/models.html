@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.core.models &mdash; malcolm 5.3+9.ga65b4b57 documentation</title>
+  <title>malcolm.core.models &mdash; malcolm 5.4+3.gdc54803c documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
@@ -31,7 +31,7 @@
             <img src="../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.3
+                5.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -147,7 +147,7 @@
 
 <span class="k">def</span> <span class="nf">check_type</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">typ</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">typ</span> <span class="o">!=</span> <span class="n">Any</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">typ</span><span class="p">),</span> <span class="s2">&quot;Expected </span><span class="si">%s</span><span class="s2">, got </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">typ</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">typ</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Expected </span><span class="si">{</span><span class="n">typ</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2">&quot;</span>
 
 
 <div class="viewcode-block" id="Model"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.Model">[docs]</a><span class="k">class</span> <span class="nc">Model</span><span class="p">(</span><span class="n">Serializable</span><span class="p">):</span>
@@ -168,7 +168,7 @@
         <span class="c1"># the DummyNotifier, never between two valid notifiers</span>
         <span class="k">assert</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">notifier</span> <span class="ow">is</span> <span class="n">Model</span><span class="o">.</span><span class="n">notifier</span> <span class="ow">or</span> <span class="n">notifier</span> <span class="ow">is</span> <span class="n">Model</span><span class="o">.</span><span class="n">notifier</span>
-        <span class="p">),</span> <span class="s2">&quot;Already have a notifier </span><span class="si">%s</span><span class="s2"> path </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">notifier</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Already have a notifier </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">notifier</span><span class="si">}</span><span class="s2"> path </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">notifier</span> <span class="o">=</span> <span class="n">notifier</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path</span>
         <span class="c1"># Tell all our children too</span>
@@ -179,7 +179,7 @@
                     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">child</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                         <span class="n">v</span><span class="o">.</span><span class="n">set_notifier_path</span><span class="p">(</span><span class="n">notifier</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">+</span> <span class="p">[</span><span class="n">name</span><span class="p">,</span> <span class="n">k</span><span class="p">])</span>
             <span class="k">elif</span> <span class="n">Model</span><span class="o">.</span><span class="n">matches_type</span><span class="p">(</span><span class="n">ct</span><span class="o">.</span><span class="n">typ</span><span class="p">):</span>
-                <span class="k">assert</span> <span class="ow">not</span> <span class="n">ct</span><span class="o">.</span><span class="n">is_array</span><span class="p">,</span> <span class="s2">&quot;Can&#39;t deal with Arrays of Models </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ct</span>
+                <span class="k">assert</span> <span class="ow">not</span> <span class="n">ct</span><span class="o">.</span><span class="n">is_array</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Can&#39;t deal with Arrays of Models </span><span class="si">{</span><span class="n">ct</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="n">child</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
                 <span class="n">child</span><span class="o">.</span><span class="n">set_notifier_path</span><span class="p">(</span><span class="n">notifier</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">+</span> <span class="p">[</span><span class="n">name</span><span class="p">])</span></div>
 
@@ -187,9 +187,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">ct</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">call_types</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;</span><span class="si">%r</span><span class="s2"> not in </span><span class="si">%r</span><span class="s2">.call_types </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">call_types</span><span class="p">)</span>
-            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> not in </span><span class="si">{</span><span class="bp">self</span><span class="si">!r}</span><span class="s2">.call_types </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">call_types</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">ct</span><span class="o">.</span><span class="n">is_array</span><span class="p">:</span>
                 <span class="c1"># Cast to right type, this will do some cheap validation</span>
@@ -203,10 +201,9 @@
                     <span class="c1"># TODO: this might harm performance</span>
                     <span class="n">typ</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">typ</span>
                     <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">seq</span><span class="p">:</span>
-                        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">typ</span><span class="p">),</span> <span class="s2">&quot;Expected Array[</span><span class="si">%r</span><span class="s2">], got </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
-                            <span class="n">ct</span><span class="o">.</span><span class="n">typ</span><span class="p">,</span>
-                            <span class="n">value</span><span class="o">.</span><span class="n">seq</span><span class="p">,</span>
-                        <span class="p">)</span>
+                        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
+                            <span class="n">x</span><span class="p">,</span> <span class="n">typ</span>
+                        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Expected Array[</span><span class="si">{</span><span class="n">ct</span><span class="o">.</span><span class="n">typ</span><span class="si">!r}</span><span class="s2">], got </span><span class="si">{</span><span class="n">value</span><span class="o">.</span><span class="n">seq</span><span class="si">!r}</span><span class="s2">&quot;</span>
             <span class="k">elif</span> <span class="n">ct</span><span class="o">.</span><span class="n">is_mapping</span><span class="p">:</span>
                 <span class="c1"># Check it is the right type</span>
                 <span class="n">ktype</span><span class="p">,</span> <span class="n">vtype</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">typ</span>
@@ -246,10 +243,10 @@
             <span class="bp">self</span><span class="p">[</span><span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">apply_change</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># This is for us</span>
-            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Cannot process change </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
-                <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">+</span> <span class="n">path</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
-            <span class="p">)</span>
-            <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;set_</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">])(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div></div>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+            <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Cannot process change </span><span class="si">{</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">+</span> <span class="n">path</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;set_</span><span class="si">{</span><span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div></div>
 
 
 <span class="c1"># Types used when deserializing to the class</span>
@@ -424,12 +421,10 @@
     <span class="k">def</span> <span class="nf">set_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">meta</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">VMeta</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">VMeta</span><span class="p">:</span>
         <span class="n">meta</span> <span class="o">=</span> <span class="n">deserialize_object</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
         <span class="c1"># Check that the meta attribute_class is ourself</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">meta</span><span class="p">,</span> <span class="n">VMeta</span><span class="p">),</span> <span class="s2">&quot;Expected meta object, got </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">meta</span><span class="o">.</span><span class="n">attribute_class</span>
-        <span class="p">),</span> <span class="s2">&quot;Meta object needs to be attached to </span><span class="si">%s</span><span class="s2">, we are a </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
-            <span class="n">meta</span><span class="o">.</span><span class="n">attribute_class</span><span class="p">,</span>
-            <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">meta</span><span class="p">,</span> <span class="n">VMeta</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Expected meta object, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">meta</span><span class="o">.</span><span class="n">attribute_class</span><span class="p">),</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Meta object needs to be attached to </span><span class="si">{</span><span class="n">meta</span><span class="o">.</span><span class="n">attribute_class</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;we are a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_endpoint_data</span><span class="p">(</span><span class="s2">&quot;meta&quot;</span><span class="p">,</span> <span class="n">meta</span><span class="p">)</span>
 
@@ -609,26 +604,23 @@
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">choice</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">choices</span><span class="p">):</span>
             <span class="c1"># If we already have an enum type it must match</span>
             <span class="k">if</span> <span class="n">enum_typ</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">choice</span><span class="p">,</span> <span class="n">enum_typ</span><span class="p">),</span> <span class="s2">&quot;Expected </span><span class="si">%s</span><span class="s2"> choice, got </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
-                    <span class="n">enum_typ</span><span class="p">,</span>
-                    <span class="n">choice</span><span class="p">,</span>
-                <span class="p">)</span>
+                <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
+                    <span class="n">choice</span><span class="p">,</span> <span class="n">enum_typ</span>
+                <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Expected </span><span class="si">{</span><span class="n">enum_typ</span><span class="si">}</span><span class="s2"> choice, got </span><span class="si">{</span><span class="n">choice</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">choice</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                 <span class="n">enum_typ</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">choice</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">choice</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
                 <span class="c1"># Our choice value must be a string</span>
                 <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">choice</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="p">(</span>
-                    <span class="s2">&quot;Expected Enum choice to have str value, got </span><span class="si">%r</span><span class="s2"> with &quot;</span>
-                    <span class="s2">&quot;value </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">choice</span><span class="p">,</span> <span class="n">choice</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                    <span class="sa">f</span><span class="s2">&quot;Expected Enum choice to have str value, got </span><span class="si">{</span><span class="n">choice</span><span class="si">!r}</span><span class="s2"> with &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;value </span><span class="si">{</span><span class="n">choice</span><span class="o">.</span><span class="n">value</span><span class="si">!r}</span><span class="s2">&quot;</span>
                 <span class="p">)</span>
                 <span class="c1"># Map the Enum instance and str to the Enum instance</span>
                 <span class="n">choices_lookup</span><span class="p">[</span><span class="n">choice</span><span class="o">.</span><span class="n">value</span><span class="p">]</span> <span class="o">=</span> <span class="n">choice</span>
                 <span class="n">choices_lookup</span><span class="p">[</span><span class="n">choice</span><span class="p">]</span> <span class="o">=</span> <span class="n">choice</span>
                 <span class="n">new_choices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">choice</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">choice</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;Expected string choice, got </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
-                    <span class="n">choice</span><span class="p">,</span>
-                <span class="p">)</span>
+                <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">choice</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Expected string choice, got </span><span class="si">{</span><span class="n">choice</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="c1"># Map the string to itself</span>
                 <span class="n">choices_lookup</span><span class="p">[</span><span class="n">choice</span><span class="p">]</span> <span class="o">=</span> <span class="n">choice</span>
                 <span class="n">new_choices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">choice</span><span class="p">)</span>
@@ -658,9 +650,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">choices_lookup</span><span class="p">[</span><span class="n">value</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;</span><span class="si">%r</span><span class="s2"> is not a valid value in </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">choices</span><span class="p">))</span>
-            <span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2"> is not a valid value in </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">choices</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">doc_type_string</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="s2">&quot; | &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">repr</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">choices</span><span class="p">])</span>
@@ -790,10 +780,9 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_endpoint_data</span><span class="p">(</span><span class="s2">&quot;display&quot;</span><span class="p">,</span> <span class="n">display</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">set_dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">ADtype</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ADtype</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="n">dtype</span> <span class="ow">in</span> <span class="n">_dtype_strings</span><span class="p">,</span> <span class="s2">&quot;Expected dtype to be in </span><span class="si">%s</span><span class="s2">, got </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_dtypes</span><span class="p">,</span>
-            <span class="n">dtype</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">dtype</span> <span class="ow">in</span> <span class="n">_dtype_strings</span>
+        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Expected dtype to be in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtypes</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">dtype</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_np_type</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">np</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_endpoint_data</span><span class="p">(</span><span class="s2">&quot;dtype&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
 
@@ -805,7 +794,7 @@
         <span class="k">return</span> <span class="n">cast</span></div>
 
     <span class="k">def</span> <span class="nf">doc_type_string</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">&quot;</span>
 
     <span class="k">def</span> <span class="nf">default_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Widget</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">writeable</span><span class="p">:</span>
@@ -911,8 +900,8 @@
                     <span class="n">new_choice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">choices_lookup</span><span class="p">[</span><span class="n">choice</span><span class="p">]</span>
                 <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                        <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> is not a valid value in </span><span class="si">%s</span><span class="s2"> for element </span><span class="si">%s</span><span class="s2">&quot;</span>
-                        <span class="o">%</span> <span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">choices</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> is not a valid value in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">choices</span><span class="si">}</span><span class="s2"> &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;for element </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
                     <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">is_same</span> <span class="o">&amp;=</span> <span class="n">choice</span> <span class="o">==</span> <span class="n">new_choice</span>
@@ -923,7 +912,7 @@
                 <span class="k">return</span> <span class="n">to_array</span><span class="p">(</span><span class="n">Array</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">enum_cls</span><span class="p">],</span> <span class="n">ret</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">doc_type_string</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;[</span><span class="si">%s</span><span class="s2">]&quot;</span> <span class="o">%</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">doc_type_string</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">doc_type_string</span><span class="p">()</span><span class="si">}</span><span class="s2">]&quot;</span></div>
 
 
 <div class="viewcode-block" id="NumberArrayMeta"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.NumberArrayMeta">[docs]</a><span class="nd">@Serializable</span><span class="o">.</span><span class="n">register_subclass</span><span class="p">(</span><span class="s2">&quot;malcolm:core/NumberArrayMeta:1.0&quot;</span><span class="p">)</span>
@@ -936,7 +925,7 @@
         <span class="k">return</span> <span class="n">to_np_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_np_type</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">doc_type_string</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;[</span><span class="si">%s</span><span class="s2">]&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span></div>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">]&quot;</span></div>
 
 
 <div class="viewcode-block" id="StringArrayMeta"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.StringArrayMeta">[docs]</a><span class="nd">@Serializable</span><span class="o">.</span><span class="n">register_subclass</span><span class="p">(</span><span class="s2">&quot;malcolm:core/StringArrayMeta:1.0&quot;</span><span class="p">)</span>
@@ -948,7 +937,7 @@
         <span class="sd">&quot;&quot;&quot;Check if the value is valid returns it&quot;&quot;&quot;</span>
         <span class="n">cast</span> <span class="o">=</span> <span class="n">to_array</span><span class="p">(</span><span class="n">Array</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">value</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">cast</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;Expected Array[str], got </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">value</span><span class="p">,)</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Expected Array[str], got </span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2">&quot;</span>
         <span class="k">return</span> <span class="n">cast</span></div>
 
     <span class="k">def</span> <span class="nf">doc_type_string</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -1014,13 +1003,13 @@
                 <span class="n">table_cls</span><span class="o">.</span><span class="n">call_types</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">anno</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># User supplied, check it matches element names</span>
-            <span class="k">assert</span> <span class="n">Table</span><span class="o">.</span><span class="n">matches_type</span><span class="p">(</span><span class="n">table_cls</span><span class="p">),</span> <span class="s2">&quot;Expecting table subclass, got </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
-                <span class="n">table_cls</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="k">assert</span> <span class="n">Table</span><span class="o">.</span><span class="n">matches_type</span><span class="p">(</span>
+                <span class="n">table_cls</span>
+            <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Expecting table subclass, got </span><span class="si">{</span><span class="n">table_cls</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="n">missing</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">table_cls</span><span class="o">.</span><span class="n">call_types</span><span class="p">)</span>
-            <span class="k">assert</span> <span class="ow">not</span> <span class="n">missing</span><span class="p">,</span> <span class="s2">&quot;Supplied Table missing fields </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">missing</span><span class="p">,)</span>
+            <span class="k">assert</span> <span class="ow">not</span> <span class="n">missing</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Supplied Table missing fields </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="n">extra</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">table_cls</span><span class="o">.</span><span class="n">call_types</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">)</span>
-            <span class="k">assert</span> <span class="ow">not</span> <span class="n">extra</span><span class="p">,</span> <span class="s2">&quot;Supplied Table has extra fields </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">extra</span><span class="p">,)</span>
+            <span class="k">assert</span> <span class="ow">not</span> <span class="n">extra</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Supplied Table has extra fields </span><span class="si">{</span><span class="n">extra</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">table_cls</span> <span class="o">=</span> <span class="n">table_cls</span>
 
     <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
@@ -1031,13 +1020,13 @@
             <span class="c1"># Serialize a single level so we can type check it</span>
             <span class="n">value</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">value</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">call_types</span><span class="p">}</span>
         <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Expected Table instance or serialized, got </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">value</span><span class="p">,))</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected Table instance or serialized, got </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="c1"># We need to make a table instance ourselves</span>
         <span class="n">keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">value</span> <span class="k">if</span> <span class="n">x</span> <span class="o">!=</span> <span class="s2">&quot;typeid&quot;</span><span class="p">)</span>
         <span class="n">missing</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">)</span> <span class="o">-</span> <span class="n">keys</span>
-        <span class="k">assert</span> <span class="ow">not</span> <span class="n">missing</span><span class="p">,</span> <span class="s2">&quot;Supplied table missing fields </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">missing</span><span class="p">,)</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">missing</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Supplied table missing fields </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="n">extra</span> <span class="o">=</span> <span class="n">keys</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="ow">not</span> <span class="n">extra</span><span class="p">,</span> <span class="s2">&quot;Supplied table has extra fields </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">extra</span><span class="p">,)</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">extra</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Supplied table has extra fields </span><span class="si">{</span><span class="n">extra</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="n">args</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">meta</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">meta</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">table_cls</span><span class="p">,</span> <span class="s2">&quot;No table set&quot;</span>
         <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table_cls</span><span class="p">(</span><span class="o">**</span><span class="n">args</span><span class="p">)</span>
@@ -1047,10 +1036,7 @@
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
             <span class="k">assert</span> <span class="p">(</span>
                 <span class="n">value</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="vm">__class__</span> <span class="ow">is</span> <span class="n">Array</span>
-            <span class="p">),</span> <span class="s2">&quot;Table Class </span><span class="si">%s</span><span class="s2"> doesn&#39;t wrap attr &#39;</span><span class="si">%s</span><span class="s2">&#39; with an Array&quot;</span> <span class="o">%</span> <span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">table_cls</span><span class="p">,</span>
-                <span class="n">k</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Table Class </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">table_cls</span><span class="si">}</span><span class="s2"> doesn&#39;t wrap attr &#39;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&#39; with an Array&quot;</span>
         <span class="k">return</span> <span class="n">value</span>
 
     <span class="k">def</span> <span class="nf">doc_type_string</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -1093,7 +1079,7 @@
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">from_annotype</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">anno</span><span class="p">:</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">writeable</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VMeta</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="n">Table</span><span class="o">.</span><span class="n">matches_type</span><span class="p">(</span><span class="n">anno</span><span class="o">.</span><span class="n">typ</span><span class="p">),</span> <span class="s2">&quot;Expected Table, got </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">anno</span><span class="o">.</span><span class="n">typ</span>
+        <span class="k">assert</span> <span class="n">Table</span><span class="o">.</span><span class="n">matches_type</span><span class="p">(</span><span class="n">anno</span><span class="o">.</span><span class="n">typ</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Expected Table, got </span><span class="si">{</span><span class="n">anno</span><span class="o">.</span><span class="n">typ</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="k">if</span> <span class="n">writeable</span><span class="p">:</span>
             <span class="c1"># All fields are writeable</span>
             <span class="n">writeable_fields</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">anno</span><span class="o">.</span><span class="n">typ</span><span class="o">.</span><span class="n">call_types</span><span class="p">)</span>
@@ -1137,10 +1123,9 @@
 
     <span class="k">def</span> <span class="nf">set_required</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">required</span><span class="p">:</span> <span class="n">URequired</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ARequired</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">required</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">,</span> <span class="s2">&quot;Expected one of </span><span class="si">%r</span><span class="s2">, got </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
-                <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">),</span>
-                <span class="n">r</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span>
+            <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Expected one of </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">)</span><span class="si">!r}</span><span class="s2">, got </span><span class="si">{</span><span class="n">r</span><span class="si">!r}</span><span class="s2">&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_endpoint_data</span><span class="p">(</span><span class="s2">&quot;required&quot;</span><span class="p">,</span> <span class="n">ARequired</span><span class="p">(</span><span class="n">required</span><span class="p">))</span>
 
 <div class="viewcode-block" id="MapMeta.validate"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.MapMeta.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span>
@@ -1151,9 +1136,9 @@
         <span class="k">if</span> <span class="n">param_dict</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">param_dict</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">extra</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">param_dict</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="ow">not</span> <span class="n">extra</span><span class="p">,</span> <span class="s2">&quot;Given keys </span><span class="si">%s</span><span class="s2">, some of which aren&#39;t in allowed keys </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
-            <span class="nb">list</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">param_dict</span><span class="p">)),</span>
-            <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">),</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">extra</span><span class="p">,</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Given keys </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">param_dict</span><span class="p">))</span><span class="si">}</span><span class="s2">, some of which aren&#39;t &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;in allowed keys </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">)</span>
         <span class="n">args</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -1162,10 +1147,9 @@
             <span class="k">elif</span> <span class="n">add_missing</span><span class="p">:</span>
                 <span class="n">args</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
         <span class="n">missing</span><span class="p">:</span> <span class="n">Set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">required</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="ow">not</span> <span class="n">missing</span><span class="p">,</span> <span class="s2">&quot;Requires keys </span><span class="si">%s</span><span class="s2"> but only given </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
-            <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">required</span><span class="p">),</span>
-            <span class="nb">list</span><span class="p">(</span><span class="n">args</span><span class="p">),</span>
-        <span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="ow">not</span> <span class="n">missing</span>
+        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Requires keys </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">required</span><span class="p">)</span><span class="si">}</span><span class="s2"> but only given </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="k">return</span> <span class="n">args</span></div></div>
 
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.ADPandABlocks.parts.pandaseqtriggerpart &mdash; malcolm 5.3+9.ga65b4b57 documentation</title>
+  <title>malcolm.modules.ADPandABlocks.parts.pandaseqtriggerpart &mdash; malcolm 5.4+3.gdc54803c documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -31,7 +31,7 @@
             <img src="../../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.3
+                5.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -206,9 +206,9 @@
             <span class="k">if</span> <span class="p">(</span><span class="n">increasing</span> <span class="ow">and</span> <span class="n">v</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="n">increasing</span> <span class="ow">and</span> <span class="n">v</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">):</span>
                 <span class="c1"># The axis is stationary or going the wrong way at this</span>
                 <span class="c1"># point, so we should be blind before then</span>
-                <span class="k">assert</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">velocity_array</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span>
-                    <span class="s2">&quot;Last point of </span><span class="si">%s</span><span class="s2"> is wrong direction&quot;</span> <span class="o">%</span> <span class="n">velocity_array</span>
-                <span class="p">)</span>
+                <span class="k">assert</span> <span class="p">(</span>
+                    <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">velocity_array</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+                <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Last point of </span><span class="si">{</span><span class="n">velocity_array</span><span class="si">}</span><span class="s2"> is wrong direction&quot;</span>
                 <span class="k">break</span>
         <span class="n">blind</span> <span class="o">=</span> <span class="n">time_array</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">blind</span>
@@ -378,14 +378,11 @@
         <span class="k">if</span> <span class="n">export</span> <span class="ow">in</span> <span class="n">SEQ_TABLES</span><span class="p">:</span>
             <span class="k">assert</span> <span class="n">source</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span>
                 <span class="s2">&quot;.table&quot;</span>
-            <span class="p">),</span> <span class="s2">&quot;Expected export </span><span class="si">%s</span><span class="s2"> to come from SEQx.table, got </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">export</span><span class="p">,</span> <span class="n">source</span><span class="p">)</span>
+            <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Expected export </span><span class="si">{</span><span class="n">export</span><span class="si">}</span><span class="s2"> to come from SEQx.table, got </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="n">seq_part_names</span><span class="p">[</span><span class="n">source</span><span class="p">[:</span> <span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="s2">&quot;.table&quot;</span><span class="p">)]]</span> <span class="o">=</span> <span class="n">export</span>
     <span class="k">assert</span> <span class="p">(</span>
         <span class="nb">tuple</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">seq_part_names</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span> <span class="o">==</span> <span class="n">SEQ_TABLES</span>
-    <span class="p">),</span> <span class="s2">&quot;Expected exported attributes </span><span class="si">%s</span><span class="s2">, got </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
-        <span class="n">SEQ_TABLES</span><span class="p">,</span>
-        <span class="n">panda</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">export</span><span class="p">,</span>
-    <span class="p">)</span>
+    <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Expected exported attributes </span><span class="si">{</span><span class="n">SEQ_TABLES</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">panda</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">export</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="c1"># {export_name: mri}</span>
     <span class="n">seq_mris</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">mri</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">panda</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">rows</span><span class="p">():</span>
@@ -394,7 +391,7 @@
             <span class="n">seq_mris</span><span class="p">[</span><span class="n">export</span><span class="p">]</span> <span class="o">=</span> <span class="n">mri</span>
     <span class="k">assert</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">seq_mris</span><span class="p">)</span> <span class="o">==</span> <span class="nb">sorted</span><span class="p">(</span>
         <span class="n">seq_part_names</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
-    <span class="p">),</span> <span class="s2">&quot;Couldn&#39;t find MRI for some of </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">seq_part_names</span><span class="o">.</span><span class="n">values</span><span class="p">(),)</span>
+    <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Couldn&#39;t find MRI for some of </span><span class="si">{</span><span class="n">seq_part_names</span><span class="o">.</span><span class="n">values</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="n">blocks</span> <span class="o">=</span> <span class="p">[</span><span class="n">panda</span><span class="p">]</span>
     <span class="n">blocks</span> <span class="o">+=</span> <span class="p">[</span><span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="n">seq_mris</span><span class="p">[</span><span class="n">x</span><span class="p">])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">SEQ_TABLES</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">blocks</span>
@@ -489,13 +486,8 @@
             <span class="n">seqb_pos_inp</span> <span class="o">=</span> <span class="n">seqb</span><span class="p">[</span><span class="s2">&quot;pos&quot;</span> <span class="o">+</span> <span class="n">suff</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
             <span class="k">assert</span> <span class="p">(</span>
                 <span class="n">seqa_pos_inp</span> <span class="o">==</span> <span class="n">seqb_pos_inp</span>
-            <span class="p">),</span> <span class="s2">&quot;SeqA Pos</span><span class="si">%s</span><span class="s2"> = </span><span class="si">%s</span><span class="s2"> != SeqB Pos</span><span class="si">%s</span><span class="s2"> = </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
-                <span class="n">suff</span><span class="p">,</span>
-                <span class="n">seqa_pos_inp</span><span class="p">,</span>
-                <span class="n">suff</span><span class="p">,</span>
-                <span class="n">seqb_pos_inp</span><span class="p">,</span>
-            <span class="p">)</span>
-            <span class="n">seq_pos</span><span class="p">[</span><span class="n">seqa_pos_inp</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;POS</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">suff</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+            <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;SeqA Pos</span><span class="si">{</span><span class="n">suff</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">seqa_pos_inp</span><span class="si">}</span><span class="s2"> != SeqB Pos</span><span class="si">{</span><span class="n">suff</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">seqb_pos_inp</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">seq_pos</span><span class="p">[</span><span class="n">seqa_pos_inp</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;POS</span><span class="si">{</span><span class="n">suff</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
 
         <span class="c1"># Fix the mres and offsets from the panda positions table</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda</span><span class="p">,</span> <span class="s2">&quot;No PandA&quot;</span>
@@ -517,8 +509,8 @@
                     <span class="n">info</span><span class="o">.</span><span class="n">resolution</span> <span class="o">=</span> <span class="n">positions_table</span><span class="o">.</span><span class="n">scale</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
                     <span class="n">info</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="n">positions_table</span><span class="o">.</span><span class="n">offset</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span><span class="p">[</span><span class="n">scannable</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">trigger_enums</span><span class="p">[(</span><span class="n">scannable</span><span class="p">,</span> <span class="kc">True</span><span class="p">)]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&gt;=POSITION&quot;</span> <span class="o">%</span> <span class="n">pos</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">trigger_enums</span><span class="p">[(</span><span class="n">scannable</span><span class="p">,</span> <span class="kc">False</span><span class="p">)]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&lt;=POSITION&quot;</span> <span class="o">%</span> <span class="n">pos</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">trigger_enums</span><span class="p">[(</span><span class="n">scannable</span><span class="p">,</span> <span class="kc">True</span><span class="p">)]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pos</span><span class="si">}</span><span class="s2">&gt;=POSITION&quot;</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">trigger_enums</span><span class="p">[(</span><span class="n">scannable</span><span class="p">,</span> <span class="kc">False</span><span class="p">)]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pos</span><span class="si">}</span><span class="s2">&lt;=POSITION&quot;</span>
         <span class="c1"># Check we have at least one entry</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_mapping</span><span class="p">,</span> <span class="p">(</span>
             <span class="s2">&quot;None of the seq inputs </span><span class="si">%s</span><span class="s2"> can be mapped to scannable names &quot;</span>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.pmac.parts.pmacchildpart &mdash; malcolm 5.3+9.ga65b4b57 documentation</title>
+  <title>malcolm.modules.pmac.parts.pmacchildpart &mdash; malcolm 5.4+3.gdc54803c documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -31,7 +31,7 @@
             <img src="../../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.3
+                5.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -403,8 +403,8 @@
     <span class="k">def</span> <span class="nf">move_to_start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">cs_port</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">completed_steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Future</span><span class="p">:</span>
         <span class="c1"># Work out what method to call</span>
         <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\d+$&quot;</span><span class="p">,</span> <span class="n">cs_port</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="n">match</span><span class="p">,</span> <span class="s2">&quot;Cannot extract CS number from CS port &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">cs_port</span>
-        <span class="n">move_async</span> <span class="o">=</span> <span class="n">child</span><span class="p">[</span><span class="s2">&quot;moveCS</span><span class="si">%s</span><span class="s2">_async&quot;</span> <span class="o">%</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">()]</span>
+        <span class="k">assert</span> <span class="n">match</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Cannot extract CS number from CS port &#39;</span><span class="si">{</span><span class="n">cs_port</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+        <span class="n">move_async</span> <span class="o">=</span> <span class="n">child</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;moveCS</span><span class="si">{</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">()</span><span class="si">}</span><span class="s2">_async&quot;</span><span class="p">]</span>
         <span class="c1"># Set all the axes to move to the start positions</span>
         <span class="n">first_point</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">get_point</span><span class="p">(</span><span class="n">completed_steps</span><span class="p">)</span>
         <span class="n">args</span> <span class="o">=</span> <span class="p">{}</span>
@@ -577,9 +577,9 @@
                 <span class="c1"># points left in the profile due to sparse generation, so skip the</span>
                 <span class="c1"># check.</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_triggers</span> <span class="o">==</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">MotionTrigger</span><span class="o">.</span><span class="n">EVERY_POINT</span><span class="p">:</span>
-                    <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">profile</span><span class="p">[</span><span class="s2">&quot;timeArray&quot;</span><span class="p">],</span> <span class="p">(</span>
-                        <span class="s2">&quot;Why do we still have points? </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">profile</span>
-                    <span class="p">)</span>
+                    <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">profile</span><span class="p">[</span>
+                        <span class="s2">&quot;timeArray&quot;</span>
+                    <span class="p">],</span> <span class="sa">f</span><span class="s2">&quot;Why do we still have points? </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">profile</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">loading</span> <span class="o">=</span> <span class="kc">False</span>
 
 <div class="viewcode-block" id="PmacChildPart.write_profile_points"><a class="viewcode-back" href="../../../../../build/pmac/parts_api.html#malcolm.modules.pmac.parts.PmacChildPart.write_profile_points">[docs]</a>    <span class="k">def</span> <span class="nf">write_profile_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="n">cs_port</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>

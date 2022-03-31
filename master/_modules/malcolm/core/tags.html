@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.core.tags &mdash; malcolm 5.3+9.ga65b4b57 documentation</title>
+  <title>malcolm.core.tags &mdash; malcolm 5.4+3.gdc54803c documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
@@ -31,7 +31,7 @@
             <img src="../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.3
+                5.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -115,7 +115,7 @@
 
 <div class="viewcode-block" id="version_tag"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.version_tag">[docs]</a><span class="k">def</span> <span class="nf">version_tag</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Tag with the current version of pymalcolm&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="s2">&quot;version:pymalcolm:</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">__version__</span></div>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;version:pymalcolm:</span><span class="si">{</span><span class="n">__version__</span><span class="si">}</span><span class="s2">&quot;</span></div>
 
 
 <div class="viewcode-block" id="Widget"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.Widget">[docs]</a><span class="k">class</span> <span class="nc">Widget</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
@@ -145,7 +145,7 @@
 <span class="sd">            Widget.LED.tag() -&gt; &quot;widget:led&quot;</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span> <span class="o">!=</span> <span class="n">Widget</span><span class="o">.</span><span class="n">NONE</span><span class="p">,</span> <span class="s2">&quot;Widget.NONE has no widget tag&quot;</span>
-        <span class="k">return</span> <span class="s2">&quot;widget:</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span></div></div>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;widget:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span></div></div>
 
 
 <span class="n">port_tag_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(source|sink)Port:(.*):(.*)&quot;</span><span class="p">)</span>
@@ -168,7 +168,7 @@
 <span class="sd">            disconnected_value: What value should the Attribute be set to</span>
 <span class="sd">                when the port is disconnected</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="s2">&quot;sinkPort:</span><span class="si">%s</span><span class="s2">:</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">disconnected_value</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;sinkPort:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">disconnected_value</span><span class="si">}</span><span class="s2">&quot;</span></div>
 
 <div class="viewcode-block" id="Port.source_port_tag"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.Port.source_port_tag">[docs]</a>    <span class="k">def</span> <span class="nf">source_port_tag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connected_value</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Add a tag indicating this is a Source Port of the given type</span>
@@ -177,7 +177,7 @@
 <span class="sd">            connected_value: What value should a Sink Port be set to if</span>
 <span class="sd">                it is connected to this port</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="s2">&quot;sourcePort:</span><span class="si">%s</span><span class="s2">:</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">connected_value</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;sourcePort:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">connected_value</span><span class="si">}</span><span class="s2">&quot;</span></div>
 
 <div class="viewcode-block" id="Port.with_source_port_tag"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.Port.with_source_port_tag">[docs]</a>    <span class="k">def</span> <span class="nf">with_source_port_tag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tags</span><span class="p">,</span> <span class="n">connected_value</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Add a Source Port tag to the tags list, removing any other Source</span>
@@ -210,7 +210,7 @@
 
 <div class="viewcode-block" id="group_tag"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.group_tag">[docs]</a><span class="k">def</span> <span class="nf">group_tag</span><span class="p">(</span><span class="n">group_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Marks this field as belonging to a group&quot;&quot;&quot;</span>
-    <span class="n">tag</span> <span class="o">=</span> <span class="s2">&quot;group:</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">group_name</span>
+    <span class="n">tag</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;group:</span><span class="si">{</span><span class="n">group_name</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="k">return</span> <span class="n">tag</span></div>
 
 
@@ -223,7 +223,7 @@
 <div class="viewcode-block" id="linked_value_tag"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.linked_value_tag">[docs]</a><span class="k">def</span> <span class="nf">linked_value_tag</span><span class="p">(</span><span class="n">mri</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">attribute_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Marks this field as having another attribute in another Block that</span>
 <span class="sd">    should be displayed below it as a linked value&quot;&quot;&quot;</span>
-    <span class="n">tag</span> <span class="o">=</span> <span class="s2">&quot;linkedvalue:</span><span class="si">%s</span><span class="s2">:</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">attribute_name</span><span class="p">,</span> <span class="n">mri</span><span class="p">)</span>
+    <span class="n">tag</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;linkedvalue:</span><span class="si">{</span><span class="n">attribute_name</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">mri</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="k">return</span> <span class="n">tag</span></div>
 
 
@@ -244,7 +244,7 @@
 <span class="sd">        display: The type of formatting to apply to the badge value:</span>
 <span class="sd">            &quot;plus&quot;: If value &lt; 1 then hide, otherwise display +%d</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">tag</span> <span class="o">=</span> <span class="s2">&quot;badgevalue:</span><span class="si">%s</span><span class="s2">:</span><span class="si">%s</span><span class="s2">:</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">display</span><span class="p">,</span> <span class="n">attribute_name</span><span class="p">,</span> <span class="n">mri</span><span class="p">)</span>
+    <span class="n">tag</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;badgevalue:</span><span class="si">{</span><span class="n">display</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">attribute_name</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">mri</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="k">return</span> <span class="n">tag</span></div>
 
 
@@ -255,7 +255,7 @@
 <span class="sd">        iteration: All iterations are sorted in increasing order and done in</span>
 <span class="sd">            batches of the same iteration number</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">tag</span> <span class="o">=</span> <span class="s2">&quot;config:</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">iteration</span>
+    <span class="n">tag</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;config:</span><span class="si">{</span><span class="n">iteration</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="k">return</span> <span class="n">tag</span></div>
 
 

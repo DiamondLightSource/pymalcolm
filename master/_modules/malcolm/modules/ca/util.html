@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.ca.util &mdash; malcolm 5.3+9.ga65b4b57 documentation</title>
+  <title>malcolm.modules.ca.util &mdash; malcolm 5.4+3.gdc54803c documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
@@ -31,7 +31,7 @@
             <img src="../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.3
+                5.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -473,7 +473,7 @@
     <span class="c1"># check connection is ok</span>
     <span class="k">if</span> <span class="n">throw</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">ca_values</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="n">v</span><span class="o">.</span><span class="n">ok</span><span class="p">,</span> <span class="s2">&quot;CA connect failed with </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">v</span><span class="o">.</span><span class="n">state_strings</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">state</span><span class="p">]</span>
+            <span class="k">assert</span> <span class="n">v</span><span class="o">.</span><span class="n">ok</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;CA connect failed with </span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">state_strings</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">state</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="k">return</span> <span class="n">ca_values</span>
 </pre></div>
 

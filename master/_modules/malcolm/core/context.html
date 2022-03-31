@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.core.context &mdash; malcolm 5.3+9.ga65b4b57 documentation</title>
+  <title>malcolm.core.context &mdash; malcolm 5.4+3.gdc54803c documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
@@ -31,7 +31,7 @@
             <img src="../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.3
+                5.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -304,9 +304,9 @@
 <span class="sd">        Args:</span>
 <span class="sd">            future (Future): The future of the original subscription</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="n">future</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pending_unsubscribes</span><span class="p">,</span> <span class="p">(</span>
-            <span class="s2">&quot;</span><span class="si">%r</span><span class="s2"> has already been unsubscribed from&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pending_unsubscribes</span><span class="p">[</span><span class="n">future</span><span class="p">]</span>
-        <span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">future</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pending_unsubscribes</span>
+        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_pending_unsubscribes</span><span class="p">[</span><span class="n">future</span><span class="p">]</span><span class="si">!r}</span><span class="s2"> has already been unsubscribed from&quot;</span>
         <span class="n">subscribe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_requests</span><span class="p">[</span><span class="n">future</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_pending_unsubscribes</span><span class="p">[</span><span class="n">future</span><span class="p">]</span> <span class="o">=</span> <span class="n">subscribe</span>
         <span class="c1"># Clear out the subscription</span>
@@ -331,7 +331,7 @@
         <span class="k">if</span> <span class="n">futures</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">future</span><span class="p">,</span> <span class="n">request</span> <span class="ow">in</span> <span class="n">futures</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">callback</span><span class="p">:</span>
-                    <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Unsubscribing from </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsubscribing from </span><span class="si">{</span><span class="n">request</span><span class="o">.</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                     <span class="n">cothread</span><span class="o">.</span><span class="n">Callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unsubscribe</span><span class="p">,</span> <span class="n">future</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">unsubscribe</span><span class="p">(</span><span class="n">future</span><span class="p">)</span></div>
@@ -444,28 +444,28 @@
             <span class="n">request</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">future</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">Put</span><span class="p">):</span>
                 <span class="n">path</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
-                <span class="n">descriptions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.put_value(</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
+                <span class="n">descriptions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">.put_value(</span><span class="si">{</span><span class="n">request</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">Subscribe</span><span class="p">):</span>
                 <span class="n">path</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
                 <span class="n">func</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subscriptions</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">When</span><span class="p">):</span>
                     <span class="n">descriptions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="s2">&quot;When(</span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">, last=</span><span class="si">%s</span><span class="s2">)&quot;</span>
-                        <span class="o">%</span> <span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">func</span><span class="o">.</span><span class="n">condition_satisfied</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">func</span><span class="o">.</span><span class="n">last</span><span class="p">)</span>
+                        <span class="sa">f</span><span class="s2">&quot;When(</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">func</span><span class="o">.</span><span class="n">condition_satisfied</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">, &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;last=</span><span class="si">{</span><span class="n">func</span><span class="o">.</span><span class="n">last</span><span class="si">}</span><span class="s2">)&quot;</span>
                     <span class="p">)</span>
                 <span class="k">elif</span> <span class="n">func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="c1"># We have already called unsubscribe, but haven&#39;t received</span>
                     <span class="c1"># the Return for it yet</span>
-                    <span class="n">descriptions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Unsubscribed(</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
+                    <span class="n">descriptions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsubscribed(</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">descriptions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Subscribe(</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
+                    <span class="n">descriptions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Subscribe(</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">Post</span><span class="p">):</span>
                 <span class="n">path</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">parameters</span><span class="p">:</span>
                     <span class="n">params</span> <span class="o">=</span> <span class="s2">&quot;...&quot;</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">params</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-                <span class="n">descriptions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">(</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">params</span><span class="p">))</span>
+                <span class="n">descriptions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="n">params</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">descriptions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">request</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">descriptions</span><span class="p">:</span>
@@ -489,16 +489,14 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_q</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">TimeoutError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span>
-                <span class="s2">&quot;Timeout waiting for </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_describe_futures</span><span class="p">(</span><span class="n">futures</span><span class="p">)</span>
-            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Timeout waiting for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_describe_futures</span><span class="p">(</span><span class="n">futures</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">response</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sentinel_stop</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_sentinel_stop</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">elif</span> <span class="n">response</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">STOP</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sentinel_stop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="c1"># This is a stop we should listen to...</span>
                 <span class="k">raise</span> <span class="n">AbortedError</span><span class="p">(</span>
-                    <span class="s2">&quot;Aborted waiting for </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_describe_futures</span><span class="p">(</span><span class="n">futures</span><span class="p">)</span>
+                    <span class="sa">f</span><span class="s2">&quot;Aborted waiting for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_describe_futures</span><span class="p">(</span><span class="n">futures</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">Update</span><span class="p">):</span>
             <span class="c1"># This is an update for a subscription</span>
@@ -545,10 +543,10 @@
 
             <span class="k">def</span> <span class="nf">condition_satisfied</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">bad_values</span> <span class="ow">and</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">bad_values</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="n">BadValueError</span><span class="p">(</span><span class="s2">&quot;Waiting for </span><span class="si">%r</span><span class="s2">, got </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">good_value</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+                    <span class="k">raise</span> <span class="n">BadValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Waiting for </span><span class="si">{</span><span class="n">good_value</span><span class="si">!r}</span><span class="s2">, got </span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="k">return</span> <span class="n">value</span> <span class="o">==</span> <span class="n">good_value</span>
 
-            <span class="n">condition_satisfied</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">&quot;equals_</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">good_value</span>
+            <span class="n">condition_satisfied</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;equals_</span><span class="si">{</span><span class="n">good_value</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">condition_satisfied</span> <span class="o">=</span> <span class="n">condition_satisfied</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">future</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Future</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Context</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>

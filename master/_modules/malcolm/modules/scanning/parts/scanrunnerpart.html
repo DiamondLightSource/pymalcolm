@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.scanning.parts.scanrunnerpart &mdash; malcolm 5.3+9.ga65b4b57 documentation</title>
+  <title>malcolm.modules.scanning.parts.scanrunnerpart &mdash; malcolm 5.4+3.gdc54803c documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -31,7 +31,7 @@
             <img src="../../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.3
+                5.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -306,7 +306,7 @@
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">get_current_datetime</span><span class="p">(</span><span class="n">time_separator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;:&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
-            <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">-%H</span><span class="si">{sep}</span><span class="s2">%M</span><span class="si">{sep}</span><span class="s2">%S&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sep</span><span class="o">=</span><span class="n">time_separator</span><span class="p">)</span>
+            <span class="sa">f</span><span class="s2">&quot;%Y-%m-%d-%H</span><span class="si">{</span><span class="n">time_separator</span><span class="si">}</span><span class="s2">%M</span><span class="si">{</span><span class="n">time_separator</span><span class="si">}</span><span class="s2">%S&quot;</span>
         <span class="p">)</span>
 
     <span class="c1"># noinspection PyPep8Naming</span>
@@ -333,9 +333,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">set_runner_state</span><span class="p">(</span><span class="n">RunnerStates</span><span class="o">.</span><span class="n">FAULT</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">runner_status_message</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;Unidentified key in YAML&quot;</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">&quot;Unidentified object in YAML: </span><span class="si">{key}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">key_name</span><span class="p">)</span>
-                <span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unidentified object in YAML: </span><span class="si">{</span><span class="n">key_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># Count the number of scans configured</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_scans_configured</span><span class="p">()</span>
@@ -355,15 +353,11 @@
         <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_runner_state</span><span class="p">(</span><span class="n">RunnerStates</span><span class="o">.</span><span class="n">FAULT</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">runner_status_message</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s2">&quot;Could not create directory&quot;</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span>
-                <span class="s2">&quot;ERROR: unable to create directory: </span><span class="si">{dir}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="n">directory</span><span class="p">)</span>
-            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ERROR: unable to create directory: </span><span class="si">{</span><span class="n">directory</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">create_and_get_sub_directory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root_directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="n">today_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_current_datetime</span><span class="p">(</span><span class="n">time_separator</span><span class="o">=</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
-        <span class="n">sub_directory</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{root}</span><span class="s2">/</span><span class="si">{scan_mri}</span><span class="s2">-</span><span class="si">{date}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-            <span class="n">root</span><span class="o">=</span><span class="n">root_directory</span><span class="p">,</span> <span class="n">scan_mri</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">,</span> <span class="n">date</span><span class="o">=</span><span class="n">today_str</span>
-        <span class="p">)</span>
+        <span class="n">sub_directory</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">root_directory</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">today_str</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">create_directory</span><span class="p">(</span><span class="n">sub_directory</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">sub_directory</span>
 
@@ -399,7 +393,7 @@
         <span class="n">sub_directory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_and_get_sub_directory</span><span class="p">(</span><span class="n">root_directory</span><span class="p">)</span>
 
         <span class="c1"># Top-level report filepath</span>
-        <span class="n">report_filepath</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{root}</span><span class="s2">/report.txt&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="n">sub_directory</span><span class="p">)</span>
+        <span class="n">report_filepath</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sub_directory</span><span class="si">}</span><span class="s2">/report.txt&quot;</span>
 
         <span class="c1"># Reset counters and set state</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scans_completed</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
@@ -422,9 +416,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">runner_status_message</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s2">&quot;Scans complete&quot;</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">create_and_get_set_directory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sub_directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">set_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="n">set_directory</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{sub_directory}</span><span class="s2">/scanset-</span><span class="si">{set_name}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-            <span class="n">sub_directory</span><span class="o">=</span><span class="n">sub_directory</span><span class="p">,</span> <span class="n">set_name</span><span class="o">=</span><span class="n">set_name</span>
-        <span class="p">)</span>
+        <span class="n">set_directory</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sub_directory</span><span class="si">}</span><span class="s2">/scanset-</span><span class="si">{</span><span class="n">set_name</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">create_directory</span><span class="p">(</span><span class="n">set_directory</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">set_directory</span>
 
@@ -455,9 +447,7 @@
     <span class="k">def</span> <span class="nf">create_and_get_scan_directory</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">set_directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">scan_number</span><span class="p">:</span> <span class="nb">int</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="n">scan_directory</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{set_directory}</span><span class="s2">/scan-</span><span class="si">{scan_number}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-            <span class="n">set_directory</span><span class="o">=</span><span class="n">set_directory</span><span class="p">,</span> <span class="n">scan_number</span><span class="o">=</span><span class="n">scan_number</span>
-        <span class="p">)</span>
+        <span class="n">scan_directory</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">set_directory</span><span class="si">}</span><span class="s2">/scan-</span><span class="si">{</span><span class="n">scan_number</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">create_directory</span><span class="p">(</span><span class="n">scan_directory</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">scan_directory</span>
 
@@ -474,11 +464,7 @@
         <span class="n">report_filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">generator</span><span class="p">:</span> <span class="n">CompoundGenerator</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">runner_status_message</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span>
-            <span class="s2">&quot;Running </span><span class="si">{set_name}</span><span class="s2">: </span><span class="si">{scan_no}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">set_name</span><span class="o">=</span><span class="n">set_name</span><span class="p">,</span> <span class="n">scan_no</span><span class="o">=</span><span class="n">scan_number</span>
-            <span class="p">)</span>
-        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runner_status_message</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Running </span><span class="si">{</span><span class="n">set_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">scan_number</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">,</span> <span class="s2">&quot;No context found&quot;</span>
 
         <span class="c1"># Make individual scan directory</span>
@@ -561,29 +547,20 @@
         <span class="n">end_time</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 
-        <span class="n">report_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{set:&lt;30}{no:&lt;10}{outcome:&lt;14}{start:&lt;20}{end}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-            <span class="nb">set</span><span class="o">=</span><span class="n">set_name</span><span class="p">,</span>
-            <span class="n">no</span><span class="o">=</span><span class="n">scan_number</span><span class="p">,</span>
-            <span class="n">outcome</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_enum_label</span><span class="p">(</span><span class="n">scan_outcome</span><span class="p">),</span>
-            <span class="n">start</span><span class="o">=</span><span class="n">start_time</span><span class="p">,</span>
-            <span class="n">end</span><span class="o">=</span><span class="n">end_time</span><span class="p">,</span>
+        <span class="n">report_str</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">set_name</span><span class="si">:</span><span class="s2">&lt;30</span><span class="si">}{</span><span class="n">scan_number</span><span class="si">:</span><span class="s2">&lt;10</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">get_enum_label</span><span class="p">(</span><span class="n">scan_outcome</span><span class="p">)</span><span class="si">:</span><span class="s2">&lt;14</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">start_time</span><span class="si">:</span><span class="s2">&lt;20</span><span class="si">}{</span><span class="n">end_time</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">report_str</span>
 
     <span class="k">def</span> <span class="nf">add_report_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">report_filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">report_string</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">report_filepath</span><span class="p">,</span> <span class="s2">&quot;a+&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">report_file</span><span class="p">:</span>
-                <span class="n">report_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
-                    <span class="s2">&quot;</span><span class="si">{report_string}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">report_string</span><span class="o">=</span><span class="n">report_string</span><span class="p">)</span>
-                <span class="p">)</span>
+                <span class="n">report_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">report_string</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_runner_state</span><span class="p">(</span><span class="n">RunnerStates</span><span class="o">.</span><span class="n">FAULT</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">runner_status_message</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s2">&quot;Error writing report file&quot;</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span>
-                <span class="s2">&quot;Could not write to report file </span><span class="si">{filepath}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">filepath</span><span class="o">=</span><span class="n">report_filepath</span>
-                <span class="p">)</span>
-            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not write to report file </span><span class="si">{</span><span class="n">report_filepath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">get_enum_label</span><span class="p">(</span><span class="n">enum_state</span><span class="p">:</span> <span class="n">Enum</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>

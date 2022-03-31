@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.pandablocks.controllers.pandamanagercontroller &mdash; malcolm 5.3+9.ga65b4b57 documentation</title>
+  <title>malcolm.modules.pandablocks.controllers.pandamanagercontroller &mdash; malcolm 5.4+3.gdc54803c documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -31,7 +31,7 @@
             <img src="../../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.3
+                5.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -280,7 +280,7 @@
                 <span class="c1"># Look through the BlockData for things we are interested in</span>
                 <span class="k">for</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">field_data</span> <span class="ow">in</span> <span class="n">block_data</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                     <span class="k">if</span> <span class="n">field_data</span><span class="o">.</span><span class="n">field_type</span> <span class="o">==</span> <span class="s2">&quot;pos_out&quot;</span><span class="p">:</span>
-                        <span class="n">pos_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">block_name</span><span class="p">,</span> <span class="n">field_name</span><span class="p">))</span>
+                        <span class="n">pos_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">block_name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">field_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
                 <span class="c1"># Make the child controller and add it to the process</span>
                 <span class="n">controller</span><span class="p">,</span> <span class="n">child_part</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_child_block</span><span class="p">(</span><span class="n">block_name</span><span class="p">,</span> <span class="n">block_data</span><span class="p">)</span>
@@ -303,7 +303,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_bus_fields</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">pos_names</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">pos_name</span> <span class="ow">in</span> <span class="n">pos_names</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">suffix</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;CAPTURE&quot;</span><span class="p">,</span> <span class="s2">&quot;UNITS&quot;</span><span class="p">,</span> <span class="s2">&quot;SCALE&quot;</span><span class="p">,</span> <span class="s2">&quot;OFFSET&quot;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_bus_fields</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pos_name</span><span class="p">,</span> <span class="n">suffix</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_bus_fields</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pos_name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="c1"># Handle the bit_outs, keeping a list for toggling and adding them</span>
         <span class="c1"># to the set of things that the busses need</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_bit_outs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">busses</span><span class="o">.</span><span class="n">bits</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">name</span><span class="p">}</span>
@@ -315,9 +315,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">handle_changes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">get_changes</span><span class="p">())</span>
         <span class="c1"># Then once more to let bit_outs toggle back</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">handle_changes</span><span class="p">(())</span>
-        <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bit_out_changes</span><span class="p">,</span> <span class="p">(</span>
-            <span class="s2">&quot;There are still bit_out changes </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bit_out_changes</span>
-        <span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bit_out_changes</span>
+        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;There are still bit_out changes </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_bit_out_changes</span><span class="si">}</span><span class="s2">&quot;</span>
 
     <span class="k">def</span> <span class="nf">_make_busses</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PandABussesPart</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">PandABussesPart</span><span class="p">(</span><span class="s2">&quot;busses&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">)</span>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.core.part &mdash; malcolm 5.3+9.ga65b4b57 documentation</title>
+  <title>malcolm.core.part &mdash; malcolm 5.4+3.gdc54803c documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
@@ -31,7 +31,7 @@
             <img src="../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.3
+                5.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -159,7 +159,7 @@
             <span class="k">for</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
                     <span class="k">return</span> <span class="n">field</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No field named </span><span class="si">%s</span><span class="s2"> found&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,))</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No field named </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> found&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">add_method_model</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -177,16 +177,16 @@
             <span class="n">call_types</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="s2">&quot;call_types&quot;</span><span class="p">,</span> <span class="p">{})</span>
             <span class="n">context_anno</span><span class="p">:</span> <span class="n">Anno</span> <span class="o">=</span> <span class="n">call_types</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;context&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
             <span class="k">assert</span> <span class="n">context_anno</span><span class="p">,</span> <span class="p">(</span>
-                <span class="s2">&quot;Func </span><span class="si">%s</span><span class="s2"> needs_context, but has no &#39;context&#39; anno. Did &quot;</span>
-                <span class="s2">&quot;you forget the @add_call_types decorator?&quot;</span> <span class="o">%</span> <span class="n">func</span>
+                <span class="sa">f</span><span class="s2">&quot;Func </span><span class="si">{</span><span class="n">func</span><span class="si">}</span><span class="s2"> needs_context, but has no &#39;context&#39; anno. Did &quot;</span>
+                <span class="s2">&quot;you forget the @add_call_types decorator?&quot;</span>
             <span class="p">)</span>
             <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">call_types</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;context&quot;</span><span class="p">,</span> <span class="p">(</span>
-                <span class="s2">&quot;Func </span><span class="si">%s</span><span class="s2"> needs_context, so &#39;context&#39; needs to be the first &quot;</span>
-                <span class="s2">&quot;argument it takes&quot;</span> <span class="o">%</span> <span class="n">func</span>
+                <span class="sa">f</span><span class="s2">&quot;Func </span><span class="si">{</span><span class="n">func</span><span class="si">}</span><span class="s2"> needs_context, so &#39;context&#39; needs to be the first &quot;</span>
+                <span class="s2">&quot;argument it takes&quot;</span>
             <span class="p">)</span>
             <span class="k">assert</span> <span class="n">context_anno</span><span class="o">.</span><span class="n">typ</span> <span class="ow">is</span> <span class="n">Context</span><span class="p">,</span> <span class="p">(</span>
-                <span class="s2">&quot;Func </span><span class="si">%s</span><span class="s2"> needs_context, but &#39;context&#39; has type </span><span class="si">%s</span><span class="s2"> rather than&quot;</span>
-                <span class="s2">&quot;Context&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">context_anno</span><span class="o">.</span><span class="n">typ</span><span class="p">)</span>
+                <span class="sa">f</span><span class="s2">&quot;Func </span><span class="si">{</span><span class="n">func</span><span class="si">}</span><span class="s2"> needs_context, but &#39;context&#39; has type &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">context_anno</span><span class="o">.</span><span class="n">type</span><span class="si">}</span><span class="s2"> rather than Context&quot;</span>
             <span class="p">)</span>
             <span class="n">without</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;context&quot;</span><span class="p">,)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -216,19 +216,14 @@
         <span class="n">writeable_func</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Callable&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">needs_context</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="n">CAMEL_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="s2">&quot;Field </span><span class="si">%r</span><span class="s2"> published by </span><span class="si">%s</span><span class="s2"> is not camelCase&quot;</span> <span class="o">%</span> <span class="p">(</span>
-            <span class="n">name</span><span class="p">,</span>
-            <span class="n">owner</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="k">assert</span> <span class="n">CAMEL_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span>
+            <span class="n">name</span>
+        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Field </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> published by </span><span class="si">{</span><span class="n">owner</span><span class="si">}</span><span class="s2"> is not camelCase&quot;</span>
         <span class="k">for</span> <span class="n">o</span><span class="p">,</span> <span class="n">fields</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">existing</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">fields</span> <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">name</span><span class="p">]</span>
             <span class="k">assert</span> <span class="p">(</span>
                 <span class="ow">not</span> <span class="n">existing</span>
-            <span class="p">),</span> <span class="s2">&quot;Field </span><span class="si">%r</span><span class="s2"> published by </span><span class="si">%s</span><span class="s2"> would overwrite one made by </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
-                <span class="n">name</span><span class="p">,</span>
-                <span class="n">owner</span><span class="p">,</span>
-                <span class="n">o</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Field </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> published by </span><span class="si">{</span><span class="n">owner</span><span class="si">}</span><span class="s2"> would overwrite one made by </span><span class="si">{</span><span class="n">o</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="n">part_fields</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="p">[])</span>
         <span class="n">part_fields</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">cast</span><span class="p">(</span><span class="n">Callable</span><span class="p">,</span> <span class="n">writeable_func</span><span class="p">),</span> <span class="n">needs_context</span><span class="p">))</span>
 
@@ -246,9 +241,9 @@
             <span class="n">callback</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reportable_infos</span><span class="p">[</span><span class="n">typ</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Don&#39;t know how to report a </span><span class="si">%s</span><span class="s2">, only </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Don&#39;t know how to report a </span><span class="si">{</span><span class="n">typ</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">, only &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="vm">__name__</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reportable_infos</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
                 <span class="s2">&quot;Did you use the wrong type of Controller?&quot;</span>
-                <span class="o">%</span> <span class="p">(</span><span class="n">typ</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="vm">__name__</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reportable_infos</span><span class="p">])</span>
             <span class="p">)</span>
         <span class="n">callback</span><span class="p">(</span><span class="n">reporter</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span>
 
@@ -259,7 +254,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">APartName</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">assert</span> <span class="n">PART_NAME_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="p">(</span>
             <span class="s2">&quot;Expected Alphanumeric part name (dashes and underscores allowed)&quot;</span>
-            <span class="o">+</span> <span class="s2">&quot; got </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">name</span>
+            <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot; got </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">&quot;</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_logger</span><span class="p">(</span><span class="n">part_name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">name</span>

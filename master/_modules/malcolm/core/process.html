@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.core.process &mdash; malcolm 5.3+9.ga65b4b57 documentation</title>
+  <title>malcolm.core.process &mdash; malcolm 5.4+3.gdc54803c documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
@@ -31,7 +31,7 @@
             <img src="../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.3
+                5.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -330,9 +330,9 @@
 <span class="sd">                object. None means forever</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">controller</span> <span class="ow">in</span> <span class="n">controllers</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="n">controller</span><span class="o">.</span><span class="n">mri</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controllers</span><span class="p">,</span> <span class="p">(</span>
-                <span class="s2">&quot;Controller already exists for </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">controller</span><span class="o">.</span><span class="n">mri</span>
-            <span class="p">)</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="n">controller</span><span class="o">.</span><span class="n">mri</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controllers</span>
+            <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Controller already exists for </span><span class="si">{</span><span class="n">controller</span><span class="o">.</span><span class="n">mri</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_controllers</span><span class="p">[</span><span class="n">controller</span><span class="o">.</span><span class="n">mri</span><span class="p">]</span> <span class="o">=</span> <span class="n">controller</span>
             <span class="n">controller</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">:</span>
@@ -359,7 +359,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controllers</span><span class="p">[</span><span class="n">mri</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No controller registered for mri &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">mri</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No controller registered for mri &#39;</span><span class="si">{</span><span class="n">mri</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Process.block_view"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.Process.block_view">[docs]</a>    <span class="k">def</span> <span class="nf">block_view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mri</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Get a Block view from a Controller with given mri&quot;&quot;&quot;</span>

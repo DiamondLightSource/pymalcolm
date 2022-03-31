@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.ADPandABlocks.parts.kinematicssavupart &mdash; malcolm 5.3+9.ga65b4b57 documentation</title>
+  <title>malcolm.modules.ADPandABlocks.parts.kinematicssavupart &mdash; malcolm 5.4+3.gdc54803c documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -31,7 +31,7 @@
             <img src="../../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.3
+                5.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -265,9 +265,9 @@
                 <span class="n">q_value</span> <span class="o">=</span> <span class="n">pmac</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">CS_AXIS_NAMES</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">mapping</span><span class="o">.</span><span class="n">cs_axis</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">q_value_mapping</span><span class="p">[</span><span class="n">q_value</span><span class="p">]</span> <span class="o">=</span> <span class="n">mapping</span><span class="o">.</span><span class="n">scannable</span>
 
-        <span class="k">assert</span> <span class="s2">&quot;.&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nxs_full_filename</span><span class="p">,</span> <span class="p">(</span>
-            <span class="s2">&quot;File extension for </span><span class="si">%r</span><span class="s2"> should be supplied&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">nxs_full_filename</span>
-        <span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="s2">&quot;.&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nxs_full_filename</span>
+        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;File extension for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">nxs_full_filename</span><span class="si">!r}</span><span class="s2"> should be supplied&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">pos_table</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">panda_mri</span><span class="p">)</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">value</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos_table</span><span class="p">,</span> <span class="s2">&quot;No pos table&quot;</span>
@@ -296,7 +296,7 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">use_min_max</span> <span class="o">=</span> <span class="kc">False</span>
 
             <span class="c1"># Check there was a dataset for the axis</span>
-            <span class="k">assert</span> <span class="n">dataset_i</span><span class="p">,</span> <span class="s2">&quot;No value dataset for </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">scannable</span>
+            <span class="k">assert</span> <span class="n">dataset_i</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;No value dataset for </span><span class="si">{</span><span class="n">scannable</span><span class="si">}</span><span class="s2">&quot;</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_min_max</span><span class="p">:</span>
             <span class="n">dtypes</span><span class="p">[</span><span class="s2">&quot;min&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">DatasetType</span><span class="o">.</span><span class="n">POSITION_MIN</span>
@@ -331,7 +331,7 @@
                     <span class="k">elif</span> <span class="n">info</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">DatasetType</span><span class="o">.</span><span class="n">POSITION_VALUE</span><span class="p">:</span>
                         <span class="n">value_i</span> <span class="o">=</span> <span class="n">info</span>
             <span class="c1"># Always make sure .value is there</span>
-            <span class="k">assert</span> <span class="n">value_i</span><span class="p">,</span> <span class="s2">&quot;No value dataset for </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">scannable</span>
+            <span class="k">assert</span> <span class="n">value_i</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;No value dataset for </span><span class="si">{</span><span class="n">scannable</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">p_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="n">PVar</span><span class="p">(</span>
                     <span class="n">path</span><span class="o">=</span><span class="n">value_i</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
@@ -403,7 +403,7 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">savu_variables</span><span class="p">[</span><span class="n">split_var</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">split_var</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Error getting kinematic input variables from </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">raw_input_vars</span>
+                <span class="sa">f</span><span class="s2">&quot;Error getting kinematic input variables from </span><span class="si">{</span><span class="n">raw_input_vars</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
 
 <div class="viewcode-block" id="KinematicsSavuPart.create_files"><a class="viewcode-back" href="../../../../../build/ADPandABlocks/parts_api.html#malcolm.modules.ADPandABlocks.parts.KinematicsSavuPart.create_files">[docs]</a>    <span class="k">def</span> <span class="nf">create_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -453,7 +453,7 @@
 
             <span class="c1"># Link to external P values</span>
             <span class="k">for</span> <span class="n">p_var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">p_vars</span><span class="p">:</span>
-                <span class="n">savu_file</span><span class="p">[</span><span class="sa">u</span><span class="s2">&quot;/entry/inputs/&quot;</span> <span class="o">+</span> <span class="n">p_var</span><span class="o">.</span><span class="n">p_number</span><span class="p">]</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">ExternalLink</span><span class="p">(</span>
+                <span class="n">savu_file</span><span class="p">[</span><span class="s2">&quot;/entry/inputs/&quot;</span> <span class="o">+</span> <span class="n">p_var</span><span class="o">.</span><span class="n">p_number</span><span class="p">]</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">ExternalLink</span><span class="p">(</span>
                     <span class="n">p_var</span><span class="o">.</span><span class="n">file</span><span class="p">,</span> <span class="n">p_var</span><span class="o">.</span><span class="n">path</span>
                 <span class="p">)</span>
 
@@ -493,7 +493,7 @@
                     <span class="n">layout</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">VirtualLayout</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
                     <span class="n">v_source</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">VirtualSource</span><span class="p">(</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">savu_full_filename</span><span class="p">,</span>
-                        <span class="s2">&quot;/entry/final_result_q</span><span class="si">%s</span><span class="s2">/data&quot;</span> <span class="o">%</span> <span class="n">datatype</span><span class="p">,</span>
+                        <span class="sa">f</span><span class="s2">&quot;/entry/final_result_q</span><span class="si">{</span><span class="n">datatype</span><span class="si">}</span><span class="s2">/data&quot;</span><span class="p">,</span>
                         <span class="n">shape</span><span class="o">=</span><span class="n">virtual_shape</span><span class="p">,</span>
                     <span class="p">)</span>
                     <span class="n">layout</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">v_source</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
@@ -516,7 +516,7 @@
             <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">dimensions</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">dim</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
                     <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span>
-                        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;/entry/</span><span class="si">%s</span><span class="s2">_set/</span><span class="si">%s</span><span class="s2">.value_set&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="n">axis</span><span class="p">),</span>
+                        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;/entry/</span><span class="si">{</span><span class="n">axis</span><span class="si">}</span><span class="s2">_set/</span><span class="si">{</span><span class="n">axis</span><span class="si">}</span><span class="s2">.value_set&quot;</span><span class="p">,</span>
                         <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
                         <span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">dim</span><span class="o">.</span><span class="n">get_positions</span><span class="p">(</span><span class="n">axis</span><span class="p">)],</span>
                     <span class="p">)</span></div></div>

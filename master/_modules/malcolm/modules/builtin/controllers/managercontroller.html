@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.builtin.controllers.managercontroller &mdash; malcolm 5.3+9.ga65b4b57 documentation</title>
+  <title>malcolm.modules.builtin.controllers.managercontroller &mdash; malcolm 5.4+3.gdc54803c documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -31,7 +31,7 @@
             <img src="../../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.3
+                5.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -197,7 +197,7 @@
         <span class="n">description</span><span class="p">:</span> <span class="n">ADescription</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">mri</span><span class="o">=</span><span class="n">mri</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">config_dir</span><span class="p">),</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> is not a directory&quot;</span> <span class="o">%</span> <span class="n">config_dir</span>
+        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">config_dir</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">config_dir</span><span class="si">}</span><span class="s2"> is not a directory&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config_dir</span> <span class="o">=</span> <span class="n">config_dir</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">initial_design</span> <span class="o">=</span> <span class="n">initial_design</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">use_git</span> <span class="o">=</span> <span class="n">use_git</span>
@@ -209,9 +209,9 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">git_name</span> <span class="o">=</span> <span class="s2">&quot;Malcolm&quot;</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">git_config</span> <span class="o">=</span> <span class="p">(</span>
                     <span class="s2">&quot;-c&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;user.name=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">git_name</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;user.name=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">git_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
                     <span class="s2">&quot;-c&quot;</span><span class="p">,</span>
-                    <span class="s1">&#39;user.email=&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">git_email</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s1">&#39;user.email=&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">git_email</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">git_config</span> <span class="o">=</span> <span class="p">()</span>
@@ -350,9 +350,9 @@
     <span class="k">def</span> <span class="nf">set_exports</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="c1"># Validate</span>
         <span class="k">for</span> <span class="n">export_name</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">export</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="n">CAMEL_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">export_name</span><span class="p">),</span> <span class="p">(</span>
-                <span class="s2">&quot;Field </span><span class="si">%r</span><span class="s2"> is not camelCase&quot;</span> <span class="o">%</span> <span class="n">export_name</span>
-            <span class="p">)</span>
+            <span class="k">assert</span> <span class="n">CAMEL_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span>
+                <span class="n">export_name</span>
+            <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Field </span><span class="si">{</span><span class="n">export_name</span><span class="si">!r}</span><span class="s2"> is not camelCase&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">changes_squashed</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">update_modified</span><span class="p">()</span>
@@ -377,7 +377,7 @@
                         <span class="c1"># Attribute flagged as been modified, is it by the</span>
                         <span class="c1"># context we passed to the part?</span>
                         <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">context_modified</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="p">{}):</span>
-                            <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;(We modified) </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">message</span><span class="p">,)</span>
+                            <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;(We modified) </span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span>
                         <span class="k">else</span><span class="p">:</span>
                             <span class="n">only_modified_by_us</span> <span class="o">=</span> <span class="kc">False</span>
                         <span class="n">message_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
@@ -417,7 +417,7 @@
                 <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
                     <span class="n">fields</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">part_exportable</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="p">[])</span>
                     <span class="k">for</span> <span class="n">attr_name</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">:</span>
-                        <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">part</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">))</span>
+                        <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">part</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">attr_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="n">changed_names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">names</span><span class="p">)</span><span class="o">.</span><span class="n">symmetric_difference</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span>
                 <span class="p">)</span>
@@ -600,14 +600,14 @@
         <span class="n">text</span> <span class="o">=</span> <span class="n">json_encode</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
         <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validated_config_filename</span><span class="p">(</span><span class="n">design</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;/tmp&quot;</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Saving to tmp directory </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saving to tmp directory </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
         <span class="c1"># Run a sync command to make sure we flush this file to disk</span>
         <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s2">&quot;sync&quot;</span><span class="p">)</span>
         <span class="c1"># Try and commit the file to git, don&#39;t care if it fails</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_run_git_cmd</span><span class="p">(</span><span class="s2">&quot;add&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Saved </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">,</span> <span class="n">design</span><span class="p">)</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Saved </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">design</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_run_git_cmd</span><span class="p">(</span><span class="s2">&quot;commit&quot;</span><span class="p">,</span> <span class="s2">&quot;--allow-empty&quot;</span><span class="p">,</span> <span class="s2">&quot;-m&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mark_clean</span><span class="p">(</span><span class="n">design</span><span class="p">)</span>
 

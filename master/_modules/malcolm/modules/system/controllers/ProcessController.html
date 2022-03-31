@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.system.controllers.ProcessController &mdash; malcolm 5.3+9.ga65b4b57 documentation</title>
+  <title>malcolm.modules.system.controllers.ProcessController &mdash; malcolm 5.4+3.gdc54803c documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -31,7 +31,7 @@
             <img src="../../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.3
+                5.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -132,31 +132,31 @@
 
 <span class="k">def</span> <span class="nf">await_ioc_start</span><span class="p">(</span><span class="n">stats</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
     <span class="n">cothread</span><span class="o">.</span><span class="n">Yield</span><span class="p">()</span>
-    <span class="n">pid_rbv</span> <span class="o">=</span> <span class="n">catools</span><span class="o">.</span><span class="n">caget</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">:PID&quot;</span> <span class="o">%</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">pid_rbv</span> <span class="o">=</span> <span class="n">catools</span><span class="o">.</span><span class="n">caget</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">:PID&quot;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">pid_rbv</span><span class="p">)</span> <span class="o">!=</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">():</span>
         <span class="k">raise</span> <span class="n">BadValueError</span><span class="p">(</span>
             <span class="s2">&quot;Got back different PID: &quot;</span>
             <span class="o">+</span> <span class="s2">&quot;is there another system instance on the machine?&quot;</span>
         <span class="p">)</span>
     <span class="n">catools</span><span class="o">.</span><span class="n">caput</span><span class="p">(</span>
-        <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">:YAML:PATH&quot;</span> <span class="o">%</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">stats</span><span class="p">[</span><span class="s2">&quot;yaml_path&quot;</span><span class="p">],</span> <span class="n">datatype</span><span class="o">=</span><span class="n">catools</span><span class="o">.</span><span class="n">DBR_CHAR_STR</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">:YAML:PATH&quot;</span><span class="p">,</span> <span class="n">stats</span><span class="p">[</span><span class="s2">&quot;yaml_path&quot;</span><span class="p">],</span> <span class="n">datatype</span><span class="o">=</span><span class="n">catools</span><span class="o">.</span><span class="n">DBR_CHAR_STR</span>
     <span class="p">)</span>
     <span class="n">catools</span><span class="o">.</span><span class="n">caput</span><span class="p">(</span>
-        <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">:PYMALCOLM:PATH&quot;</span> <span class="o">%</span> <span class="n">prefix</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">:PYMALCOLM:PATH&quot;</span><span class="p">,</span>
         <span class="n">stats</span><span class="p">[</span><span class="s2">&quot;pymalcolm_path&quot;</span><span class="p">],</span>
         <span class="n">datatype</span><span class="o">=</span><span class="n">catools</span><span class="o">.</span><span class="n">DBR_CHAR_STR</span><span class="p">,</span>
     <span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">start_ioc</span><span class="p">(</span><span class="n">stats</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
-    <span class="n">db_macros</span> <span class="o">=</span> <span class="s2">&quot;prefix=&#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">prefix</span>
+    <span class="n">db_macros</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;prefix=&#39;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">epics_base</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;EPICS_BASE&quot;</span><span class="p">]</span>
     <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">BadValueError</span><span class="p">(</span><span class="s2">&quot;EPICS base not defined in environment&quot;</span><span class="p">)</span>
     <span class="n">softIoc_bin</span> <span class="o">=</span> <span class="n">epics_base</span> <span class="o">+</span> <span class="s2">&quot;/bin/linux-x86_64/softIoc&quot;</span>
     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">stats</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">db_macros</span> <span class="o">+=</span> <span class="s2">&quot;,</span><span class="si">%s</span><span class="s2">=&#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="n">db_macros</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;,</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">=&#39;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
     <span class="n">root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)))[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">db_template</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s2">&quot;db&quot;</span><span class="p">,</span> <span class="s2">&quot;system.template&quot;</span><span class="p">)</span>
     <span class="n">ioc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span>
@@ -191,9 +191,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">bl_iocs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bl_iocs</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stats</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="c1"># TODO: the following stuff is all Linux-specific....</span>
-        <span class="n">sys_call_bytes</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;/proc/</span><span class="si">%s</span><span class="s2">/cmdline&quot;</span> <span class="o">%</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">(),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;</span><span class="se">\0</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="p">)</span>
+        <span class="n">sys_call_bytes</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;/proc/</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span><span class="si">}</span><span class="s2">/cmdline&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;</span><span class="se">\0</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">sys_call</span> <span class="o">=</span> <span class="p">[</span><span class="n">el</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">sys_call_bytes</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;pymalcolm_path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">sys_call</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;yaml_path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">sys_call</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
@@ -204,7 +202,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;pymalcolm_ver&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">__version__</span>
         <span class="n">hostname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">uname</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;kernel&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">uname</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="n">os</span><span class="o">.</span><span class="n">uname</span><span class="p">()[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;kernel&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">uname</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">uname</span><span class="p">()[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;hostname&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">hostname</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hostname</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">39</span> <span class="k">else</span> <span class="n">hostname</span><span class="p">[:</span><span class="mi">35</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;...&quot;</span>
         <span class="p">)</span>
@@ -254,14 +252,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">ioc</span> <span class="o">=</span> <span class="n">start_ioc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">get_ioc_list</span><span class="p">()</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="sd">&quot;&quot;&quot;\</span>
-<span class="sd">pymalcolm %(pymalcolm_ver)s started</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;pymalcolm </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;pymalcolm_ver&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> started</span>
 
-<span class="sd">Path: %(pymalcolm_path)s</span>
-<span class="sd">Yaml: %(yaml_path)s&quot;&quot;&quot;</span>
-            <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">stats</span>
-        <span class="p">)</span>
+<span class="s2">Path: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;pymalcolm_path&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">Yaml: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;yaml_path&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_run_git_cmd</span><span class="p">(</span><span class="s2">&quot;commit&quot;</span><span class="p">,</span> <span class="s2">&quot;--allow-empty&quot;</span><span class="p">,</span> <span class="s2">&quot;-m&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">set_default_layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

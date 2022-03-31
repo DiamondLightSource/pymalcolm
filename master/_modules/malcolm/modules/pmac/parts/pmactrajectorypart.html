@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.pmac.parts.pmactrajectorypart &mdash; malcolm 5.3+9.ga65b4b57 documentation</title>
+  <title>malcolm.modules.pmac.parts.pmactrajectorypart &mdash; malcolm 5.4+3.gdc54803c documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -31,7 +31,7 @@
             <img src="../../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.3
+                5.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -150,10 +150,9 @@
     <span class="k">if</span> <span class="n">array</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_points</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="p">)</span> <span class="o">==</span> <span class="n">num_points</span><span class="p">,</span> <span class="s2">&quot;Array </span><span class="si">%s</span><span class="s2"> should be </span><span class="si">%d</span><span class="s2"> points long&quot;</span> <span class="o">%</span> <span class="p">(</span>
-            <span class="n">array</span><span class="p">,</span>
-            <span class="n">num_points</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="p">)</span> <span class="o">==</span> <span class="n">num_points</span>
+        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Array </span><span class="si">{</span><span class="n">array</span><span class="si">}</span><span class="s2"> should be </span><span class="si">{</span><span class="n">num_points</span><span class="si">}</span><span class="s2"> points long&quot;</span>
     <span class="k">return</span> <span class="n">array</span>
 
 
@@ -168,8 +167,8 @@
     <span class="s2">&quot;userPrograms&quot;</span><span class="p">,</span>
     <span class="s2">&quot;pointsToBuild&quot;</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="nd">@builtin</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">no_save</span><span class="p">(</span><span class="s2">&quot;use</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">CS_AXIS_NAMES</span><span class="p">)</span>
-<span class="nd">@builtin</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">no_save</span><span class="p">(</span><span class="s2">&quot;positions</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">CS_AXIS_NAMES</span><span class="p">)</span>
+<span class="nd">@builtin</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">no_save</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;use</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">CS_AXIS_NAMES</span><span class="p">)</span>
+<span class="nd">@builtin</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">no_save</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;positions</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">CS_AXIS_NAMES</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">PmacTrajectoryPart</span><span class="p">(</span><span class="n">builtin</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">ChildPart</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -225,15 +224,13 @@
             <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">trajectoryProgVersion</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;=</span> <span class="n">FALLBACK_TRAJ_PROGRAM_NUM</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;pmac trajectory program is version </span><span class="si">{</span><span class="n">FALLBACK_TRAJ_PROGRAM_NUM</span><span class="si">}</span><span class="s2">&quot;</span>
-                    <span class="s2">&quot; version </span><span class="si">{TRAJECTORY_PROGRAM_NUM}</span><span class="s2"> is recommended&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot; version </span><span class="si">{</span><span class="n">TRAJECTORY_PROGRAM_NUM</span><span class="si">}</span><span class="s2"> is recommended&quot;</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="p">(</span>
                     <span class="n">IncompatibleError</span><span class="p">(</span>
-                        <span class="s2">&quot;pmac trajectory program </span><span class="si">{}</span><span class="s2"> detected. &quot;</span>
-                        <span class="s2">&quot;Malcolm requires </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                            <span class="n">child</span><span class="o">.</span><span class="n">trajectoryProgVersion</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">TRAJECTORY_PROGRAM_NUM</span>
-                        <span class="p">)</span>
+                        <span class="sa">f</span><span class="s2">&quot;pmac trajectory program </span><span class="si">{</span><span class="n">child</span><span class="o">.</span><span class="n">trajectoryProgVersion</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;detected. Malcolm requires </span><span class="si">{</span><span class="n">TRAJECTORY_PROGRAM_NUM</span><span class="si">}</span><span class="s2">&quot;</span>
                     <span class="p">)</span>
                 <span class="p">)</span>
 
@@ -251,11 +248,11 @@
                 <span class="n">child</span><span class="o">.</span><span class="n">cs</span><span class="o">.</span><span class="n">put_value</span><span class="p">(</span><span class="n">csPort</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">&quot;Cannot set CS to </span><span class="si">%s</span><span class="s2">, did you use a compound_motor_block &quot;</span>
-                    <span class="s2">&quot;for a raw motor?</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">csPort</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+                    <span class="sa">f</span><span class="s2">&quot;Cannot set CS to </span><span class="si">{</span><span class="n">csPort</span><span class="si">}</span><span class="s2">, did you use a compound_motor_block &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;for a raw motor?</span><span class="se">\n</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">)</span>
             <span class="c1"># Tell the trajectory scans which of the arrays to use</span>
-            <span class="n">arrays</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;use</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">axis</span><span class="p">:</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">use_axes</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">CS_AXIS_NAMES</span><span class="p">}</span>
+            <span class="n">arrays</span> <span class="o">=</span> <span class="p">{</span><span class="sa">f</span><span class="s2">&quot;use</span><span class="si">{</span><span class="n">axis</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">use_axes</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">CS_AXIS_NAMES</span><span class="p">}</span>
             <span class="n">child</span><span class="o">.</span><span class="n">put_attribute_values</span><span class="p">(</span><span class="n">arrays</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># This is an append</span>
@@ -271,7 +268,7 @@
         <span class="p">)</span>
         <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">use_axes</span><span class="p">:</span>
             <span class="n">demand</span> <span class="o">=</span> <span class="nb">locals</span><span class="p">()[</span><span class="n">axis</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span>
-            <span class="n">attribute_values</span><span class="p">[</span><span class="s2">&quot;positions</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">axis</span><span class="p">]</span> <span class="o">=</span> <span class="n">demand</span>
+            <span class="n">attribute_values</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;positions</span><span class="si">{</span><span class="n">axis</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">demand</span>
         <span class="n">child</span><span class="o">.</span><span class="n">put_attribute_values</span><span class="p">(</span><span class="n">attribute_values</span><span class="p">)</span>
         <span class="c1"># Write the profile</span>
         <span class="n">action</span><span class="p">()</span>

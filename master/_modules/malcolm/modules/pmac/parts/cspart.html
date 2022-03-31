@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.pmac.parts.cspart &mdash; malcolm 5.3+9.ga65b4b57 documentation</title>
+  <title>malcolm.modules.pmac.parts.cspart &mdash; malcolm 5.4+3.gdc54803c documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -31,7 +31,7 @@
             <img src="../../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.3
+                5.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -182,7 +182,7 @@
         <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">CS_AXIS_NAMES</span><span class="p">:</span>
             <span class="n">demand</span> <span class="o">=</span> <span class="nb">locals</span><span class="p">()[</span><span class="n">axis</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span>
             <span class="k">if</span> <span class="n">demand</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">attribute_values</span><span class="p">[</span><span class="s2">&quot;demand</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">axis</span><span class="p">]</span> <span class="o">=</span> <span class="n">demand</span>
+                <span class="n">attribute_values</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;demand</span><span class="si">{</span><span class="n">axis</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">demand</span>
         <span class="n">fs</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">put_attribute_values_async</span><span class="p">(</span><span class="n">attribute_values</span><span class="p">)</span>
         <span class="c1"># Wait for the demand to have been received by the PV</span>
         <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">attribute_values</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>

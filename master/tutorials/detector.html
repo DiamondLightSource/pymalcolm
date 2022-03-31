@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Detector Tutorial &mdash; malcolm 5.3+9.ga65b4b57 documentation</title>
+  <title>Detector Tutorial &mdash; malcolm 5.4+3.gdc54803c documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -34,7 +34,7 @@
             <img src="../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.3
+                5.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -608,7 +608,7 @@ pass them to all Parts that have registered interest in them.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="k">def</span> <span class="nf">_create_infos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detector_name</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
         <span class="c1"># Main dataset</span>
         <span class="k">yield</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">DatasetProducedInfo</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.data&quot;</span> <span class="o">%</span> <span class="n">detector_name</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">detector_name</span><span class="si">}</span><span class="s2">.data&quot;</span><span class="p">,</span>
             <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
             <span class="nb">type</span><span class="o">=</span><span class="n">scanning</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">DatasetType</span><span class="o">.</span><span class="n">PRIMARY</span><span class="p">,</span>
             <span class="n">rank</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_generator</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span>
@@ -617,7 +617,7 @@ pass them to all Parts that have registered interest in them.</p>
         <span class="p">)</span>
         <span class="c1"># Sum</span>
         <span class="k">yield</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">DatasetProducedInfo</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.sum&quot;</span> <span class="o">%</span> <span class="n">detector_name</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">detector_name</span><span class="si">}</span><span class="s2">.sum&quot;</span><span class="p">,</span>
             <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
             <span class="nb">type</span><span class="o">=</span><span class="n">scanning</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">DatasetType</span><span class="o">.</span><span class="n">SECONDARY</span><span class="p">,</span>
             <span class="n">rank</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_generator</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span>
@@ -627,7 +627,7 @@ pass them to all Parts that have registered interest in them.</p>
         <span class="c1"># Add an axis for each setpoint</span>
         <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generator</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
             <span class="k">yield</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">DatasetProducedInfo</span><span class="p">(</span>
-                <span class="n">name</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.value_set&quot;</span> <span class="o">%</span> <span class="n">dim</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dim</span><span class="si">}</span><span class="s2">.value_set&quot;</span><span class="p">,</span>
                 <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
                 <span class="nb">type</span><span class="o">=</span><span class="n">scanning</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">DatasetType</span><span class="o">.</span><span class="n">POSITION_SET</span><span class="p">,</span>
                 <span class="n">rank</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>

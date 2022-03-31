@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.ADPandABlocks.parts.pandapulsetriggerpart &mdash; malcolm 5.3+9.ga65b4b57 documentation</title>
+  <title>malcolm.modules.ADPandABlocks.parts.pandapulsetriggerpart &mdash; malcolm 5.4+3.gdc54803c documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -31,7 +31,7 @@
             <img src="../../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5.3
+                5.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -151,9 +151,9 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">name</span><span class="p">,</span> <span class="n">mri</span><span class="p">,</span> <span class="n">initial_visibility</span><span class="o">=</span><span class="n">initial_visibility</span><span class="p">,</span> <span class="n">stateful</span><span class="o">=</span><span class="kc">False</span>
         <span class="p">)</span>
-        <span class="k">assert</span> <span class="n">CAMEL_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="p">(</span>
-            <span class="s2">&quot;PandAPulseTriggerPart name </span><span class="si">%r</span><span class="s2"> should be camelCase&quot;</span> <span class="o">%</span> <span class="n">name</span>
-        <span class="p">)</span>
+        <span class="k">assert</span> <span class="n">CAMEL_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span>
+            <span class="n">name</span>
+        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;PandAPulseTriggerPart name </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> should be camelCase&quot;</span>
         <span class="c1"># The stored generator duration and detector framesPerStep from</span>
         <span class="c1"># configure</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">generator_duration</span> <span class="o">=</span> <span class="kc">None</span>
@@ -231,15 +231,14 @@
                 <span class="k">if</span> <span class="n">enable</span><span class="p">:</span>
                     <span class="k">assert</span> <span class="p">(</span>
                         <span class="n">frames_per_step</span> <span class="o">&gt;</span> <span class="mi">0</span>
-                    <span class="p">),</span> <span class="s2">&quot;Zero frames per step for </span><span class="si">%s</span><span class="s2">, how did this happen?&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mri</span><span class="p">)</span>
+                    <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Zero frames per step for </span><span class="si">{</span><span class="n">mri</span><span class="si">}</span><span class="s2">, how did this happen?&quot;</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">frames_per_step</span> <span class="o">=</span> <span class="n">frames_per_step</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">frames_per_step</span> <span class="o">=</span> <span class="mi">0</span>
                 <span class="k">break</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">BadValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Detector table </span><span class="si">%s</span><span class="s2"> doesn&#39;t contain row for </span><span class="si">%s</span><span class="s2">&quot;</span>
-                <span class="o">%</span> <span class="p">(</span><span class="n">detectors</span><span class="p">,</span> <span class="n">detector_mri</span><span class="p">)</span>
+                <span class="sa">f</span><span class="s2">&quot;Detector table </span><span class="si">{</span><span class="n">detectors</span><span class="si">}</span><span class="s2"> doesn&#39;t contain row for </span><span class="si">{</span><span class="n">detector_mri</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
 
         <span class="c1"># Check that the Attributes we expect are exported</span>
@@ -251,9 +250,9 @@
             <span class="k">if</span> <span class="n">export</span> <span class="ow">in</span> <span class="n">expected_exports</span><span class="p">:</span>
                 <span class="n">part_name</span> <span class="o">=</span> <span class="n">source</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">pulse_name</span><span class="p">:</span>
-                    <span class="k">assert</span> <span class="n">part_name</span> <span class="o">==</span> <span class="n">pulse_name</span><span class="p">,</span> <span class="p">(</span>
-                        <span class="s2">&quot;Export </span><span class="si">%s</span><span class="s2"> defined for a different pulse block&quot;</span> <span class="o">%</span> <span class="n">export</span>
-                    <span class="p">)</span>
+                    <span class="k">assert</span> <span class="p">(</span>
+                        <span class="n">part_name</span> <span class="o">==</span> <span class="n">pulse_name</span>
+                    <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Export </span><span class="si">{</span><span class="n">export</span><span class="si">}</span><span class="s2"> defined for a different pulse block&quot;</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">pulse_name</span> <span class="o">=</span> <span class="n">part_name</span>
                 <span class="n">expected_exports</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">export</span><span class="p">)</span>
@@ -268,7 +267,7 @@
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">mri</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">panda</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">rows</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="n">pulse_name</span><span class="p">:</span>
                 <span class="n">pulse_mri</span> <span class="o">=</span> <span class="n">mri</span>
-        <span class="k">assert</span> <span class="n">pulse_mri</span><span class="p">,</span> <span class="s2">&quot;Can&#39;t find mri for pulse block </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">pulse_name</span>
+        <span class="k">assert</span> <span class="n">pulse_mri</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Can&#39;t find mri for pulse block </span><span class="si">{</span><span class="n">pulse_name</span><span class="si">!r}</span><span class="s2">&quot;</span>
 
         <span class="c1"># Check that the Attributes have the right units for all except Pulses</span>
         <span class="n">pulse_block</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="n">pulse_mri</span><span class="p">)</span>
@@ -289,10 +288,7 @@
             <span class="n">detector_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detector</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">value</span>
             <span class="k">assert</span> <span class="p">(</span>
                 <span class="n">detector_state</span> <span class="o">==</span> <span class="s2">&quot;Armed&quot;</span>
-            <span class="p">),</span> <span class="s2">&quot;Expected </span><span class="si">%s</span><span class="s2"> to be Armed, but it is </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">detector</span><span class="o">.</span><span class="n">mri</span><span class="p">,</span>
-                <span class="n">detector_state</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Expected </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">detector</span><span class="o">.</span><span class="n">mri</span><span class="si">}</span><span class="s2"> to be Armed, but it is </span><span class="si">{</span><span class="n">detector_state</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="c1"># We are taking part, so calculate pulse values</span>
             <span class="n">step</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">generator_duration</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">frames_per_step</span>
             <span class="k">try</span><span class="p">:</span>
@@ -300,7 +296,7 @@
             <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
                 <span class="c1"># No exposure, so assume a very tiny readout time</span>
                 <span class="n">width</span> <span class="o">=</span> <span class="n">step</span> <span class="o">-</span> <span class="mf">1e-6</span>
-            <span class="k">assert</span> <span class="n">width</span> <span class="o">&lt;</span> <span class="n">step</span><span class="p">,</span> <span class="s2">&quot;Width </span><span class="si">%s</span><span class="s2"> is not less than Step </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">width</span> <span class="o">&lt;</span> <span class="n">step</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Width </span><span class="si">{</span><span class="n">width</span><span class="si">}</span><span class="s2"> is not less than Step </span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="c1"># Calculate delay of pulse</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_delay</span><span class="p">:</span>
                 <span class="n">delay</span> <span class="o">=</span> <span class="mf">0.0</span>
