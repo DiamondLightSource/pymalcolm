@@ -32,7 +32,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
 
     @gen.coroutine
     def send_messages(self, messages, convert_json=True):
-        conn = yield websocket_connect("ws://localhost:%s/ws" % self.socket)
+        conn = yield websocket_connect(f"ws://localhost:{self.socket}/ws")
         num = len(messages)
         for msg in messages:
             if convert_json:

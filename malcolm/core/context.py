@@ -197,7 +197,7 @@ class Context:
             future (Future): The future of the original subscription
         """
         assert future not in self._pending_unsubscribes, (
-            "%r has already been unsubscribed from" % self._pending_unsubscribes[future]
+            f"{self._pending_unsubscribes[future]!r} has already been unsubscribed from"
         )
         subscribe = self._requests[future]
         self._pending_unsubscribes[future] = subscribe
@@ -336,7 +336,7 @@ class Context:
             request = self._requests.get(future, None)
             if isinstance(request, Put):
                 path = ".".join(request.path)
-                descriptions.append("%s.put_value(%s)" % (path, request.value))
+                descriptions.append(f"{path}.put_value({request.value})")
             elif isinstance(request, Subscribe):
                 path = ".".join(request.path)
                 func, _ = self._subscriptions.get(request.id, (None, None))
@@ -348,16 +348,16 @@ class Context:
                 elif func is None:
                     # We have already called unsubscribe, but haven't received
                     # the Return for it yet
-                    descriptions.append("Unsubscribed(%s)" % path)
+                    descriptions.append(f"Unsubscribed({path})")
                 else:
-                    descriptions.append("Subscribe(%s)" % path)
+                    descriptions.append(f"Subscribe({path})")
             elif isinstance(request, Post):
                 path = ".".join(request.path)
                 if request.parameters:
                     params = "..."
                 else:
                     params = ""
-                descriptions.append("%s(%s)" % (path, params))
+                descriptions.append(f"{path}({params})")
             else:
                 descriptions.append(str(request))
         if descriptions:
@@ -382,7 +382,7 @@ class Context:
             response = self._q.get(timeout)
         except TimeoutError:
             raise TimeoutError(
-                "Timeout waiting for %s" % self._describe_futures(futures)
+                f"Timeout waiting for {self._describe_futures(futures)}"
             )
         if response is self._sentinel_stop:
             self._sentinel_stop = None
@@ -390,7 +390,7 @@ class Context:
             if self._sentinel_stop is None:
                 # This is a stop we should listen to...
                 raise AbortedError(
-                    "Aborted waiting for %s" % self._describe_futures(futures)
+                    f"Aborted waiting for {self._describe_futures(futures)}"
                 )
         elif isinstance(response, Update):
             # This is an update for a subscription
@@ -437,10 +437,10 @@ class When:
 
             def condition_satisfied(value):
                 if bad_values and value in bad_values:
-                    raise BadValueError("Waiting for %r, got %r" % (good_value, value))
+                    raise BadValueError(f"Waiting for {good_value!r}, got {value!r}")
                 return value == good_value
 
-            condition_satisfied.__name__ = "equals_%s" % good_value
+            condition_satisfied.__name__ = f"equals_{good_value}"
         self.condition_satisfied = condition_satisfied
         self.future: Union[Future, None] = None
         self.context: Union[Context, None] = None

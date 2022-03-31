@@ -295,8 +295,8 @@ class PmacChildPart(builtin.parts.ChildPart):
     def move_to_start(self, child: Block, cs_port: str, completed_steps: int) -> Future:
         # Work out what method to call
         match = re.search(r"\d+$", cs_port)
-        assert match, "Cannot extract CS number from CS port '%s'" % cs_port
-        move_async = child["moveCS%s_async" % match.group()]
+        assert match, f"Cannot extract CS number from CS port '{cs_port}'"
+        move_async = child[f"moveCS{match.group()}_async"]
         # Set all the axes to move to the start positions
         first_point = self.generator.get_point(completed_steps)
         args = {}
@@ -470,7 +470,7 @@ class PmacChildPart(builtin.parts.ChildPart):
                 # check.
                 if self.output_triggers == scanning.infos.MotionTrigger.EVERY_POINT:
                     assert not self.profile["timeArray"], (
-                        "Why do we still have points? %s" % self.profile
+                        f"Why do we still have points? {self.profile}"
                     )
                 self.loading = False
 

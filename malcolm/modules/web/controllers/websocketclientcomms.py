@@ -193,9 +193,7 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
     def _handle_change(self, block, change):
         path = change[0]
         if len(path) == 0:
-            assert len(change) == 2, "Can't delete root block with change %r" % (
-                change,
-            )
+            assert len(change) == 2, f"Can't delete root block with change {change!r}"
             self._regenerate_block(block, change[1])
         elif len(path) == 1 and path[0] not in ("health", "meta"):
             if len(change) == 1:

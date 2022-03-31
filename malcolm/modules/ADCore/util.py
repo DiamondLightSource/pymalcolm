@@ -109,7 +109,7 @@ class ExtraAttributesTable(Table):
 
 def make_xml_filename(file_dir, mri, suffix="attributes"):
     """Return a Block-specific filename for attribute or layout XML file"""
-    return os.path.join(file_dir, "%s-%s.xml" % (mri.replace(":", "_"), suffix))
+    return os.path.join(file_dir, f"{mri.replace(':', '_')}-{suffix}.xml")
 
 
 def check_driver_version(driver: str, required: AVersionRequirement):

@@ -13,7 +13,7 @@ TableFieldData = namedtuple(
 
 
 def strip_ok(resp):
-    assert resp.startswith("OK ="), "Expected 'OK =val', got %r" % resp
+    assert resp.startswith("OK ="), f"Expected 'OK =val', got {resp!r}"
     value = resp[4:]
     return value
 
@@ -168,9 +168,7 @@ class PandABlocksClient:
                     else:
                         assert (
                             line[0] == "!"
-                        ), "Multiline response {} doesn't start with !".format(
-                            repr(line)
-                        )
+                        ), f"Multiline response {repr(line)} doesn't start with !"
                         self._completed_response_lines.append(line[1:])
                 else:
                     self._respond(line)
@@ -229,7 +227,7 @@ class PandABlocksClient:
                 assert len(split) in (
                     3,
                     4,
-                ), "Expected field_data to have len 3 or 4, got {}".format(len(split))
+                ), f"Expected field_data to have len 3 or 4, got {len(split)}"
                 if len(split) == 3:
                     split.append("")
                 field_name, index, field_type, field_subtype = split
@@ -283,7 +281,7 @@ class PandABlocksClient:
             if len(split) == 4:
                 field_name, _, field_type, field_subtype = split
                 if field_type == "ext_out" and field_subtype == "bits":
-                    bits_fields.append("PCAP.%s" % field_name)
+                    bits_fields.append(f"PCAP.{field_name}")
         bits_queues = self.parameterized_send("%s.BITS?\n", sorted(bits_fields))
         bits = OrderedDict()
         for k, queue in bits_queues.items():
@@ -299,7 +297,7 @@ class PandABlocksClient:
                 # table
                 field = line[:-1]
                 val = None
-                table_queues[field] = self.send("%s?\n" % field)
+                table_queues[field] = self.send(f"{field}?\n")
             elif line.endswith("(error)"):
                 if include_errors:
                     field = line.split(" ", 1)[0]
@@ -316,7 +314,7 @@ class PandABlocksClient:
     def get_table_fields(self, block, field):
         fields = OrderedDict()
         enum_queues = {}
-        for line in self.send_recv("%s.%s.FIELDS?\n" % (block, field)):
+        for line in self.send_recv(f"{block}.{field}.FIELDS?\n"):
             split = line.split()
             name = split[1].strip()
             signed = False
@@ -324,7 +322,7 @@ class PandABlocksClient:
                 # Field is an enum, get its values
                 if split[2] == "enum":
                     enum_queues[name] = self.send(
-                        "*ENUMS.%s.%s[].%s?\n" % (block, field, name)
+                        f"*ENUMS.{block}.{field}[].{name}?\n"
                     )
                 elif split[2] == "int":
                     signed = True
@@ -346,31 +344,31 @@ class PandABlocksClient:
 
     def get_field(self, block, field):
         try:
-            resp = self.send_recv("%s.%s?\n" % (block, field))
+            resp = self.send_recv(f"{block}.{field}?\n")
         except ValueError as e:
-            raise ValueError("Error getting %s.%s: %s" % (block, field, e))
+            raise ValueError(f"Error getting {block}.{field}: {e}")
         else:
             return strip_ok(resp)
 
     def set_field(self, block, field, value):
-        self.set_fields({"%s.%s" % (block, field): value})
+        self.set_fields({f"{block}.{field}": value})
 
     def set_fields(self, field_values):
         queues = OrderedDict()
         for field, value in field_values.items():
-            message = "%s=%s\n" % (field, value)
+            message = f"{field}={value}\n"
             queues[(field, value)] = self.send(message)
         for (field, value), queue in queues.items():
             try:
                 resp = self.recv(queue)
             except ValueError as e:
-                raise ValueError("Error setting %s to %r: %s" % (field, value, e))
+                raise ValueError(f"Error setting {field} to {value!r}: {e}")
             else:
-                assert resp == "OK", "Expected OK, got %r" % resp
+                assert resp == "OK", f"Expected OK, got {resp!r}"
 
     def set_table(self, block, field, int_values):
-        lines = ["%s.%s<\n" % (block, field)]
-        lines += ["%s\n" % int_value for int_value in int_values]
+        lines = [f"{block}.{field}<\n"]
+        lines += [f"{int_value}\n" for int_value in int_values]
         lines += ["\n"]
         resp = self.send_recv("".join(lines))
-        assert resp == "OK", "Expected OK, got %r" % resp
+        assert resp == "OK", f"Expected OK, got {resp!r}"

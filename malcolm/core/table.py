@@ -8,7 +8,7 @@ class Table(Serializable):
     def validate_column_lengths(self):
         lengths = {a: len(getattr(self, a)) for a in self.call_types}
         assert len(set(lengths.values())) == 1, (
-            "Column lengths %s don't match" % lengths
+            f"Column lengths {lengths} don't match"
         )
 
     def __getitem__(self, item):

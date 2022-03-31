@@ -34,7 +34,7 @@ class FilePathTranslatorInfo(Info):
         )
         assert (
             filepath.find(":") == -1
-        ), "filepath %s has unexpected colon (incompatible on Windows)" % (filepath)
+        ), f"filepath {filepath} has unexpected colon (incompatible on Windows)"
 
         if translator.network_prefix != "":
             win_path = filepath.replace(
@@ -102,22 +102,22 @@ class NDAttributeDatasetInfo(Info):
         """
         assert PART_NAME_RE.match(name), (
             "Expected Alphanumeric dataset name (dash and underscore allowed)"
-            + " got %r" % name
+            + f" got {name!r}"
         )
         if type is AttributeDatasetType.DETECTOR:
             # Something like I0
-            name = "%s.data" % name
+            name = f"{name}.data"
             dtype = DatasetType.PRIMARY
         elif type is AttributeDatasetType.MONITOR:
             # Something like Iref
-            name = "%s.data" % name
+            name = f"{name}.data"
             dtype = DatasetType.MONITOR
         elif type is AttributeDatasetType.POSITION:
             # Something like x
-            name = "%s.value" % name
+            name = f"{name}.value"
             dtype = DatasetType.POSITION_VALUE
         else:
             raise AttributeError(
-                "Bad dataset type %r, should be a %s" % (type, AttributeDatasetType)
+                f"Bad dataset type {type!r}, should be a {AttributeDatasetType}"
             )
         return cls(name, dtype, attr)

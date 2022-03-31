@@ -141,7 +141,7 @@ class FileWritePart(Part):
     def _create_infos(self, detector_name, filename):
         # Main dataset
         yield scanning.infos.DatasetProducedInfo(
-            name="%s.data" % detector_name,
+            name=f"{detector_name}.data",
             filename=filename,
             type=scanning.util.DatasetType.PRIMARY,
             rank=len(self._generator.shape) + 2,
@@ -150,7 +150,7 @@ class FileWritePart(Part):
         )
         # Sum
         yield scanning.infos.DatasetProducedInfo(
-            name="%s.sum" % detector_name,
+            name=f"{detector_name}.sum",
             filename=filename,
             type=scanning.util.DatasetType.SECONDARY,
             rank=len(self._generator.shape) + 2,
@@ -160,7 +160,7 @@ class FileWritePart(Part):
         # Add an axis for each setpoint
         for dim in self._generator.axes:
             yield scanning.infos.DatasetProducedInfo(
-                name="%s.value_set" % dim,
+                name=f"{dim}.value_set",
                 filename=filename,
                 type=scanning.util.DatasetType.POSITION_SET,
                 rank=1,

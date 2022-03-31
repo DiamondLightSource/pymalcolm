@@ -39,10 +39,10 @@ class TestChildPart(unittest.TestCase):
 
     def makeChildBlock(self, block_mri):
         controller = BasicController(block_mri)
-        controller.add_part(PortsPart(name="Connector%s" % block_mri[-1]))
+        controller.add_part(PortsPart(name=f"Connector{block_mri[-1]}"))
         part = ChildPart(
             mri=block_mri,
-            name="part%s" % block_mri,
+            name=f"part{block_mri}",
             stateful=False,
         )
         self.p.add_controller(controller)

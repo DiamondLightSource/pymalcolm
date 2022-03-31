@@ -150,15 +150,15 @@ def prepare_locals(args):
         proc_name = os.path.basename(args.yaml).split(".")[-2]
         proc = Process(proc_name)
         controllers, parts = make_include_creator(args.yaml)()
-        assert not parts, "%s defines parts" % (args.yaml,)
+        assert not parts, f"{args.yaml} defines parts"
         for controller in controllers:
             proc.add_controller(controller)
-        proc_name = "%s - imalcolm" % proc_name
+        proc_name = f"{proc_name} - imalcolm"
     else:
         proc = Process("Process")
         proc_name = "imalcolm"
     # set terminal title
-    sys.stdout.write("\x1b]0;%s\x07" % proc_name)
+    sys.stdout.write(f"]0;{proc_name}")
 
     if args.client:
         if args.client.startswith("ws://"):
@@ -166,14 +166,14 @@ def prepare_locals(args):
 
             hostname, port = args.client[5:].split(":")
             comms = WebsocketClientComms(
-                mri="%s:%s" % (hostname, port), hostname=hostname, port=int(port)
+                mri=f"{hostname}:{port}", hostname=hostname, port=int(port)
             )
         elif args.client == "pva":
             from malcolm.modules.pva.controllers import PvaClientComms
 
             comms = PvaClientComms(mri="pva")
         else:
-            raise ValueError("Don't know how to create client to %s" % args.client)
+            raise ValueError(f"Don't know how to create client to {args.client}")
         proc.add_controller(comms)
     proc.start(timeout=60)
     return proc
@@ -261,10 +261,10 @@ def main():
 
     self = UserContext(process)
 
-    header = """Welcome to iMalcolm.
+    header = f"""Welcome to iMalcolm.
 
 self.mri_list:
-    %s
+    {self.mri_list}
 
 # To create a view of an existing Block
 block = self.block_view("<mri>")
@@ -274,9 +274,7 @@ self.make_proxy("<client_comms_mri>", "<mri>")
 block = self.block_view("<mri>")
 
 # To view state of Blocks in a GUI
-!firefox localhost:8008""" % (
-        self.mri_list,
-    )
+!firefox localhost:8008"""
 
     try:
         import IPython

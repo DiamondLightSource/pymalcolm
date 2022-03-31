@@ -172,7 +172,7 @@ class PandAManagerController(builtin.controllers.ManagerController):
                 # Look through the BlockData for things we are interested in
                 for field_name, field_data in block_data.fields.items():
                     if field_data.field_type == "pos_out":
-                        pos_names.append("%s.%s" % (block_name, field_name))
+                        pos_names.append(f"{block_name}.{field_name}")
 
                 # Make the child controller and add it to the process
                 controller, child_part = self._make_child_block(block_name, block_data)
@@ -195,7 +195,7 @@ class PandAManagerController(builtin.controllers.ManagerController):
         self._bus_fields = set(pos_names)
         for pos_name in pos_names:
             for suffix in ("CAPTURE", "UNITS", "SCALE", "OFFSET"):
-                self._bus_fields.add("%s.%s" % (pos_name, suffix))
+                self._bus_fields.add(f"{pos_name}.{suffix}")
         # Handle the bit_outs, keeping a list for toggling and adding them
         # to the set of things that the busses need
         self._bit_outs = {k: 0 for k in self.busses.bits.value.name}
@@ -208,7 +208,7 @@ class PandAManagerController(builtin.controllers.ManagerController):
         # Then once more to let bit_outs toggle back
         self.handle_changes(())
         assert not self._bit_out_changes, (
-            "There are still bit_out changes %s" % self._bit_out_changes
+            f"There are still bit_out changes {self._bit_out_changes}"
         )
 
     def _make_busses(self) -> PandABussesPart:

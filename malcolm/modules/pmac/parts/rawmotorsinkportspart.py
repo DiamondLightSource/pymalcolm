@@ -73,7 +73,7 @@ class RawMotorSinkPortsPart(Part):
         choices = [""]
         for choice in self.port_choices[1:]:
             for axis in CS_AXIS_NAMES + ["I"]:
-                choices.append("%s,%s" % (choice, axis))
+                choices.append(f"{choice},{axis}")
         self.cs_attr.meta.set_choices(choices)
         self.port = self.port_choices[ca_values[2]]
         self._update_value(ca_values[3], 1)
@@ -121,7 +121,7 @@ class RawMotorSinkPortsPart(Part):
             self.cs_attr.set_value(None, alarm=Alarm.invalid("Bad PV value"))
         elif self.port and self.axis:
             # Connected to a port
-            self.cs_attr.set_value("%s,%s" % (self.port, self.axis))
+            self.cs_attr.set_value(f"{self.port},{self.axis}")
         else:
             # Not connected to a port
             self.cs_attr.set_value("")

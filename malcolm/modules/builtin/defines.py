@@ -113,7 +113,7 @@ with Anno("The path of a python package dir to insert as " "malcolm.modules.<nam
 def module_path(name: AModuleName, path: AModulePath) -> ADefine:
     """Load an external malcolm module (e.g. ADCore/etc/malcolm)"""
     define = Define(name, path)
-    assert os.path.isdir(path), "%r doesn't exist" % path
-    name = "malcolm.modules.%s" % name
+    assert os.path.isdir(path), f"{path!r} doesn't exist"
+    name = f"malcolm.modules.{name}"
     import_package_from_path(name, path)
     return define

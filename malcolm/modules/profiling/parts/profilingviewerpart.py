@@ -39,7 +39,7 @@ class ProfilingViewerPart(Part):
 
     def on_report_handlers(self):
         infos = [
-            web.infos.HandlerInfo("/%s" % self.name, MalcolmIndexHandler),
+            web.infos.HandlerInfo(f"/{self.name}", MalcolmIndexHandler),
             web.infos.HandlerInfo("/view", MalcolmViewHandler),
         ]
         return infos

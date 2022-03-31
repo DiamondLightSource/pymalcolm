@@ -89,7 +89,7 @@ class ManagerController(StatefulController):
         description: ADescription = "",
     ) -> None:
         super().__init__(mri=mri, description=description)
-        assert os.path.isdir(config_dir), "%s is not a directory" % config_dir
+        assert os.path.isdir(config_dir), f"{config_dir} is not a directory"
         self.config_dir = config_dir
         self.initial_design = initial_design
         self.use_git = use_git
@@ -101,9 +101,9 @@ class ManagerController(StatefulController):
                 self.git_name = "Malcolm"
                 self.git_config = (
                     "-c",
-                    "user.name=%s" % self.git_name,
+                    f"user.name={self.git_name}",
                     "-c",
-                    'user.email="%s"' % self.git_email,
+                    f'user.email="{self.git_email}"',
                 )
             else:
                 self.git_config = ()
@@ -243,7 +243,7 @@ class ManagerController(StatefulController):
         # Validate
         for export_name in value.export:
             assert CAMEL_RE.match(export_name), (
-                "Field %r is not camelCase" % export_name
+                f"Field {export_name!r} is not camelCase"
             )
         with self.changes_squashed:
             self.exports.set_value(value)
@@ -269,7 +269,7 @@ class ManagerController(StatefulController):
                         # Attribute flagged as been modified, is it by the
                         # context we passed to the part?
                         if name in self.context_modified.get(part, {}):
-                            message = "(We modified) %s" % (message,)
+                            message = f"(We modified) {message}"
                         else:
                             only_modified_by_us = False
                         message_list.append(message)
@@ -309,7 +309,7 @@ class ManagerController(StatefulController):
                 for part in self.parts.values():
                     fields = self.part_exportable.get(part, [])
                     for attr_name in fields:
-                        names.append("%s.%s" % (part.name, attr_name))
+                        names.append(f"{part.name}.{attr_name}")
                 changed_names = set(names).symmetric_difference(
                     self.exports.meta.elements["source"].choices
                 )
@@ -492,14 +492,14 @@ class ManagerController(StatefulController):
         text = json_encode(structure, indent=2)
         filename = self._validated_config_filename(design)
         if filename.startswith("/tmp"):
-            self.log.warning("Saving to tmp directory %s" % filename)
+            self.log.warning(f"Saving to tmp directory {filename}")
         with open(filename, "w") as f:
             f.write(text)
         # Run a sync command to make sure we flush this file to disk
         subprocess.call("sync")
         # Try and commit the file to git, don't care if it fails
         self._run_git_cmd("add", filename)
-        msg = "Saved %s %s" % (self.mri, design)
+        msg = f"Saved {self.mri} {design}"
         self._run_git_cmd("commit", "--allow-empty", "-m", msg, filename)
         self._mark_clean(design)
 

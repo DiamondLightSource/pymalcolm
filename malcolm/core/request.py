@@ -73,7 +73,7 @@ class PathRequest(Request):
         self.path = APath(path)
         if not self.path:
             raise ValueError(
-                "Expected a path with at least 1 element, got %s" % list(self.path)
+                f"Expected a path with at least 1 element, got {list(self.path)}"
             )
 
 

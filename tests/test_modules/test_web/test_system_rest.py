@@ -30,14 +30,14 @@ class TestSystemRest(unittest.TestCase):
     @gen.coroutine
     def get(self, mri):
         result = yield self.http_client.fetch(
-            "http://localhost:%s/rest/%s" % (self.socket, mri)
+            f"http://localhost:{self.socket}/rest/{mri}"
         )
         cothread.Callback(self.result.put, result)
 
     @gen.coroutine
     def post(self, mri, method, args):
         req = HTTPRequest(
-            "http://localhost:%s/rest/%s/%s" % (self.socket, mri, method),
+            f"http://localhost:{self.socket}/rest/{mri}/{method}",
             method="POST",
             body=args,
         )

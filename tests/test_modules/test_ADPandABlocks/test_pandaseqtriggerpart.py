@@ -91,7 +91,7 @@ class SequencerPart(Part):
         registrar.add_attribute_model("table", attr, self.table_set)
         for suff, val in (("a", "INENC1.VAL"), ("b", "INENC2.VAL"), ("c", "ZERO")):
             attr = StringMeta("Input").create_attribute_model(val)
-            registrar.add_attribute_model("pos%s" % suff, attr)
+            registrar.add_attribute_model(f"pos{suff}", attr)
         attr = StringMeta("Input").create_attribute_model("ZERO")
         registrar.add_attribute_model("bita", attr)
 

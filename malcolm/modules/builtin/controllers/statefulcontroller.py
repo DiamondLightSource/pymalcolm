@@ -117,7 +117,7 @@ class StatefulController(BasicController):
         try:
             super().check_field_writeable(field)
         except NotWriteableError as e:
-            msg = "%s, maybe because Block state = %s" % (e, self.state.value)
+            msg = f"{e}, maybe because Block state = {self.state.value}"
             raise NotWriteableError(msg)
 
     def transition(self, state, message=""):
@@ -148,7 +148,7 @@ class StatefulController(BasicController):
                     child.meta.set_writeable(writeable)
             else:
                 raise TypeError(
-                    "Cannot transition from %s to %s" % (initial_state, state)
+                    f"Cannot transition from {initial_state} to {state}"
                 )
 
     def try_stateful_function(self, start_state, end_state, func, *args, **kwargs):

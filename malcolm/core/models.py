@@ -39,7 +39,7 @@ from .timestamp import TimeStamp
 
 def check_type(value, typ):
     if typ != Any:
-        assert isinstance(value, typ), "Expected %s, got %r" % (typ, value)
+        assert isinstance(value, typ), f"Expected {typ}, got {value!r}"
 
 
 class Model(Serializable):
@@ -60,7 +60,7 @@ class Model(Serializable):
         # the DummyNotifier, never between two valid notifiers
         assert (
             self.notifier is Model.notifier or notifier is Model.notifier
-        ), "Already have a notifier %s path %s" % (self.notifier, self.path)
+        ), f"Already have a notifier {self.notifier} path {self.path}"
         self.notifier = notifier
         self.path = path
         # Tell all our children too
@@ -71,7 +71,7 @@ class Model(Serializable):
                     for k, v in child.items():
                         v.set_notifier_path(notifier, self.path + [name, k])
             elif Model.matches_type(ct.typ):
-                assert not ct.is_array, "Can't deal with Arrays of Models %s" % ct
+                assert not ct.is_array, f"Can't deal with Arrays of Models {ct}"
                 child = getattr(self, name)
                 child.set_notifier_path(notifier, self.path + [name])
 
@@ -80,7 +80,7 @@ class Model(Serializable):
             ct = self.call_types[name]
         except KeyError:
             raise ValueError(
-                "%r not in %r.call_types %r" % (name, self, self.call_types)
+                f"{name!r} not in {self!r}.call_types {self.call_types!r}"
             )
         else:
             if ct.is_array:
@@ -141,7 +141,7 @@ class Model(Serializable):
             assert len(path) == 1 and len(args) == 1, "Cannot process change %s" % (
                 [self.path + path] + list(args)
             )
-            getattr(self, "set_%s" % path[0])(args[0])
+            getattr(self, f"set_{path[0]}")(args[0])
 
 
 # Types used when deserializing to the class
@@ -316,7 +316,7 @@ class AttributeModel(Model):
     def set_meta(self, meta: Union[VMeta, None]) -> VMeta:
         meta = deserialize_object(meta)
         # Check that the meta attribute_class is ourself
-        assert isinstance(meta, VMeta), "Expected meta object, got %s" % type(meta)
+        assert isinstance(meta, VMeta), f"Expected meta object, got {type(meta)}"
         assert isinstance(
             self, meta.attribute_class
         ), "Meta object needs to be attached to %s, we are a %s" % (
@@ -518,9 +518,7 @@ class ChoiceMeta(VMeta):
                 choices_lookup[choice] = choice
                 new_choices.append(choice)
             else:
-                assert isinstance(choice, str), "Expected string choice, got %s" % (
-                    choice,
-                )
+                assert isinstance(choice, str), f"Expected string choice, got {choice}"
                 # Map the string to itself
                 choices_lookup[choice] = choice
                 new_choices.append(choice)
@@ -551,7 +549,7 @@ class ChoiceMeta(VMeta):
             return self.choices_lookup[value]
         except KeyError:
             raise ValueError(
-                "%r is not a valid value in %s" % (value, list(self.choices))
+                f"{value!r} is not a valid value in {list(self.choices)}"
             )
 
     def doc_type_string(self) -> str:
@@ -697,7 +695,7 @@ class NumberMeta(VMeta):
         return cast
 
     def doc_type_string(self) -> str:
-        return "%s" % self.dtype
+        return f"{self.dtype}"
 
     def default_widget(self) -> Widget:
         if self.writeable:
@@ -815,7 +813,7 @@ class ChoiceArrayMeta(ChoiceMeta, VArrayMeta):
                 return to_array(Array[self.enum_cls], ret)
 
     def doc_type_string(self) -> str:
-        return "[%s]" % super().doc_type_string()
+        return f"[{super().doc_type_string()}]"
 
 
 @Serializable.register_subclass("malcolm:core/NumberArrayMeta:1.0")
@@ -828,7 +826,7 @@ class NumberArrayMeta(NumberMeta, VArrayMeta):
         return to_np_array(self._np_type, value)
 
     def doc_type_string(self) -> str:
-        return "[%s]" % self.dtype
+        return f"[{self.dtype}]"
 
 
 @Serializable.register_subclass("malcolm:core/StringArrayMeta:1.0")
@@ -840,7 +838,7 @@ class StringArrayMeta(VArrayMeta):
         """Check if the value is valid returns it"""
         cast = to_array(Array[str], value)
         for v in cast:
-            assert isinstance(v, str), "Expected Array[str], got %r" % (value,)
+            assert isinstance(v, str), f"Expected Array[str], got {value!r}"
         return cast
 
     def doc_type_string(self) -> str:
@@ -910,9 +908,9 @@ class TableMeta(VMeta):
                 table_cls,
             )
             missing = set(self.elements) - set(table_cls.call_types)
-            assert not missing, "Supplied Table missing fields %s" % (missing,)
+            assert not missing, f"Supplied Table missing fields {missing}"
             extra = set(table_cls.call_types) - set(self.elements)
-            assert not extra, "Supplied Table has extra fields %s" % (extra,)
+            assert not extra, f"Supplied Table has extra fields {extra}"
         self.table_cls = table_cls
 
     def validate(self, value: Any) -> Any:
@@ -923,13 +921,13 @@ class TableMeta(VMeta):
             # Serialize a single level so we can type check it
             value = {k: value[k] for k in value.call_types}
         elif not isinstance(value, dict):
-            raise ValueError("Expected Table instance or serialized, got %s" % (value,))
+            raise ValueError(f"Expected Table instance or serialized, got {value}")
         # We need to make a table instance ourselves
         keys = set(x for x in value if x != "typeid")
         missing = set(self.elements) - keys
-        assert not missing, "Supplied table missing fields %s" % (missing,)
+        assert not missing, f"Supplied table missing fields {missing}"
         extra = keys - set(self.elements)
-        assert not extra, "Supplied table has extra fields %s" % (extra,)
+        assert not extra, f"Supplied table has extra fields {extra}"
         args = {k: meta.validate(value[k]) for k, meta in self.elements.items()}
         assert self.table_cls, "No table set"
         value = self.table_cls(**args)
@@ -939,10 +937,7 @@ class TableMeta(VMeta):
         for k in args:
             assert (
                 value[k].__class__ is Array
-            ), "Table Class %s doesn't wrap attr '%s' with an Array" % (
-                self.table_cls,
-                k,
-            )
+            ), f"Table Class {self.table_cls} doesn't wrap attr '{k}' with an Array"
         return value
 
     def doc_type_string(self) -> str:
@@ -985,7 +980,7 @@ class TableMeta(VMeta):
 
     @classmethod
     def from_annotype(cls, anno: Anno, writeable: bool, **kwargs: Any) -> VMeta:
-        assert Table.matches_type(anno.typ), "Expected Table, got %s" % anno.typ
+        assert Table.matches_type(anno.typ), f"Expected Table, got {anno.typ}"
         if writeable:
             # All fields are writeable
             writeable_fields = list(anno.typ.call_types)

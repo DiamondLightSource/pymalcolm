@@ -118,12 +118,10 @@ def creator_with_nice_signature(creator, sections, yamlname, yaml_path, docstrin
         if anno.default is NO_DEFAULT:
             args.append(anno.name)
         else:
-            args.append("%s=%r" % (anno.name, anno.default))
-    func = """
-def creator_from_yaml(%s):
-    return creator(locals())""" % (
-        ", ".join(args)
-    )
+            args.append(f"{anno.name}={anno.default!r}")
+    func = f"""
+def creator_from_yaml({', '.join(args)}):
+    return creator(locals())"""
     # Copied from decorator pypi module
     code = compile(func, yaml_path, "single")
     exec(code, locals())
@@ -217,7 +215,7 @@ class Section:
         """
         param_dict = self.substitute_params(substitutions)
         pkg, ident = self.name.rsplit(".", 1)
-        pkg = "malcolm.modules.%s" % pkg
+        pkg = f"malcolm.modules.{pkg}"
         try:
             ob = importlib.import_module(pkg)
         except ImportError as e:
@@ -266,7 +264,7 @@ class Section:
             # different filename to support passing __file__
             yaml_path = os.path.join(os.path.dirname(yaml_path), filename)
         assert yaml_path.endswith(".yaml"), (
-            "Expected a/path/to/<yamlname>.yaml, got %r" % yaml_path
+            f"Expected a/path/to/<yamlname>.yaml, got {yaml_path!r}"
         )
         yamlname = os.path.basename(yaml_path)[:-5]
         log.debug("Parsing %s", yaml_path)
@@ -278,7 +276,7 @@ class Section:
         docstring = None
         sections = []
         for d in ds:
-            assert len(d) == 1, "Expected section length 1, got %d" % len(d)
+            assert len(d) == 1, f"Expected section length 1, got {len(d)}"
             lineno = d._yaml_line_col.line + 1
             name = list(d)[0]
             sections.append(cls(yaml_path, lineno, name, d[name]))
@@ -308,7 +306,7 @@ class Section:
         return param_dict
 
     def __repr__(self):
-        return "Section(%s, %s)" % (self.name, self.param_dict)
+        return f"Section({self.name}, {self.param_dict})"
 
 
 def replace_substitutions(value, substitutions):
@@ -316,5 +314,5 @@ def replace_substitutions(value, substitutions):
         value = [replace_substitutions(v, substitutions) for v in value]
     elif isinstance(value, str):
         for s in substitutions:
-            value = value.replace("$(%s)" % s, str(substitutions[s]))
+            value = value.replace(f"$({s})", str(substitutions[s]))
     return value

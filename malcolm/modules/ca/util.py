@@ -365,5 +365,5 @@ def assert_connected(ca_values, throw=True):
     # check connection is ok
     if throw:
         for v in ca_values:
-            assert v.ok, "CA connect failed with %s" % v.state_strings[v.state]
+            assert v.ok, f"CA connect failed with {v.state_strings[v.state]}"
     return ca_values

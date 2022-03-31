@@ -40,7 +40,7 @@ def create_dataset_infos(
 
     # Add the primary datasource
     yield scanning.infos.DatasetProducedInfo(
-        name="%s.data" % name,
+        name=f"{name}.data",
         filename=filename,
         type=scanning.infos.DatasetType.PRIMARY,
         rank=generator_rank + 2,
@@ -50,22 +50,22 @@ def create_dataset_infos(
 
     # Add other datasources
     yield scanning.infos.DatasetProducedInfo(
-        name="%s.%s" % (name, secondary_set),
+        name=f"{name}.{secondary_set}",
         filename=filename,
         type=scanning.infos.DatasetType.SECONDARY,
         rank=generator_rank + 2,
-        path="/entry/detector_%s/%s" % (secondary_set, secondary_set),
+        path=f"/entry/detector_{secondary_set}/{secondary_set}",
         uniqueid="/entry/detector_uid/uid",
     )
 
     # Add any setpoint dimensions
     for dim in generator.axes:
         yield scanning.infos.DatasetProducedInfo(
-            name="%s.value_set" % dim,
+            name=f"{dim}.value_set",
             filename=filename,
             type=scanning.infos.DatasetType.POSITION_SET,
             rank=1,
-            path="/entry/detector/%s_set" % dim,
+            path=f"/entry/detector/{dim}_set",
             uniqueid="",
         )
 
@@ -154,7 +154,7 @@ def create_vds(generator, raw_name, vds_path, child, uid_name, sum_name):
     alternates = None
 
     files = [
-        os.path.join(vds_folder, "{}_{:06d}.h5".format(raw_name, i + 1))
+        os.path.join(vds_folder, f"{raw_name}_{i + 1:06d}.h5")
         for i in range(hdf_count)
     ]
     shape = (hdf_shape, image_height, image_width)
@@ -228,7 +228,7 @@ def add_nexus_nodes(generator, vds_file_path):
     pad_dims = []
     for d in generator.dimensions:
         if len(d.axes) == 1:
-            pad_dims.append("%s_set" % d.axes[0])
+            pad_dims.append(f"{d.axes[0]}_set")
         else:
             pad_dims.append(".")
 
@@ -253,11 +253,11 @@ def add_nexus_nodes(generator, vds_file_path):
             for i, d in enumerate(generator.dimensions):
                 for axis in d.axes:
                     # add signal data dimension for axis
-                    axis_indices = "{}_set_indices".format(axis)
+                    axis_indices = f"{axis}_set_indices"
                     vds[node].attrs[axis_indices] = i
 
                     # demand positions for axis
-                    axis_set = "{}_set".format(axis)
+                    axis_set = f"{axis}_set"
                     if axis_sets.get(axis_set):
                         # link to the first entry's demand list
                         vds[node + axis_set] = axis_sets[axis_set]
@@ -354,7 +354,7 @@ class OdinWriterPart(builtin.parts.ChildPart):
         raw_file_basename, _ = os.path.splitext(raw_file_name)
 
         assert "." in vds_full_filename, (
-            "File extension for %r should be supplied" % vds_full_filename
+            f"File extension for {vds_full_filename!r} should be supplied"
         )
         futures = child.put_attribute_values_async(
             dict(

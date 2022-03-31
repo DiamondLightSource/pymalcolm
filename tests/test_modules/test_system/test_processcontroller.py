@@ -16,7 +16,7 @@ from malcolm.modules.system.defines import redirector_iocs
 
 
 class TestProcessController(unittest.TestCase):
-    prefix = "unitTest:%s" % floor(time.time()).__repr__()[:-2]
+    prefix = f"unitTest:{floor(time.time()).__repr__()[:-2]}"
 
     def setUp(self):
         self.config_dir = tmp_dir("config_dir")

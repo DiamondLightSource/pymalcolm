@@ -43,7 +43,7 @@ class PvaClientComms(builtin.controllers.ClientComms):
             # Recurse down
             for k in ob:
                 self._update_settable_fields(
-                    update_fields, "%s.%s" % (dotted_path, k), ob[k]
+                    update_fields, f"{dotted_path}.{k}", ob[k]
                 )
         else:
             # This is a terminal field, add to the set
@@ -163,6 +163,6 @@ class PvaClientComms(builtin.controllers.ClientComms):
         typ, parameters = convert_to_type_tuple_value(params)
         uri = NTURI(typ[2])
 
-        uri = uri.wrap(path="%s.%s" % (mri, method_name), kws=parameters, scheme="pva")
+        uri = uri.wrap(path=f"{mri}.{method_name}", kws=parameters, scheme="pva")
         value = self._ctxt.rpc(mri, uri, timeout=None)
         return convert_value_to_dict(value)

@@ -131,7 +131,7 @@ class PandABussesPart(Part):
                 # If attribute changed, set field bits
                 field_values = {}
                 for i, name in enumerate(self.positions.value.name):
-                    field = "%s.%s" % (name, attr.upper())
+                    field = f"{name}.{attr.upper()}"
                     value = column_changes[attr][i]
                     if attr == "capture":
                         # Convert Enum to string value for capture string
@@ -189,7 +189,7 @@ class PandABussesPart(Part):
         self._pos_indexes = {k: i for i, k in enumerate(pos_names)}
         for i, k in enumerate(pos_names):
             for suffix in ("CAPTURE", "SCALE", "OFFSET", "UNITS"):
-                self._pos_indexes["%s.%s" % (k, suffix)] = i
+                self._pos_indexes[f"{k}.{suffix}"] = i
             self._pos_values[i] = 0
 
     def _handle_bit(
@@ -214,7 +214,7 @@ class PandABussesPart(Part):
                 self._pos_values[i] = int(value)
             else:
                 # Another field change
-                assert len(split) == 3, "Bad Pos field name: %s" % field_name
+                assert len(split) == 3, f"Bad Pos field name: {field_name}"
                 column = split[-1].lower()
                 parsed_value: Union[str, float, PositionCapture]
                 if column in ("scale", "offset"):
@@ -261,7 +261,7 @@ class PandABussesPart(Part):
                 self._handle_bit(k, v, bit_column_changes)
                 or self._handle_pos(k, v, pos_column_changes)
                 or self._handle_pcap(k, v, bit_column_changes)
-            ), ("Don't know how to handle %s" % k)
+            ), (f"Don't know how to handle {k}")
         # Update the tables
         assert self.bits, "No bits"
         if bit_column_changes:

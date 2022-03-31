@@ -21,7 +21,7 @@ with Anno("The Anno representing the parameter"):
 def common_args(name, default):
     for s in name.split("_"):
         # Only support UPP3R or l0wer case for each _ section
-        assert s.islower() or s.isupper(), "Parameter %s should be snake_case" % (name,)
+        assert s.islower() or s.isupper(), f"Parameter {name} should be snake_case"
     ret = dict(name=name)
     if default is not None:
         ret["default"] = default

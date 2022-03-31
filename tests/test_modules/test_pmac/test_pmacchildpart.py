@@ -900,10 +900,10 @@ class TestPMACChildPart(ChildTestCase):
             times = np.cumsum(tp / 1000)  # show in millisecs
 
             plt.figure(figsize=(8, 6), dpi=300)
-            plt.title("{} x/time {} points".format(title, xp.size))
+            plt.title(f"{title} x/time {xp.size} points")
             plt.plot(xp, times, "+", ms=2.5)
             plt.figure(figsize=(8, 6), dpi=300)
-            plt.title("{} x/y".format(title))
+            plt.title(f"{title} x/y")
             plt.plot(xp, yp, "+", ms=2.5)
             plt.show()
 
@@ -915,10 +915,10 @@ class TestPMACChildPart(ChildTestCase):
         less_start = np.argmax((npa[0] - npa) > 0.000001)
         greater_end = np.argmax((npa - npa[-1]) > 0.000001)
         self.assertEqual(
-            less_start, 0, "Position {} < start for {}\n{}".format(less_start, name, a)
+            less_start, 0, f"Position {less_start} < start for {name}\n{a}"
         )
         self.assertEqual(
-            greater_end, 0, "Position {} > end for {}\n{}".format(greater_end, name, a)
+            greater_end, 0, f"Position {greater_end} > end for {name}\n{a}"
         )
 
     def test_turnaround_overshoot(self):

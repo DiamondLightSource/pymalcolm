@@ -24,31 +24,31 @@ from ..parts.iociconpart import IocIconPart
 
 def await_ioc_start(stats, prefix):
     cothread.Yield()
-    pid_rbv = catools.caget("%s:PID" % prefix, timeout=5)
+    pid_rbv = catools.caget(f"{prefix}:PID", timeout=5)
     if int(pid_rbv) != os.getpid():
         raise BadValueError(
             "Got back different PID: "
             + "is there another system instance on the machine?"
         )
     catools.caput(
-        "%s:YAML:PATH" % prefix, stats["yaml_path"], datatype=catools.DBR_CHAR_STR
+        f"{prefix}:YAML:PATH", stats["yaml_path"], datatype=catools.DBR_CHAR_STR
     )
     catools.caput(
-        "%s:PYMALCOLM:PATH" % prefix,
+        f"{prefix}:PYMALCOLM:PATH",
         stats["pymalcolm_path"],
         datatype=catools.DBR_CHAR_STR,
     )
 
 
 def start_ioc(stats, prefix):
-    db_macros = "prefix='%s'" % prefix
+    db_macros = f"prefix='{prefix}'"
     try:
         epics_base = os.environ["EPICS_BASE"]
     except KeyError:
         raise BadValueError("EPICS base not defined in environment")
     softIoc_bin = epics_base + "/bin/linux-x86_64/softIoc"
     for key, value in stats.items():
-        db_macros += ",%s='%s'" % (key, value)
+        db_macros += f",{key}='{value}'"
     root = os.path.split(os.path.dirname(os.path.abspath(__file__)))[0]
     db_template = os.path.join(root, "db", "system.template")
     ioc = subprocess.Popen(
@@ -84,7 +84,7 @@ class ProcessController(builtin.controllers.ManagerController):
         self.stats = dict()
         # TODO: the following stuff is all Linux-specific....
         sys_call_bytes = (
-            open("/proc/%s/cmdline" % os.getpid(), "rb").read().split(b"\0")
+            open(f"/proc/{os.getpid()}/cmdline", "rb").read().split(b"\0")
         )
         sys_call = [el.decode("utf-8") for el in sys_call_bytes]
         self.stats["pymalcolm_path"] = os.path.abspath(sys_call[1])
@@ -96,7 +96,7 @@ class ProcessController(builtin.controllers.ManagerController):
 
         self.stats["pymalcolm_ver"] = __version__
         hostname = os.uname()[1]
-        self.stats["kernel"] = "%s %s" % (os.uname()[0], os.uname()[2])
+        self.stats["kernel"] = f"{os.uname()[0]} {os.uname()[2]}"
         self.stats["hostname"] = (
             hostname if len(hostname) < 39 else hostname[:35] + "..."
         )
@@ -147,12 +147,10 @@ class ProcessController(builtin.controllers.ManagerController):
         self.get_ioc_list()
         super().init()
         msg = (
-            """\
-pymalcolm %(pymalcolm_ver)s started
+            f"""pymalcolm {self.stats['pymalcolm_ver']} started
 
-Path: %(pymalcolm_path)s
-Yaml: %(yaml_path)s"""
-            % self.stats
+Path: {self.stats['pymalcolm_path']}
+Yaml: {self.stats['yaml_path']}"""
         )
         self._run_git_cmd("commit", "--allow-empty", "-m", msg)
 

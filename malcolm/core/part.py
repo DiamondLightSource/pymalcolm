@@ -51,7 +51,7 @@ class FieldRegistry:
             for (n, field, _, _) in fields:
                 if n == name:
                     return field
-        raise ValueError("No field named %s found" % (name,))
+        raise ValueError(f"No field named {name} found")
 
     def add_method_model(
         self,
@@ -116,11 +116,7 @@ class FieldRegistry:
             existing = [x for x in fields if x[0] == name]
             assert (
                 not existing
-            ), "Field %r published by %s would overwrite one made by %s" % (
-                name,
-                owner,
-                o,
-            )
+            ), f"Field {name!r} published by {owner} would overwrite one made by {o}"
         part_fields = self.fields.setdefault(owner, [])
         part_fields.append((name, model, cast(Callable, writeable_func), needs_context))
 
@@ -151,7 +147,7 @@ class Part(Hookable):
     def __init__(self, name: APartName) -> None:
         assert PART_NAME_RE.match(name), (
             "Expected Alphanumeric part name (dashes and underscores allowed)"
-            + " got %r" % name
+            + f" got {name!r}"
         )
         self.set_logger(part_name=name)
         self.name: str = name

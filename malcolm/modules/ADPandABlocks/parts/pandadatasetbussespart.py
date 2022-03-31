@@ -71,25 +71,25 @@ class PandADatasetBussesPart(pandablocks.parts.PandABussesPart):
                 if len(suffixes) > 1:
                     for suffix in [x for x in ("Min", "Max") if x in suffixes]:
                         suffixes.remove(suffix)
-                        type_name = "POSITION_%s" % suffix.upper()
+                        type_name = f"POSITION_{suffix.upper()}"
                         ret.append(
                             ADCore.infos.NDAttributeDatasetInfo(
-                                name="%s.%s" % (ds_name, suffix.lower()),
+                                name=f"{ds_name}.{suffix.lower()}",
                                 type=scanning.util.DatasetType[type_name],
-                                attr="%s.%s" % (pos_table.name[i], suffix),
+                                attr=f"{pos_table.name[i]}.{suffix}",
                             )
                         )
                 # There should now be 1 or 0 suffixes left to report
                 if suffixes:
                     assert len(suffixes) == 1, (
-                        "Cannot deal with capture value %r" % capture.value
+                        f"Cannot deal with capture value {capture.value!r}"
                     )
                     suffix = suffixes[0]
                     ret.append(
                         ADCore.infos.NDAttributeDatasetInfo.from_attribute_type(
                             name=ds_name,
                             type=pos_table.datasetType[i],
-                            attr="%s.%s" % (pos_table.name[i], suffix),
+                            attr=f"{pos_table.name[i]}.{suffix}",
                         )
                     )
         return ret

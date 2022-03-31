@@ -26,7 +26,7 @@ def get_dtype(nbits, signed):
     elif nbits <= 64:
         dtype = "int64"
     else:
-        raise ValueError("Bad number of bits %s" % nbits)
+        raise ValueError(f"Bad number of bits {nbits}")
     if not signed:
         dtype = "u" + dtype
     return dtype
@@ -36,7 +36,7 @@ def get_column_index(field_data):
     column_index = field_data.bits_lo // 32
     assert (
         field_data.bits_hi // 32 == column_index
-    ), "Column %s spans multiple uint32 values" % (field_data,)
+    ), f"Column {field_data} spans multiple uint32 values"
     return column_index
 
 
@@ -67,7 +67,7 @@ class PandATablePart(PandAFieldPart):
         for column_name, field_data in fields.items():
             nbits = field_data.bits_hi - field_data.bits_lo + 1
             if nbits < 1:
-                raise ValueError("Bad bits in %s" % (field_data,))
+                raise ValueError(f"Bad bits in {field_data}")
             if field_data.labels:
                 column_meta = ChoiceArrayMeta(choices=field_data.labels)
                 widget = Widget.COMBO

@@ -35,7 +35,7 @@ def cs_port_with_motors_in(
             cs_port, cs_axis = child.cs.value.split(",", 1)
             if cs_axis in CS_AXIS_NAMES:
                 return cs_port
-    raise ValueError("Can't find a cs port to use in %s" % layout_table.name)
+    raise ValueError(f"Can't find a cs port to use in {layout_table.name}")
 
 
 def get_motion_axes(
@@ -102,7 +102,7 @@ def cs_axis_mapping(
     # Any cs_axis defs that are used for more that one raw motor
     overlap = [k for k, v in cs_axis_counts.items() if v > 1]
     assert not overlap, (
-        "CS axis defs %s have more that one raw motor attached" % overlap
+        f"CS axis defs {overlap} have more that one raw motor attached"
     )
     return axis_mapping
 
@@ -300,7 +300,7 @@ def get_motion_trigger(
         part_info
     )
     if infos:
-        assert len(infos) == 1, "Expected 0 or 1 MotionTriggerInfo, got %d" % len(infos)
+        assert len(infos) == 1, f"Expected 0 or 1 MotionTriggerInfo, got {len(infos)}"
         trigger = infos[0].trigger
     else:
         trigger = scanning.infos.MotionTrigger.EVERY_POINT
@@ -331,9 +331,7 @@ def get_min_turnaround(
     # Use the part if it exists
     infos = scanning.infos.MinTurnaroundInfo.filter_values(part_info)
     if infos:
-        assert len(infos) == 1, "Expected 0 or 1 MinTurnaroundInfos, got %d" % len(
-            infos
-        )
+        assert len(infos) == 1, f"Expected 0 or 1 MinTurnaroundInfos, got {len(infos)}"
         min_turnaround = max(MIN_TIME, infos[0].gap)
         min_interval = infos[0].interval
     # Otherwise use the defaults

@@ -62,4 +62,4 @@ class CompoundMotorSinkPortsPart(Part):
             split = value.split("(")[1].rstrip(")").split(",")
             cs_port = split[0].strip()
             cs_axis = CS_AXIS_NAMES[int(split[1].strip()) - 1]
-            self.attr.set_value("%s,%s" % (cs_port, cs_axis))
+            self.attr.set_value(f"{cs_port},{cs_axis}")

@@ -63,7 +63,7 @@ class Controller(Hookable):
     def add_part(self, part: Part) -> None:
         assert (
             part.name not in self.parts
-        ), "Part %r already exists in Controller %r" % (part.name, self.mri)
+        ), f"Part {part.name!r} already exists in Controller {self.mri!r}"
         part.setup(PartRegistrar(self.field_registry, self.info_registry, part))
         self.parts[part.name] = part
 
@@ -166,8 +166,7 @@ class Controller(Hookable):
                     typ = type(data)
                 path = ".".join(request.path[: i + 1])
                 raise UnexpectedError(
-                    "Object '%s' of type %r has no attribute '%s'"
-                    % (path, typ, endpoint)
+                    f"Object '{path}' of type {typ!r} has no attribute '{endpoint}'"
                 )
         # Important to freeze now with the lock so we get a consistent set
         serialized = freeze(data)
@@ -176,7 +175,7 @@ class Controller(Hookable):
 
     def check_field_writeable(self, field):
         if not field.meta.writeable:
-            raise NotWriteableError("Field %s is not writeable" % field.path)
+            raise NotWriteableError(f"Field {field.path} is not writeable")
 
     def get_put_function(self, attribute_name):
         return self._write_functions[attribute_name]
@@ -189,12 +188,12 @@ class Controller(Hookable):
             attribute = self._block[attribute_name]
         except KeyError:
             raise FieldError(
-                "Block '%s' has no Attribute '%s'" % (self.mri, attribute_name)
+                f"Block '{self.mri}' has no Attribute '{attribute_name}'"
             )
 
         assert isinstance(
             attribute, AttributeModel
-        ), "Cannot Put to %s which is a %s" % (attribute.path, type(attribute))
+        ), f"Cannot Put to {attribute.path} which is a {type(attribute)}"
         self.check_field_writeable(attribute)
 
         put_function = self.get_put_function(attribute_name)
@@ -247,7 +246,7 @@ class Controller(Hookable):
         try:
             method = self._block[method_name]
         except KeyError:
-            raise FieldError("Block '%s' has no Method '%s'" % (self.mri, method_name))
+            raise FieldError(f"Block '{self.mri}' has no Method '{method_name}'")
 
         assert isinstance(method, MethodModel), "Cannot Post to %s which is a %s" % (
             method.path,

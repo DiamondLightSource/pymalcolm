@@ -47,7 +47,7 @@ class BlockHandler(Handler):
             prefix = self.controller.mri + "."
             assert value.path.startswith(
                 prefix
-            ), "NTURI path '%s' doesn't start with '%s'" % (value.path, prefix)
+            ), f"NTURI path '{value.path}' doesn't start with '{prefix}'"
             method = value.path[len(prefix) :]
             parameters = convert_value_to_dict(value.query)
         else:
@@ -59,7 +59,7 @@ class BlockHandler(Handler):
             else:
                 # Get the path and string "value" from the put value
                 method = op.pvRequest().get("method")
-                assert method, "No 'method' in pvRequest:\n%s" % op.pvRequest()
+                assert method, f"No 'method' in pvRequest:\n{op.pvRequest()}"
             parameters = convert_value_to_dict(value)
         path = [self.controller.mri, method]
         view = self.controller.block_view()[method]
@@ -102,7 +102,7 @@ class BlockHandler(Handler):
                         f"error ({message})"
                     )
                 else:
-                    message = "BadResponse: %s" % response.to_dict()
+                    message = f"BadResponse: {response.to_dict()}"
                     self.controller.log.debug(
                         f"{self.controller.mri}: RPC method {method} got a bad "
                         f"response ({message})"
@@ -129,7 +129,7 @@ class BlockHandler(Handler):
         value_changed = changed_fields_inc_parents.intersection(self.put_paths)
         assert (
             len(value_changed) == 1
-        ), "Can only do a Put to a single field, got %s" % list(value_changed)
+        ), f"Can only do a Put to a single field, got {list(value_changed)}"
         changed = list(value_changed)[0]
         if self.field is not None:
             # Only accept a Put to "value"
@@ -162,7 +162,7 @@ class BlockHandler(Handler):
                 if isinstance(response, Error):
                     message = stringify_error(response.message)
                 else:
-                    message = "BadResponse: %s" % response.to_dict()
+                    message = f"BadResponse: {response.to_dict()}"
                 op.done(error=message)
 
         put.set_callback(handle_put_response)
@@ -176,7 +176,7 @@ class BlockHandler(Handler):
                 # onFirstConnect has been called, should be able to update it
                 try:
                     assert isinstance(response, Delta), (
-                        "Expecting Delta response, got %s" % response
+                        f"Expecting Delta response, got {response}"
                     )
                     # We got a delta, create or update value and notify
                     if self.value is None:
@@ -201,12 +201,12 @@ class BlockHandler(Handler):
             len(response.changes) == 1
             and len(response.changes[0]) == 2
             and response.changes[0][0] == []
-        ), "Expected root update, got %s" % (response.changes,)
+        ), f"Expected root update, got {response.changes}"
         self.value = convert_dict_to_value(response.changes[0][1])
         unputtable_ids = (MethodModel.typeid, BlockMeta.typeid)
         if not self.field:
             self.put_paths = set(
-                "%s.value" % x
+                f"{x}.value"
                 for x, v in self.value.items()
                 if v.getID() not in unputtable_ids
             )
@@ -223,7 +223,7 @@ class BlockHandler(Handler):
         self.value.unmark()
         assert delta.changes, "No Delta changes"
         for change in delta.changes:
-            assert len(change) == 2, "Path %s deleted" % change[0]
+            assert len(change) == 2, f"Path {change[0]} deleted"
             assert len(change[0]) > 0, "Can't handle root update %s after initial" % (
                 change,
             )
@@ -306,7 +306,7 @@ class PvaServerComms(builtin.controllers.ServerComms):
             # Someone is asking for the field of a Block
             mri, field = channel_name.rsplit(".", 1)
         else:
-            raise NameError("Bad channel %s" % channel_name)
+            raise NameError(f"Bad channel {channel_name}")
         with self._lock:
             pvs = self._pvs.setdefault(mri, {})
             try:

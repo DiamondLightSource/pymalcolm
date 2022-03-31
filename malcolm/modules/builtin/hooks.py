@@ -95,5 +95,5 @@ class SaveHook(ControllerHook):
 
     def validate_return(self, ret: AStructure) -> AStructure:
         """Check that a serialized structure is returned"""
-        assert isinstance(ret, dict), "Expected a structure, got %r" % (ret,)
+        assert isinstance(ret, dict), f"Expected a structure, got {ret!r}"
         return ret

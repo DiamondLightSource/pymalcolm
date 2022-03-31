@@ -34,5 +34,5 @@ class TestIMalcolm(unittest.TestCase):
         assert len(MyHandler.emitted) == 1
         assert (
             str(MyHandler.emitted[0])
-            == '<LogRecord: root, 30, %s, 32, "Bad things happen">' % __file__
+            == f'<LogRecord: root, 30, {__file__}, 32, "Bad things happen">'
         )

@@ -66,7 +66,7 @@ def create_dataset_infos(
         part_info
     )
     assert len(ndarray_infos) in (0, 1), (
-        "More than one NDArrayDatasetInfo defined %s" % ndarray_infos
+        f"More than one NDArrayDatasetInfo defined {ndarray_infos}"
     )
 
     # Default detector rank is 2d
@@ -77,7 +77,7 @@ def create_dataset_infos(
         ndarray_info = ndarray_infos[0]
         detector_rank = ndarray_info.rank
         yield scanning.infos.DatasetProducedInfo(
-            name="%s.data" % name,
+            name=f"{name}.data",
             filename=filename,
             type=scanning.util.DatasetType.PRIMARY,
             rank=detector_rank + generator_rank,
@@ -91,11 +91,11 @@ def create_dataset_infos(
         ] = CalculatedNDAttributeDatasetInfo.filter_values(part_info)
         for calculated_info in calculated_infos:
             yield scanning.infos.DatasetProducedInfo(
-                name="%s.%s" % (name, calculated_info.name),
+                name=f"{name}.{calculated_info.name}",
                 filename=filename,
                 type=scanning.util.DatasetType.SECONDARY,
                 rank=generator_rank,
-                path="/entry/%s/%s" % (calculated_info.name, calculated_info.name),
+                path=f"/entry/{calculated_info.name}/{calculated_info.name}",
                 uniqueid=uniqueid,
             )
 
@@ -117,18 +117,18 @@ def create_dataset_infos(
     # Add any setpoint dimensions
     for dim in generator.axes:
         yield scanning.infos.DatasetProducedInfo(
-            name="%s.value_set" % dim,
+            name=f"{dim}.value_set",
             filename=filename,
             type=scanning.util.DatasetType.POSITION_SET,
             rank=1,
-            path="/entry/detector/%s_set" % dim,
+            path=f"/entry/detector/{dim}_set",
             uniqueid="",
         )
 
 
 def set_dimensions(child: Block, generator: CompoundGenerator) -> List[Future]:
     num_dims = len(generator.dimensions)
-    assert num_dims <= 10, "Can only do 10 dims, you gave me %s" % num_dims
+    assert num_dims <= 10, f"Can only do 10 dims, you gave me {num_dims}"
     attr_dict: Dict = dict(numExtraDims=num_dims - 1)
     # Fill in dim name and size
     # NOTE: HDF writer has these filled with fastest moving first
@@ -142,8 +142,8 @@ def set_dimensions(child: Block, generator: CompoundGenerator) -> List[Future]:
         else:
             index_name = ""
             index_size = 1
-        attr_dict["posNameDim%s" % suffix] = index_name
-        attr_dict["extraDimSize%s" % suffix] = index_size
+        attr_dict[f"posNameDim{suffix}"] = index_name
+        attr_dict[f"extraDimSize{suffix}"] = index_size
     futures = child.put_attribute_values_async(attr_dict)
     return futures
 
@@ -151,11 +151,11 @@ def set_dimensions(child: Block, generator: CompoundGenerator) -> List[Future]:
 def make_set_points(
     dimension: Dimension, axis: str, data_el: ET.Element, units: str
 ) -> None:
-    axis_vals = ["%.12g" % p for p in dimension.get_positions(axis)]
+    axis_vals = [f"{p:.12g}" for p in dimension.get_positions(axis)]
     axis_el = ET.SubElement(
         data_el,
         "dataset",
-        name="%s_set" % axis,
+        name=f"{axis}_set",
         source="constant",
         type="float",
         value=",".join(axis_vals),
@@ -191,7 +191,7 @@ def make_nxdata(
     pad_dims = []
     for d in generator.dimensions:
         if len(d.axes) == 1:
-            pad_dims.append("%s_set" % d.axes[0])
+            pad_dims.append(f"{d.axes[0]}_set")
         else:
             pad_dims.append(".")
 
@@ -218,7 +218,7 @@ def make_nxdata(
             ET.SubElement(
                 data_el,
                 "attribute",
-                name="%s_set_indices" % axis,
+                name=f"{axis}_set_indices",
                 source="constant",
                 value=str(i),
                 type="string",
@@ -227,8 +227,8 @@ def make_nxdata(
                 ET.SubElement(
                     data_el,
                     "hardlink",
-                    name="%s_set" % axis,
-                    target="/entry/detector/%s_set" % axis,
+                    name=f"{axis}_set",
+                    target=f"/entry/detector/{axis}_set",
                 )
             else:
                 make_set_points(d, axis, data_el, generator.units[axis])
@@ -362,8 +362,8 @@ def make_layout_xml(
     "flushDataPerNFrames",
     "numCapture",
 )
-@builtin.util.no_save("posNameDim%s" % SUFFIXES[i] for i in range(10))
-@builtin.util.no_save("extraDimSize%s" % SUFFIXES[i] for i in range(10))
+@builtin.util.no_save(f"posNameDim{SUFFIXES[i]}" for i in range(10))
+@builtin.util.no_save(f"extraDimSize{SUFFIXES[i]}" for i in range(10))
 class HDFWriterPart(builtin.parts.ChildPart):
     """Part for controlling an `hdf_writer_block` in a Device"""
 
@@ -475,7 +475,7 @@ class HDFWriterPart(builtin.parts.ChildPart):
         else:
             h5_file_dir = file_dir
         filename = fileTemplate % formatName
-        assert "." in filename, "File extension for %r should be supplied" % filename
+        assert "." in filename, f"File extension for {filename!r} should be supplied"
         futures = child.put_attribute_values_async(
             dict(
                 enableCallbacks=True,

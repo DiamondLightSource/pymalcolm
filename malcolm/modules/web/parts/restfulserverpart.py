@@ -60,7 +60,7 @@ class RestfulHandler(RequestHandler):
             if isinstance(response, Error):
                 message = response.message
             else:
-                message = "Unknown response %s" % type(response)
+                message = f"Unknown response {type(response)}"
             self.set_status(500, message)
             self.write_error(500)
 
