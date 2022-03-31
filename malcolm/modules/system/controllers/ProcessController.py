@@ -83,9 +83,7 @@ class ProcessController(builtin.controllers.ManagerController):
             self.bl_iocs = self.bl_iocs[:-1]
         self.stats = dict()
         # TODO: the following stuff is all Linux-specific....
-        sys_call_bytes = (
-            open(f"/proc/{os.getpid()}/cmdline", "rb").read().split(b"\0")
-        )
+        sys_call_bytes = open(f"/proc/{os.getpid()}/cmdline", "rb").read().split(b"\0")
         sys_call = [el.decode("utf-8") for el in sys_call_bytes]
         self.stats["pymalcolm_path"] = os.path.abspath(sys_call[1])
         self.stats["yaml_path"] = os.path.abspath(sys_call[2])
@@ -146,12 +144,10 @@ class ProcessController(builtin.controllers.ManagerController):
             self.ioc = start_ioc(self.stats, self.prefix)
         self.get_ioc_list()
         super().init()
-        msg = (
-            f"""pymalcolm {self.stats['pymalcolm_ver']} started
+        msg = f"""pymalcolm {self.stats['pymalcolm_ver']} started
 
 Path: {self.stats['pymalcolm_path']}
 Yaml: {self.stats['yaml_path']}"""
-        )
         self._run_git_cmd("commit", "--allow-empty", "-m", msg)
 
     def set_default_layout(self):

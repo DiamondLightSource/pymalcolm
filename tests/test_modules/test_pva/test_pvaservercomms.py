@@ -130,9 +130,7 @@ class TestBlockHandler(unittest.TestCase):
         put_mock.assert_called_once()
         put_instance_mock.set_callback.assert_called_once()
 
-        self.op_mock.done.assert_called_once_with(
-            error=f"str: {error_message}"
-        )
+        self.op_mock.done.assert_called_once_with(error=f"str: {error_message}")
 
 
 class TestPvaServerComms(unittest.TestCase):
@@ -152,9 +150,7 @@ class TestPvaServerComms(unittest.TestCase):
 
         self.assertEqual(
             True,
-            self.pva_server_comms.testChannel(
-                f"{channel_name}.{field}"
-            ),
+            self.pva_server_comms.testChannel(f"{channel_name}.{field}"),
         )
 
     def test_testChannel_returns_False_if_channel_is_not_in_published(self):
@@ -168,9 +164,7 @@ class TestPvaServerComms(unittest.TestCase):
 
         self.assertEqual(
             False,
-            self.pva_server_comms.testChannel(
-                f"{channel_name}.{field}"
-            ),
+            self.pva_server_comms.testChannel(f"{channel_name}.{field}"),
         )
 
     def test_make_channel_raises_NameError_for_bad_channel_name(self):

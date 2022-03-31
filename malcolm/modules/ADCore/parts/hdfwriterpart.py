@@ -65,9 +65,10 @@ def create_dataset_infos(
     ndarray_infos: List[NDArrayDatasetInfo] = NDArrayDatasetInfo.filter_values(
         part_info
     )
-    assert len(ndarray_infos) in (0, 1), (
-        f"More than one NDArrayDatasetInfo defined {ndarray_infos}"
-    )
+    assert len(ndarray_infos) in (
+        0,
+        1,
+    ), f"More than one NDArrayDatasetInfo defined {ndarray_infos}"
 
     # Default detector rank is 2d
     detector_rank = 2
@@ -137,7 +138,7 @@ def set_dimensions(child: Block, generator: CompoundGenerator) -> List[Future]:
         suffix = SUFFIXES[i]
         if i < num_dims:
             forward_i = num_dims - i - 1
-            index_name = "d%d" % forward_i
+            index_name = f"d{forward_i}"
             index_size = generator.dimensions[forward_i].size
         else:
             index_name = ""
@@ -527,10 +528,9 @@ class HDFWriterPart(builtin.parts.ChildPart):
         return dataset_infos
 
     def _check_xml_is_valid(self, child):
-        assert child.xmlLayoutValid.value, "%s: invalid XML layout file (%s)" % (
-            self.mri,
-            child.xmlErrorMsg.value,
-        )
+        assert (
+            child.xmlLayoutValid.value
+        ), f"{self.mri}: invalid XML layout file ({child.xmlErrorMsg.value})"
 
     @add_call_types
     def on_seek(

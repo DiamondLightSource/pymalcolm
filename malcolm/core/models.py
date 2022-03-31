@@ -79,9 +79,7 @@ class Model(Serializable):
         try:
             ct = self.call_types[name]
         except KeyError:
-            raise ValueError(
-                f"{name!r} not in {self!r}.call_types {self.call_types!r}"
-            )
+            raise ValueError(f"{name!r} not in {self!r}.call_types {self.call_types!r}")
         else:
             if ct.is_array:
                 # Cast to right type, this will do some cheap validation
@@ -95,10 +93,9 @@ class Model(Serializable):
                     # TODO: this might harm performance
                     typ = ct.typ
                     for x in value.seq:
-                        assert isinstance(x, typ), "Expected Array[%r], got %r" % (
-                            ct.typ,
-                            value.seq,
-                        )
+                        assert isinstance(
+                            x, typ
+                        ), f"Expected Array[{ct.typ!r}], got {value.seq!r}"
             elif ct.is_mapping:
                 # Check it is the right type
                 ktype, vtype = ct.typ
@@ -138,9 +135,9 @@ class Model(Serializable):
             self[path[0]].apply_change(path[1:], *args)
         else:
             # This is for us
-            assert len(path) == 1 and len(args) == 1, "Cannot process change %s" % (
-                [self.path + path] + list(args)
-            )
+            assert (
+                len(path) == 1 and len(args) == 1
+            ), f"Cannot process change {[self.path + path] + list(args)}"
             getattr(self, f"set_{path[0]}")(args[0])
 
 
@@ -317,11 +314,9 @@ class AttributeModel(Model):
         meta = deserialize_object(meta)
         # Check that the meta attribute_class is ourself
         assert isinstance(meta, VMeta), f"Expected meta object, got {type(meta)}"
-        assert isinstance(
-            self, meta.attribute_class
-        ), "Meta object needs to be attached to %s, we are a %s" % (
-            meta.attribute_class,
-            type(self),
+        assert isinstance(self, meta.attribute_class), (
+            f"Meta object needs to be attached to {meta.attribute_class}, "
+            f"we are a {type(self)}"
         )
         return self.set_endpoint_data("meta", meta)
 
@@ -501,17 +496,16 @@ class ChoiceMeta(VMeta):
         for i, choice in enumerate(choices):
             # If we already have an enum type it must match
             if enum_typ is not None:
-                assert isinstance(choice, enum_typ), "Expected %s choice, got %s" % (
-                    enum_typ,
-                    choice,
-                )
+                assert isinstance(
+                    choice, enum_typ
+                ), f"Expected {enum_typ} choice, got {choice}"
             elif not isinstance(choice, str):
                 enum_typ = type(choice)
             if isinstance(choice, Enum):
                 # Our choice value must be a string
                 assert isinstance(choice.value, str), (
-                    "Expected Enum choice to have str value, got %r with "
-                    "value %r" % (choice, choice.value)
+                    f"Expected Enum choice to have str value, got {choice!r} with "
+                    f"value {choice.value!r}"
                 )
                 # Map the Enum instance and str to the Enum instance
                 choices_lookup[choice.value] = choice
@@ -548,9 +542,7 @@ class ChoiceMeta(VMeta):
         try:
             return self.choices_lookup[value]
         except KeyError:
-            raise ValueError(
-                f"{value!r} is not a valid value in {list(self.choices)}"
-            )
+            raise ValueError(f"{value!r} is not a valid value in {list(self.choices)}")
 
     def doc_type_string(self) -> str:
         return " | ".join([repr(x) for x in self.choices])
@@ -680,10 +672,9 @@ class NumberMeta(VMeta):
         return self.set_endpoint_data("display", display)
 
     def set_dtype(self, dtype: ADtype) -> ADtype:
-        assert dtype in _dtype_strings, "Expected dtype to be in %s, got %s" % (
-            self._dtypes,
-            dtype,
-        )
+        assert (
+            dtype in _dtype_strings
+        ), f"Expected dtype to be in {self._dtypes}, got {dtype}"
         self._np_type = getattr(np, dtype)
         return self.set_endpoint_data("dtype", dtype)
 
@@ -801,8 +792,8 @@ class ChoiceArrayMeta(ChoiceMeta, VArrayMeta):
                     new_choice = self.choices_lookup[choice]
                 except KeyError:
                     raise ValueError(
-                        "%s is not a valid value in %s for element %s"
-                        % (value, self.choices, i)
+                        f"{value} is not a valid value in {self.choices} "
+                        f"for element {i}"
                     )
                 else:
                     is_same &= choice == new_choice
@@ -904,9 +895,9 @@ class TableMeta(VMeta):
                 table_cls.call_types[k] = anno
         else:
             # User supplied, check it matches element names
-            assert Table.matches_type(table_cls), "Expecting table subclass, got %s" % (
-                table_cls,
-            )
+            assert Table.matches_type(
+                table_cls
+            ), f"Expecting table subclass, got {table_cls}"
             missing = set(self.elements) - set(table_cls.call_types)
             assert not missing, f"Supplied Table missing fields {missing}"
             extra = set(table_cls.call_types) - set(self.elements)
@@ -1024,10 +1015,9 @@ class MapMeta(Model):
 
     def set_required(self, required: URequired) -> ARequired:
         for r in required:
-            assert r in self.elements, "Expected one of %r, got %r" % (
-                list(self.elements),
-                r,
-            )
+            assert (
+                r in self.elements
+            ), f"Expected one of {list(self.elements)!r}, got {r!r}"
         return self.set_endpoint_data("required", ARequired(required))
 
     def validate(
@@ -1038,9 +1028,9 @@ class MapMeta(Model):
         if param_dict is None:
             param_dict = {}
         extra = set(param_dict) - set(self.elements)
-        assert not extra, "Given keys %s, some of which aren't in allowed keys %s" % (
-            list(sorted(param_dict)),
-            list(self.elements),
+        assert not extra, (
+            f"Given keys {list(sorted(param_dict))}, some of which aren't "
+            f"in allowed keys {list(self.elements)}"
         )
         args = OrderedDict()
         for k, m in self.elements.items():
@@ -1049,10 +1039,9 @@ class MapMeta(Model):
             elif add_missing:
                 args[k] = m.validate(None)
         missing: Set = set(self.required) - set(args)
-        assert not missing, "Requires keys %s but only given %s" % (
-            list(self.required),
-            list(args),
-        )
+        assert (
+            not missing
+        ), f"Requires keys {list(self.required)} but only given {list(args)}"
         return args
 
 

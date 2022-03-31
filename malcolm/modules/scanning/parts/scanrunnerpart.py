@@ -225,9 +225,7 @@ class ScanRunnerPart(ChildPart):
             else:
                 self.set_runner_state(RunnerStates.FAULT)
                 self.runner_status_message.value = "Unidentified key in YAML"
-                raise ValueError(
-                    f"Unidentified object in YAML: {key_name}"
-                )
+                raise ValueError(f"Unidentified object in YAML: {key_name}")
 
         # Count the number of scans configured
         self.update_scans_configured()
@@ -247,9 +245,7 @@ class ScanRunnerPart(ChildPart):
         except OSError:
             self.set_runner_state(RunnerStates.FAULT)
             self.runner_status_message.set_value("Could not create directory")
-            raise IOError(
-                f"ERROR: unable to create directory: {directory}"
-            )
+            raise IOError(f"ERROR: unable to create directory: {directory}")
 
     def create_and_get_sub_directory(self, root_directory: str) -> str:
         today_str = self.get_current_datetime(time_separator="-")
@@ -360,9 +356,7 @@ class ScanRunnerPart(ChildPart):
         report_filepath: str,
         generator: CompoundGenerator,
     ) -> None:
-        self.runner_status_message.set_value(
-            f"Running {set_name}: {scan_number}"
-        )
+        self.runner_status_message.set_value(f"Running {set_name}: {scan_number}")
         assert self.context, "No context found"
 
         # Make individual scan directory
@@ -457,15 +451,11 @@ class ScanRunnerPart(ChildPart):
     def add_report_line(self, report_filepath: str, report_string: str) -> None:
         try:
             with open(report_filepath, "a+") as report_file:
-                report_file.write(
-                    f"{report_string}\n"
-                )
+                report_file.write(f"{report_string}\n")
         except IOError:
             self.set_runner_state(RunnerStates.FAULT)
             self.runner_status_message.set_value("Error writing report file")
-            raise IOError(
-                f"Could not write to report file {report_filepath}"
-            )
+            raise IOError(f"Could not write to report file {report_filepath}")
 
     @staticmethod
     def get_enum_label(enum_state: Enum) -> str:

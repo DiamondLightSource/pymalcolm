@@ -69,16 +69,16 @@ class FieldRegistry:
             call_types = getattr(func, "call_types", {})
             context_anno: Anno = call_types.get("context", None)
             assert context_anno, (
-                "Func %s needs_context, but has no 'context' anno. Did "
-                "you forget the @add_call_types decorator?" % func
+                f"Func {func} needs_context, but has no 'context' anno. Did "
+                "you forget the @add_call_types decorator?"
             )
             assert list(call_types)[0] == "context", (
-                "Func %s needs_context, so 'context' needs to be the first "
-                "argument it takes" % func
+                f"Func {func} needs_context, so 'context' needs to be the first "
+                "argument it takes"
             )
             assert context_anno.typ is Context, (
-                "Func %s needs_context, but 'context' has type %s rather than"
-                "Context" % (func, context_anno.typ)
+                f"Func {func} needs_context, but 'context' has type "
+                f"{context_anno.type} rather than Context"
             )
             without = ("context",)
         else:
@@ -108,10 +108,9 @@ class FieldRegistry:
         writeable_func: Optional["Callable"] = None,
         needs_context: bool = False,
     ) -> None:
-        assert CAMEL_RE.match(name), "Field %r published by %s is not camelCase" % (
-            name,
-            owner,
-        )
+        assert CAMEL_RE.match(
+            name
+        ), f"Field {name!r} published by {owner} is not camelCase"
         for o, fields in self.fields.items():
             existing = [x for x in fields if x[0] == name]
             assert (
@@ -134,9 +133,9 @@ class InfoRegistry:
             callback = self._reportable_infos[typ]
         except KeyError:
             raise ValueError(
-                "Don't know how to report a %s, only %s\n"
+                f"Don't know how to report a {typ.__name__}, only "
+                f"{[x.__name__ for x in self._reportable_infos]}\n"
                 "Did you use the wrong type of Controller?"
-                % (typ.__name__, [x.__name__ for x in self._reportable_infos])
             )
         callback(reporter, info)
 

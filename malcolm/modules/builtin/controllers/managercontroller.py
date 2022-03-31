@@ -242,9 +242,9 @@ class ManagerController(StatefulController):
     def set_exports(self, value):
         # Validate
         for export_name in value.export:
-            assert CAMEL_RE.match(export_name), (
-                f"Field {export_name!r} is not camelCase"
-            )
+            assert CAMEL_RE.match(
+                export_name
+            ), f"Field {export_name!r} is not camelCase"
         with self.changes_squashed:
             self.exports.set_value(value)
             self.update_modified()

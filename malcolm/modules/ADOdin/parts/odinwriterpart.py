@@ -154,8 +154,7 @@ def create_vds(generator, raw_name, vds_path, child, uid_name, sum_name):
     alternates = None
 
     files = [
-        os.path.join(vds_folder, f"{raw_name}_{i + 1:06d}.h5")
-        for i in range(hdf_count)
+        os.path.join(vds_folder, f"{raw_name}_{i + 1:06d}.h5") for i in range(hdf_count)
     ]
     shape = (hdf_shape, image_height, image_width)
 
@@ -353,9 +352,9 @@ class OdinWriterPart(builtin.parts.ChildPart):
         raw_file_name = fileTemplate.replace("%s", formatName + "_raw_data")
         raw_file_basename, _ = os.path.splitext(raw_file_name)
 
-        assert "." in vds_full_filename, (
-            f"File extension for {vds_full_filename!r} should be supplied"
-        )
+        assert (
+            "." in vds_full_filename
+        ), f"File extension for {vds_full_filename!r} should be supplied"
         futures = child.put_attribute_values_async(
             dict(
                 numCapture=generator.size,

@@ -175,9 +175,9 @@ class BlockHandler(Handler):
             if self.pv:
                 # onFirstConnect has been called, should be able to update it
                 try:
-                    assert isinstance(response, Delta), (
-                        f"Expecting Delta response, got {response}"
-                    )
+                    assert isinstance(
+                        response, Delta
+                    ), f"Expecting Delta response, got {response}"
                     # We got a delta, create or update value and notify
                     if self.value is None:
                         # Open it with the value

@@ -196,9 +196,9 @@ class Context:
         Args:
             future (Future): The future of the original subscription
         """
-        assert future not in self._pending_unsubscribes, (
-            f"{self._pending_unsubscribes[future]!r} has already been unsubscribed from"
-        )
+        assert (
+            future not in self._pending_unsubscribes
+        ), f"{self._pending_unsubscribes[future]!r} has already been unsubscribed from"
         subscribe = self._requests[future]
         self._pending_unsubscribes[future] = subscribe
         # Clear out the subscription
@@ -223,7 +223,7 @@ class Context:
         if futures:
             for future, request in futures:
                 if callback:
-                    log.warning("Unsubscribing from %s", request.path)
+                    log.warning(f"Unsubscribing from {request.path}")
                     cothread.Callback(self.unsubscribe, future)
                 else:
                     self.unsubscribe(future)
@@ -342,8 +342,8 @@ class Context:
                 func, _ = self._subscriptions.get(request.id, (None, None))
                 if isinstance(func, When):
                     descriptions.append(
-                        "When(%s, %s, last=%s)"
-                        % (path, func.condition_satisfied.__name__, func.last)
+                        f"When({path}, {func.condition_satisfied.__name__}, "
+                        f"last={func.last})"
                     )
                 elif func is None:
                     # We have already called unsubscribe, but haven't received
@@ -381,9 +381,7 @@ class Context:
         try:
             response = self._q.get(timeout)
         except TimeoutError:
-            raise TimeoutError(
-                f"Timeout waiting for {self._describe_futures(futures)}"
-            )
+            raise TimeoutError(f"Timeout waiting for {self._describe_futures(futures)}")
         if response is self._sentinel_stop:
             self._sentinel_stop = None
         elif response is self.STOP:

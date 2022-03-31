@@ -7,9 +7,7 @@ class Table(Serializable):
     # getitem supported for row by row operations
     def validate_column_lengths(self):
         lengths = {a: len(getattr(self, a)) for a in self.call_types}
-        assert len(set(lengths.values())) == 1, (
-            f"Column lengths {lengths} don't match"
-        )
+        assert len(set(lengths.values())) == 1, f"Column lengths {lengths} don't match"
 
     def __getitem__(self, item):
         try:

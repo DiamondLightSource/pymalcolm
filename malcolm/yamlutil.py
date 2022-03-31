@@ -263,9 +263,9 @@ class Section:
         if filename:
             # different filename to support passing __file__
             yaml_path = os.path.join(os.path.dirname(yaml_path), filename)
-        assert yaml_path.endswith(".yaml"), (
-            f"Expected a/path/to/<yamlname>.yaml, got {yaml_path!r}"
-        )
+        assert yaml_path.endswith(
+            ".yaml"
+        ), f"Expected a/path/to/<yamlname>.yaml, got {yaml_path!r}"
         yamlname = os.path.basename(yaml_path)[:-5]
         log.debug("Parsing %s", yaml_path)
         with open(yaml_path) as f:

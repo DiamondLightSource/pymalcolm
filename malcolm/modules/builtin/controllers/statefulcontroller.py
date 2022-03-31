@@ -147,9 +147,7 @@ class StatefulController(BasicController):
                 for child, writeable in self._children_writeable[state].items():
                     child.meta.set_writeable(writeable)
             else:
-                raise TypeError(
-                    f"Cannot transition from {initial_state} to {state}"
-                )
+                raise TypeError(f"Cannot transition from {initial_state} to {state}")
 
     def try_stateful_function(self, start_state, end_state, func, *args, **kwargs):
         try:

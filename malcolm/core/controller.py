@@ -140,7 +140,7 @@ class Controller(Hookable):
             elif isinstance(request, Unsubscribe):
                 handler = self._notifier.handle_unsubscribe
             else:
-                raise UnexpectedError("Unexpected request %s", request)
+                raise UnexpectedError(f"Unexpected request {request}")
             try:
                 responses += handler(request)
             except Exception as e:
@@ -187,9 +187,7 @@ class Controller(Hookable):
         try:
             attribute = self._block[attribute_name]
         except KeyError:
-            raise FieldError(
-                f"Block '{self.mri}' has no Attribute '{attribute_name}'"
-            )
+            raise FieldError(f"Block '{self.mri}' has no Attribute '{attribute_name}'")
 
         assert isinstance(
             attribute, AttributeModel
@@ -248,10 +246,9 @@ class Controller(Hookable):
         except KeyError:
             raise FieldError(f"Block '{self.mri}' has no Method '{method_name}'")
 
-        assert isinstance(method, MethodModel), "Cannot Post to %s which is a %s" % (
-            method.path,
-            type(method),
-        )
+        assert isinstance(
+            method, MethodModel
+        ), f"Cannot Post to {method.path} which is a {type(method)}"
         self.check_field_writeable(method)
 
         post_function = self.get_post_function(method_name)

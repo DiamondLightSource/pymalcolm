@@ -43,9 +43,9 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
         super().__init__(
             name, mri, initial_visibility=initial_visibility, stateful=False
         )
-        assert CAMEL_RE.match(name), (
-            f"PandAPulseTriggerPart name {name!r} should be camelCase"
-        )
+        assert CAMEL_RE.match(
+            name
+        ), f"PandAPulseTriggerPart name {name!r} should be camelCase"
         # The stored generator duration and detector framesPerStep from
         # configure
         self.generator_duration = None
@@ -142,9 +142,9 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
             if export in expected_exports:
                 part_name = source.split(".")[0]
                 if pulse_name:
-                    assert part_name == pulse_name, (
-                        f"Export {export} defined for a different pulse block"
-                    )
+                    assert (
+                        part_name == pulse_name
+                    ), f"Export {export} defined for a different pulse block"
                 else:
                     pulse_name = part_name
                 expected_exports.remove(export)

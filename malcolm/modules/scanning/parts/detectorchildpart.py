@@ -187,8 +187,8 @@ class DetectorChildPart(builtin.parts.ChildPart):
         if enable:
             if self.faulty:
                 raise BadValueError(
-                    "Detector %s was faulty at init and is unusable. If the "
-                    "detector is now working please restart Malcolm" % self.name
+                    f"Detector {self.name} was faulty at init and is unusable. If the "
+                    "detector is now working please restart Malcolm"
                 )
             # Check that if we are told to set exposure that we take it
             if "exposure" in kwargs and not multiframe and not takes_exposure:
@@ -209,9 +209,9 @@ class DetectorChildPart(builtin.parts.ChildPart):
                 tweak_detectors = True
             if frames_per_step > 1 and not multiframe:
                 raise BadValueError(
-                    "There are no trigger multipliers setup for Detector '%s' "
-                    "so framesPerStep can only be 0 or 1 for this row in the "
-                    "detectors table" % self.name
+                    "There are no trigger multipliers setup for Detector "
+                    f"'{self.name}' so framesPerStep can only be 0 or 1 for this row "
+                    "in the detectors table"
                 )
             # Append frames per step now that we should have settled on a value
             if takes_frames_per_step:
@@ -323,9 +323,9 @@ class DetectorChildPart(builtin.parts.ChildPart):
             self.frames_per_step = 0
             return None
         else:
-            assert self.frames_per_step > 0, (
-                f"Zero frames per step for {self.name}, this shouldn't happen"
-            )
+            assert (
+                self.frames_per_step > 0
+            ), f"Zero frames per step for {self.name}, this shouldn't happen"
         child = context.block_view(self.mri)
         if (
             "exposure" in kwargs
@@ -335,8 +335,8 @@ class DetectorChildPart(builtin.parts.ChildPart):
         child.configure(**kwargs)
         # Report back any datasets the child has to our parent
         assert hasattr(child, "datasets"), (
-            "Detector %s doesn't have a dataset table, did you add a "
-            "scanning.parts.DatasetTablePart to it?" % self.mri
+            f"Detector {self.mri} doesn't have a dataset table, did you add a "
+            "scanning.parts.DatasetTablePart to it?"
         )
         datasets_table = child.datasets.value
         info_list = [DatasetProducedInfo(*row) for row in datasets_table.rows()]

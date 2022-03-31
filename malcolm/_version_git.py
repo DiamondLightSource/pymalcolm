@@ -53,7 +53,10 @@ def get_version_from_git(path=None):
     tag = tag.replace("-", ".")
     if plus != "0" or suffix:
         # Not on a tag, add additional info
-        tag = f"{locals()['tag']}+{locals()['plus']}.g{locals()['sha1']}{locals()['suffix']}"
+        tag = (
+            f"{locals()['tag']}+{locals()['plus']}.g{locals()['sha1']}"
+            f"{locals()['suffix']}"
+        )
     return tag, sha1, None
 
 

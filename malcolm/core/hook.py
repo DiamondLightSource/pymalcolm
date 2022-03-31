@@ -41,8 +41,8 @@ def make_args_gen(func: Callable) -> ArgsGen:
 
     if need_args and not call_types:
         raise TypeError(
-            "Function %s takes arguments but doesn't have call_types. Did you "
-            "forget to decorate with @add_call_types?" % func
+            f"Function {func} takes arguments but doesn't have call_types. Did you "
+            "forget to decorate with @add_call_types?"
         )
 
     def args_gen(keys: List[str]) -> List[str]:

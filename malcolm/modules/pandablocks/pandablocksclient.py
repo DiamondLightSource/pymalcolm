@@ -321,9 +321,7 @@ class PandABlocksClient:
             if len(split) > 2:
                 # Field is an enum, get its values
                 if split[2] == "enum":
-                    enum_queues[name] = self.send(
-                        f"*ENUMS.{block}.{field}[].{name}?\n"
-                    )
+                    enum_queues[name] = self.send(f"*ENUMS.{block}.{field}[].{name}?\n")
                 elif split[2] == "int":
                     signed = True
             fields[name] = (split[0], signed)

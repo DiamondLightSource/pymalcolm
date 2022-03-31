@@ -222,9 +222,9 @@ class Process(Loggable):
                 object. None means forever
         """
         for controller in controllers:
-            assert controller.mri not in self._controllers, (
-                f"Controller already exists for {controller.mri}"
-            )
+            assert (
+                controller.mri not in self._controllers
+            ), f"Controller already exists for {controller.mri}"
             self._controllers[controller.mri] = controller
             controller.setup(self)
         if self.state:

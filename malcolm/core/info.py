@@ -77,9 +77,8 @@ class Info:
         filtered: List[T] = cls.filter_values(part_info)
         if len(filtered) != 1:
             if error_msg is None:
-                error_msg = "Expected a single %s, got %s of them" % (
-                    cls.__name__,
-                    len(filtered),
+                error_msg = (
+                    f"Expected a single {cls.__name__}, got {len(filtered)} of them"
                 )
             raise BadValueError(error_msg)
         return filtered[0]
