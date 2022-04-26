@@ -10,7 +10,7 @@
     name: config_dir
     description: Where to store saved configs
 
-- builtin.parameters.string:
+- builtin.parameters.float64:
     name: readout_time
     description: Readout time of the device
     default: 1e-3

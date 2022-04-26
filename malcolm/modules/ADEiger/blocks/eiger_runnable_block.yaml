@@ -25,7 +25,7 @@
     description: Design to load at init
     default:
 
-- builtin.parameters.string:
+- builtin.parameters.float64:
     name: readout_time
     description: Readout time of the detector
     default: 1e-4

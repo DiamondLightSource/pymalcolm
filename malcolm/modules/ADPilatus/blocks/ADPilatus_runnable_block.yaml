@@ -15,7 +15,7 @@
     description: Minimum acquire period for detector
     default: 0.0  # Always pass validation
 
-- builtin.parameters.string:
+- builtin.parameters.float64:
     name: readout_time
     description: Readout time of the detector
     default: 1e-3

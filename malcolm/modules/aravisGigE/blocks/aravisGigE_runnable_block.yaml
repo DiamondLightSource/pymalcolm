@@ -20,7 +20,7 @@
     description: Minimum acquire period for detector
     default: 0.0
 
-- builtin.parameters.string:
+- builtin.parameters.float64:
     name: readout_time
     description: Readout time of the detector
     default: 200e-6
