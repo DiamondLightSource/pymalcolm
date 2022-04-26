@@ -18,7 +18,7 @@
 - builtin.parameters.float64:
     name: readout_time
     description: Readout time of the detector
-    default: 1e-3
+    default: 3e-3
 
 - builtin.parameters.string:
     name: detector_name
@@ -37,6 +37,10 @@
     name: $(detector_name)
     mri: $(mri_prefix):DRV
     min_acquire_period: $(min_acquire_period)
+    multiple_image_mode: Fixed
+    soft_trigger_modes:
+        - Internal
+        - Software
 
 - ADCore.blocks.stats_plugin_block:
     mri: $(mri_prefix):STAT
