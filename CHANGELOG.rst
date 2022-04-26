@@ -6,15 +6,20 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 UNRELEASED
 ----------
 
+Changed:
+
+- DetectorDriverPart now has a multiple image mode argument for drivers which
+  use other terms for acquiring multiple images in a single acquisition.
+
 Fixed:
 
 - ExposureDeadTimePart: removed config_tag from readout time and frequency
-  accuracy and readout time attributes to prevent values being saved to
-  design
+  accuracy to prevent values being saved to design, causing an error when
+  trying to load them after.
 
 Added:
 
-- ADAndor3 driver and runnable blocks
+- ADAndor3 driver and runnable blocks.
 
 `5.4`_ - 2022-03-30
 -------------------
