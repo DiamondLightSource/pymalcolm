@@ -41,6 +41,8 @@ with Anno("Is main detector dataset useful to publish in DatasetTable?"):
 with Anno("List of trigger modes that do not use hardware triggers"):
     ASoftTriggerModes = Union[Array[str]]
 USoftTriggerModes = Union[ASoftTriggerModes, Sequence[str]]
+with Anno("Name of image mode for taking multiple images"):
+    AMultipleImageMode = str
 
 # Pull re-used annotypes into our namespace in case we are subclassed
 AMri = builtin.parts.AMri
@@ -62,6 +64,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         name: APartName,
         mri: AMri,
         soft_trigger_modes: USoftTriggerModes = None,
+        multiple_image_mode: AMultipleImageMode = "Multiple",
         main_dataset_useful: AMainDatasetUseful = True,
         runs_on_windows: APartRunsOnWindows = False,
         required_version: AVersionRequirement = None,
@@ -71,6 +74,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         self.required_version = required_version
         self.min_acquire_period = min_acquire_period
         self.soft_trigger_modes = soft_trigger_modes
+        self.multiple_image_mode = multiple_image_mode
         self.is_hardware_triggered = True
         self.main_dataset_useful = main_dataset_useful
         self.attributes_filename = ""
@@ -122,7 +126,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         self.uniqueid_offset = completed_steps - array_counter
         for k, v in dict(
             arrayCounter=array_counter,
-            imageMode="Multiple",
+            imageMode=self.multiple_image_mode,
             numImages=num_images,
             arrayCallbacks=True,
         ).items():
