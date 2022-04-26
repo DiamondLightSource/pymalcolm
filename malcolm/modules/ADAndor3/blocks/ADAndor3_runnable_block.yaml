@@ -1,0 +1,55 @@
+- builtin.parameters.string:
+    name: mri_prefix
+    description: Malcolm resource id of the Block and prefix for children
+
+- builtin.parameters.string:
+    name: pv_prefix
+    description: PV prefix for driver and all plugins
+
+- builtin.parameters.string:
+    name: config_dir
+    description: Where to store saved configs
+
+- builtin.parameters.float64:
+    name: min_acquire_period
+    description: Minimum acquire period for detector
+    default: 0.0  # Always pass validation
+
+- builtin.parameters.float64:
+    name: readout_time
+    description: Readout time of the detector
+    default: 1e-3
+
+- builtin.parameters.string:
+    name: detector_name
+    description: Name of the detector driver part
+    default: ADAndor3
+
+- scanning.controllers.RunnableController:
+    mri: $(mri_prefix)
+    config_dir: $(config_dir)
+
+- ADPilatus.blocks.ADPilatus_driver_block:
+    mri: $(mri_prefix):DRV
+    prefix: $(pv_prefix):CAM
+
+- ADCore.parts.DetectorDriverPart:
+    name: $(detector_name)
+    mri: $(mri_prefix):DRV
+    min_acquire_period: $(min_acquire_period)
+
+- ADCore.blocks.stats_plugin_block:
+    mri: $(mri_prefix):STAT
+    prefix: $(pv_prefix):STAT
+
+- ADCore.parts.StatsPluginPart:
+    name: STAT
+    mri: $(mri_prefix):STAT
+
+- ADCore.includes.filewriting_collection:
+    pv_prefix: $(pv_prefix)
+    mri_prefix: $(mri_prefix)
+
+- scanning.parts.ExposureDeadtimePart:
+    name: DEADTIME
+    readout_time: $(readout_time)
