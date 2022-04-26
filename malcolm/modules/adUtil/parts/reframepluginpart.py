@@ -73,19 +73,18 @@ class ReframePluginPart(ADCore.parts.DetectorDriverPart):
         if initial_configure:
             # This is an initial configure, so reset arrayCounter to 0
             array_counter = 0
-            self.done_when_reaches = num_images
+            self.done_when_reaches = steps_to_do
         else:
             # This is rewinding or setting up for another batch,
             # skip to a uniqueID that has not been produced yet
             array_counter = self.done_when_reaches
-            self.done_when_reaches += num_images
+            self.done_when_reaches += steps_to_do
         self.uniqueid_offset = completed_steps - array_counter
 
         child = context.block_view(self.mri)
-
         for k, v in dict(
             arrayCounter=array_counter,
-            imageMode="Multiple",
+            imageMode=self.multiple_image_mode,
             numImages=num_images,
             arrayCallbacks=True,
         ).items():
