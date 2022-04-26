@@ -1,15 +1,7 @@
 from annotypes import Anno, add_call_types
 from scanpointgenerator import CompoundGenerator
 
-from malcolm.core import (
-    APartName,
-    Display,
-    NumberMeta,
-    Part,
-    PartRegistrar,
-    Widget,
-    config_tag,
-)
+from malcolm.core import APartName, Display, NumberMeta, Part, PartRegistrar, Widget
 
 from ..hooks import (
     AExposure,
@@ -49,13 +41,13 @@ class ExposureDeadtimePart(Part):
         self.readout_time = NumberMeta(
             "float64",
             readout_desc,
-            tags=[Widget.TEXTUPDATE.tag(), config_tag()],
+            tags=[Widget.TEXTUPDATE.tag()],
             display=Display(precision=6, units="s"),
         ).create_attribute_model(readout_time)
         self.frequency_accuracy = NumberMeta(
             "float64",
             frequency_accuracy_desc,
-            tags=[Widget.TEXTUPDATE.tag(), config_tag()],
+            tags=[Widget.TEXTUPDATE.tag()],
             display=Display(precision=3, units="ppm"),
         ).create_attribute_model(frequency_accuracy)
         self.min_exposure = min_exposure
