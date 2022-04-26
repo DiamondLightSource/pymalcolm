@@ -45,7 +45,7 @@
     description: Name of secondary dataset to link in nxs file
     default: sum
 
-- builtin.parameters.string:
+- builtin.parameters.float64:
     name: readout_time
     description: Readout time of the detector
     default: 1e-3
