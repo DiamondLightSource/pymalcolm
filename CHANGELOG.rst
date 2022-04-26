@@ -16,6 +16,7 @@ Fixed:
 - ExposureDeadTimePart: removed config_tag from readout time and frequency
   accuracy to prevent values being saved to design, causing an error when
   trying to load them after.
+- ReframePluginPart: fixed setup for scanning with outer axes
 
 Added:
 
