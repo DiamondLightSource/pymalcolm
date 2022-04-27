@@ -182,3 +182,24 @@ class TestReframePluginPart(ChildTestCase):
             generator,
             fileDir="/tmp",
         )
+
+    def test_setup_detector_for_subsequent_configure(self):
+        completed_steps = 10
+        steps_to_do = 10
+        num_images = 10
+        duration = 1.0
+        part_info = {}
+        self.o.done_when_reaches = 10
+
+        self.o.setup_detector(
+            self.context,
+            completed_steps,
+            steps_to_do,
+            num_images,
+            duration,
+            part_info,
+            initial_configure=False,
+        )
+
+        assert self.o.done_when_reaches == 20
+        assert self.o.uniqueid_offset == 0
