@@ -8,6 +8,7 @@ malcolm.modules
     :maxdepth: 1
    
     ADAndor/index
+    ADAndor3/index
     ADCore/index
     ADEiger/index
     ADEthercat/index

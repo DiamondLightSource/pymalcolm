@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.adUtil.parts.reframepluginpart &mdash; malcolm 5.4+3.gdc54803c documentation</title>
+  <title>malcolm.modules.adUtil.parts.reframepluginpart &mdash; malcolm 5.4+12.gf47dee3b documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -181,19 +181,18 @@
         <span class="k">if</span> <span class="n">initial_configure</span><span class="p">:</span>
             <span class="c1"># This is an initial configure, so reset arrayCounter to 0</span>
             <span class="n">array_counter</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">done_when_reaches</span> <span class="o">=</span> <span class="n">num_images</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">done_when_reaches</span> <span class="o">=</span> <span class="n">steps_to_do</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># This is rewinding or setting up for another batch,</span>
             <span class="c1"># skip to a uniqueID that has not been produced yet</span>
             <span class="n">array_counter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">done_when_reaches</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">done_when_reaches</span> <span class="o">+=</span> <span class="n">num_images</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">done_when_reaches</span> <span class="o">+=</span> <span class="n">steps_to_do</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">uniqueid_offset</span> <span class="o">=</span> <span class="n">completed_steps</span> <span class="o">-</span> <span class="n">array_counter</span>
 
         <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
-
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">dict</span><span class="p">(</span>
             <span class="n">arrayCounter</span><span class="o">=</span><span class="n">array_counter</span><span class="p">,</span>
-            <span class="n">imageMode</span><span class="o">=</span><span class="s2">&quot;Multiple&quot;</span><span class="p">,</span>
+            <span class="n">imageMode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">multiple_image_mode</span><span class="p">,</span>
             <span class="n">numImages</span><span class="o">=</span><span class="n">num_images</span><span class="p">,</span>
             <span class="n">arrayCallbacks</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>

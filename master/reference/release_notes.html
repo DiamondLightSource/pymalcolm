@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Change Log &mdash; malcolm 5.4+3.gdc54803c documentation</title>
+  <title>Change Log &mdash; malcolm 5.4+12.gf47dee3b documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -71,6 +71,7 @@
 <li class="toctree-l1"><a class="reference internal" href="triggering.html">Trajectory Scan Triggering</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Change Log</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#unreleased">UNRELEASED</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id1">5.4 - 2022-03-30</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id2">5.3 - 2022-03-18</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id3">5.2 - 2022-01-05</a></li>
@@ -163,6 +164,25 @@
 <h1>Change Log<a class="headerlink" href="#change-log" title="Permalink to this headline"></a></h1>
 <p>All notable changes to this project will be documented in this file.
 This project adheres to <a class="reference external" href="http://semver.org/">Semantic Versioning</a> after 2-1.</p>
+<section id="unreleased">
+<h2>UNRELEASED<a class="headerlink" href="#unreleased" title="Permalink to this headline"></a></h2>
+<p>Changed:</p>
+<ul class="simple">
+<li><p>DetectorDriverPart now has a multiple image mode argument for drivers which
+use other terms for acquiring multiple images in a single acquisition.</p></li>
+</ul>
+<p>Fixed:</p>
+<ul class="simple">
+<li><p>ExposureDeadTimePart: removed config_tag from readout time and frequency
+accuracy to prevent values being saved to design, causing an error when
+trying to load them after.</p></li>
+<li><p>ReframePluginPart: fixed setup for scanning with outer axes</p></li>
+</ul>
+<p>Added:</p>
+<ul class="simple">
+<li><p>ADAndor3 driver and runnable blocks.</p></li>
+</ul>
+</section>
 <section id="id1">
 <h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/5.3...5.4">5.4</a> - 2022-03-30<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
 <p>Changed:</p>
