@@ -161,7 +161,7 @@
       "inpaDelay": 0, 
       "inpb": "SEQ2.OUTA", 
       "inpbDelay": 0, 
-      "inpc": "ZERO", 
+      "inpc": "SRGATE2.OUT",
       "inpcDelay": 0, 
       "inpd": "ZERO", 
       "inpdDelay": 0, 
@@ -173,7 +173,7 @@
       "typec": "Input-Level", 
       "typed": "Input-Level", 
       "typee": "Input-Level", 
-      "func": "A|B", 
+      "func": "(A|B)&C",
       "outputs": "expanded"
     }, 
     "LUT5": {
@@ -183,7 +183,7 @@
       "inpaDelay": 0, 
       "inpb": "SEQ2.OUTB", 
       "inpbDelay": 0, 
-      "inpc": "ZERO", 
+      "inpc": "SRGATE2.OUT",
       "inpcDelay": 0, 
       "inpd": "ZERO", 
       "inpdDelay": 0, 
@@ -195,7 +195,7 @@
       "typec": "Input-Level", 
       "typed": "Input-Level", 
       "typee": "Input-Level", 
-      "func": "A|B", 
+      "func": "(A|B)&C",
       "outputs": "expanded"
     }, 
     "PCAP": {
