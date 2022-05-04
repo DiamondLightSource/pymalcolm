@@ -35,9 +35,7 @@ class PandABlocksRunnableControllerTest(unittest.TestCase):
     def setUp(self, mock_client, mock_adbase_parts):
         mock_adbase_parts.return_value = ([], [])
         self.process = Process()
-        self.o = PandARunnableController(
-            mri="P", config_dir="/tmp", prefix="PV:", use_git=False
-        )
+        self.o = PandARunnableController(mri="P", config_dir="/tmp", prefix="PV:")
         self.o.add_part(DatasetTablePart("DSET"))
         self.client = self.o._client
         self.client.started = False

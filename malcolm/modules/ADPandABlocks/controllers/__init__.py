@@ -10,7 +10,6 @@ from .pandarunnablecontroller import (
     APollPeriod,
     APort,
     ATemplateDesigns,
-    AUseGit,
     PandARunnableController,
 )
 

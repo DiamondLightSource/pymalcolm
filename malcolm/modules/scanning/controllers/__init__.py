@@ -8,7 +8,6 @@ from .runnablecontroller import (
     ADescription,
     AInitialDesign,
     AMri,
-    AUseGit,
     RunnableController,
 )
 

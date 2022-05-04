@@ -14,7 +14,6 @@ APort = pandablocks.controllers.APort
 APollPeriod = pandablocks.controllers.APollPeriod
 ATemplateDesigns = pandablocks.controllers.ATemplateDesigns
 AInitialDesign = pandablocks.controllers.AInitialDesign
-AUseGit = pandablocks.controllers.AUseGit
 ADescription = pandablocks.controllers.ADescription
 
 
@@ -39,7 +38,6 @@ class PandARunnableController(
         poll_period: APollPeriod = 0.1,
         template_designs: ATemplateDesigns = "",
         initial_design: AInitialDesign = "",
-        use_git: AUseGit = True,
         description: ADescription = "",
     ) -> None:
         super().__init__(
@@ -50,7 +48,6 @@ class PandARunnableController(
             poll_period=poll_period,
             template_designs=template_designs,
             initial_design=initial_design,
-            use_git=use_git,
             description=description,
         )
         self.prefix = prefix

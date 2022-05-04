@@ -52,7 +52,7 @@ class TestIocIconPart(unittest.TestCase):
     def setUp(self):
         self.p = Process("process1")
         self.context = Context(self.p)
-        self.c1 = RunnableController(mri="SYS", config_dir="/tmp", use_git=False)
+        self.c1 = RunnableController(mri="SYS", config_dir="/tmp")
 
     def tearDown(self):
         self.p.stop(timeout=1)

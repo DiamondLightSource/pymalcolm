@@ -1,7 +1,6 @@
 import os
-import socket
 import subprocess
-from typing import Dict, List, Sequence, Set, Tuple
+from typing import Dict, List, Sequence, Set
 
 from annotypes import Anno, add_call_types, deserialize_object, json_decode, json_encode
 
@@ -42,8 +41,6 @@ with Anno("Directory to write save/load config to"):
     AConfigDir = str
 with Anno("Design to load at init"):
     AInitialDesign = str
-with Anno("Use git to manage to saved config files"):
-    AUseGit = bool
 with Anno("Name of design to save, if different from current design"):
     ASaveDesign = str
 with Anno(
@@ -61,19 +58,6 @@ AMri = AMri
 ADescription = ADescription
 
 
-def check_git_version(required_version):
-    from packaging.version import parse
-
-    output = subprocess.check_output(
-        (
-            "git",
-            "--version",
-        )
-    )
-    version = output.decode("utf-8").replace("git version ", "").strip("\n")
-    return parse(version) >= parse(required_version)
-
-
 class ManagerController(StatefulController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
 
@@ -85,28 +69,13 @@ class ManagerController(StatefulController):
         config_dir: AConfigDir,
         template_designs: ATemplateDesigns = "",
         initial_design: AInitialDesign = "",
-        use_git: AUseGit = True,
         description: ADescription = "",
     ) -> None:
         super().__init__(mri=mri, description=description)
         assert os.path.isdir(config_dir), f"{config_dir} is not a directory"
         self.config_dir = config_dir
         self.initial_design = initial_design
-        self.use_git = use_git
         self.template_designs = template_designs
-        self.git_config: Tuple[str, ...]
-        if use_git:
-            if check_git_version("1.7.2"):
-                self.git_email = os.environ["USER"] + "@" + socket.gethostname()
-                self.git_name = "Malcolm"
-                self.git_config = (
-                    "-c",
-                    f"user.name={self.git_name}",
-                    "-c",
-                    f'user.email="{self.git_email}"',
-                )
-            else:
-                self.git_config = ()
         # last saved layout and exports
         self.saved_visibility = None
         self.saved_exports = None
@@ -171,25 +140,8 @@ class ManagerController(StatefulController):
         # Create the save method
         self.set_writeable_in(self.field_registry.add_method_model(self.save), ss.READY)
 
-    def _run_git_cmd(self, *args, **kwargs):
-        # Run git command, don't care if it fails, logging the output
-        cwd = kwargs.get("cwd", self.config_dir)
-        if self.use_git:
-            try:
-                output = subprocess.check_output(
-                    ("git",) + self.git_config + args, cwd=cwd
-                )
-            except subprocess.CalledProcessError as e:
-                self.log.warning("Git command failed: %s\n%s", e, e.output)
-                return None
-            else:
-                self.log.debug("Git command completed: %s", output)
-                return output
-
     def do_init(self):
         super().do_init()
-        # Try and make it a git repo, don't care if it fails
-        self._run_git_cmd("init")
         # List the config_dir and add to choices
         self._set_layout_names()
         # If given a default config, load this
@@ -497,10 +449,6 @@ class ManagerController(StatefulController):
             f.write(text)
         # Run a sync command to make sure we flush this file to disk
         subprocess.call("sync")
-        # Try and commit the file to git, don't care if it fails
-        self._run_git_cmd("add", filename)
-        msg = f"Saved {self.mri} {design}"
-        self._run_git_cmd("commit", "--allow-empty", "-m", msg, filename)
         self._mark_clean(design)
 
     def _set_layout_names(self, extra_name=None):

@@ -204,7 +204,7 @@ class TestDetectorChildPart(unittest.TestCase):
 
         # Make a fast child, this will load the wait of 0.01 from saved file
         c1 = RunnableController(
-            mri="fast", config_dir=DESIGN_PATH, use_git=False, initial_design="fast"
+            mri="fast", config_dir=DESIGN_PATH, initial_design="fast"
         )
         c1.add_part(WaitingPart("wait"))
         c1.add_part(ExposureDeadtimePart("dt", 0.001))
@@ -213,13 +213,13 @@ class TestDetectorChildPart(unittest.TestCase):
 
         # And a slow one, this has the same saved files as fast, but doesn't
         # load at startup
-        c2 = RunnableController(mri="slow", config_dir=DESIGN_PATH, use_git=False)
+        c2 = RunnableController(mri="slow", config_dir=DESIGN_PATH)
         c2.add_part(WaitingPart("wait", 0.123))
         c2.add_part(DatasetTablePart("dset"))
         self.p.add_controller(c2)
 
         # And a faulty one, this is hidden at startup by default
-        c3 = RunnableController(mri="faulty", config_dir=DESIGN_PATH, use_git=False)
+        c3 = RunnableController(mri="faulty", config_dir=DESIGN_PATH)
         c3.add_part(FaultyPart("bad"))
         c3.add_part(DatasetTablePart("dset"))
         self.p.add_controller(c3)
@@ -227,7 +227,7 @@ class TestDetectorChildPart(unittest.TestCase):
         # And a top level one, this loads slow and fast designs for the
         # children on every configure (or load), but not at init
         self.ct = RunnableController(
-            mri="top", config_dir=DESIGN_PATH, use_git=False, initial_design="default"
+            mri="top", config_dir=DESIGN_PATH, initial_design="default"
         )
         self.ct.add_part(
             DetectorChildPart(name="FAST", mri="fast", initial_visibility=True)

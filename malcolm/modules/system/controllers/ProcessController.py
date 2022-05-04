@@ -1,4 +1,5 @@
 import os
+import socket
 import subprocess
 from collections import OrderedDict
 
@@ -64,6 +65,8 @@ with Anno("prefix for self.system PVs"):
     APvPrefix = str
 with Anno("space-separated list of IOCs to monitor"):
     AIocList = str
+with Anno("Use git to parse the YAML version"):
+    AUseGit = bool
 
 
 class ProcessController(builtin.controllers.ManagerController):
@@ -73,6 +76,7 @@ class ProcessController(builtin.controllers.ManagerController):
         prefix: APvPrefix,
         config_dir: builtin.controllers.AConfigDir,
         ioc_list: AIocList = "",
+        use_git: AUseGit = True,
     ) -> None:
         super().__init__(mri, config_dir)
         self.ioc = None
@@ -82,6 +86,19 @@ class ProcessController(builtin.controllers.ManagerController):
         if self.bl_iocs[-1] == "":
             self.bl_iocs = self.bl_iocs[:-1]
         self.stats = dict()
+        self.use_git = use_git
+        self.git_config: Tuple[str, ...]
+        if use_git:
+            self.git_email = os.environ["USER"] + "@" + socket.gethostname()
+            self.git_name = "Malcolm"
+            self.git_config = (
+                "-c",
+                f"user.name={self.git_name}",
+                "-c",
+                f'user.email="{self.git_email}"',
+            )
+        else:
+            self.git_config = ()
         # TODO: the following stuff is all Linux-specific....
         sys_call_bytes = open(f"/proc/{os.getpid()}/cmdline", "rb").read().split(b"\0")
         sys_call = [el.decode("utf-8") for el in sys_call_bytes]
@@ -144,11 +161,6 @@ class ProcessController(builtin.controllers.ManagerController):
             self.ioc = start_ioc(self.stats, self.prefix)
         self.get_ioc_list()
         super().init()
-        msg = f"""pymalcolm {self.stats['pymalcolm_ver']} started
-
-Path: {self.stats['pymalcolm_path']}
-Yaml: {self.stats['yaml_path']}"""
-        self._run_git_cmd("commit", "--allow-empty", "-m", msg)
 
     def set_default_layout(self):
         name = []
@@ -192,6 +204,21 @@ Yaml: {self.stats['yaml_path']}"""
                 return "Prod (unknown version)"
             ver = ver.strip(b"\n").decode("utf-8")
         return ver
+
+    def _run_git_cmd(self, *args, **kwargs):
+        # Run git command, don't care if it fails, logging the output
+        if self.use_git:
+            cwd = kwargs.get("cwd", self.config_dir)
+            try:
+                output = subprocess.check_output(
+                    ("git",) + self.git_config + args, cwd=cwd
+                )
+            except subprocess.CalledProcessError as e:
+                self.log.warning("Git command failed: %s\n%s", e, e.output)
+                return None
+            else:
+                self.log.debug("Git command completed: %s", output)
+                return output
 
 
 def make_ioc_status(ioc):

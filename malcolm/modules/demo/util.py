@@ -6,7 +6,7 @@ def make_gaussian_blob(width, height):
     """Make a Gaussian Blob with float values in range 0..1"""
     x, y = np.meshgrid(np.linspace(-1, 1, width), np.linspace(-1, 1, height))
     d = np.sqrt(x * x + y * y)
-    blob = np.exp(-(d ** 2))
+    blob = np.exp(-(d**2))
     return blob
 
 

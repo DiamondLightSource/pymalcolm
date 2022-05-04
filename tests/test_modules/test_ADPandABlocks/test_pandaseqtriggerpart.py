@@ -125,7 +125,7 @@ class TestPandaSeqTriggerPart(ChildTestCase):
         self.context = Context(self.process)
 
         # Create a fake PandA
-        self.panda = ManagerController("PANDA", "/tmp", use_git=False)
+        self.panda = ManagerController("PANDA", "/tmp")
         self.busses = PositionsPart("busses")
         self.panda.add_part(self.busses)
 
