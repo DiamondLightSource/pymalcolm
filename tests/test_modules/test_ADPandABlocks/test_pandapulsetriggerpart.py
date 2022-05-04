@@ -59,7 +59,7 @@ class TestPandaPulseTriggerPart(ChildTestCase):
         self.context = Context(self.process)
 
         # Create a fake PandA with a pulse block
-        self.panda = ManagerController("PANDA", "/tmp", use_git=False)
+        self.panda = ManagerController("PANDA", "/tmp")
         controller = BasicController("PANDA:PULSE3")
         self.pulse_part = PulsePart("part")
         controller.add_part(self.pulse_part)
@@ -87,7 +87,7 @@ class TestPandaPulseTriggerPart(ChildTestCase):
         self.o = PandAPulseTriggerPart("detTrigger", "SCAN:PULSE")
 
         # Add in a scan block
-        self.scan = RunnableController("SCAN", "/tmp", use_git=False)
+        self.scan = RunnableController("SCAN", "/tmp")
         self.scan.add_part(DetectorChildPart("det", "DET", True))
         self.scan.add_part(self.o)
         self.process.add_controller(self.scan)

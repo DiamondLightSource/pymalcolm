@@ -45,7 +45,7 @@ class TestDirParsePart(unittest.TestCase):
     def setUp(self):
         self.p = Process("process1")
         self.context = Context(self.p)
-        self.c1 = RunnableController(mri="SYS", config_dir="/tmp", use_git=False)
+        self.c1 = RunnableController(mri="SYS", config_dir="/tmp")
         self.tmp_dir = f"/tmp/{now}-{os.getpid()}"
         os.mkdir(self.tmp_dir)
         os.mkdir(self.tmp_dir + "/configure")

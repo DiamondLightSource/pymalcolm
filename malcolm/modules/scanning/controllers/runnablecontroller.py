@@ -52,7 +52,6 @@ with Anno("Step to mark as the last completed step, -1 for current"):
 AConfigDir = builtin.controllers.AConfigDir
 AInitialDesign = builtin.controllers.AInitialDesign
 ADescription = builtin.controllers.ADescription
-AUseGit = builtin.controllers.AUseGit
 ATemplateDesigns = builtin.controllers.ATemplateDesigns
 
 
@@ -131,7 +130,6 @@ class RunnableController(builtin.controllers.ManagerController):
         config_dir: AConfigDir,
         template_designs: ATemplateDesigns = "",
         initial_design: AInitialDesign = "",
-        use_git: AUseGit = True,
         description: ADescription = "",
     ) -> None:
         super().__init__(
@@ -139,7 +137,6 @@ class RunnableController(builtin.controllers.ManagerController):
             config_dir=config_dir,
             template_designs=template_designs,
             initial_design=initial_design,
-            use_git=use_git,
             description=description,
         )
         # Shared contexts between Configure, Run, Pause, Seek, Resume

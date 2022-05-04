@@ -539,7 +539,7 @@ class TestNumberMeta(unittest.TestCase):
     def test_unsigned_validates(self):
         nm = NumberMeta("uint32")
         assert nm.validate("22") == 22
-        assert nm.validate(-22) == 2 ** 32 - 22
+        assert nm.validate(-22) == 2**32 - 22
 
     def setUp(self):
         self.serialized = OrderedDict()

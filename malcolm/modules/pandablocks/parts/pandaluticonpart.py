@@ -29,7 +29,7 @@ def _calc_visibility(
         else:
             # visible
             if negations[i] == "1":
-                args.append(~LUT_CONSTANTS[inp] & (2 ** 32 - 1))
+                args.append(~LUT_CONSTANTS[inp] & (2**32 - 1))
             else:
                 invis.add(f"not{inp}")
                 args.append(LUT_CONSTANTS[inp])
@@ -50,7 +50,7 @@ def _generate_lut_elements() -> Dict[int, Set[str]]:
     for func, op in funcs:
         for nargs in (2, 3, 4, 5):
             # 2**nargs permutations
-            for permutation in range(2 ** nargs):
+            for permutation in range(2**nargs):
                 fnum, invis = _calc_visibility(func, op, nargs, permutation)
                 lut_elements[fnum] = invis
     # Add in special cases for NOT
@@ -61,7 +61,7 @@ def _generate_lut_elements() -> Dict[int, Set[str]]:
                 invis.add(inp)
                 invis.add(f"edge{inp}")
             invis.add(f"not{inp}")
-        lut_elements[~LUT_CONSTANTS[ninp] & (2 ** 32 - 1)] = invis
+        lut_elements[~LUT_CONSTANTS[ninp] & (2**32 - 1)] = invis
     # And catchall for LUT in 0
     invis = {"AND", "OR", "NOT"}
     for inp in "ABCDE":

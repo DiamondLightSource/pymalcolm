@@ -25,7 +25,6 @@ AMri = builtin.controllers.AMri
 AConfigDir = builtin.controllers.AConfigDir
 ATemplateDesigns = builtin.controllers.ATemplateDesigns
 AInitialDesign = builtin.controllers.AInitialDesign
-AUseGit = builtin.controllers.AUseGit
 ADescription = builtin.controllers.ADescription
 
 
@@ -44,7 +43,6 @@ class PandAManagerController(builtin.controllers.ManagerController):
         poll_period: APollPeriod = 0.1,
         template_designs: ATemplateDesigns = "",
         initial_design: AInitialDesign = "",
-        use_git: AUseGit = True,
         description: ADescription = "",
     ) -> None:
         super().__init__(
@@ -52,7 +50,6 @@ class PandAManagerController(builtin.controllers.ManagerController):
             config_dir=config_dir,
             template_designs=template_designs,
             initial_design=initial_design,
-            use_git=use_git,
             description=description,
         )
         self._poll_period = poll_period

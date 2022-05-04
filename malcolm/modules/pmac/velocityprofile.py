@@ -221,14 +221,14 @@ class VelocityProfile:
         # STEP 1
         if self.d > self.calculate_distance(vm=100000):
             self.tv2 = (
-                sqrt(2) * sqrt(2 * self.a * self.d + self.v1 ** 2 + self.v2 ** 2)
+                sqrt(2) * sqrt(2 * self.a * self.d + self.v1**2 + self.v2**2)
                 - self.v1
                 - self.v2
             ) / self.a
         elif self.d < self.calculate_distance(vm=-100000):
             self.tv2 = (
                 -(
-                    -sqrt(2) * sqrt(2 * self.a * -self.d + self.v1 ** 2 + self.v2 ** 2)
+                    -sqrt(2) * sqrt(2 * self.a * -self.d + self.v1**2 + self.v2**2)
                     - self.v1
                     - self.v2
                 )

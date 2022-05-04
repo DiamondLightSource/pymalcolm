@@ -29,7 +29,7 @@ class TestDoubleTriggerPart(ChildTestCase):
         self.block_mri = "ML-MULTI-01"
 
         # Create a detector to which this part communicates
-        self.detector = ManagerController(self.detector_mri, "/tmp", use_git=False)
+        self.detector = ManagerController(self.detector_mri, "/tmp")
 
         # Create a block for this part
         self.child = self.create_child_block(

@@ -11,7 +11,6 @@ from .pandamanagercontroller import (
     APollPeriod,
     APort,
     ATemplateDesigns,
-    AUseGit,
     PandAManagerController,
 )
 

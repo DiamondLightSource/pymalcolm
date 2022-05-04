@@ -42,7 +42,7 @@ def get_column_index(field_data):
 
 def get_nbits_mask(field_data):
     nbits = field_data.bits_hi - field_data.bits_lo + 1
-    mask = 2 ** nbits - 1
+    mask = 2**nbits - 1
     return nbits, mask
 
 
