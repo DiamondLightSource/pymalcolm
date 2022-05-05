@@ -1,8 +1,6 @@
 import os
-import socket
 import subprocess
 from collections import OrderedDict
-from typing import Tuple
 
 import cothread
 from annotypes import Anno
@@ -77,7 +75,6 @@ class ProcessController(builtin.controllers.ManagerController):
         prefix: APvPrefix,
         config_dir: builtin.controllers.AConfigDir,
         ioc_list: AIocList = "",
-        use_git: AUseGit = True,
     ) -> None:
         super().__init__(mri, config_dir)
         self.ioc = None
@@ -87,19 +84,6 @@ class ProcessController(builtin.controllers.ManagerController):
         if self.bl_iocs[-1] == "":
             self.bl_iocs = self.bl_iocs[:-1]
         self.stats = dict()
-        self.use_git = use_git
-        self.git_config: Tuple[str, ...]
-        if use_git:
-            self.git_email = os.environ["USER"] + "@" + socket.gethostname()
-            self.git_name = "Malcolm"
-            self.git_config = (
-                "-c",
-                f"user.name={self.git_name}",
-                "-c",
-                f'user.email="{self.git_email}"',
-            )
-        else:
-            self.git_config = ()
         # TODO: the following stuff is all Linux-specific....
         sys_call_bytes = open(f"/proc/{os.getpid()}/cmdline", "rb").read().split(b"\0")
         sys_call = [el.decode("utf-8") for el in sys_call_bytes]
@@ -208,18 +192,17 @@ class ProcessController(builtin.controllers.ManagerController):
 
     def _run_git_cmd(self, *args, **kwargs):
         # Run git command, don't care if it fails, logging the output
-        if self.use_git:
-            cwd = kwargs.get("cwd", self.config_dir)
-            try:
-                output = subprocess.check_output(
-                    ("git",) + self.git_config + args, cwd=cwd
-                )
-            except subprocess.CalledProcessError as e:
-                self.log.warning("Git command failed: %s\n%s", e, e.output)
-                return None
-            else:
-                self.log.debug("Git command completed: %s", output)
-                return output
+        cwd = kwargs.get("cwd", self.config_dir)
+        try:
+            output = subprocess.check_output(
+                ("git",) + args, cwd=cwd
+            )
+        except subprocess.CalledProcessError as e:
+            self.log.warning("Git command failed: %s\n%s", e, e.output)
+            return None
+        else:
+            self.log.debug("Git command completed: %s", output)
+            return output
 
 
 def make_ioc_status(ioc):
