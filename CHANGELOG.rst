@@ -10,6 +10,12 @@ Changed:
 
 - DetectorDriverPart now has a multiple image mode argument for drivers which
   use other terms for acquiring multiple images in a single acquisition.
+- Malcolm no longer initialises a git repository or performs commits when
+  launching the process or saving designs. Instead, it is now expected to
+  handle the version control of the designs in the config_dir directory
+  manually. Keeping the designs in the same repository as the top-level YAML
+  file will also make it easier to maintain compatibility when rolling
+  forward/back.
 
 Fixed:
 
