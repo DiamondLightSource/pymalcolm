@@ -2,7 +2,7 @@ import os
 import shutil
 import unittest
 
-from mock import MagicMock, call, patch
+from mock import MagicMock
 
 from malcolm.compat import OrderedDict
 from malcolm.core import (
@@ -166,7 +166,6 @@ class TestManagerController(unittest.TestCase):
         )
         self.c.save(designName="")
         self.check_expected_save(design_name, attr="newv")
-        design_filename = self._get_design_filename(self.main_block_name, design_name)
         assert self.c.design.value == "testSaveLayout"
 
     def move_child_block(self):
