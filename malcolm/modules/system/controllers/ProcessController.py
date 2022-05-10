@@ -64,8 +64,6 @@ with Anno("prefix for self.system PVs"):
     APvPrefix = str
 with Anno("space-separated list of IOCs to monitor"):
     AIocList = str
-with Anno("Use git to parse the YAML version"):
-    AUseGit = bool
 
 
 class ProcessController(builtin.controllers.ManagerController):
