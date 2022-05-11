@@ -1,0 +1,6 @@
+
+malcolm.modules.ADEthercat.parts
+================================
+
+.. automodule:: malcolm.modules.ADEthercat.parts
+    :members:

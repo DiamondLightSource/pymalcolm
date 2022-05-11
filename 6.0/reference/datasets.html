@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Datasets and Detectors &mdash; malcolm 6.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Trajectory Scan Triggering" href="triggering.html" />
+    <link rel="prev" title="Infos" href="infos.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../contents.html" class="icon icon-home"> malcolm
+            <img src="../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                6.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="infos.html">Infos</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../contents.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Datasets and Detectors</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/reference/datasets.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="datasets-and-detectors">
+<span id="datasets"></span><h1>Datasets and Detectors<a class="headerlink" href="#datasets-and-detectors" title="Permalink to this headline"></a></h1>
+<p>A scan typically includes at least one detector.</p>
+<p>Detectors are defined as devices that produce data. The data produced by
+a detector is described by a table of Datasets. Each Dataset typically describes
+a path within an HDF file.</p>
+<p>Most scans include at least one detector block in the device layer and that
+block must include a <a class="reference internal" href="../build/scanning/parts_api.html#malcolm.modules.scanning.parts.DatasetTablePart" title="malcolm.modules.scanning.parts.DatasetTablePart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DatasetTablePart</span></code></a>. This part adds a <code class="docutils literal notranslate"><span class="pre">datasets</span></code>
+attribute to the block which allows clients to determine the location and
+shape of the data being produced by the detector.</p>
+<p>Every part that produces data must return from configure() an <a class="reference internal" href="glossary.html#info"><span class="std std-ref">Infos</span></a>
+of type <a class="reference internal" href="../build/scanning/infos_api.html#malcolm.modules.scanning.infos.DatasetProducedInfo" title="malcolm.modules.scanning.infos.DatasetProducedInfo"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DatasetProducedInfo</span></code></a> for each dataset it will produce.</p>
+<p>The DataSetTablePart collects these Infos and publishes them in the
+<code class="docutils literal notranslate"><span class="pre">datasets</span></code> Attribute.</p>
+<p>Dataset tables should be NeXus compatible and as such would contain
+a <code class="docutils literal notranslate"><span class="pre">primary</span></code> set, any number of
+<code class="docutils literal notranslate"><span class="pre">secondary</span></code> and <code class="docutils literal notranslate"><span class="pre">monitor</span></code> sets plus a <code class="docutils literal notranslate"><span class="pre">position_set</span></code> for each dimension
+of the scan. It would also contain a <code class="docutils literal notranslate"><span class="pre">position_value</span></code> for each dimension
+if axis read-backs are available. The definitions of these types
+are provided by <a class="reference internal" href="../build/scanning/infos_api.html#malcolm.modules.scanning.infos.DatasetType" title="malcolm.modules.scanning.infos.DatasetType"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DatasetType</span></code></a> as follows:</p>
+<p>scanning.utils provides shared utility functions and classes.
+For consistency and to avoid circular dependencies, the following
+rules are applied:
+- All types required to initialize hook classes are in the hooks namespace
+- All types required to initialize info classes are in the infos namespace
+- util depends on hooks and infos (not vice versa)</p>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.util.</span></span><span class="sig-name descname"><span class="pre">DatasetType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/scanning/infos.html#DatasetType"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>NeXus type of a produced dataset</p>
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">PRIMARY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'primary'</span></em></dt>
+<dd><p>Detector data, like the 2D data from an imaging detector</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">SECONDARY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'secondary'</span></em></dt>
+<dd><p>Calculated from detector data, like the sum of each frame</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">MONITOR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'monitor'</span></em></dt>
+<dd><p>Data that only makes sense when considered with detector data, like a
+measure of beam current with an ion chamber</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">POSITION_SET</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'position_set'</span></em></dt>
+<dd><p>The demand positions of an axis as specified by the generator</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">POSITION_VALUE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'position_value'</span></em></dt>
+<dd><p>The readback positions of an axis that moves during the scan</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">POSITION_MIN</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'position_min'</span></em></dt>
+<dd><p>The minimum value of the readback position of an axis in each frame</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">POSITION_MAX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'position_max'</span></em></dt>
+<dd><p>The maximum value of the readback position of an axis in each frame</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="infos.html" class="btn btn-neutral float-left" title="Infos" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="triggering.html" class="btn btn-neutral float-right" title="Trajectory Scan Triggering" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

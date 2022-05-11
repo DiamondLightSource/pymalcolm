@@ -1,0 +1,6 @@
+
+malcolm.modules.ADSimDetector.blocks
+====================================
+
+.. automodule:: malcolm.modules.ADSimDetector.blocks
+    :members:

@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Detector Tutorial &mdash; malcolm 6.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Scanning Tutorial" href="scanning.html" />
+    <link rel="prev" title="Motion Tutorial" href="motion.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../contents.html" class="icon icon-home"> malcolm
+            <img src="../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                6.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Detector Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#specifying-scan-points">Specifying Scan Points</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#creating-runnable-device-blocks">Creating Runnable Device Blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#controller-for-runnable-device-blocks">Controller for Runnable Device Blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#adding-functionality-to-a-runnablecontroller">Adding functionality to a RunnableController</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hooking-into-configure">Hooking into configure()</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#passing-infos-back-to-the-controller">Passing Infos back to the Controller</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hooking-into-run">Hooking into run()</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hooking-into-seek-abort-and-reset">Hooking into seek(), abort() and reset()</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-the-demo">Running the demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../contents.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Detector Tutorial</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorials/detector.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="detector-tutorial">
+<span id="id1"></span><h1>Detector Tutorial<a class="headerlink" href="#detector-tutorial" title="Permalink to this headline"></a></h1>
+<p>You should already know how to create a <a class="reference internal" href="../reference/glossary.html#part"><span class="std std-ref">Part</span></a> that can be instantiated
+multiple times in a <a class="reference internal" href="../build/builtin/controllers_api.html#malcolm.modules.builtin.controllers.ManagerController" title="malcolm.modules.builtin.controllers.ManagerController"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ManagerController</span></code></a> with each instance creating
+a <a class="reference internal" href="../reference/glossary.html#block"><span class="std std-ref">Block</span></a> in the <a class="reference internal" href="../reference/glossary.html#device-layer"><span class="std std-ref">Device Layer</span></a> below.
+In the example we exposed a simple interface with a couple of
+<a class="reference internal" href="../reference/glossary.html#method"><span class="std std-ref">Methods</span></a> to simulate a Motion Controller. We will now build an
+interface that looks like a Detector, taking a scan specification, and writing
+data to an HDF file. To do this, we will introduce a new configure/run interface
+that will make using these detectors in a scan more straightforward. The
+configure stage is where as much setup as possible is done, then the run stage
+is a supervisory stage where the scan is performed.</p>
+<section id="specifying-scan-points">
+<h2>Specifying Scan Points<a class="headerlink" href="#specifying-scan-points" title="Permalink to this headline"></a></h2>
+<p>If this Detector Block is going to simulate running a scan, we need to learn
+how to specify a scan. There are a number of pieces of information about each
+point in a scan that are needed by Malcolm:</p>
+<ul class="simple">
+<li><p>The demand positions of a number of actuators representing where they should
+be at the  mid-point of a detector frame. This is needed for step scans and
+continuous scans.</p></li>
+<li><p>The demand positions of those actuators at the upper and lower bounds (start
+and end) of that detector frame. This is only needed for continuous scans
+where each detector frame is taken while the actuators were moving rather than
+a step scan where they are static.</p></li>
+<li><p>The index in the data file that the frame should be stored. For grid based
+scans (like a snake scan) these will have the same dimensions as the demand
+positions. For non grid based scans (like a spiral scan) these will have
+less dimensions because the datapoints do not fit onto a regular grid.</p></li>
+<li><p>The duration of the frame. This is needed for continuous scans and is the
+time taken to get from the lower to the upper bound.</p></li>
+</ul>
+<p>The size of each index dimension and units for each actuator are also
+needed for file writing.</p>
+<p>Rather than passing all this information in one large structure, a separate
+project called <a class="reference external" href="https://scanpointgenerator.readthedocs.io">Scan Point Generator</a> has been setup to create parameterized
+generators which work together to generate multi-dimensional scan paths. We
+will make our Detector Block understand these generators.</p>
+</section>
+<section id="creating-runnable-device-blocks">
+<h2>Creating Runnable Device Blocks<a class="headerlink" href="#creating-runnable-device-blocks" title="Permalink to this headline"></a></h2>
+<p>Let’s take a look at the <a class="reference internal" href="../reference/glossary.html#process-definition"><span class="std std-ref">Process Definition</span></a>
+<code class="docutils literal notranslate"><span class="pre">./malcolm/modules/demo/DEMO-DETECTOR.yaml</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define a directory to store config in</span>
+<span class="p p-Indicator">-</span> <span class="nt">builtin.defines.tmp_dir</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">config_dir</span>
+
+<span class="c1"># Create some Blocks</span>
+<span class="p p-Indicator">-</span> <span class="nt">demo.blocks.detector_block</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">DETECTOR</span>
+    <span class="nt">config_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(config_dir)</span>
+
+<span class="c1"># Add a webserver</span>
+<span class="p p-Indicator">-</span> <span class="nt">web.blocks.web_server_block</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">WEB</span>
+</pre></div>
+</div>
+<p>Again, apart from the web server there is just one Block, specified in
+<code class="docutils literal notranslate"><span class="pre">./malcolm/modules/demo/blocks/detector_block.yaml</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mri</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">MRI for created block</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">config_dir</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Where to store saved configs</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.int32</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">width</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Width of the produced image</span>
+    <span class="nt">default</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">160</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.int32</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">height</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Height of the produced image</span>
+    <span class="nt">default</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">120</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">label</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Beamline specific label for the detector</span>
+    <span class="nt">default</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">DemoDetector</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">readout_time</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Readout time of the detector</span>
+    <span class="nt">default</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.001</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.defines.docstring</span><span class="p">:</span>
+    <span class="nt">value</span><span class="p">:</span> <span class="p p-Indicator">|</span>
+      <span class="no">This block uses a demo FileWriter and exposes a Detector like interface</span>
+      <span class="no">that can be controlled with a DetectorChildPart</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">scanning.controllers.RunnableController</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(mri)</span>
+    <span class="nt">config_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(config_dir)</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="p p-Indicator">|</span>
+      <span class="no">Demo detector that writes HDF files for an x, y scan</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parts.LabelPart</span><span class="p">:</span>
+    <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(label)</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">scanning.parts.DatasetTablePart</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">DSET</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">scanning.parts.ExposureDeadtimePart</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">EXPOSURE</span>
+    <span class="nt">readout_time</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(readout_time)</span>
+    <span class="nt">min_exposure</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.0001</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">demo.parts.FileWritePart</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">FW</span>
+    <span class="nt">width</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(width)</span>
+    <span class="nt">height</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(height)</span>
+</pre></div>
+</div>
+<p>We instantiate a <a class="reference internal" href="../build/scanning/parts_api.html#malcolm.modules.scanning.parts.DatasetTablePart" title="malcolm.modules.scanning.parts.DatasetTablePart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DatasetTablePart</span></code></a> to report the datasets that we will write
+(see <a class="reference internal" href="../reference/datasets.html#datasets"><span class="std std-ref">Datasets and Detectors</span></a>),
+a <a class="reference internal" href="../build/demo/parts_api.html#malcolm.modules.demo.parts.FileWritePart" title="malcolm.modules.demo.parts.FileWritePart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">FileWritePart</span></code></a> to write some dummy data to an HDF file, and then use a
+<a class="reference internal" href="../build/scanning/controllers_api.html#malcolm.modules.scanning.controllers.RunnableController" title="malcolm.modules.scanning.controllers.RunnableController"><code class="xref any py py-class docutils literal notranslate"><span class="pre">RunnableController</span></code></a> to construct our Block.</p>
+<p>We also instantiate a <a class="reference internal" href="../build/builtin/parts_api.html#malcolm.modules.builtin.parts.LabelPart" title="malcolm.modules.builtin.parts.LabelPart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">LabelPart</span></code></a> which simply allows us to give this detector
+a human readable label (a couple of words long) that is suitable
+for display on GUIs.</p>
+<p>This produces a single <code class="docutils literal notranslate"><span class="pre">DETECTOR</span></code> Device Block.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Unlike the previous example, there are no Child Blocks in the
+<a class="reference internal" href="../reference/glossary.html#hardware-layer"><span class="std std-ref">Hardware Layer</span></a>. This is because we are making a cut down demo, in a real
+example like in the <a class="reference internal" href="areadetector.html#areadetector-tutorial"><span class="std std-ref">AreaDetector Tutorial</span></a> we would have child Blocks and
+multiple parts to control them.</p>
+</div>
+</section>
+<section id="controller-for-runnable-device-blocks">
+<h2>Controller for Runnable Device Blocks<a class="headerlink" href="#controller-for-runnable-device-blocks" title="Permalink to this headline"></a></h2>
+<p>As well as controlling child Blocks, our Block needs to respond to a
+configure()/run() interface. A <a class="reference internal" href="../build/scanning/controllers_api.html#malcolm.modules.scanning.controllers.RunnableController" title="malcolm.modules.scanning.controllers.RunnableController"><code class="xref any py py-class docutils literal notranslate"><span class="pre">RunnableController</span></code></a> implements this interface.
+It inherits <a class="reference internal" href="../build/builtin/controllers_api.html#malcolm.modules.builtin.controllers.ManagerController" title="malcolm.modules.builtin.controllers.ManagerController"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ManagerController</span></code></a>, so has all the Attributes and Methods we
+introduced in the <a class="reference internal" href="motion.html#motion-tutorial"><span class="std std-ref">Motion Tutorial</span></a>, as well as the following Attributes:</p>
+<table class="colwidths-given docutils align-default">
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 80%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Attribute</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">completedSteps</span></code></p></td>
+<td><p>Readback of the last completed ScanPointGenerator step number in
+the current scan. Also accepts Put when configured to seek to a
+different step in the scan</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">configuredSteps</span></code></p></td>
+<td><p>The last configured step that will be complete when run() returns
+successfully</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">totalSteps</span></code></p></td>
+<td><p>The total number of steps contained in the current ScanPointGenerator.
+This will be different to <code class="docutils literal notranslate"><span class="pre">configuredSteps</span></code> if Malcolm is not being
+asked to move all the axes in the generator</p></td>
+</tr>
+</tbody>
+</table>
+<p>And the following Methods:</p>
+<table class="colwidths-given docutils align-default">
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 80%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">validate</span></code></p></td>
+<td><p>Check that a set of scan parameters are valid for a run</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">configure</span></code></p></td>
+<td><p>Configure the device ready for a run</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">run</span></code></p></td>
+<td><p>Run a device where configure has already been called</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">abort</span></code></p></td>
+<td><p>Abort the current operation</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">pause</span></code></p></td>
+<td><p>Pause the current Run, reconfiguring around the last good step</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">resume</span></code></p></td>
+<td><p>Resume a paused run</p></td>
+</tr>
+</tbody>
+</table>
+<p>It implements the following complicated looking state machine:</p>
+<div class="graphviz"><object data="../_images/graphviz-7f8c17eed81880be0138820807d36a7c2d388fe1.svg" type="image/svg+xml" class="graphviz">
+<p class="warning">digraph {
+
+    newrank=true;  // Sensible ranking of clusters
+    bgcolor=transparent
+    compound=true
+    rankdir=LR
+    node [fontname=Arial fontsize=10 shape=rect style=filled fillcolor=&quot;#8BC4E9&quot;]
+    graph [fontname=Arial fontsize=11]
+    edge [fontname=Arial fontsize=10 arrowhead=vee]
+    Fault [fillcolor=&quot;#F03232&quot;]
+    Disabled [fillcolor=&quot;#AAAAAA&quot;]
+
+    subgraph cluster_normal {
+        subgraph cluster_abortable {
+            Ready [fillcolor=&quot;#BBE7BB&quot;]
+            Ready -&gt; Configuring [label=&quot;configure()&quot; weight=30]
+            Ready -&gt; Saving [label=&quot;save()&quot;]
+            Saving -&gt; Ready [weight=0]
+            Ready -&gt; Loading [label=&quot;put\ndesign&quot;]
+            Loading -&gt; Ready [weight=0]
+            Armed [fillcolor=&quot;#BBE7BB&quot;]
+            Configuring -&gt; Armed
+            Armed -&gt; Running [label=&quot;run()&quot;]
+            Armed -&gt; Seeking [label=&quot;put\nsteps&quot;]
+            Running -&gt; PostRun
+            Running -&gt; Seeking [label=&quot;pause()&quot;]
+            PostRun -&gt; Finished
+            PostRun -&gt; Armed
+            PostRun -&gt; Seeking [label=&quot;pause()&quot;]
+            Finished [fillcolor=&quot;#BBE7BB&quot;]
+            Finished -&gt; Seeking [label=&quot;pause()&quot;]
+            Finished -&gt; Configuring [label=&quot;configure()&quot; weight=30]
+            Seeking -&gt; Armed
+            Seeking -&gt; Paused
+            Paused -&gt; Seeking [label=&quot;put\nsteps&quot;]
+            Paused -&gt; Running [label=&quot;resume()&quot;]
+        }
+        Aborted [fillcolor=&quot;#FFBE89&quot;]
+        Resetting -&gt; Ready
+        Seeking -&gt; Aborting [ltail=cluster_abortable label=&quot;abort()&quot;]
+        Aborting -&gt; Aborted
+        Aborted -&gt; Resetting [label=&quot;reset()&quot;]
+        Armed -&gt; Resetting [label=&quot;reset()&quot;]
+        Finished -&gt; Resetting [label=&quot;reset()&quot;]
+    }
+    Aborted -&gt; Disabling [ltail=cluster_normal label=&quot;disable()&quot;]
+    Aborted -&gt; Fault [ltail=cluster_normal label=&quot;on_error&quot;]
+
+    Fault -&gt; Resetting [label=&quot;reset()&quot;]
+    Fault -&gt; Disabling [label=&quot;disable()&quot;]
+    Disabling -&gt; Fault [label=&quot;on_error&quot;]
+    Disabling -&gt; Disabled
+    Disabled -&gt; Resetting [label=&quot;reset()&quot;]
+
+    {rank=min Ready Resetting Fault}
+    {rank=same Loading Saving Configuring}
+    {rank=same Armed Seeking Finished Aborted Disabling}
+    {rank=max Paused Running PostRun Aborting Disabled}
+
+    label=&quot;Unlabelled transitions take place in response to internal actions\n
+           Labelled transitions are triggered externally.&quot;;
+    labelloc=bottom;
+}</p></object></div>
+<p>The main thing to get from this diagram is that the Block passes through a
+number of states while it is being <code class="docutils literal notranslate"><span class="pre">configure()d</span></code> and <code class="docutils literal notranslate"><span class="pre">run()</span></code>, and these
+states control the Methods that can be run at any time.</p>
+</section>
+<section id="adding-functionality-to-a-runnablecontroller">
+<h2>Adding functionality to a RunnableController<a class="headerlink" href="#adding-functionality-to-a-runnablecontroller" title="Permalink to this headline"></a></h2>
+<p>Now let’s see some of the Methods and Attributes that are created in our
+example:</p>
+<div class="graphviz"><object data="../_images/graphviz-763cb4daa4ab27b6349c0089973e4538767466dd.svg" type="image/svg+xml" class="graphviz">
+<p class="warning">digraph detector_controllers_and_parts {
+newrank=true;  // Sensible ranking of clusters
+bgcolor=transparent
+node [fontname=Arial fontsize=10 shape=rect style=filled fillcolor=&quot;#8BC4E9&quot;]
+graph [fontname=Arial fontsize=11]
+edge [fontname=Arial fontsize=10 arrowhead=none]
+
+controller [label=&lt;RunnableController&lt;BR/&gt;mri: 'DETECTOR'&gt;]
+detpart [label=&lt;FileWritePart&lt;BR/&gt;name: 'FW'&gt;]
+dspart [label=&lt;DatasetTablePart&lt;BR/&gt;name: 'DSET'&gt;]
+
+subgraph cluster_control {
+    label=&quot;Control&quot;
+    labelloc=&quot;b&quot;
+    controller -&gt; detpart
+    controller -&gt; dspart
+}
+
+block [label=&lt;Block&lt;BR/&gt;mri: 'DETECTOR'&gt;]
+datasets [label=&lt;Attribute&lt;BR/&gt;name: 'datasets'&gt;]
+configure [label=&lt;Method&lt;BR/&gt;name: 'configure'&gt;]
+run [label=&lt;Method&lt;BR/&gt;name: 'run'&gt;]
+
+subgraph cluster_view {
+    label=&quot;View&quot;
+    labelloc=&quot;b&quot;
+    block -&gt; datasets
+    block -&gt; configure
+    block -&gt; run
+}
+
+{rank=same;controller block}
+{rank=same;dspart detpart datasets configure run}
+
+dspart -&gt; datasets [style=dashed]
+controller -&gt; configure [style=dashed]
+controller -&gt; run [style=dashed]
+controller -&gt; block [arrowhead=vee dir=from style=dashed label=produces]
+}</p></object></div>
+<p>The <a class="reference internal" href="../build/scanning/controllers_api.html#malcolm.modules.scanning.controllers.RunnableController" title="malcolm.modules.scanning.controllers.RunnableController"><code class="xref any py py-class docutils literal notranslate"><span class="pre">RunnableController</span></code></a> contributes the <code class="docutils literal notranslate"><span class="pre">configure</span></code> and <code class="docutils literal notranslate"><span class="pre">run</span></code> Methods in a
+similar way to previous examples, and the DatasetTablePart contributes a
+<code class="docutils literal notranslate"><span class="pre">datasets</span></code> Attribute, but the FileWritePart doesn’t contribute any Attributes
+or Methods to the Block. Instead, it registers functions with <a class="reference internal" href="../reference/glossary.html#hook"><span class="std std-ref">Hooks</span></a>
+on the Controller to execute arbitrary logic at the correct stage of
+<a class="reference internal" href="../build/scanning/controllers_api.html#malcolm.modules.scanning.controllers.RunnableController.configure" title="malcolm.modules.scanning.controllers.RunnableController.configure"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">RunnableController.configure</span></code></a> or <a class="reference internal" href="../build/scanning/controllers_api.html#malcolm.modules.scanning.controllers.RunnableController.run" title="malcolm.modules.scanning.controllers.RunnableController.run"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">RunnableController.run</span></code></a>.</p>
+</section>
+<section id="hooking-into-configure">
+<h2>Hooking into configure()<a class="headerlink" href="#hooking-into-configure" title="Permalink to this headline"></a></h2>
+<p>We mentioned earlier that a Part can register hook functions.
+Each hook function is called at at a specific phase of a specific Method
+provided by the Controller. Lets take a look at the first
+part of <code class="docutils literal notranslate"><span class="pre">./malcolm/modules/demo/parts/filewritepart.py</span></code> to see how this
+works:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">import</span> <span class="nn">h5py</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">add_call_types</span>
+<span class="kn">from</span> <span class="nn">scanpointgenerator</span> <span class="kn">import</span> <span class="n">Point</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="n">APartName</span><span class="p">,</span> <span class="n">Part</span><span class="p">,</span> <span class="n">PartRegistrar</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules</span> <span class="kn">import</span> <span class="n">builtin</span><span class="p">,</span> <span class="n">scanning</span>
+
+<span class="kn">from</span> <span class="nn">..util</span> <span class="kn">import</span> <span class="n">interesting_pattern</span><span class="p">,</span> <span class="n">make_gaussian_blob</span>
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Width of detector image&quot;</span><span class="p">):</span>
+    <span class="n">AWidth</span> <span class="o">=</span> <span class="nb">int</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Height of detector image&quot;</span><span class="p">):</span>
+    <span class="n">AHeight</span> <span class="o">=</span> <span class="nb">int</span>
+
+
+<span class="c1"># Datasets where we will write our data</span>
+<span class="n">DATA_PATH</span> <span class="o">=</span> <span class="s2">&quot;/entry/data&quot;</span>
+<span class="n">SUM_PATH</span> <span class="o">=</span> <span class="s2">&quot;/entry/sum&quot;</span>
+<span class="n">UID_PATH</span> <span class="o">=</span> <span class="s2">&quot;/entry/uid&quot;</span>
+<span class="n">SET_PATH</span> <span class="o">=</span> <span class="s2">&quot;/entry/</span><span class="si">%s</span><span class="s2">_set&quot;</span>
+
+<span class="c1"># How often we flush in seconds</span>
+<span class="n">FLUSH_PERIOD</span> <span class="o">=</span> <span class="mi">1</span>
+
+
+<span class="k">class</span> <span class="nc">FileWritePart</span><span class="p">(</span><span class="n">Part</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Minimal interface demonstrating a file writing detector part&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">APartName</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="n">AWidth</span><span class="p">,</span> <span class="n">height</span><span class="p">:</span> <span class="n">AHeight</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="c1"># Store input arguments</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_width</span> <span class="o">=</span> <span class="n">width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_height</span> <span class="o">=</span> <span class="n">height</span>
+        <span class="c1"># The detector image we will modify for each image (0..255 range)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_blob</span> <span class="o">=</span> <span class="n">make_gaussian_blob</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span> <span class="o">*</span> <span class="mi">255</span>
+        <span class="c1"># The hdf file we will write</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hdf</span><span class="p">:</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Configure args and progress info</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_exposure</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_generator</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AGenerator</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_completed_steps</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_steps_to_do</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># How much to offset uid value from generator point</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_uid_offset</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">registrar</span><span class="p">:</span> <span class="n">PartRegistrar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">registrar</span><span class="p">)</span>
+        <span class="c1"># Hooks</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ConfigureHook</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_configure</span><span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">PostRunArmedHook</span><span class="p">,</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">SeekHook</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_seek</span>
+        <span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">RunHook</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_run</span><span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AbortHook</span><span class="p">,</span> <span class="n">builtin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ResetHook</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_reset</span>
+        <span class="p">)</span>
+        <span class="c1"># Tell the controller to expose some extra configure parameters</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ConfigureHook</span><span class="o">.</span><span class="n">create_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_configure</span><span class="p">))</span>
+
+    <span class="c1"># Allow CamelCase as these parameters will be serialized</span>
+    <span class="c1"># noinspection PyPep8Naming</span>
+    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_configure</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">completed_steps</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ACompletedSteps</span><span class="p">,</span>
+        <span class="n">steps_to_do</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AStepsToDo</span><span class="p">,</span>
+        <span class="n">generator</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AGenerator</span><span class="p">,</span>
+        <span class="n">fileDir</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AFileDir</span><span class="p">,</span>
+        <span class="n">exposure</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AExposure</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">formatName</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AFormatName</span> <span class="o">=</span> <span class="s2">&quot;det&quot;</span><span class="p">,</span>
+        <span class="n">fileTemplate</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AFileTemplate</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.h5&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">UInfos</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;On `ConfigureHook` create HDF file with datasets&quot;&quot;&quot;</span>
+        <span class="c1"># Store args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_completed_steps</span> <span class="o">=</span> <span class="n">completed_steps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_steps_to_do</span> <span class="o">=</span> <span class="n">steps_to_do</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_generator</span> <span class="o">=</span> <span class="n">generator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_uid_offset</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_exposure</span> <span class="o">=</span> <span class="n">exposure</span>
+        <span class="c1"># Work out where to write the file</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">fileTemplate</span> <span class="o">%</span> <span class="n">formatName</span>
+        <span class="n">filepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fileDir</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="c1"># Make the HDF file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hdf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_hdf</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+        <span class="c1"># Tell everyone what we&#39;re going to make</span>
+        <span class="n">infos</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_create_infos</span><span class="p">(</span><span class="n">formatName</span><span class="p">,</span> <span class="n">filename</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">infos</span>
+
+</pre></div>
+</div>
+<p>Again we override <code class="docutils literal notranslate"><span class="pre">__init__</span></code>, but after initializing some
+<a class="reference external" href="https://radek.io/2011/07/21/private-protected-and-public-in-python">protected variables</a> we have some <a class="reference internal" href="../reference/glossary.html#hook"><span class="std std-ref">Hook</span></a> statements in the <code class="docutils literal notranslate"><span class="pre">setup()</span></code>
+function. These call <code class="xref py py-meth docutils literal notranslate"><span class="pre">hook()</span></code> to register a function to be
+run with one or more <a class="reference internal" href="../api/core_api.html#malcolm.core.Hook" title="malcolm.core.Hook"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Hook</span></code></a> classes. A Controller defines a a number of Hooks
+that define what methods of a Part will be run during a particular Method. For
+example, we are hooking our <code class="docutils literal notranslate"><span class="pre">on_configure()</span></code> method to the <a class="reference internal" href="../build/scanning/hooks_api.html#malcolm.modules.scanning.hooks.ConfigureHook" title="malcolm.modules.scanning.hooks.ConfigureHook"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ConfigureHook</span></code></a>.</p>
+<p>Let’s take a look at its documentation:</p>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.hooks.</span></span><span class="sig-name descname"><span class="pre">ConfigureHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">part:</span> <span class="pre">Anno(name='APart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.part.Part'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">part</span> <span class="pre">that</span> <span class="pre">has</span> <span class="pre">attached</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">Hook')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">completed_steps:</span> <span class="pre">Anno(name='ACompletedSteps'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'int'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Number</span> <span class="pre">of</span> <span class="pre">steps</span> <span class="pre">already</span> <span class="pre">completed')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps_to_do:</span> <span class="pre">Anno(name='AStepsToDo'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'int'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Number</span> <span class="pre">of</span> <span class="pre">steps</span> <span class="pre">we</span> <span class="pre">should</span> <span class="pre">configure</span> <span class="pre">for')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">part_info:</span> <span class="pre">Anno(name='APartInfo'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=(&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotypes._array.Array[malcolm.core.info.Info])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">Infos</span> <span class="pre">returned</span> <span class="pre">from</span> <span class="pre">other</span> <span class="pre">Parts')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generator:</span> <span class="pre">Anno(name='AGenerator'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'scanpointgenerator.core.compoundgenerator.CompoundGenerator'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Generator</span> <span class="pre">instance</span> <span class="pre">providing</span> <span class="pre">specification</span> <span class="pre">for</span> <span class="pre">scan')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axesToMove:</span> <span class="pre">Anno(name='AAxesToMove'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='List</span> <span class="pre">of</span> <span class="pre">axes</span> <span class="pre">in</span> <span class="pre">inner</span> <span class="pre">dimension</span> <span class="pre">of</span> <span class="pre">generator</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">moved')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">breakpoints:</span> <span class="pre">Anno(name='ABreakpoints'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'numpy.int32'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='List</span> <span class="pre">of</span> <span class="pre">points</span> <span class="pre">at</span> <span class="pre">which</span> <span class="pre">the</span> <span class="pre">run</span> <span class="pre">will</span> <span class="pre">return</span> <span class="pre">in</span> <span class="pre">Armed</span> <span class="pre">state')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/scanning/hooks.html#ConfigureHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Called at configure() to configure child block for a run</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
+<li><p><strong>context</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+<li><p><strong>completed_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of steps already completed</p></li>
+<li><p><strong>steps_to_do</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of steps we should configure for</p></li>
+<li><p><strong>part_info</strong> – The Infos returned from other Parts</p></li>
+<li><p><strong>generator</strong> (<em>CompoundGenerator</em>) – Generator instance providing specification for scan</p></li>
+<li><p><strong>axesToMove</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – List of axes in inner dimension of generator that should be moved</p></li>
+<li><p><strong>breakpoints</strong> (<em>int32</em>) – List of points at which the run will return in Armed state</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<p>What happens in practice is that when <code class="docutils literal notranslate"><span class="pre">DETECTOR.configure()</span></code> is called, all
+the functions hooked to <a class="reference internal" href="../build/scanning/hooks_api.html#malcolm.modules.scanning.hooks.ConfigureHook" title="malcolm.modules.scanning.hooks.ConfigureHook"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ConfigureHook</span></code></a> will be called concurrently. They will
+each be called with the arguments that they ask for (as long as its name appears
+in the documentation for the Hook).</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../reference/statesets.html#statesets"><span class="std std-ref">State Sets and Hooks</span></a> contains more information about which Hooks are run in each
+state transition</p>
+</div>
+</section>
+<section id="passing-infos-back-to-the-controller">
+<h2>Passing Infos back to the Controller<a class="headerlink" href="#passing-infos-back-to-the-controller" title="Permalink to this headline"></a></h2>
+<p>You may have noticed that <code class="docutils literal notranslate"><span class="pre">on_configure()</span></code> takes extra <code class="docutils literal notranslate"><span class="pre">fileDir</span></code>,
+<code class="docutils literal notranslate"><span class="pre">formatName</span></code> and <code class="docutils literal notranslate"><span class="pre">fileTemplate</span></code> arguments that are not documented in the
+Hook. How does the Controller know to ask for them at configure and pass them
+down to us? Well in <code class="docutils literal notranslate"><span class="pre">setup()</span></code> we report an <a class="reference internal" href="../reference/glossary.html#info"><span class="std std-ref">Info</span></a>. This is a way of telling
+our parent Controller something about us, either in response to a <a class="reference internal" href="../reference/glossary.html#hook"><span class="std std-ref">Hook</span></a>, or
+asynchronously using <a class="reference internal" href="../api/core_api.html#malcolm.core.PartRegistrar.report" title="malcolm.core.PartRegistrar.report"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">PartRegistrar.report</span></code></a>. In this case, we call
+<a class="reference internal" href="../build/scanning/hooks_api.html#malcolm.modules.scanning.hooks.ConfigureHook.create_info" title="malcolm.modules.scanning.hooks.ConfigureHook.create_info"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">ConfigureHook.create_info</span></code></a> which scans our <code class="docutils literal notranslate"><span class="pre">on_configure</span></code> method for extra
+arguments and puts them in a <a class="reference internal" href="../build/scanning/infos_api.html#malcolm.modules.scanning.infos.ConfigureParamsInfo" title="malcolm.modules.scanning.infos.ConfigureParamsInfo"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ConfigureParamsInfo</span></code></a> object that we can
+<code class="docutils literal notranslate"><span class="pre">report()</span></code> back. The docstring for this info explains what the Controller
+will do with this:</p>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.infos.</span></span><span class="sig-name descname"><span class="pre">ConfigureParamsInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metas</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../api/external_api.html#Dict" title="Dict"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../api/core_api.html#malcolm.core.VMeta" title="malcolm.core.models.VMeta"><span class="pre">malcolm.core.models.VMeta</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">required</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../api/external_api.html#List" title="List"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">defaults</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../api/external_api.html#Dict" title="Dict"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../api/external_api.html#Any" title="Any"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/scanning/infos.html#ConfigureParamsInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Info about the parameters that should be passed to the Part in configure.
+The Controller will validate these when Block.configure() is called, and
+pass them to all Parts that have registered interest in them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>metas</strong> – Metas for the extra parameters</p></li>
+<li><p><strong>required</strong> – List of required parameters</p></li>
+<li><p><strong>defaults</strong> – Default values for parameters</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<p>After we have created our HDF file in configure, we make some more infos in
+<code class="docutils literal notranslate"><span class="pre">_create_infos</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="k">def</span> <span class="nf">_create_infos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detector_name</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="c1"># Main dataset</span>
+        <span class="k">yield</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">DatasetProducedInfo</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">detector_name</span><span class="si">}</span><span class="s2">.data&quot;</span><span class="p">,</span>
+            <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
+            <span class="nb">type</span><span class="o">=</span><span class="n">scanning</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">DatasetType</span><span class="o">.</span><span class="n">PRIMARY</span><span class="p">,</span>
+            <span class="n">rank</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_generator</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="n">path</span><span class="o">=</span><span class="n">DATA_PATH</span><span class="p">,</span>
+            <span class="n">uniqueid</span><span class="o">=</span><span class="n">UID_PATH</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># Sum</span>
+        <span class="k">yield</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">DatasetProducedInfo</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">detector_name</span><span class="si">}</span><span class="s2">.sum&quot;</span><span class="p">,</span>
+            <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
+            <span class="nb">type</span><span class="o">=</span><span class="n">scanning</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">DatasetType</span><span class="o">.</span><span class="n">SECONDARY</span><span class="p">,</span>
+            <span class="n">rank</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_generator</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="n">path</span><span class="o">=</span><span class="n">SUM_PATH</span><span class="p">,</span>
+            <span class="n">uniqueid</span><span class="o">=</span><span class="n">UID_PATH</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># Add an axis for each setpoint</span>
+        <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generator</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">DatasetProducedInfo</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dim</span><span class="si">}</span><span class="s2">.value_set&quot;</span><span class="p">,</span>
+                <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
+                <span class="nb">type</span><span class="o">=</span><span class="n">scanning</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">DatasetType</span><span class="o">.</span><span class="n">POSITION_SET</span><span class="p">,</span>
+                <span class="n">rank</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">path</span><span class="o">=</span><span class="n">SET_PATH</span> <span class="o">%</span> <span class="n">dim</span><span class="p">,</span>
+                <span class="n">uniqueid</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+</pre></div>
+</div>
+<p>This time they describe the datasets that we are going to produce. These will
+be used by the DatasetTablePart to put them in an Attribute that can be read
+by the client expecting a scan. The docstring for this info explains this:</p>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.infos.</span></span><span class="sig-name descname"><span class="pre">DatasetProducedInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../build/scanning/infos_api.html#malcolm.modules.scanning.infos.DatasetType" title="malcolm.modules.scanning.infos.DatasetType"><span class="pre">malcolm.modules.scanning.infos.DatasetType</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rank</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">uniqueid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/scanning/infos.html#DatasetProducedInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Declare that we will write the following dataset to file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – Dataset name</p></li>
+<li><p><strong>filename</strong> – Filename relative to the fileDir we were given</p></li>
+<li><p><strong>type</strong> – What NeXuS dataset type it produces</p></li>
+<li><p><strong>rank</strong> – The rank of the dataset including generator dims</p></li>
+<li><p><strong>path</strong> – The path of the dataset within the file</p></li>
+<li><p><strong>uniqueid</strong> – The path of the UniqueID dataset within the file</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<p>In our case we will produce a main dataset, with a detector of the dimensions
+given when we instantiated the part, a sum dataset which will provide a
+suitable single point for each detector frame to live visualize the scan, and
+the axis setpoints of everything that moves in the scan.</p>
+</section>
+<section id="hooking-into-run">
+<h2>Hooking into run()<a class="headerlink" href="#hooking-into-run" title="Permalink to this headline"></a></h2>
+<p>We also hooked our <code class="docutils literal notranslate"><span class="pre">on_run()</span></code> method in <code class="docutils literal notranslate"><span class="pre">__init__</span></code>. Let’s take a look at
+what it does:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;On `RunHook` record where to next take data&quot;&quot;&quot;</span>
+        <span class="c1"># Start time so everything is relative</span>
+        <span class="n">end_of_exposure</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exposure</span>
+        <span class="n">last_flush</span> <span class="o">=</span> <span class="n">end_of_exposure</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">registrar</span><span class="p">,</span> <span class="s2">&quot;Part has no registrar&quot;</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_completed_steps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_completed_steps</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steps_to_do</span>
+        <span class="p">):</span>
+            <span class="c1"># Get the point we are meant to be scanning</span>
+            <span class="n">point</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generator</span><span class="o">.</span><span class="n">get_point</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="c1"># Simulate waiting for an exposure and writing the data</span>
+            <span class="n">wait_time</span> <span class="o">=</span> <span class="n">end_of_exposure</span> <span class="o">-</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="n">context</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">wait_time</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Writing data for point </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_write_data</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            <span class="c1"># Flush the datasets if it is time to</span>
+            <span class="k">if</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">last_flush</span> <span class="o">&gt;</span> <span class="n">FLUSH_PERIOD</span><span class="p">:</span>
+                <span class="n">last_flush</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_flush_datasets</span><span class="p">()</span>
+            <span class="c1"># Schedule the end of the next exposure</span>
+            <span class="n">end_of_exposure</span> <span class="o">+=</span> <span class="n">point</span><span class="o">.</span><span class="n">duration</span>
+            <span class="c1"># Update the point as being complete</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">registrar</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">RunProgressInfo</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="c1"># Do one last flush and then we&#39;re done</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flush_datasets</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This is hooked to the <a class="reference internal" href="../build/scanning/hooks_api.html#malcolm.modules.scanning.hooks.RunHook" title="malcolm.modules.scanning.hooks.RunHook"><code class="xref any py py-class docutils literal notranslate"><span class="pre">RunHook</span></code></a>. Let’s take a look at its documentation:</p>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.hooks.</span></span><span class="sig-name descname"><span class="pre">RunHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">part:</span> <span class="pre">Anno(name='APart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.part.Part'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">part</span> <span class="pre">that</span> <span class="pre">has</span> <span class="pre">attached</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">Hook')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/scanning/hooks.html#RunHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Called at run() to start the configured steps running</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
+<li><p><strong>context</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<p>Walking through the code we can see that we are iterating through each of the
+step indexes that we need to produce, getting a <a class="reference external" href="https://scanpointgenerator.readthedocs.io/en/latest/architecture.html#scanpointgenerator.Point" title="(in scanpointgenerator v2.1.1)"><code class="xref any docutils literal notranslate"><span class="pre">scanpointgenerator.Point</span></code></a>
+object for each one. We then write some suitable data based on this point to
+our file. After this we work out how long we need to wait until the next
+position is to be produced, then do an interruptable sleep. It is important that
+we use the <code class="docutils literal notranslate"><span class="pre">context</span></code> parameter to do this, because if the Controller is
+aborted, it will tell every <a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Context</span></code></a> it passed out to hooked functions to
+abort. Finally we <code class="xref py py-meth docutils literal notranslate"><span class="pre">report()</span></code> a <a class="reference internal" href="../build/scanning/infos_api.html#malcolm.modules.scanning.infos.RunProgressInfo" title="malcolm.modules.scanning.infos.RunProgressInfo"><code class="xref any py py-class docutils literal notranslate"><span class="pre">RunProgressInfo</span></code></a> with the
+current step number so the client knows how much of the scan is complete.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Step numbers in Malcolm are 1-indexed, so a value of 0 means no
+steps completed.</p>
+</div>
+<p>The Controller will use all of the <a class="reference internal" href="../build/scanning/infos_api.html#malcolm.modules.scanning.infos.RunProgressInfo" title="malcolm.modules.scanning.infos.RunProgressInfo"><code class="xref any py py-class docutils literal notranslate"><span class="pre">RunProgressInfo</span></code></a> instances to work out
+how far the actual scan has progressed, and report it in the Block’s
+<code class="docutils literal notranslate"><span class="pre">currentStep</span></code> Attribute.</p>
+</section>
+<section id="hooking-into-seek-abort-and-reset">
+<h2>Hooking into seek(), abort() and reset()<a class="headerlink" href="#hooking-into-seek-abort-and-reset" title="Permalink to this headline"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">on_seek()</span></code> Method stores completed_steps, and steps_to_do, then calculates
+a new UID offset so that any new frames are guaranteed to have an ID that has
+never been written before:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_seek</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">completed_steps</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ACompletedSteps</span><span class="p">,</span>
+        <span class="n">steps_to_do</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AStepsToDo</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;On `SeekHook`, `PostRunArmedHook` record where to next take data&quot;&quot;&quot;</span>
+        <span class="c1"># Skip the uid so it is guaranteed to be unique</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_uid_offset</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_completed_steps</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steps_to_do</span> <span class="o">-</span> <span class="n">completed_steps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_completed_steps</span> <span class="o">=</span> <span class="n">completed_steps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_steps_to_do</span> <span class="o">=</span> <span class="n">steps_to_do</span>
+</pre></div>
+</div>
+<p>It is hooked into two Hooks:</p>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.hooks.</span></span><span class="sig-name descname"><span class="pre">SeekHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">part:</span> <span class="pre">Anno(name='APart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.part.Part'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">part</span> <span class="pre">that</span> <span class="pre">has</span> <span class="pre">attached</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">Hook')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">completed_steps:</span> <span class="pre">Anno(name='ACompletedSteps'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'int'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Number</span> <span class="pre">of</span> <span class="pre">steps</span> <span class="pre">already</span> <span class="pre">completed')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps_to_do:</span> <span class="pre">Anno(name='AStepsToDo'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'int'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Number</span> <span class="pre">of</span> <span class="pre">steps</span> <span class="pre">we</span> <span class="pre">should</span> <span class="pre">configure</span> <span class="pre">for')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">part_info:</span> <span class="pre">Anno(name='APartInfo'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=(&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotypes._array.Array[malcolm.core.info.Info])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">Infos</span> <span class="pre">returned</span> <span class="pre">from</span> <span class="pre">other</span> <span class="pre">Parts')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generator:</span> <span class="pre">Anno(name='AGenerator'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'scanpointgenerator.core.compoundgenerator.CompoundGenerator'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Generator</span> <span class="pre">instance</span> <span class="pre">providing</span> <span class="pre">specification</span> <span class="pre">for</span> <span class="pre">scan')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axesToMove:</span> <span class="pre">Anno(name='AAxesToMove'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='List</span> <span class="pre">of</span> <span class="pre">axes</span> <span class="pre">in</span> <span class="pre">inner</span> <span class="pre">dimension</span> <span class="pre">of</span> <span class="pre">generator</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">moved')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/scanning/hooks.html#SeekHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Called at seek() or at the end of pause() to reconfigure for a different
+number of completed_steps</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
+<li><p><strong>context</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+<li><p><strong>completed_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of steps already completed</p></li>
+<li><p><strong>steps_to_do</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of steps we should configure for</p></li>
+<li><p><strong>part_info</strong> – The Infos returned from other Parts</p></li>
+<li><p><strong>generator</strong> (<em>CompoundGenerator</em>) – Generator instance providing specification for scan</p></li>
+<li><p><strong>axesToMove</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – List of axes in inner dimension of generator that should be moved</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.hooks.</span></span><span class="sig-name descname"><span class="pre">PostRunArmedHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">part:</span> <span class="pre">Anno(name='APart',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.part.Part'&gt;,</span> <span class="pre">description='The</span> <span class="pre">part</span> <span class="pre">that</span> <span class="pre">has</span> <span class="pre">attached</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">Hook'),</span> <span class="pre">context:</span> <span class="pre">Anno(name='AContext',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;,</span> <span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks'),</span> <span class="pre">completed_steps:</span> <span class="pre">Anno(name='ACompletedSteps',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'int'&gt;,</span> <span class="pre">description='Number</span> <span class="pre">of</span> <span class="pre">steps</span> <span class="pre">already</span> <span class="pre">completed'),</span> <span class="pre">steps_to_do:</span> <span class="pre">Anno(name='AStepsToDo',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'int'&gt;,</span> <span class="pre">description='Number</span> <span class="pre">of</span> <span class="pre">steps</span> <span class="pre">we</span> <span class="pre">should</span> <span class="pre">configure</span> <span class="pre">for'),</span> <span class="pre">part_info:</span> <span class="pre">Union[Anno(name='APartInfo',</span> <span class="pre">typ=(&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">annotypes._array.Array[malcolm.core.info.Info]),</span> <span class="pre">description='The</span> <span class="pre">Infos</span> <span class="pre">returned</span> <span class="pre">from</span> <span class="pre">other</span> <span class="pre">Parts'),</span> <span class="pre">Mapping[str,</span> <span class="pre">Sequence[malcolm.core.info.Info]]],</span> <span class="pre">generator:</span> <span class="pre">Anno(name='AGenerator',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'scanpointgenerator.core.compoundgenerator.CompoundGenerator'&gt;,</span> <span class="pre">description='Generator</span> <span class="pre">instance</span> <span class="pre">providing</span> <span class="pre">specification</span> <span class="pre">for</span> <span class="pre">scan'),</span> <span class="pre">axesToMove:</span> <span class="pre">Anno(name='AAxesToMove',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='List</span> <span class="pre">of</span> <span class="pre">axes</span> <span class="pre">in</span> <span class="pre">inner</span> <span class="pre">dimension</span> <span class="pre">of</span> <span class="pre">generator</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">moved'),</span> <span class="pre">**kwargs:</span> <span class="pre">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/scanning/hooks.html#PostRunArmedHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Called at the end of run() when there are more steps to be run</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
+<li><p><strong>context</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+<li><p><strong>completed_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of steps already completed</p></li>
+<li><p><strong>steps_to_do</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of steps we should configure for</p></li>
+<li><p><strong>part_info</strong> – The Infos returned from other Parts</p></li>
+<li><p><strong>generator</strong> (<em>CompoundGenerator</em>) – Generator instance providing specification for scan</p></li>
+<li><p><strong>axesToMove</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – List of axes in inner dimension of generator that should be moved</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<p>Which means it will be called at when <code class="docutils literal notranslate"><span class="pre">pause()</span></code> is called, and when Malcolm
+has been asked to setup the next phase of a scan where it only moves a subset
+of the axes in the generator.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">on_reset()</span></code> Method just closes the HDF file if it isn’t already closed:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;On `AbortHook`, `ResetHook` close HDF file if it exists&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hdf</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hdf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hdf</span> <span class="o">=</span> <span class="kc">None</span>
+</pre></div>
+</div>
+<p>It again is hooked into two Hooks:</p>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.hooks.</span></span><span class="sig-name descname"><span class="pre">AbortHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">part:</span> <span class="pre">Anno(name='APart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.part.Part'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">part</span> <span class="pre">that</span> <span class="pre">has</span> <span class="pre">attached</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">Hook')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/scanning/hooks.html#AbortHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Called at abort() to stop the current scan</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
+<li><p><strong>context</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.builtin.hooks.</span></span><span class="sig-name descname"><span class="pre">ResetHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">part:</span> <span class="pre">Anno(name='APart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.part.Part'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">part</span> <span class="pre">that</span> <span class="pre">has</span> <span class="pre">attached</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">Hook')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/builtin/hooks.html#ResetHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Called at reset() to reset all parts to a known good state</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
+<li><p><strong>context</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<p>These will be called when <code class="docutils literal notranslate"><span class="pre">reset()</span></code> or <code class="docutils literal notranslate"><span class="pre">abort()</span></code> is called on the Block.</p>
+</section>
+<section id="running-the-demo">
+<h2>Running the demo<a class="headerlink" href="#running-the-demo" title="Permalink to this headline"></a></h2>
+<p>Let’s run up the example and give it a go:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="go">[me@mypc pymalcolm]$ pipenv run imalcolm malcolm/modules/demo/DEMO-DETECTOR.yaml</span>
+<span class="go">Loading malcolm...</span>
+<span class="go">Python 3.7.2 (default, Jan 20 2020, 11:03:41)</span>
+<span class="go">Type &#39;copyright&#39;, &#39;credits&#39; or &#39;license&#39; for more information</span>
+<span class="go">IPython 7.19.0 -- An enhanced Interactive Python. Type &#39;?&#39; for help.</span>
+
+<span class="go">Welcome to iMalcolm.</span>
+
+<span class="go">self.mri_list:</span>
+<span class="go">    [&#39;COUNTERX&#39;, &#39;COUNTERY&#39;, &#39;TICKER&#39;, &#39;WEB&#39;]</span>
+
+<span class="go"># To create a view of an existing Block</span>
+<span class="go">block = self.block_view(&quot;&lt;mri&gt;&quot;)</span>
+
+<span class="go"># To create a proxy of a Block in another Malcolm</span>
+<span class="go">self.make_proxy(&quot;&lt;client_comms_mri&gt;&quot;, &quot;&lt;mri&gt;&quot;)</span>
+<span class="go">block = self.block_view(&quot;&lt;mri&gt;&quot;)</span>
+
+<span class="go"># To view state of Blocks in a GUI</span>
+<span class="go">!firefox localhost:8008</span>
+
+<span class="gp">In [1]:</span>
+</pre></div>
+</div>
+<p>Then enter:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="kn">from</span> <span class="nn">scanpointgenerator</span> <span class="kn">import</span> <span class="n">LineGenerator</span><span class="p">,</span> <span class="n">CompoundGenerator</span>
+
+<span class="gp">In [2]: </span><span class="kn">from</span> <span class="nn">scanpointgenerator.plotgenerator</span> <span class="kn">import</span> <span class="n">plot_generator</span>
+
+<span class="gp">In [3]: </span><span class="n">yline</span> <span class="o">=</span> <span class="n">LineGenerator</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;mm&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+
+<span class="gp">In [4]: </span><span class="n">xline</span> <span class="o">=</span> <span class="n">LineGenerator</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;mm&quot;</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">alternate</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="gp">In [5]: </span><span class="n">generator</span> <span class="o">=</span> <span class="n">CompoundGenerator</span><span class="p">([</span><span class="n">yline</span><span class="p">,</span> <span class="n">xline</span><span class="p">],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="n">duration</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We can then see what this generator looks like:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [6]: </span><span class="n">plot_generator</span><span class="p">(</span><span class="n">generator</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/detector_0.png" src="../_images/detector_0.png" />
+<p>What we have done here is set up a scan that is 6 rows in y and 5 columns in x.
+The x value will snake forwards and backwards, and the y value will increase
+at the end of each x row. We have told it that each scan point should last for
+0.5 seconds, which should give us enough time to see the ticks. If this is the
+scan that we wanted to do then we can either configure from the terminal, or
+dump the JSON so we can use the GUI. Let’s do the latter:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [7]: </span><span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">json_encode</span>
+
+<span class="gp">In [8]: </span><span class="n">json_encode</span><span class="p">(</span><span class="n">generator</span><span class="p">)</span>
+<span class="gh">Out[8]: </span><span class="go">&#39;{&quot;typeid&quot;: &quot;scanpointgenerator:generator/CompoundGenerator:1.0&quot;, &quot;generators&quot;: [{&quot;typeid&quot;: &quot;scanpointgenerator:generator/LineGenerator:1.0&quot;, &quot;axes&quot;: [&quot;y&quot;], &quot;units&quot;: [&quot;mm&quot;], &quot;start&quot;: [0.0], &quot;stop&quot;: [1.0], &quot;size&quot;: 6, &quot;alternate&quot;: false}, {&quot;typeid&quot;: &quot;scanpointgenerator:generator/LineGenerator:1.0&quot;, &quot;axes&quot;: [&quot;x&quot;], &quot;units&quot;: [&quot;mm&quot;], &quot;start&quot;: [0.0], &quot;stop&quot;: [1.0], &quot;size&quot;: 5, &quot;alternate&quot;: true}], &quot;excluders&quot;: [], &quot;mutators&quot;: [], &quot;duration&quot;: 0.5, &quot;continuous&quot;: true}&#39;</span>
+</pre></div>
+</div>
+<p>Then we can open <a class="reference external" href="http://localhost:8008/gui/DETECTOR">http://localhost:8008/gui/DETECTOR</a> to see the <strong>DETECTOR</strong>
+Block on the left. If we expand the Configure method and click Edit by the
+Generator field we can paste in our JSON:</p>
+<img alt="../_images/detector_1.png" src="../_images/detector_1.png" />
+<p>If we set fileDir to “/tmp”, then click Configure, we will see the State change
+to Armed. We can then click on the “VIEW” button next to “Datasets” to see
+what the detector will write. Here we see that it will make a primary dataset
+in (containing detector data) <code class="docutils literal notranslate"><span class="pre">/entry/data</span></code>, and a secondary dataset
+(containing summary data calculated from the detector data) <code class="docutils literal notranslate"><span class="pre">/entry/sum</span></code>. It
+will also write position_set datasets for <code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">y</span></code> containing the
+generator positions to <code class="docutils literal notranslate"><span class="pre">/entry/x_set</span></code> and <code class="docutils literal notranslate"><span class="pre">/entry/y_set</span></code>. All of these
+will be written to a file called <code class="docutils literal notranslate"><span class="pre">det.h5</span></code> in the fileDir:</p>
+<img alt="../_images/detector_2.png" src="../_images/detector_2.png" />
+<p>If we click on the info icon next to the “Completed Steps”, and then
+select the Plot tab, then click the “Run” button on the left pane we will see
+the scan be performed:</p>
+<img alt="../_images/detector_3.png" src="../_images/detector_3.png" />
+<p>We can then view the data that the detector wrote from our iPython terminal.
+We read the HDF file we have produced, copy the dataset, close the file, and
+check the shape of the dataset to see that it does indeed have rank 4:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [13]: </span><span class="kn">import</span> <span class="nn">h5py</span>
+
+<span class="gp">In [10]: </span><span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s2">&quot;/tmp/det.h5&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<span class="go">    ...:     im = f[&quot;/entry/sum&quot;][:]</span>
+<span class="go">    ...:</span>
+
+<span class="gp">In [11]: </span><span class="n">im</span><span class="o">.</span><span class="n">shape</span>
+<span class="gh">Out[11]: </span><span class="go">(6, 5, 1, 1)</span>
+</pre></div>
+</div>
+<p>The sum dataset has the same rank as the detector data, so we need to squash
+those last two dimensions down so that we can plot it. We do that using the
+reshape function, then we show the resulting (6, 5) dataset:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [12]: </span><span class="kn">from</span> <span class="nn">pylab</span> <span class="kn">import</span> <span class="n">imshow</span><span class="p">,</span> <span class="n">show</span>
+
+<span class="gp">In [13]: </span><span class="n">imshow</span><span class="p">(</span><span class="n">im</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">im</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]))</span>
+<span class="gh">Out[13]: </span><span class="go">&lt;matplotlib.image.AxesImage at 0x7f11a300b090&gt;</span>
+
+<span class="gp">In [14]: </span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/detector_4.png" src="../_images/detector_4.png" />
+<p>From here you can try modifying the generator to make a bigger, faster scan,
+pressing Configure then Run again.</p>
+</section>
+<section id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline"></a></h2>
+<p>This tutorial has given us an understanding of how scans are specified in
+Malcolm, the configure/run State Machine that Malcolm implements, and
+how Parts can register code to run at different phases of a Controller.
+In the next tutorial we will see how to create a Block in the
+<a class="reference internal" href="../reference/glossary.html#scan-layer"><span class="std std-ref">Scan Layer</span></a> to co-ordinate a detector and a motion controller.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="motion.html" class="btn btn-neutral float-left" title="Motion Tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="scanning.html" class="btn btn-neutral float-right" title="Scanning Tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

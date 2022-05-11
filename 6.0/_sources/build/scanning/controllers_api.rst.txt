@@ -1,0 +1,6 @@
+
+malcolm.modules.scanning.controllers
+====================================
+
+.. automodule:: malcolm.modules.scanning.controllers
+    :members:

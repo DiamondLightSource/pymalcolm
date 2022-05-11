@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.modules.ADPandABlocks.util &mdash; malcolm 6.0 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                6.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>malcolm.modules.ADPandABlocks.util</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for malcolm.modules.ADPandABlocks.util</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">Array</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="n">Table</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules</span> <span class="kn">import</span> <span class="n">ADCore</span><span class="p">,</span> <span class="n">pandablocks</span>
+
+
+<div class="viewcode-block" id="Trigger"><a class="viewcode-back" href="../../../../build/ADPandABlocks/util_api.html#malcolm.modules.ADPandABlocks.util.Trigger">[docs]</a><span class="k">class</span> <span class="nc">Trigger</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Convenience Enum for setting sequencer table trigger values.</span>
+
+<span class="sd">    These will be translated into integer values by the `TablePart`. The strings must</span>
+<span class="sd">    match those that come from the PandA.&quot;&quot;&quot;</span>
+
+    <span class="n">IMMEDIATE</span> <span class="o">=</span> <span class="s2">&quot;Immediate&quot;</span>
+    <span class="n">BITA_0</span> <span class="o">=</span> <span class="s2">&quot;BITA=0&quot;</span>
+    <span class="n">BITA_1</span> <span class="o">=</span> <span class="s2">&quot;BITA=1&quot;</span>
+    <span class="n">BITB_0</span> <span class="o">=</span> <span class="s2">&quot;BITB=0&quot;</span>
+    <span class="n">BITB_1</span> <span class="o">=</span> <span class="s2">&quot;BITB=1&quot;</span>
+    <span class="n">BITC_0</span> <span class="o">=</span> <span class="s2">&quot;BITC=0&quot;</span>
+    <span class="n">BITC_1</span> <span class="o">=</span> <span class="s2">&quot;BITC=1&quot;</span>
+    <span class="n">POSA_GT</span> <span class="o">=</span> <span class="s2">&quot;POSA&gt;=POSITION&quot;</span>
+    <span class="n">POSA_LT</span> <span class="o">=</span> <span class="s2">&quot;POSA&lt;=POSITION&quot;</span>
+    <span class="n">POSB_GT</span> <span class="o">=</span> <span class="s2">&quot;POSB&gt;=POSITION&quot;</span>
+    <span class="n">POSB_LT</span> <span class="o">=</span> <span class="s2">&quot;POSB&lt;=POSITION&quot;</span>
+    <span class="n">POSC_GT</span> <span class="o">=</span> <span class="s2">&quot;POSC&gt;=POSITION&quot;</span>
+    <span class="n">POSC_LT</span> <span class="o">=</span> <span class="s2">&quot;POSC&lt;=POSITION&quot;</span></div>
+
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Number of times the line will repeat&quot;</span><span class="p">):</span>
+    <span class="n">ALineRepeatsArray</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;The trigger condition to start the phases&quot;</span><span class="p">):</span>
+    <span class="n">ATriggerArray</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;The position that can be used in trigger condition&quot;</span><span class="p">):</span>
+    <span class="n">APositionArray</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;The time that the phase should take&quot;</span><span class="p">):</span>
+    <span class="n">ATimeArray</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Output value during the phase&quot;</span><span class="p">):</span>
+    <span class="n">AOutArray</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">bool</span><span class="p">]]</span>
+
+<span class="c1"># Pull re-used annotypes into our namespace in case we are subclassed</span>
+<span class="n">AAttributeTypes</span> <span class="o">=</span> <span class="n">ADCore</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">AAttributeTypes</span>
+<span class="n">UAttributeTypes</span> <span class="o">=</span> <span class="n">ADCore</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">UAttributeTypes</span>
+<span class="n">AAttributeNames</span> <span class="o">=</span> <span class="n">ADCore</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">AAttributeNames</span>
+<span class="n">UAttributeNames</span> <span class="o">=</span> <span class="n">ADCore</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">UAttributeNames</span>
+<span class="n">UBitNames</span> <span class="o">=</span> <span class="n">pandablocks</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">UBitNames</span>
+<span class="n">UBitValues</span> <span class="o">=</span> <span class="n">pandablocks</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">UBitValues</span>
+<span class="n">UBitCaptures</span> <span class="o">=</span> <span class="n">pandablocks</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">UBitCaptures</span>
+<span class="n">UPositionNames</span> <span class="o">=</span> <span class="n">pandablocks</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">UPositionNames</span>
+<span class="n">UPositionValues</span> <span class="o">=</span> <span class="n">pandablocks</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">UPositionValues</span>
+<span class="n">UPositionUnits</span> <span class="o">=</span> <span class="n">pandablocks</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">UPositionUnits</span>
+<span class="n">UPositionScales</span> <span class="o">=</span> <span class="n">pandablocks</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">UPositionScales</span>
+<span class="n">UPositionOffsets</span> <span class="o">=</span> <span class="n">pandablocks</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">UPositionOffsets</span>
+<span class="n">UPositionCaptures</span> <span class="o">=</span> <span class="n">pandablocks</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">UPositionCaptures</span>
+
+
+<span class="n">SequencerRow</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span>
+    <span class="s2">&quot;SequencerRow&quot;</span><span class="p">,</span>
+    <span class="p">[</span>
+        <span class="s2">&quot;repeats&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;trigger&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;position&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;time1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;outa1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;outb1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;outc1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;outd1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;oute1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;outf1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;time2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;outa2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;outb2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;outc2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;outd2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;oute2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;outf2&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="SequencerTable"><a class="viewcode-back" href="../../../../build/ADPandABlocks/util_api.html#malcolm.modules.ADPandABlocks.util.SequencerTable">[docs]</a><span class="k">class</span> <span class="nc">SequencerTable</span><span class="p">(</span><span class="n">Table</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convenience `Table` class for building sequencer tables.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">repeats</span><span class="p">:</span> <span class="n">ALineRepeatsArray</span><span class="p">,</span>
+        <span class="n">trigger</span><span class="p">:</span> <span class="n">ATriggerArray</span><span class="p">,</span>
+        <span class="n">position</span><span class="p">:</span> <span class="n">APositionArray</span><span class="p">,</span>
+        <span class="n">time1</span><span class="p">:</span> <span class="n">ATimeArray</span><span class="p">,</span>
+        <span class="n">outa1</span><span class="p">:</span> <span class="n">AOutArray</span><span class="p">,</span>
+        <span class="n">outb1</span><span class="p">:</span> <span class="n">AOutArray</span><span class="p">,</span>
+        <span class="n">outc1</span><span class="p">:</span> <span class="n">AOutArray</span><span class="p">,</span>
+        <span class="n">outd1</span><span class="p">:</span> <span class="n">AOutArray</span><span class="p">,</span>
+        <span class="n">oute1</span><span class="p">:</span> <span class="n">AOutArray</span><span class="p">,</span>
+        <span class="n">outf1</span><span class="p">:</span> <span class="n">AOutArray</span><span class="p">,</span>
+        <span class="n">time2</span><span class="p">:</span> <span class="n">ATimeArray</span><span class="p">,</span>
+        <span class="n">outa2</span><span class="p">:</span> <span class="n">AOutArray</span><span class="p">,</span>
+        <span class="n">outb2</span><span class="p">:</span> <span class="n">AOutArray</span><span class="p">,</span>
+        <span class="n">outc2</span><span class="p">:</span> <span class="n">AOutArray</span><span class="p">,</span>
+        <span class="n">outd2</span><span class="p">:</span> <span class="n">AOutArray</span><span class="p">,</span>
+        <span class="n">oute2</span><span class="p">:</span> <span class="n">AOutArray</span><span class="p">,</span>
+        <span class="n">outf2</span><span class="p">:</span> <span class="n">AOutArray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">repeats</span> <span class="o">=</span> <span class="n">ALineRepeatsArray</span><span class="p">(</span><span class="n">repeats</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trigger</span> <span class="o">=</span> <span class="n">ATriggerArray</span><span class="p">(</span><span class="n">trigger</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">APositionArray</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time1</span> <span class="o">=</span> <span class="n">ATimeArray</span><span class="p">(</span><span class="n">time1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outa1</span> <span class="o">=</span> <span class="n">AOutArray</span><span class="p">(</span><span class="n">outa1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outb1</span> <span class="o">=</span> <span class="n">AOutArray</span><span class="p">(</span><span class="n">outb1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outc1</span> <span class="o">=</span> <span class="n">AOutArray</span><span class="p">(</span><span class="n">outc1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outd1</span> <span class="o">=</span> <span class="n">AOutArray</span><span class="p">(</span><span class="n">outd1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oute1</span> <span class="o">=</span> <span class="n">AOutArray</span><span class="p">(</span><span class="n">oute1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outf1</span> <span class="o">=</span> <span class="n">AOutArray</span><span class="p">(</span><span class="n">outf1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time2</span> <span class="o">=</span> <span class="n">ATimeArray</span><span class="p">(</span><span class="n">time2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outa2</span> <span class="o">=</span> <span class="n">AOutArray</span><span class="p">(</span><span class="n">outa2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outb2</span> <span class="o">=</span> <span class="n">AOutArray</span><span class="p">(</span><span class="n">outb2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outc2</span> <span class="o">=</span> <span class="n">AOutArray</span><span class="p">(</span><span class="n">outc2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outd2</span> <span class="o">=</span> <span class="n">AOutArray</span><span class="p">(</span><span class="n">outd2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oute2</span> <span class="o">=</span> <span class="n">AOutArray</span><span class="p">(</span><span class="n">oute2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outf2</span> <span class="o">=</span> <span class="n">AOutArray</span><span class="p">(</span><span class="n">outf2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetBitsTable"><a class="viewcode-back" href="../../../../build/ADPandABlocks/util_api.html#malcolm.modules.ADPandABlocks.util.DatasetBitsTable">[docs]</a><span class="k">class</span> <span class="nc">DatasetBitsTable</span><span class="p">(</span><span class="n">pandablocks</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">BitsTable</span><span class="p">):</span>
+    <span class="c1"># Allow CamelCase as arguments will be serialized</span>
+    <span class="c1"># noinspection PyPep8Naming</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">UBitNames</span><span class="p">,</span>
+        <span class="n">value</span><span class="p">:</span> <span class="n">UBitValues</span><span class="p">,</span>
+        <span class="n">capture</span><span class="p">:</span> <span class="n">UBitCaptures</span><span class="p">,</span>
+        <span class="n">datasetName</span><span class="p">:</span> <span class="n">UAttributeNames</span><span class="p">,</span>
+        <span class="n">datasetType</span><span class="p">:</span> <span class="n">UAttributeTypes</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">capture</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">datasetName</span> <span class="o">=</span> <span class="n">AAttributeNames</span><span class="p">(</span><span class="n">datasetName</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">datasetType</span> <span class="o">=</span> <span class="n">AAttributeTypes</span><span class="p">(</span><span class="n">datasetType</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetPositionsTable"><a class="viewcode-back" href="../../../../build/ADPandABlocks/util_api.html#malcolm.modules.ADPandABlocks.util.DatasetPositionsTable">[docs]</a><span class="k">class</span> <span class="nc">DatasetPositionsTable</span><span class="p">(</span><span class="n">pandablocks</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">PositionsTable</span><span class="p">):</span>
+    <span class="c1"># Allow CamelCase as arguments will be serialized</span>
+    <span class="c1"># noinspection PyPep8Naming</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">UPositionNames</span><span class="p">,</span>
+        <span class="n">value</span><span class="p">:</span> <span class="n">UPositionValues</span><span class="p">,</span>
+        <span class="n">units</span><span class="p">:</span> <span class="n">UPositionUnits</span><span class="p">,</span>
+        <span class="n">scale</span><span class="p">:</span> <span class="n">UPositionScales</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="n">UPositionOffsets</span><span class="p">,</span>
+        <span class="n">capture</span><span class="p">:</span> <span class="n">UPositionCaptures</span><span class="p">,</span>
+        <span class="n">datasetName</span><span class="p">:</span> <span class="n">UAttributeNames</span><span class="p">,</span>
+        <span class="n">datasetType</span><span class="p">:</span> <span class="n">UAttributeTypes</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">capture</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">datasetName</span> <span class="o">=</span> <span class="n">AAttributeNames</span><span class="p">(</span><span class="n">datasetName</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">datasetType</span> <span class="o">=</span> <span class="n">AAttributeTypes</span><span class="p">(</span><span class="n">datasetType</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

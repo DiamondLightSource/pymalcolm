@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.modules.scanning.parts.scanrunnerpart &mdash; malcolm 6.0 documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../../../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                6.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+      <li>malcolm.modules.scanning.parts.scanrunnerpart</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for malcolm.modules.scanning.parts.scanrunnerpart</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">add_call_types</span>
+<span class="kn">from</span> <span class="nn">ruamel.yaml</span> <span class="kn">import</span> <span class="n">YAML</span><span class="p">,</span> <span class="n">YAMLError</span>
+<span class="kn">from</span> <span class="nn">scanpointgenerator</span> <span class="kn">import</span> <span class="n">CompoundGenerator</span><span class="p">,</span> <span class="n">LineGenerator</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AbortedError</span><span class="p">,</span>
+    <span class="n">NotWriteableError</span><span class="p">,</span>
+    <span class="n">NumberMeta</span><span class="p">,</span>
+    <span class="n">PartRegistrar</span><span class="p">,</span>
+    <span class="n">StringMeta</span><span class="p">,</span>
+    <span class="ne">TimeoutError</span><span class="p">,</span>
+    <span class="n">Widget</span><span class="p">,</span>
+    <span class="n">config_tag</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules</span> <span class="kn">import</span> <span class="n">builtin</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules.builtin.parts</span> <span class="kn">import</span> <span class="n">ChildPart</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules.scanning.util</span> <span class="kn">import</span> <span class="n">RunnableStates</span>
+
+<span class="kn">from</span> <span class="nn">..hooks</span> <span class="kn">import</span> <span class="n">AContext</span>
+
+<span class="c1"># Pull re-used annotypes</span>
+<span class="n">APartName</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">APartName</span>
+<span class="n">AMri</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">AMri</span>
+
+
+<span class="k">class</span> <span class="nc">EntryType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">GENERATOR</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">SCAN</span> <span class="o">=</span> <span class="mi">1</span>
+
+
+<span class="k">class</span> <span class="nc">GeneratorType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">LINE</span> <span class="o">=</span> <span class="mi">0</span>
+
+
+<span class="k">class</span> <span class="nc">RunnerStates</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">IDLE</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">LOADING</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">CONFIGURED</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">RUNNING</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">FINISHED</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">FAULT</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">ABORTED</span> <span class="o">=</span> <span class="mi">6</span>
+
+
+<span class="k">class</span> <span class="nc">ScanOutcome</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">SUCCESS</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">TIMEOUT</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">NOTWRITEABLE</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">ABORTED</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">MISCONFIGURED</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">FAIL</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">OTHER</span> <span class="o">=</span> <span class="mi">99</span>
+
+
+<span class="k">class</span> <span class="nc">Scan</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">generator</span><span class="p">:</span> <span class="n">CompoundGenerator</span><span class="p">,</span> <span class="n">repeats</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generator</span> <span class="o">=</span> <span class="n">generator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">repeats</span> <span class="o">=</span> <span class="n">repeats</span>
+
+
+<div class="viewcode-block" id="ScanRunnerPart"><a class="viewcode-back" href="../../../../../build/scanning/parts_api.html#malcolm.modules.scanning.parts.ScanRunnerPart">[docs]</a><span class="k">class</span> <span class="nc">ScanRunnerPart</span><span class="p">(</span><span class="n">ChildPart</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Used to run sets of scans defined in a YAML file with a scan block&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">APartName</span><span class="p">,</span> <span class="n">mri</span><span class="p">:</span> <span class="n">AMri</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">mri</span><span class="p">,</span> <span class="n">stateful</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">initial_visibility</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runner_config</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AContext</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scan_sets</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Scan</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">runner_state</span> <span class="o">=</span> <span class="n">StringMeta</span><span class="p">(</span>
+            <span class="s2">&quot;Runner state&quot;</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">Widget</span><span class="o">.</span><span class="n">TEXTUPDATE</span><span class="o">.</span><span class="n">tag</span><span class="p">()</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">(</span><span class="s2">&quot;Idle&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runner_status_message</span> <span class="o">=</span> <span class="n">StringMeta</span><span class="p">(</span>
+            <span class="s2">&quot;Runner status message&quot;</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">Widget</span><span class="o">.</span><span class="n">TEXTUPDATE</span><span class="o">.</span><span class="n">tag</span><span class="p">()</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">(</span><span class="s2">&quot;Idle&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scan_file</span> <span class="o">=</span> <span class="n">StringMeta</span><span class="p">(</span>
+            <span class="s2">&quot;Path to input scan file&quot;</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">config_tag</span><span class="p">(),</span> <span class="n">Widget</span><span class="o">.</span><span class="n">TEXTINPUT</span><span class="o">.</span><span class="n">tag</span><span class="p">()]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scans_configured</span> <span class="o">=</span> <span class="n">NumberMeta</span><span class="p">(</span>
+            <span class="s2">&quot;int64&quot;</span><span class="p">,</span> <span class="s2">&quot;Number of configured scans&quot;</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">Widget</span><span class="o">.</span><span class="n">TEXTUPDATE</span><span class="o">.</span><span class="n">tag</span><span class="p">()</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_scan_set</span> <span class="o">=</span> <span class="n">StringMeta</span><span class="p">(</span>
+            <span class="s2">&quot;Current scan set&quot;</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">Widget</span><span class="o">.</span><span class="n">TEXTUPDATE</span><span class="o">.</span><span class="n">tag</span><span class="p">()</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scans_completed</span> <span class="o">=</span> <span class="n">NumberMeta</span><span class="p">(</span>
+            <span class="s2">&quot;int64&quot;</span><span class="p">,</span> <span class="s2">&quot;Number of scans completed&quot;</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">Widget</span><span class="o">.</span><span class="n">TEXTUPDATE</span><span class="o">.</span><span class="n">tag</span><span class="p">()</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scan_successes</span> <span class="o">=</span> <span class="n">NumberMeta</span><span class="p">(</span>
+            <span class="s2">&quot;int64&quot;</span><span class="p">,</span> <span class="s2">&quot;Successful scans&quot;</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">Widget</span><span class="o">.</span><span class="n">TEXTUPDATE</span><span class="o">.</span><span class="n">tag</span><span class="p">()]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scan_failures</span> <span class="o">=</span> <span class="n">NumberMeta</span><span class="p">(</span>
+            <span class="s2">&quot;int64&quot;</span><span class="p">,</span> <span class="s2">&quot;Failed scans&quot;</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">Widget</span><span class="o">.</span><span class="n">TEXTUPDATE</span><span class="o">.</span><span class="n">tag</span><span class="p">()]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_directory</span> <span class="o">=</span> <span class="n">StringMeta</span><span class="p">(</span>
+            <span class="s2">&quot;Root output directory (will create a sub-directory inside)&quot;</span><span class="p">,</span>
+            <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">config_tag</span><span class="p">(),</span> <span class="n">Widget</span><span class="o">.</span><span class="n">TEXTINPUT</span><span class="o">.</span><span class="n">tag</span><span class="p">()],</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">registrar</span><span class="p">:</span> <span class="n">PartRegistrar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">registrar</span><span class="p">)</span>
+
+        <span class="c1"># Register attributes</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span>
+            <span class="s2">&quot;runnerState&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">runner_state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">runner_state</span><span class="o">.</span><span class="n">set_value</span>
+        <span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span>
+            <span class="s2">&quot;runnerStatusMessage&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">runner_status_message</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">runner_status_message</span><span class="o">.</span><span class="n">set_value</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span>
+            <span class="s2">&quot;scanFile&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan_file</span><span class="o">.</span><span class="n">set_value</span>
+        <span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span>
+            <span class="s2">&quot;scansConfigured&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scans_configured</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scans_configured</span><span class="o">.</span><span class="n">set_value</span>
+        <span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span>
+            <span class="s2">&quot;currentScanSet&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_scan_set</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_scan_set</span><span class="o">.</span><span class="n">set_value</span>
+        <span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span>
+            <span class="s2">&quot;scansCompleted&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scans_completed</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scans_completed</span><span class="o">.</span><span class="n">set_value</span>
+        <span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span>
+            <span class="s2">&quot;scanSuccesses&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan_successes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan_successes</span><span class="o">.</span><span class="n">set_value</span>
+        <span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span>
+            <span class="s2">&quot;scanFailures&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan_failures</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan_failures</span><span class="o">.</span><span class="n">set_value</span>
+        <span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span>
+            <span class="s2">&quot;outputDirectory&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_directory</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_directory</span><span class="o">.</span><span class="n">set_value</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Methods</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">add_method_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loadFile</span><span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">add_method_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="p">,</span> <span class="n">needs_context</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">add_method_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">abort</span><span class="p">,</span> <span class="n">needs_context</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_file_contents</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scan_file</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">input_file</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">input_file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_runner_state</span><span class="p">(</span><span class="n">RunnerStates</span><span class="o">.</span><span class="n">FAULT</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">runner_status_message</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s2">&quot;Could not read scan file&quot;</span><span class="p">)</span>
+            <span class="k">raise</span>
+
+    <span class="k">def</span> <span class="nf">parse_yaml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">yaml</span> <span class="o">=</span> <span class="n">YAML</span><span class="p">(</span><span class="n">typ</span><span class="o">=</span><span class="s2">&quot;safe&quot;</span><span class="p">,</span> <span class="n">pure</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">parsed_yaml</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">parsed_yaml</span>
+        <span class="k">except</span> <span class="n">YAMLError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_runner_state</span><span class="p">(</span><span class="n">RunnerStates</span><span class="o">.</span><span class="n">FAULT</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">runner_status_message</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s2">&quot;Could not parse scan file&quot;</span><span class="p">)</span>
+            <span class="k">raise</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_kwargs_from_dict</span><span class="p">(</span><span class="n">input_dict</span><span class="p">,</span> <span class="n">kwargs_list</span><span class="p">):</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kwargs_list</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">kwargs_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">kwargs_list</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">kwarg</span> <span class="ow">in</span> <span class="n">kwargs_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">kwarg</span> <span class="ow">in</span> <span class="n">input_dict</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="n">kwarg</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_dict</span><span class="p">[</span><span class="n">kwarg</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">kwargs</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">parse_compound_generator</span><span class="p">(</span><span class="n">entry</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CompoundGenerator</span><span class="p">:</span>
+        <span class="n">generators</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">generators_dict</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;generators&quot;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">generator</span> <span class="ow">in</span> <span class="n">generators_dict</span><span class="p">:</span>
+            <span class="n">generators</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">LineGenerator</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">generator</span><span class="p">[</span><span class="s2">&quot;line&quot;</span><span class="p">]))</span>
+
+        <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;generators&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">generators</span>
+        <span class="n">compound_generator</span> <span class="o">=</span> <span class="n">CompoundGenerator</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">compound_generator</span><span class="o">.</span><span class="n">duration</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Negative generator duration - is it missing from the YAML?&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">compound_generator</span>
+
+    <span class="k">def</span> <span class="nf">parse_scan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+        <span class="n">generator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_compound_generator</span><span class="p">(</span><span class="n">entry</span><span class="p">[</span><span class="s2">&quot;generator&quot;</span><span class="p">])</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_kwargs_from_dict</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="s2">&quot;repeats&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">scan_sets</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">Scan</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">generator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_current_datetime</span><span class="p">(</span><span class="n">time_separator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;:&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;%Y-%m-%d-%H</span><span class="si">{</span><span class="n">time_separator</span><span class="si">}</span><span class="s2">%M</span><span class="si">{</span><span class="n">time_separator</span><span class="si">}</span><span class="s2">%S&quot;</span>
+        <span class="p">)</span>
+
+    <span class="c1"># noinspection PyPep8Naming</span>
+    <span class="k">def</span> <span class="nf">loadFile</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="c1"># Update state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_runner_state</span><span class="p">(</span><span class="n">RunnerStates</span><span class="o">.</span><span class="n">LOADING</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runner_status_message</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s2">&quot;Loading scan file&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Read contents of file into string</span>
+        <span class="n">file_contents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_file_contents</span><span class="p">()</span>
+
+        <span class="c1"># Parse the string</span>
+        <span class="n">parsed_yaml</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_yaml</span><span class="p">(</span><span class="n">file_contents</span><span class="p">)</span>
+
+        <span class="c1"># Empty the current dictionaries</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scan_sets</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># Parse the configuration</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">parsed_yaml</span><span class="p">:</span>
+            <span class="n">key_name</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">key_name</span> <span class="o">==</span> <span class="n">EntryType</span><span class="o">.</span><span class="n">SCAN</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parse_scan</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;scan&quot;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_runner_state</span><span class="p">(</span><span class="n">RunnerStates</span><span class="o">.</span><span class="n">FAULT</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">runner_status_message</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;Unidentified key in YAML&quot;</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unidentified object in YAML: </span><span class="si">{</span><span class="n">key_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Count the number of scans configured</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_scans_configured</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_runner_state</span><span class="p">(</span><span class="n">RunnerStates</span><span class="o">.</span><span class="n">CONFIGURED</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runner_status_message</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s2">&quot;Load complete&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">update_scans_configured</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">number_of_scans</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan_sets</span><span class="p">:</span>
+            <span class="n">number_of_scans</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan_sets</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">repeats</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scans_configured</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">number_of_scans</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">create_directory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_runner_state</span><span class="p">(</span><span class="n">RunnerStates</span><span class="o">.</span><span class="n">FAULT</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">runner_status_message</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s2">&quot;Could not create directory&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ERROR: unable to create directory: </span><span class="si">{</span><span class="n">directory</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">create_and_get_sub_directory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root_directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">today_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_current_datetime</span><span class="p">(</span><span class="n">time_separator</span><span class="o">=</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+        <span class="n">sub_directory</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">root_directory</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">today_str</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_directory</span><span class="p">(</span><span class="n">sub_directory</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sub_directory</span>
+
+    <span class="k">def</span> <span class="nf">get_root_directory</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">root_directory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_directory</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">if</span> <span class="n">root_directory</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;/&quot;</span><span class="p">:</span>
+            <span class="n">root_directory</span> <span class="o">=</span> <span class="n">root_directory</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">root_directory</span>
+
+<div class="viewcode-block" id="ScanRunnerPart.abort"><a class="viewcode-back" href="../../../../../build/scanning/parts_api.html#malcolm.modules.scanning.parts.ScanRunnerPart.abort">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">abort</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">AContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">:</span>
+            <span class="c1"># Stop the context</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+            <span class="c1"># Stop the current scan</span>
+            <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span><span class="o">.</span><span class="n">abort</span><span class="p">()</span>
+            <span class="c1"># Update status</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_runner_state</span><span class="p">(</span><span class="n">RunnerStates</span><span class="o">.</span><span class="n">ABORTED</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">runner_status_message</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s2">&quot;Aborted scans&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ScanRunnerPart.run"><a class="viewcode-back" href="../../../../../build/scanning/parts_api.html#malcolm.modules.scanning.parts.ScanRunnerPart.run">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">AContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="c1"># Check that we have loaded some scan sets</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scan_sets</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">runner_status_message</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s2">&quot;No scan file loaded&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No scan sets configured. Have you loaded a YAML file?&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Root file directory</span>
+        <span class="n">root_directory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_root_directory</span><span class="p">()</span>
+
+        <span class="c1"># Sub-directory to create for this run</span>
+        <span class="n">sub_directory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_and_get_sub_directory</span><span class="p">(</span><span class="n">root_directory</span><span class="p">)</span>
+
+        <span class="c1"># Top-level report filepath</span>
+        <span class="n">report_filepath</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sub_directory</span><span class="si">}</span><span class="s2">/report.txt&quot;</span>
+
+        <span class="c1"># Reset counters and set state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scans_completed</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scan_successes</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scan_failures</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_runner_state</span><span class="p">(</span><span class="n">RunnerStates</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">)</span>
+
+        <span class="c1"># Get our scan block and store context</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="n">context</span>
+        <span class="n">scan_block</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+
+        <span class="c1"># Cycle through the scan sets</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan_sets</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">run_scan_set</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">scan_sets</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">scan_block</span><span class="p">,</span> <span class="n">sub_directory</span><span class="p">,</span> <span class="n">report_filepath</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_runner_state</span><span class="p">(</span><span class="n">RunnerStates</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_scan_set</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runner_status_message</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s2">&quot;Scans complete&quot;</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">create_and_get_set_directory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sub_directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">set_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">set_directory</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sub_directory</span><span class="si">}</span><span class="s2">/scanset-</span><span class="si">{</span><span class="n">set_name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_directory</span><span class="p">(</span><span class="n">set_directory</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">set_directory</span>
+
+    <span class="k">def</span> <span class="nf">run_scan_set</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">scan_set</span><span class="p">:</span> <span class="n">Scan</span><span class="p">,</span>
+        <span class="n">scan_block</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">sub_directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">report_filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Update scan set</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_scan_set</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">scan_set</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="c1"># Directory where to save scans for this set</span>
+        <span class="n">set_directory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_and_get_set_directory</span><span class="p">(</span><span class="n">sub_directory</span><span class="p">,</span> <span class="n">scan_set</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="c1"># Run each scan</span>
+        <span class="k">for</span> <span class="n">scan_number</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">scan_set</span><span class="o">.</span><span class="n">repeats</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">run_scan</span><span class="p">(</span>
+                <span class="n">scan_set</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">scan_block</span><span class="p">,</span>
+                <span class="n">set_directory</span><span class="p">,</span>
+                <span class="n">scan_number</span><span class="p">,</span>
+                <span class="n">report_filepath</span><span class="p">,</span>
+                <span class="n">scan_set</span><span class="o">.</span><span class="n">generator</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">create_and_get_scan_directory</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">set_directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">scan_number</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">scan_directory</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">set_directory</span><span class="si">}</span><span class="s2">/scan-</span><span class="si">{</span><span class="n">scan_number</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_directory</span><span class="p">(</span><span class="n">scan_directory</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">scan_directory</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">scan_is_aborting</span><span class="p">(</span><span class="n">scan_block</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">scan_block</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="n">RunnableStates</span><span class="o">.</span><span class="n">ABORTING</span>
+
+    <span class="k">def</span> <span class="nf">run_scan</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">set_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">scan_block</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">set_directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">scan_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">report_filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">generator</span><span class="p">:</span> <span class="n">CompoundGenerator</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runner_status_message</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Running </span><span class="si">{</span><span class="n">set_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">scan_number</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">,</span> <span class="s2">&quot;No context found&quot;</span>
+
+        <span class="c1"># Make individual scan directory</span>
+        <span class="n">scan_directory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_and_get_scan_directory</span><span class="p">(</span><span class="n">set_directory</span><span class="p">,</span> <span class="n">scan_number</span><span class="p">)</span>
+
+        <span class="c1"># Check if scan can be reset or run</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan_is_aborting</span><span class="p">(</span><span class="n">scan_block</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+
+        <span class="c1"># Run the scan and capture the outcome</span>
+        <span class="k">if</span> <span class="n">scan_block</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">RunnableStates</span><span class="o">.</span><span class="n">READY</span><span class="p">:</span>
+            <span class="n">scan_block</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+
+        <span class="c1"># Configure first</span>
+        <span class="n">outcome</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">scan_block</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">generator</span><span class="p">,</span> <span class="n">fileDir</span><span class="o">=</span><span class="n">scan_directory</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
+            <span class="n">outcome</span> <span class="o">=</span> <span class="n">ScanOutcome</span><span class="o">.</span><span class="n">MISCONFIGURED</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">outcome</span> <span class="o">=</span> <span class="n">ScanOutcome</span><span class="o">.</span><span class="n">MISCONFIGURED</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Unhandled exception for scan </span><span class="si">{</span><span class="n">scan_number</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">set_name</span><span class="si">}</span><span class="s2">: &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">) </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Run if configure was successful</span>
+        <span class="n">start_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_current_datetime</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">outcome</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">scan_block</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">TimeoutError</span><span class="p">:</span>
+                <span class="n">outcome</span> <span class="o">=</span> <span class="n">ScanOutcome</span><span class="o">.</span><span class="n">TIMEOUT</span>
+            <span class="k">except</span> <span class="n">NotWriteableError</span><span class="p">:</span>
+                <span class="n">outcome</span> <span class="o">=</span> <span class="n">ScanOutcome</span><span class="o">.</span><span class="n">NOTWRITEABLE</span>
+            <span class="k">except</span> <span class="n">AbortedError</span><span class="p">:</span>
+                <span class="n">outcome</span> <span class="o">=</span> <span class="n">ScanOutcome</span><span class="o">.</span><span class="n">ABORTED</span>
+            <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
+                <span class="n">outcome</span> <span class="o">=</span> <span class="n">ScanOutcome</span><span class="o">.</span><span class="n">FAIL</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">outcome</span> <span class="o">=</span> <span class="n">ScanOutcome</span><span class="o">.</span><span class="n">OTHER</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Unhandled exception for scan </span><span class="si">{</span><span class="n">scan_number</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">set_name</span><span class="si">}</span><span class="s2">: &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">) </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">outcome</span> <span class="o">=</span> <span class="n">ScanOutcome</span><span class="o">.</span><span class="n">SUCCESS</span>
+
+        <span class="c1"># Record the outcome</span>
+        <span class="n">end_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_current_datetime</span><span class="p">()</span>
+        <span class="n">report_string</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_report_string</span><span class="p">(</span>
+            <span class="n">set_name</span><span class="p">,</span> <span class="n">scan_number</span><span class="p">,</span> <span class="n">outcome</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">end_time</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_report_line</span><span class="p">(</span><span class="n">report_filepath</span><span class="p">,</span> <span class="n">report_string</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">outcome</span> <span class="ow">is</span> <span class="n">ScanOutcome</span><span class="o">.</span><span class="n">SUCCESS</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">increment_scan_successes</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">increment_scan_failures</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">increment_scan_successes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scan_successes</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scan_successes</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">increment_scans_completed</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">increment_scan_failures</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scan_failures</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scan_failures</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">increment_scans_completed</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">increment_scans_completed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scans_completed</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scans_completed</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_report_string</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">set_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">scan_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">scan_outcome</span><span class="p">:</span> <span class="n">ScanOutcome</span><span class="p">,</span>
+        <span class="n">start_time</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">end_time</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+
+        <span class="n">report_str</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">set_name</span><span class="si">:</span><span class="s2">&lt;30</span><span class="si">}{</span><span class="n">scan_number</span><span class="si">:</span><span class="s2">&lt;10</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">get_enum_label</span><span class="p">(</span><span class="n">scan_outcome</span><span class="p">)</span><span class="si">:</span><span class="s2">&lt;14</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">start_time</span><span class="si">:</span><span class="s2">&lt;20</span><span class="si">}{</span><span class="n">end_time</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">report_str</span>
+
+    <span class="k">def</span> <span class="nf">add_report_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">report_filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">report_string</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">report_filepath</span><span class="p">,</span> <span class="s2">&quot;a+&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">report_file</span><span class="p">:</span>
+                <span class="n">report_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">report_string</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_runner_state</span><span class="p">(</span><span class="n">RunnerStates</span><span class="o">.</span><span class="n">FAULT</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">runner_status_message</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s2">&quot;Error writing report file&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not write to report file </span><span class="si">{</span><span class="n">report_filepath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_enum_label</span><span class="p">(</span><span class="n">enum_state</span><span class="p">:</span> <span class="n">Enum</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">enum_state</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">set_runner_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner_state</span><span class="p">:</span> <span class="n">RunnerStates</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runner_state</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_enum_label</span><span class="p">(</span><span class="n">runner_state</span><span class="p">))</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.modules.pandablocks.util &mdash; malcolm 6.0 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                6.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>malcolm.modules.pandablocks.util</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for malcolm.modules.pandablocks.util</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">Array</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="n">Table</span>
+
+<span class="kn">from</span> <span class="nn">.pandablocksclient</span> <span class="kn">import</span> <span class="n">PandABlocksClient</span>
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;The Client to use to get and set data&quot;</span><span class="p">):</span>
+    <span class="n">AClient</span> <span class="o">=</span> <span class="n">PandABlocksClient</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Documentation URL base to get HTML help pages from&quot;</span><span class="p">):</span>
+    <span class="n">ADocUrlBase</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;The name of the Block, like LUT1 or PCAP&quot;</span><span class="p">):</span>
+    <span class="n">ABlockName</span> <span class="o">=</span> <span class="nb">str</span>
+
+<span class="n">DOC_URL_BASE</span> <span class="o">=</span> <span class="s2">&quot;https://pandablocks-fpga.readthedocs.io/en/autogen&quot;</span>
+
+<span class="c1"># Where all the icon SVGs live</span>
+<span class="n">SVG_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s2">&quot;icons&quot;</span><span class="p">))</span>
+
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Block and Field name for the Bit&quot;</span><span class="p">):</span>
+    <span class="n">ABitNames</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="n">UBitNames</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">ABitNames</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Current value for the Bit&quot;</span><span class="p">):</span>
+    <span class="n">ABitValues</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">bool</span><span class="p">]]</span>
+<span class="n">UBitValues</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">ABitValues</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">bool</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Request this field is captured in PCAP&quot;</span><span class="p">):</span>
+    <span class="n">ABitCaptures</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">bool</span><span class="p">]]</span>
+<span class="n">UBitCaptures</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">ABitCaptures</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">bool</span><span class="p">]]</span>
+
+
+<div class="viewcode-block" id="BitsTable"><a class="viewcode-back" href="../../../../build/pandablocks/util_api.html#malcolm.modules.pandablocks.util.BitsTable">[docs]</a><span class="k">class</span> <span class="nc">BitsTable</span><span class="p">(</span><span class="n">Table</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">UBitNames</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">UBitValues</span><span class="p">,</span> <span class="n">capture</span><span class="p">:</span> <span class="n">UBitCaptures</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">ABitNames</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">ABitValues</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">capture</span> <span class="o">=</span> <span class="n">ABitCaptures</span><span class="p">(</span><span class="n">capture</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PositionCapture"><a class="viewcode-back" href="../../../../build/pandablocks/util_api.html#malcolm.modules.pandablocks.util.PositionCapture">[docs]</a><span class="k">class</span> <span class="nc">PositionCapture</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;What to capture, if anything, with PCAP&quot;&quot;&quot;</span>
+
+    <span class="c1"># In Python2 we have to define the order of members in an enum</span>
+    <span class="n">_order_</span> <span class="o">=</span> <span class="s2">&quot;NO VALUE DIFF SUM MEAN MIN MAX MIN_MAX MIN_MAX_MEAN&quot;</span>
+
+    <span class="n">NO</span> <span class="o">=</span> <span class="s2">&quot;No&quot;</span>
+    <span class="n">VALUE</span> <span class="o">=</span> <span class="s2">&quot;Value&quot;</span>
+    <span class="n">DIFF</span> <span class="o">=</span> <span class="s2">&quot;Diff&quot;</span>
+    <span class="n">SUM</span> <span class="o">=</span> <span class="s2">&quot;Sum&quot;</span>
+    <span class="n">MEAN</span> <span class="o">=</span> <span class="s2">&quot;Mean&quot;</span>
+    <span class="n">MIN</span> <span class="o">=</span> <span class="s2">&quot;Min&quot;</span>
+    <span class="n">MAX</span> <span class="o">=</span> <span class="s2">&quot;Max&quot;</span>
+    <span class="n">MIN_MAX</span> <span class="o">=</span> <span class="s2">&quot;Min Max&quot;</span>
+    <span class="n">MIN_MAX_MEAN</span> <span class="o">=</span> <span class="s2">&quot;Min Max Mean&quot;</span></div>
+
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Block and Field name for the Position&quot;</span><span class="p">):</span>
+    <span class="n">APositionNames</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="n">UPositionNames</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">APositionNames</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Current scaled value for the Position&quot;</span><span class="p">):</span>
+    <span class="n">APositionValues</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span>
+<span class="n">UPositionValues</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">APositionValues</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Units for the scaled value of the Position&quot;</span><span class="p">):</span>
+    <span class="n">APositionUnits</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="n">UPositionUnits</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">APositionUnits</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Scale factor to calculate scaled value of the Position&quot;</span><span class="p">):</span>
+    <span class="n">APositionScales</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span>
+<span class="n">UPositionScales</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">APositionScales</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Offset to calculate scaled value of the Position&quot;</span><span class="p">):</span>
+    <span class="n">APositionOffsets</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span>
+<span class="n">UPositionOffsets</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">APositionOffsets</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Whether and what to capture with PCAP&quot;</span><span class="p">):</span>
+    <span class="n">APositionCaptures</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="n">PositionCapture</span><span class="p">]]</span>
+<span class="n">UPositionCaptures</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">APositionCaptures</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">PositionCapture</span><span class="p">]]</span>
+
+
+<div class="viewcode-block" id="PositionsTable"><a class="viewcode-back" href="../../../../build/pandablocks/util_api.html#malcolm.modules.pandablocks.util.PositionsTable">[docs]</a><span class="k">class</span> <span class="nc">PositionsTable</span><span class="p">(</span><span class="n">Table</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">UPositionNames</span><span class="p">,</span>
+        <span class="n">value</span><span class="p">:</span> <span class="n">UPositionValues</span><span class="p">,</span>
+        <span class="n">units</span><span class="p">:</span> <span class="n">UPositionUnits</span><span class="p">,</span>
+        <span class="n">scale</span><span class="p">:</span> <span class="n">UPositionScales</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="n">UPositionOffsets</span><span class="p">,</span>
+        <span class="n">capture</span><span class="p">:</span> <span class="n">UPositionCaptures</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">APositionNames</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">APositionValues</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="n">APositionUnits</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">APositionScales</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="n">APositionOffsets</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">capture</span> <span class="o">=</span> <span class="n">APositionCaptures</span><span class="p">(</span><span class="n">capture</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

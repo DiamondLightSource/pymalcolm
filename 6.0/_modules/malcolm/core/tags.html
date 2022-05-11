@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.core.tags &mdash; malcolm 6.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                6.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>malcolm.core.tags</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for malcolm.core.tags</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">__version__</span>
+
+
+<div class="viewcode-block" id="version_tag"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.version_tag">[docs]</a><span class="k">def</span> <span class="nf">version_tag</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Tag with the current version of pymalcolm&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;version:pymalcolm:</span><span class="si">{</span><span class="n">__version__</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+
+<div class="viewcode-block" id="Widget"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.Widget">[docs]</a><span class="k">class</span> <span class="nc">Widget</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Enum with all the known widget tags to appear on Attribute Metas&quot;&quot;&quot;</span>
+
+    <span class="n">NONE</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1">#: Force no widget</span>
+    <span class="n">TEXTINPUT</span> <span class="o">=</span> <span class="s2">&quot;textinput&quot;</span>  <span class="c1">#: Editable text input box</span>
+    <span class="n">TEXTUPDATE</span> <span class="o">=</span> <span class="s2">&quot;textupdate&quot;</span>  <span class="c1">#: Read only text update</span>
+    <span class="n">MULTILINETEXTUPDATE</span> <span class="o">=</span> <span class="s2">&quot;multilinetextupdate&quot;</span>  <span class="c1">#: Multi line text update</span>
+    <span class="n">LED</span> <span class="o">=</span> <span class="s2">&quot;led&quot;</span>  <span class="c1">#: On/Off LED indicator</span>
+    <span class="n">COMBO</span> <span class="o">=</span> <span class="s2">&quot;combo&quot;</span>  <span class="c1">#: Select from a number of choice values</span>
+    <span class="n">ICON</span> <span class="o">=</span> <span class="s2">&quot;icon&quot;</span>  <span class="c1">#: This field gives the SVG icon for the whole Block</span>
+    <span class="n">HELP</span> <span class="o">=</span> <span class="s2">&quot;help&quot;</span>  <span class="c1">#: Gives a URL for the help documentation for the Block</span>
+    <span class="n">GROUP</span> <span class="o">=</span> <span class="s2">&quot;group&quot;</span>  <span class="c1">#: Expandable section that other Attributes can appear in</span>
+    <span class="n">TABLE</span> <span class="o">=</span> <span class="s2">&quot;table&quot;</span>  <span class="c1">#: Table of rows with a widget type for each column</span>
+    <span class="n">CHECKBOX</span> <span class="o">=</span> <span class="s2">&quot;checkbox&quot;</span>  <span class="c1">#: A box that can be checked or not</span>
+    <span class="n">FLOWGRAPH</span> <span class="o">=</span> <span class="s2">&quot;flowgraph&quot;</span>  <span class="c1">#: Boxes with lines for child block connections</span>
+    <span class="n">TREE</span> <span class="o">=</span> <span class="s2">&quot;tree&quot;</span>  <span class="c1">#: A nested tree of object models editor</span>
+    <span class="n">PLOT</span> <span class="o">=</span> <span class="s2">&quot;plot&quot;</span>  <span class="c1">#: Waveform plot</span>
+    <span class="n">METER</span> <span class="o">=</span> <span class="s2">&quot;meter&quot;</span>  <span class="c1">#: progress meter</span>
+    <span class="n">IMGURL</span> <span class="o">=</span> <span class="s2">&quot;imgurl&quot;</span>  <span class="c1">#: url of an image</span>
+
+<div class="viewcode-block" id="Widget.tag"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.Widget.tag">[docs]</a>    <span class="k">def</span> <span class="nf">tag</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the actual tag for the given Widget</span>
+
+<span class="sd">        E.g.</span>
+<span class="sd">            Widget.LED.tag() -&gt; &quot;widget:led&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span> <span class="o">!=</span> <span class="n">Widget</span><span class="o">.</span><span class="n">NONE</span><span class="p">,</span> <span class="s2">&quot;Widget.NONE has no widget tag&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;widget:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span></div></div>
+
+
+<span class="n">port_tag_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(source|sink)Port:(.*):(.*)&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Port"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.Port">[docs]</a><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Enum with all the known flowgraph port tags to appear on Attribute</span>
+<span class="sd">    Metas&quot;&quot;&quot;</span>
+
+    <span class="n">BOOL</span> <span class="o">=</span> <span class="s2">&quot;bool&quot;</span>  <span class="c1">#: Boolean value. Typically used in PandA</span>
+    <span class="n">INT32</span> <span class="o">=</span> <span class="s2">&quot;int32&quot;</span>  <span class="c1">#: 32-bit signed integer. Typically used in PandA</span>
+    <span class="n">NDARRAY</span> <span class="o">=</span> <span class="s2">&quot;NDArray&quot;</span>  <span class="c1">#: areaDetector NDArray port</span>
+    <span class="n">MOTOR</span> <span class="o">=</span> <span class="s2">&quot;motor&quot;</span>  <span class="c1">#: Motor record connection to CS or controller</span>
+    <span class="n">BLOCK</span> <span class="o">=</span> <span class="s2">&quot;block&quot;</span>  <span class="c1">#: Malcolm level connection to another Block</span>
+
+<div class="viewcode-block" id="Port.sink_port_tag"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.Port.sink_port_tag">[docs]</a>    <span class="k">def</span> <span class="nf">sink_port_tag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disconnected_value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a tag indicating this is a Sink Port of the given type</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            disconnected_value: What value should the Attribute be set to</span>
+<span class="sd">                when the port is disconnected</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;sinkPort:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">disconnected_value</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+<div class="viewcode-block" id="Port.source_port_tag"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.Port.source_port_tag">[docs]</a>    <span class="k">def</span> <span class="nf">source_port_tag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connected_value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a tag indicating this is a Source Port of the given type</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            connected_value: What value should a Sink Port be set to if</span>
+<span class="sd">                it is connected to this port</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;sourcePort:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">connected_value</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+<div class="viewcode-block" id="Port.with_source_port_tag"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.Port.with_source_port_tag">[docs]</a>    <span class="k">def</span> <span class="nf">with_source_port_tag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tags</span><span class="p">,</span> <span class="n">connected_value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a Source Port tag to the tags list, removing any other Source</span>
+<span class="sd">        Ports&quot;&quot;&quot;</span>
+        <span class="n">new_tags</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tags</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">t</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;sourcePort:&quot;</span><span class="p">)]</span>
+        <span class="n">new_tags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_port_tag</span><span class="p">(</span><span class="n">connected_value</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">new_tags</span></div>
+
+<div class="viewcode-block" id="Port.port_tag_details"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.Port.port_tag_details">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">port_tag_details</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">tags</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="s2">&quot;Port&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Search tags for port info, returning it</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tags: A list of tags to check</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None or (is_source, port, connected_value|disconnected_value)</span>
+<span class="sd">            where port is one of the Enum entries of Port</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="n">port_tag_re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+                <span class="n">source_sink</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">extra</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">()</span>
+                <span class="k">return</span> <span class="n">source_sink</span> <span class="o">==</span> <span class="s2">&quot;source&quot;</span><span class="p">,</span> <span class="bp">cls</span><span class="p">(</span><span class="n">port</span><span class="p">),</span> <span class="n">extra</span>
+
+        <span class="k">return</span> <span class="kc">None</span></div></div>
+
+
+<div class="viewcode-block" id="group_tag"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.group_tag">[docs]</a><span class="k">def</span> <span class="nf">group_tag</span><span class="p">(</span><span class="n">group_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Marks this field as belonging to a group&quot;&quot;&quot;</span>
+    <span class="n">tag</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;group:</span><span class="si">{</span><span class="n">group_name</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="n">tag</span></div>
+
+
+<div class="viewcode-block" id="without_group_tags"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.without_group_tags">[docs]</a><span class="k">def</span> <span class="nf">without_group_tags</span><span class="p">(</span><span class="n">tags</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Return a new list of tags without any group tags&quot;&quot;&quot;</span>
+    <span class="n">new_tags</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">tags</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;group:&quot;</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">new_tags</span></div>
+
+
+<div class="viewcode-block" id="linked_value_tag"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.linked_value_tag">[docs]</a><span class="k">def</span> <span class="nf">linked_value_tag</span><span class="p">(</span><span class="n">mri</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">attribute_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Marks this field as having another attribute in another Block that</span>
+<span class="sd">    should be displayed below it as a linked value&quot;&quot;&quot;</span>
+    <span class="n">tag</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;linkedvalue:</span><span class="si">{</span><span class="n">attribute_name</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">mri</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="n">tag</span></div>
+
+
+<div class="viewcode-block" id="without_linked_value_tags"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.without_linked_value_tags">[docs]</a><span class="k">def</span> <span class="nf">without_linked_value_tags</span><span class="p">(</span><span class="n">tags</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Return a new list of tags without any group tags&quot;&quot;&quot;</span>
+    <span class="n">new_tags</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">tags</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;linkedvalue:&quot;</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">new_tags</span></div>
+
+
+<div class="viewcode-block" id="badge_value_tag"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.badge_value_tag">[docs]</a><span class="k">def</span> <span class="nf">badge_value_tag</span><span class="p">(</span><span class="n">mri</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">attribute_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">display</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;plus&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Marks this Port as having another attribute in another Block that</span>
+<span class="sd">    should be displayed as its badge.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mri: The mri of the Block that provides the badge value</span>
+<span class="sd">        attribute_name: The attribute name in the Block given by mri that</span>
+<span class="sd">            provides the badge value</span>
+<span class="sd">        display: The type of formatting to apply to the badge value:</span>
+<span class="sd">            &quot;plus&quot;: If value &lt; 1 then hide, otherwise display +%d</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tag</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;badgevalue:</span><span class="si">{</span><span class="n">display</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">attribute_name</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">mri</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="n">tag</span></div>
+
+
+<div class="viewcode-block" id="config_tag"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.config_tag">[docs]</a><span class="k">def</span> <span class="nf">config_tag</span><span class="p">(</span><span class="n">iteration</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Marks this field as a value that should be saved and loaded at config</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        iteration: All iterations are sorted in increasing order and done in</span>
+<span class="sd">            batches of the same iteration number</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tag</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;config:</span><span class="si">{</span><span class="n">iteration</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="n">tag</span></div>
+
+
+<div class="viewcode-block" id="get_config_tag"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.get_config_tag">[docs]</a><span class="k">def</span> <span class="nf">get_config_tag</span><span class="p">(</span><span class="n">tags</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Get the config_tag from tags or return None&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">tag</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;config:&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">tag</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="without_config_tags"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.without_config_tags">[docs]</a><span class="k">def</span> <span class="nf">without_config_tags</span><span class="p">(</span><span class="n">tags</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a new list of tags without any config tags&quot;&quot;&quot;</span>
+    <span class="n">new_tags</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">tags</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;config:&quot;</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">new_tags</span></div>
+
+
+<div class="viewcode-block" id="method_return_unpacked"><a class="viewcode-back" href="../../../reference/tags.html#malcolm.core.method_return_unpacked">[docs]</a><span class="k">def</span> <span class="nf">method_return_unpacked</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;This method has a single element returns, and when called will return</span>
+<span class="sd">    this single element unpacked rather than in a single element map</span>
+
+<span class="sd">    E.g.</span>
+<span class="sd">       hello.greet(&quot;me&quot;) -&gt; &quot;Hello me&quot; not {&quot;return&quot;: &quot;Hello me&quot;}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tag</span> <span class="o">=</span> <span class="s2">&quot;method:return:unpacked&quot;</span>
+    <span class="k">return</span> <span class="n">tag</span></div>
+
+
+<span class="k">def</span> <span class="nf">method_hidden</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Hide this method on the GUI&quot;&quot;&quot;</span>
+    <span class="n">tag</span> <span class="o">=</span> <span class="s2">&quot;method:hidden&quot;</span>
+    <span class="k">return</span> <span class="n">tag</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

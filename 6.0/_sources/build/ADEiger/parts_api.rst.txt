@@ -1,0 +1,6 @@
+
+malcolm.modules.ADEiger.parts
+=============================
+
+.. automodule:: malcolm.modules.ADEiger.parts
+    :members:

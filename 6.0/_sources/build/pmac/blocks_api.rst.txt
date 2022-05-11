@@ -1,0 +1,6 @@
+
+malcolm.modules.pmac.blocks
+===========================
+
+.. automodule:: malcolm.modules.pmac.blocks
+    :members:

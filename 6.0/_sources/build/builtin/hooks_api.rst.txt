@@ -1,0 +1,6 @@
+
+malcolm.modules.builtin.hooks
+=============================
+
+.. automodule:: malcolm.modules.builtin.hooks
+    :members:
