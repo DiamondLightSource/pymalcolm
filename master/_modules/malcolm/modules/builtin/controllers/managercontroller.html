@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.builtin.controllers.managercontroller &mdash; malcolm 5.4+12.gf47dee3b documentation</title>
+  <title>malcolm.modules.builtin.controllers.managercontroller &mdash; malcolm 5.4+18.g943dced3 documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -107,9 +107,8 @@
              
   <h1>Source code for malcolm.modules.builtin.controllers.managercontroller</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">socket</span>
 <span class="kn">import</span> <span class="nn">subprocess</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Set</span>
 
 <span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">add_call_types</span><span class="p">,</span> <span class="n">deserialize_object</span><span class="p">,</span> <span class="n">json_decode</span><span class="p">,</span> <span class="n">json_encode</span>
 
@@ -150,8 +149,6 @@
     <span class="n">AConfigDir</span> <span class="o">=</span> <span class="nb">str</span>
 <span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Design to load at init&quot;</span><span class="p">):</span>
     <span class="n">AInitialDesign</span> <span class="o">=</span> <span class="nb">str</span>
-<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Use git to manage to saved config files&quot;</span><span class="p">):</span>
-    <span class="n">AUseGit</span> <span class="o">=</span> <span class="nb">bool</span>
 <span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Name of design to save, if different from current design&quot;</span><span class="p">):</span>
     <span class="n">ASaveDesign</span> <span class="o">=</span> <span class="nb">str</span>
 <span class="k">with</span> <span class="n">Anno</span><span class="p">(</span>
@@ -169,19 +166,6 @@
 <span class="n">ADescription</span> <span class="o">=</span> <span class="n">ADescription</span>
 
 
-<span class="k">def</span> <span class="nf">check_git_version</span><span class="p">(</span><span class="n">required_version</span><span class="p">):</span>
-    <span class="kn">from</span> <span class="nn">packaging.version</span> <span class="kn">import</span> <span class="n">parse</span>
-
-    <span class="n">output</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span>
-        <span class="p">(</span>
-            <span class="s2">&quot;git&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;--version&quot;</span><span class="p">,</span>
-        <span class="p">)</span>
-    <span class="p">)</span>
-    <span class="n">version</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;git version &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">parse</span><span class="p">(</span><span class="n">version</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">parse</span><span class="p">(</span><span class="n">required_version</span><span class="p">)</span>
-
-
 <div class="viewcode-block" id="ManagerController"><a class="viewcode-back" href="../../../../../build/builtin/controllers_api.html#malcolm.modules.builtin.controllers.ManagerController">[docs]</a><span class="k">class</span> <span class="nc">ManagerController</span><span class="p">(</span><span class="n">StatefulController</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;RunnableDevice implementer that also exposes GUI for child parts&quot;&quot;&quot;</span>
 
@@ -193,28 +177,13 @@
         <span class="n">config_dir</span><span class="p">:</span> <span class="n">AConfigDir</span><span class="p">,</span>
         <span class="n">template_designs</span><span class="p">:</span> <span class="n">ATemplateDesigns</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">initial_design</span><span class="p">:</span> <span class="n">AInitialDesign</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="n">use_git</span><span class="p">:</span> <span class="n">AUseGit</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">description</span><span class="p">:</span> <span class="n">ADescription</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">mri</span><span class="o">=</span><span class="n">mri</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">)</span>
         <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">config_dir</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">config_dir</span><span class="si">}</span><span class="s2"> is not a directory&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config_dir</span> <span class="o">=</span> <span class="n">config_dir</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">initial_design</span> <span class="o">=</span> <span class="n">initial_design</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">use_git</span> <span class="o">=</span> <span class="n">use_git</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">template_designs</span> <span class="o">=</span> <span class="n">template_designs</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">git_config</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">use_git</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">check_git_version</span><span class="p">(</span><span class="s2">&quot;1.7.2&quot;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">git_email</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;USER&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;@&quot;</span> <span class="o">+</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">()</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">git_name</span> <span class="o">=</span> <span class="s2">&quot;Malcolm&quot;</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">git_config</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="s2">&quot;-c&quot;</span><span class="p">,</span>
-                    <span class="sa">f</span><span class="s2">&quot;user.name=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">git_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;-c&quot;</span><span class="p">,</span>
-                    <span class="sa">f</span><span class="s1">&#39;user.email=&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">git_email</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">,</span>
-                <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">git_config</span> <span class="o">=</span> <span class="p">()</span>
         <span class="c1"># last saved layout and exports</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">saved_visibility</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">saved_exports</span> <span class="o">=</span> <span class="kc">None</span>
@@ -279,25 +248,8 @@
         <span class="c1"># Create the save method</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_writeable_in</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">add_method_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">),</span> <span class="n">ss</span><span class="o">.</span><span class="n">READY</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_run_git_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="c1"># Run git command, don&#39;t care if it fails, logging the output</span>
-        <span class="n">cwd</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cwd&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_dir</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_git</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">output</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span>
-                    <span class="p">(</span><span class="s2">&quot;git&quot;</span><span class="p">,)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">git_config</span> <span class="o">+</span> <span class="n">args</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span>
-                <span class="p">)</span>
-            <span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Git command failed: </span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
-                <span class="k">return</span> <span class="kc">None</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Git command completed: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
-                <span class="k">return</span> <span class="n">output</span>
-
     <span class="k">def</span> <span class="nf">do_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">do_init</span><span class="p">()</span>
-        <span class="c1"># Try and make it a git repo, don&#39;t care if it fails</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_run_git_cmd</span><span class="p">(</span><span class="s2">&quot;init&quot;</span><span class="p">)</span>
         <span class="c1"># List the config_dir and add to choices</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_layout_names</span><span class="p">()</span>
         <span class="c1"># If given a default config, load this</span>
@@ -605,10 +557,6 @@
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
         <span class="c1"># Run a sync command to make sure we flush this file to disk</span>
         <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s2">&quot;sync&quot;</span><span class="p">)</span>
-        <span class="c1"># Try and commit the file to git, don&#39;t care if it fails</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_run_git_cmd</span><span class="p">(</span><span class="s2">&quot;add&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Saved </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">design</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_run_git_cmd</span><span class="p">(</span><span class="s2">&quot;commit&quot;</span><span class="p">,</span> <span class="s2">&quot;--allow-empty&quot;</span><span class="p">,</span> <span class="s2">&quot;-m&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mark_clean</span><span class="p">(</span><span class="n">design</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_set_layout_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extra_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>

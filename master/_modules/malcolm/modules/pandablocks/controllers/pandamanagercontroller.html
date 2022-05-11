@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.pandablocks.controllers.pandamanagercontroller &mdash; malcolm 5.4+12.gf47dee3b documentation</title>
+  <title>malcolm.modules.pandablocks.controllers.pandamanagercontroller &mdash; malcolm 5.4+18.g943dced3 documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -133,7 +133,6 @@
 <span class="n">AConfigDir</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">AConfigDir</span>
 <span class="n">ATemplateDesigns</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">ATemplateDesigns</span>
 <span class="n">AInitialDesign</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">AInitialDesign</span>
-<span class="n">AUseGit</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">AUseGit</span>
 <span class="n">ADescription</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">ADescription</span>
 
 
@@ -152,7 +151,6 @@
         <span class="n">poll_period</span><span class="p">:</span> <span class="n">APollPeriod</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
         <span class="n">template_designs</span><span class="p">:</span> <span class="n">ATemplateDesigns</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">initial_design</span><span class="p">:</span> <span class="n">AInitialDesign</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="n">use_git</span><span class="p">:</span> <span class="n">AUseGit</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">description</span><span class="p">:</span> <span class="n">ADescription</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
@@ -160,7 +158,6 @@
             <span class="n">config_dir</span><span class="o">=</span><span class="n">config_dir</span><span class="p">,</span>
             <span class="n">template_designs</span><span class="o">=</span><span class="n">template_designs</span><span class="p">,</span>
             <span class="n">initial_design</span><span class="o">=</span><span class="n">initial_design</span><span class="p">,</span>
-            <span class="n">use_git</span><span class="o">=</span><span class="n">use_git</span><span class="p">,</span>
             <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_poll_period</span> <span class="o">=</span> <span class="n">poll_period</span>

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Change Log &mdash; malcolm 5.4+12.gf47dee3b documentation</title>
+  <title>Change Log &mdash; malcolm 5.4+18.g943dced3 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -170,6 +170,12 @@ This project adheres to <a class="reference external" href="http://semver.org/">
 <ul class="simple">
 <li><p>DetectorDriverPart now has a multiple image mode argument for drivers which
 use other terms for acquiring multiple images in a single acquisition.</p></li>
+<li><p>Malcolm no longer initialises a git repository or performs commits when
+launching the process or saving designs. Instead, it is now expected to
+handle the version control of the designs in the config_dir directory
+manually. Keeping the designs in the same repository as the top-level YAML
+file will also make it easier to maintain compatibility when rolling
+forward/back.</p></li>
 </ul>
 <p>Fixed:</p>
 <ul class="simple">
