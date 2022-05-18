@@ -42,3 +42,13 @@
     name: units
     description: Engineering units
     rbv: $(pv_prefix).EGU
+
+- ca.parts.CADoublePart:
+    name: userHighLimit
+    description: User high limit
+    rbv: $(pv_prefix).HLM
+
+- ca.parts.CADoublePart:
+    name: userLowLimit
+    description: User low limit
+    rbv: $(pv_prefix).LLM

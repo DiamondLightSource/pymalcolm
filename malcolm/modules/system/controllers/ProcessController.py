@@ -192,9 +192,7 @@ class ProcessController(builtin.controllers.ManagerController):
         # Run git command, don't care if it fails, logging the output
         cwd = kwargs.get("cwd", self.config_dir)
         try:
-            output = subprocess.check_output(
-                ("git",) + args, cwd=cwd
-            )
+            output = subprocess.check_output(("git",) + args, cwd=cwd)
         except subprocess.CalledProcessError as e:
             self.log.warning("Git command failed: %s\n%s", e, e.output)
             return None

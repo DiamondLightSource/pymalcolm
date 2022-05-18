@@ -88,6 +88,8 @@ def cs_axis_mapping(
                 scannable=name,
                 velocity_settle=child.velocitySettle.value,
                 units=child.units.value,
+                user_high_limit=child.userHighLimit.value,
+                user_low_limit=child.userLowLimit.value,
             )
     missing = list(set(axes_to_move) - set(axis_mapping))
     assert not missing, "Some scannables %s are not in the CS mapping %s" % (

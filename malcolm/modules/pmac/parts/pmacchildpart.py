@@ -309,6 +309,12 @@ class PmacChildPart(builtin.parts.ChildPart):
                 0, velocity, min_ramp_time=MIN_TIME
             )
             start_pos = first_point.lower[axis_name] - acceleration_distance
+            assert (
+                motor_info.check_position_within_soft_limits(start_pos) is True
+            ), (
+                f"{motor_info.scannable}: ramp start position {start_pos} outside "
+                f"soft limits {motor_info.user_low_limit, motor_info.user_high_limit}"
+            )
             args[motor_info.cs_axis.lower()] = start_pos
             # Time profile that the move is likely to take
             # NOTE: this is only accurate if pmac max velocity in linear motion
@@ -967,7 +973,14 @@ class PmacChildPart(builtin.parts.ChildPart):
                 tail_off_time, motor_info.acceleration_time(0, velocity)
             )
             tail_off = motor_info.ramp_distance(velocity, 0)
-            axis_points[axis_name] = point.upper[axis_name] + tail_off
+            tail_off_pos = point.upper[axis_name] + tail_off
+            assert (
+                motor_info.check_position_within_soft_limits(tail_off_pos) is True
+            ), (
+                f"{motor_info.scannable}: tail off position {tail_off_pos} outside "
+                f"soft limits {motor_info.user_low_limit, motor_info.user_high_limit}"
+            )
+            axis_points[axis_name] = tail_off_pos
         # Do the last move
         user_program = self.get_user_program(PointType.TURNAROUND)
         self.add_profile_point(

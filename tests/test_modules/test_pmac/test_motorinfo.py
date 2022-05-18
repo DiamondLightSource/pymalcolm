@@ -6,6 +6,75 @@ import pytest
 from malcolm.modules.pmac.infos import MotorInfo
 
 
+class TestMotorInfo(unittest.TestCase):
+    def setUp(self):
+        self.o = MotorInfo(
+            cs_axis="X",
+            cs_port="BRICK1CS2",
+            acceleration=2.0,  # mm/s/s
+            resolution=0.001,
+            offset=0.0,
+            max_velocity=1,
+            current_position=32.0,
+            scannable="t1x",
+            velocity_settle=0.0,
+            units="mm",
+            user_high_limit=100.0,
+            user_low_limit=-100.0,
+        )
+
+    def test_check_position_within_soft_limits_returns_True_for_disabled_limits(self):
+        positions = [-25.0, 0.0, 1.35]
+        # Disable soft limits
+        self.o.user_high_limit = 0.0
+        self.o.user_low_limit = 0.0
+
+        for position in positions:
+            self.assertEqual(True, self.o.check_position_within_soft_limits(position))
+
+    def test_check_position_within_soft_limits_returns_True_for_safe_positions(self):
+        # Check with both limits non-zero
+        positions = [-100.0, -35.35, 0.0, 65, 99.99]
+
+        for position in positions:
+            self.assertEqual(True, self.o.check_position_within_soft_limits(position))
+
+        # Change high limit to zero and re-check
+        positions = [-100.0, -35.35, 0.0]
+        self.o.user_high_limit = 0.0
+
+        for position in positions:
+            self.assertEqual(True, self.o.check_position_within_soft_limits(position))
+
+        # Change low limit to zero and re-check (and reset high limit)
+        positions = [0.0, 65, 99.99]
+        self.o.user_high_limit = 100.0
+        self.o.user_low_limit = 0.0
+
+        for position in positions:
+            self.assertEqual(True, self.o.check_position_within_soft_limits(position))
+
+    def test_check_position_within_soft_limits_returns_False_for_unsafe_position(self):
+        positions = [-125.0, 100.1, 999.0]
+        for position in positions:
+            self.assertEqual(False, self.o.check_position_within_soft_limits(position))
+
+        # Change high limit to zero and re-check
+        positions = [1e-9, 100.0]
+        self.o.user_high_limit = 0.0
+
+        for position in positions:
+            self.assertEqual(False, self.o.check_position_within_soft_limits(position))
+
+        # Change low limit to zero and re-check (and reset high limit)
+        positions = [-1e-9, -10.0]
+        self.o.user_high_limit = 100.0
+        self.o.user_low_limit = 0.0
+
+        for position in positions:
+            self.assertEqual(False, self.o.check_position_within_soft_limits(position))
+
+
 class TestMotorPVT(unittest.TestCase):
     def setUp(self):
         self.o = MotorInfo(
@@ -19,6 +88,8 @@ class TestMotorPVT(unittest.TestCase):
             scannable="t1x",
             velocity_settle=0.0,
             units="mm",
+            user_high_limit=100.0,
+            user_low_limit=-100.0,
         )
 
     def check_distance(self, d, times, velocities):
