@@ -173,8 +173,12 @@ class ManagerController(StatefulController):
 
     def _run_git_cmd(self, *args, **kwargs):
         # Run git command, don't care if it fails, logging the output
-        cwd = kwargs.get("cwd", self.config_dir)
-        if self.use_git:
+        cwd = kwargs.get("cwd", self.config_dir)   
+        
+        bypass_git = True
+        if bypass_git:
+            self.log.warning("Disabled all git interaction, ignored command: %s", args)
+        elif self.use_git:
             try:
                 output = subprocess.check_output(
                     ("git",) + self.git_config + args, cwd=cwd
