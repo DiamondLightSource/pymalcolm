@@ -2,6 +2,8 @@ from malcolm.core import Info
 
 from .velocityprofile import VelocityProfile
 
+import math
+
 
 class PmacVariablesInfo(Info):
     """List variable values for variables required in kinematics
@@ -51,6 +53,8 @@ class MotorInfo(Info):
         scannable: str,
         velocity_settle: float,
         units: str,
+        user_high_limit: float,
+        user_low_limit: float,
     ) -> None:
         self.cs_axis = cs_axis
         self.cs_port = cs_port
@@ -62,6 +66,8 @@ class MotorInfo(Info):
         self.scannable = scannable
         self.velocity_settle = velocity_settle
         self.units = units
+        self.user_high_limit = user_high_limit
+        self.user_low_limit = user_low_limit
 
     def acceleration_time(self, v1, v2):
         # The time taken to ramp from v1 to pad_velocity
@@ -109,3 +115,16 @@ class MotorInfo(Info):
         """Return the position (in EGUs) translated to counts"""
         cts = int(round((position - self.offset) / self.resolution))
         return cts
+
+    def check_position_within_soft_limits(self, position: float) -> bool:
+        """Check a position (in EGUs) against the soft limits and return True/False"""
+        # Soft limits of 0.0, 0.0 on a motor record means we should ignore them
+        if math.isclose(
+            self.user_low_limit, 0.0, rel_tol=1e-12, abs_tol=1e-12
+        ) and math.isclose(self.user_high_limit, 0.0, rel_tol=1e-12, abs_tol=1e-12):
+            return True
+        # Otherwise check the soft limits against the position
+        elif position > self.user_high_limit or position < self.user_low_limit:
+            return False
+        else:
+            return True
