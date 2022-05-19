@@ -52,3 +52,13 @@
     name: userLowLimit
     description: User low limit
     rbv: $(pv_prefix).LLM
+
+- ca.parts.CADoublePart:
+    name: dialHighLimit
+    description: Dial high limit
+    rbv: $(pv_prefix).DHLM
+
+- ca.parts.CADoublePart:
+    name: dialLowLimit
+    description: Dial low limit
+    rbv: $(pv_prefix).DLLM
