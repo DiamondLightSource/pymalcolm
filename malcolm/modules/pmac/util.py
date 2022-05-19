@@ -90,6 +90,8 @@ def cs_axis_mapping(
                 units=child.units.value,
                 user_high_limit=child.userHighLimit.value,
                 user_low_limit=child.userLowLimit.value,
+                dial_high_limit=child.dialHighLimit.value,
+                dial_low_limit=child.dialLowLimit.value,
             )
     missing = list(set(axes_to_move) - set(axis_mapping))
     assert not missing, "Some scannables %s are not in the CS mapping %s" % (

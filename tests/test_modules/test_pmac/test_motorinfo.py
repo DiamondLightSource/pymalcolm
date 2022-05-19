@@ -21,13 +21,14 @@ class TestMotorInfo(unittest.TestCase):
             units="mm",
             user_high_limit=100.0,
             user_low_limit=-100.0,
+            dial_high_limit=100.0,
+            dial_low_limit=-100.0,
         )
 
     def test_check_position_within_soft_limits_returns_True_for_disabled_limits(self):
         positions = [-25.0, 0.0, 1.35]
         # Disable soft limits
-        self.o.user_high_limit = 0.0
-        self.o.user_low_limit = 0.0
+        self.o.enable_soft_limits = False
 
         for position in positions:
             self.assertEqual(True, self.o.check_position_within_soft_limits(position))
@@ -90,6 +91,8 @@ class TestMotorPVT(unittest.TestCase):
             units="mm",
             user_high_limit=100.0,
             user_low_limit=-100.0,
+            dial_high_limit=100.0,
+            dial_low_limit=-100.0,
         )
 
     def check_distance(self, d, times, velocities):
