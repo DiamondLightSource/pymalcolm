@@ -24,7 +24,7 @@ from malcolm.testutil import ChildTestCase
 
 expected_xml = (
     '<?xml version="1.0" ?>\n'
-    '<hdf5_layout auto_ndattr_default="false">\n'
+    "<hdf5_layout>\n"
     '<group name="entry">\n'
     '<attribute name="NX_class" source="constant" type="string" value="NXentry" />\n'
     '<group name="detector">\n'
@@ -343,6 +343,7 @@ class TestHDFWriterPart(ChildTestCase):
         self.mock_xml_is_valid_check(self.o)
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         actual_xml = self.configure_and_check_output()
+        assert actual_xml == expected_xml
 
         actual_tree = ElementTree.XML(actual_xml)
         expected_tree = ElementTree.XML(expected_xml)
@@ -367,6 +368,7 @@ class TestHDFWriterPart(ChildTestCase):
         self.mock_xml_is_valid_check(self.o)
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         actual_xml = self.configure_and_check_output(on_windows=True)
+        assert actual_xml == expected_xml
 
         actual_tree = ElementTree.XML(actual_xml)
         expected_tree = ElementTree.XML(expected_xml)
