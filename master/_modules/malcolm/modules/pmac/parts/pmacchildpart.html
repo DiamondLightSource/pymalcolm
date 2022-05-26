@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.pmac.parts.pmacchildpart &mdash; malcolm 6.0+2.gb2f1b88b documentation</title>
+  <title>malcolm.modules.pmac.parts.pmacchildpart &mdash; malcolm 6.0+4.g95706b09 documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -417,6 +417,12 @@
                 <span class="mi">0</span><span class="p">,</span> <span class="n">velocity</span><span class="p">,</span> <span class="n">min_ramp_time</span><span class="o">=</span><span class="n">MIN_TIME</span>
             <span class="p">)</span>
             <span class="n">start_pos</span> <span class="o">=</span> <span class="n">first_point</span><span class="o">.</span><span class="n">lower</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span> <span class="o">-</span> <span class="n">acceleration_distance</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="n">motor_info</span><span class="o">.</span><span class="n">check_position_within_soft_limits</span><span class="p">(</span><span class="n">start_pos</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span>
+            <span class="p">),</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">motor_info</span><span class="o">.</span><span class="n">scannable</span><span class="si">}</span><span class="s2">: ramp start position </span><span class="si">{</span><span class="n">start_pos</span><span class="si">}</span><span class="s2"> outside &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;soft limits </span><span class="si">{</span><span class="n">motor_info</span><span class="o">.</span><span class="n">user_low_limit</span><span class="p">,</span> <span class="n">motor_info</span><span class="o">.</span><span class="n">user_high_limit</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
             <span class="n">args</span><span class="p">[</span><span class="n">motor_info</span><span class="o">.</span><span class="n">cs_axis</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span> <span class="o">=</span> <span class="n">start_pos</span>
             <span class="c1"># Time profile that the move is likely to take</span>
             <span class="c1"># NOTE: this is only accurate if pmac max velocity in linear motion</span>
@@ -1075,7 +1081,14 @@
                 <span class="n">tail_off_time</span><span class="p">,</span> <span class="n">motor_info</span><span class="o">.</span><span class="n">acceleration_time</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">velocity</span><span class="p">)</span>
             <span class="p">)</span>
             <span class="n">tail_off</span> <span class="o">=</span> <span class="n">motor_info</span><span class="o">.</span><span class="n">ramp_distance</span><span class="p">(</span><span class="n">velocity</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-            <span class="n">axis_points</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">point</span><span class="o">.</span><span class="n">upper</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span> <span class="o">+</span> <span class="n">tail_off</span>
+            <span class="n">tail_off_pos</span> <span class="o">=</span> <span class="n">point</span><span class="o">.</span><span class="n">upper</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span> <span class="o">+</span> <span class="n">tail_off</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="n">motor_info</span><span class="o">.</span><span class="n">check_position_within_soft_limits</span><span class="p">(</span><span class="n">tail_off_pos</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span>
+            <span class="p">),</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">motor_info</span><span class="o">.</span><span class="n">scannable</span><span class="si">}</span><span class="s2">: tail off position </span><span class="si">{</span><span class="n">tail_off_pos</span><span class="si">}</span><span class="s2"> outside &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;soft limits </span><span class="si">{</span><span class="n">motor_info</span><span class="o">.</span><span class="n">user_low_limit</span><span class="p">,</span> <span class="n">motor_info</span><span class="o">.</span><span class="n">user_high_limit</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="n">axis_points</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">tail_off_pos</span>
         <span class="c1"># Do the last move</span>
         <span class="n">user_program</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_user_program</span><span class="p">(</span><span class="n">PointType</span><span class="o">.</span><span class="n">TURNAROUND</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_profile_point</span><span class="p">(</span>

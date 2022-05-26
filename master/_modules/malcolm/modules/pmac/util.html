@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.pmac.util &mdash; malcolm 6.0+2.gb2f1b88b documentation</title>
+  <title>malcolm.modules.pmac.util &mdash; malcolm 6.0+4.g95706b09 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
@@ -196,6 +196,10 @@
                 <span class="n">scannable</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
                 <span class="n">velocity_settle</span><span class="o">=</span><span class="n">child</span><span class="o">.</span><span class="n">velocitySettle</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
                 <span class="n">units</span><span class="o">=</span><span class="n">child</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="n">user_high_limit</span><span class="o">=</span><span class="n">child</span><span class="o">.</span><span class="n">userHighLimit</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="n">user_low_limit</span><span class="o">=</span><span class="n">child</span><span class="o">.</span><span class="n">userLowLimit</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="n">dial_high_limit</span><span class="o">=</span><span class="n">child</span><span class="o">.</span><span class="n">dialHighLimit</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="n">dial_low_limit</span><span class="o">=</span><span class="n">child</span><span class="o">.</span><span class="n">dialLowLimit</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
             <span class="p">)</span>
     <span class="n">missing</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">axes_to_move</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">axis_mapping</span><span class="p">))</span>
     <span class="k">assert</span> <span class="ow">not</span> <span class="n">missing</span><span class="p">,</span> <span class="s2">&quot;Some scannables </span><span class="si">%s</span><span class="s2"> are not in the CS mapping </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
