@@ -242,7 +242,7 @@ def make_layout_xml(
     write_all_nd_attributes: bool = False,
 ) -> str:
     # Make a root element with an NXEntry
-    root_el = ET.Element("hdf5_layout", auto_ndattr_default="false")
+    root_el = ET.Element("hdf5_layout")
     entry_el = ET.SubElement(root_el, "group", name="entry")
     ET.SubElement(
         entry_el,
