@@ -3,6 +3,27 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
+`6.1`_ -
+-------------------
+
+Fixed:
+
+- template_double_seq_pcomp: Fixed a bug in the standard design that allowed
+  an extra trigger to be sent to detectors in stack scans. A logical AND
+  was added to the Live Frame and Dead Frame LUT blocks from the Seq Enable
+  SRGATE. **Existing scan designs should be updated with this change too.**
+
+  .. code-block::
+
+    "LUT4": {
+      "label": "Live Frame",
+      ...
+      "inpc": "SRGATE2.OUT",
+      ...
+      "func": "(A|B)&C",
+      ...
+    },
+
 `6.0`_ - 2022-05-11
 -------------------
 
@@ -792,6 +813,7 @@ Added:
 
 - Initial release with hello world and websocket comms
 
+.. _6.1: https://github.com/dls-controls/pymalcolm/compare/6.0...6.1
 .. _6.0: https://github.com/dls-controls/pymalcolm/compare/5.4...6.0
 .. _5.4: https://github.com/dls-controls/pymalcolm/compare/5.3...5.4
 .. _5.3: https://github.com/dls-controls/pymalcolm/compare/5.2...5.3
