@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Change Log &mdash; malcolm 6.0+6.gb989233b documentation</title>
+  <title>Change Log &mdash; malcolm 6.0+7.gd793bbe1 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -178,11 +178,41 @@ file will also make it easier to maintain compatibility when rolling
 forward/back.</p></li>
 </ul>
 <p>Fixed:</p>
-<ul class="simple">
+<ul>
 <li><p>ExposureDeadTimePart: removed config_tag from readout time and frequency
 accuracy to prevent values being saved to design, causing an error when
 trying to load them after.</p></li>
 <li><p>ReframePluginPart: fixed setup for scanning with outer axes</p></li>
+<li><p>template_double_seq_pcomp: Fixed a bug in the standard design that allowed
+an extra trigger to be sent to detectors in stack scans. A logical AND
+was added to the Live Frame and Dead Frame LUT blocks from the Seq Enable
+SRGATE. <strong>Existing scan designs should be updated with this change too.</strong>
+.. code-block:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="s2">&quot;LUT4&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="o">-</span> <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Live Frame&quot;</span><span class="p">,</span>
+<span class="o">-</span> <span class="s2">&quot;inputs&quot;</span><span class="p">:</span> <span class="s2">&quot;expanded&quot;</span><span class="p">,</span>
+<span class="o">-</span> <span class="s2">&quot;inpa&quot;</span><span class="p">:</span> <span class="s2">&quot;SEQ1.OUTA&quot;</span><span class="p">,</span>
+<span class="o">-</span> <span class="s2">&quot;inpaDelay&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+<span class="o">-</span> <span class="s2">&quot;inpb&quot;</span><span class="p">:</span> <span class="s2">&quot;SEQ2.OUTA&quot;</span><span class="p">,</span>
+<span class="o">-</span> <span class="s2">&quot;inpbDelay&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+<span class="o">-</span> <span class="s2">&quot;inpc&quot;</span><span class="p">:</span> <span class="s2">&quot;SRGATE2.OUT&quot;</span><span class="p">,</span>
+<span class="o">-</span> <span class="s2">&quot;inpcDelay&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+<span class="o">-</span> <span class="s2">&quot;inpd&quot;</span><span class="p">:</span> <span class="s2">&quot;ZERO&quot;</span><span class="p">,</span>
+<span class="o">-</span> <span class="s2">&quot;inpdDelay&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+<span class="o">-</span> <span class="s2">&quot;inpe&quot;</span><span class="p">:</span> <span class="s2">&quot;ZERO&quot;</span><span class="p">,</span>
+<span class="o">-</span> <span class="s2">&quot;inpeDelay&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+<span class="o">-</span> <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="s2">&quot;expanded&quot;</span><span class="p">,</span>
+<span class="o">-</span> <span class="s2">&quot;typea&quot;</span><span class="p">:</span> <span class="s2">&quot;Input-Level&quot;</span><span class="p">,</span>
+<span class="o">-</span> <span class="s2">&quot;typeb&quot;</span><span class="p">:</span> <span class="s2">&quot;Input-Level&quot;</span><span class="p">,</span>
+<span class="o">-</span> <span class="s2">&quot;typec&quot;</span><span class="p">:</span> <span class="s2">&quot;Input-Level&quot;</span><span class="p">,</span>
+<span class="o">-</span> <span class="s2">&quot;typed&quot;</span><span class="p">:</span> <span class="s2">&quot;Input-Level&quot;</span><span class="p">,</span>
+<span class="o">-</span> <span class="s2">&quot;typee&quot;</span><span class="p">:</span> <span class="s2">&quot;Input-Level&quot;</span><span class="p">,</span>
+<span class="o">-</span> <span class="s2">&quot;func&quot;</span><span class="p">:</span> <span class="s2">&quot;(A|B)&amp;C&quot;</span><span class="p">,</span>
+<span class="o">-</span> <span class="s2">&quot;outputs&quot;</span><span class="p">:</span> <span class="s2">&quot;expanded&quot;</span>
+<span class="o">-</span><span class="p">},</span>
+</pre></div>
+</div>
+</li>
 </ul>
 <p>Added:</p>
 <ul class="simple">
