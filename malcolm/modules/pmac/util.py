@@ -267,6 +267,9 @@ def profile_between_points(
     while iterations > 0:
         for axis_name, motor_info in axis_mapping.items():
             distance = next_point.lower[axis_name] - point.upper[axis_name]
+            # If the distance is tiny, round to zero
+            if np.isclose(distance, 0.0, atol=1e-12):
+                distance = 0.0
             p = motor_info.make_velocity_profile(
                 start_velocities[axis_name],
                 end_velocities[axis_name],
