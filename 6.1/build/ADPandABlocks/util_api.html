@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.modules.ADPandABlocks.util &mdash; malcolm 6.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="ADPco" href="../ADPco/index.html" />
+    <link rel="prev" title="malcolm.modules.ADPandABlocks.parts" href="parts_api.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                6.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../modules_api.html">malcolm.modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../ADAndor/index.html">ADAndor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADAndor3/index.html">ADAndor3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADCore/index.html">ADCore</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADEiger/index.html">ADEiger</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADEthercat/index.html">ADEthercat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADMerlin/index.html">ADMerlin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADOdin/index.html">ADOdin</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">ADPandABlocks</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="blocks_api.html">blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="controllers_api.html">controllers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="parts_api.html">parts</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../ADPco/index.html">ADPco</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADPilatus/index.html">ADPilatus</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADSimDetector/index.html">ADSimDetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADTetrAMM/index.html">ADTetrAMM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../adUtil/index.html">adUtil</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../aravisGigE/index.html">aravisGigE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../asyn/index.html">asyn</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../builtin/index.html">builtin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ca/index.html">ca</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demo/index.html">demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dtacq/index.html">dtacq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pandablocks/index.html">pandablocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pmac/index.html">pmac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../profiling/index.html">profiling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pva/index.html">pva</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../scanning/index.html">scanning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../system/index.html">system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../web/index.html">web</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../xmap/index.html">xmap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../xspress3/index.html">xspress3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../zebra/index.html">zebra</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../modules_api.html">malcolm.modules</a> &raquo;</li>
+          <li><a href="index.html">ADPandABlocks</a> &raquo;</li>
+      <li>malcolm.modules.ADPandABlocks.util</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/build/ADPandABlocks/util_api.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-malcolm.modules.ADPandABlocks.util">
+<span id="malcolm-modules-adpandablocks-util"></span><h1>malcolm.modules.ADPandABlocks.util<a class="headerlink" href="#module-malcolm.modules.ADPandABlocks.util" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.ADPandABlocks.util.Trigger">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADPandABlocks.util.</span></span><span class="sig-name descname"><span class="pre">Trigger</span></span><a class="reference internal" href="../../_modules/malcolm/modules/ADPandABlocks/util.html#Trigger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADPandABlocks.util.Trigger" title="Permalink to this definition"></a></dt>
+<dd><p>Convenience Enum for setting sequencer table trigger values.</p>
+<p>These will be translated into integer values by the <code class="xref any docutils literal notranslate"><span class="pre">TablePart</span></code>. The strings must
+match those that come from the PandA.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.ADPandABlocks.util.SequencerRow">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADPandABlocks.util.</span></span><span class="sig-name descname"><span class="pre">SequencerRow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repeats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trigger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outa1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outb1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outc1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outd1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">oute1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outf1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outa2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outb2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outc2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outd2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">oute2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outf2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#malcolm.modules.ADPandABlocks.util.SequencerRow" title="Permalink to this definition"></a></dt>
+<dd><p>Create new instance of SequencerRow(repeats, trigger, position, time1, outa1, outb1, outc1, outd1, oute1, outf1, time2, outa2, outb2, outc2, outd2, oute2, outf2)</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="malcolm.modules.ADPandABlocks.util.SequencerRow.outa1">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">outa1</span></span><a class="headerlink" href="#malcolm.modules.ADPandABlocks.util.SequencerRow.outa1" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 4</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="malcolm.modules.ADPandABlocks.util.SequencerRow.outa2">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">outa2</span></span><a class="headerlink" href="#malcolm.modules.ADPandABlocks.util.SequencerRow.outa2" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 11</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="malcolm.modules.ADPandABlocks.util.SequencerRow.outb1">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">outb1</span></span><a class="headerlink" href="#malcolm.modules.ADPandABlocks.util.SequencerRow.outb1" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 5</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="malcolm.modules.ADPandABlocks.util.SequencerRow.outb2">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">outb2</span></span><a class="headerlink" href="#malcolm.modules.ADPandABlocks.util.SequencerRow.outb2" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 12</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="malcolm.modules.ADPandABlocks.util.SequencerRow.outc1">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">outc1</span></span><a class="headerlink" href="#malcolm.modules.ADPandABlocks.util.SequencerRow.outc1" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 6</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="malcolm.modules.ADPandABlocks.util.SequencerRow.outc2">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">outc2</span></span><a class="headerlink" href="#malcolm.modules.ADPandABlocks.util.SequencerRow.outc2" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 13</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="malcolm.modules.ADPandABlocks.util.SequencerRow.outd1">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">outd1</span></span><a class="headerlink" href="#malcolm.modules.ADPandABlocks.util.SequencerRow.outd1" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 7</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="malcolm.modules.ADPandABlocks.util.SequencerRow.outd2">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">outd2</span></span><a class="headerlink" href="#malcolm.modules.ADPandABlocks.util.SequencerRow.outd2" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 14</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="malcolm.modules.ADPandABlocks.util.SequencerRow.oute1">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">oute1</span></span><a class="headerlink" href="#malcolm.modules.ADPandABlocks.util.SequencerRow.oute1" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 8</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="malcolm.modules.ADPandABlocks.util.SequencerRow.oute2">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">oute2</span></span><a class="headerlink" href="#malcolm.modules.ADPandABlocks.util.SequencerRow.oute2" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 15</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="malcolm.modules.ADPandABlocks.util.SequencerRow.outf1">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">outf1</span></span><a class="headerlink" href="#malcolm.modules.ADPandABlocks.util.SequencerRow.outf1" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 9</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="malcolm.modules.ADPandABlocks.util.SequencerRow.outf2">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">outf2</span></span><a class="headerlink" href="#malcolm.modules.ADPandABlocks.util.SequencerRow.outf2" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 16</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="malcolm.modules.ADPandABlocks.util.SequencerRow.position">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><a class="headerlink" href="#malcolm.modules.ADPandABlocks.util.SequencerRow.position" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="malcolm.modules.ADPandABlocks.util.SequencerRow.repeats">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">repeats</span></span><a class="headerlink" href="#malcolm.modules.ADPandABlocks.util.SequencerRow.repeats" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="malcolm.modules.ADPandABlocks.util.SequencerRow.time1">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">time1</span></span><a class="headerlink" href="#malcolm.modules.ADPandABlocks.util.SequencerRow.time1" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 3</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="malcolm.modules.ADPandABlocks.util.SequencerRow.time2">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">time2</span></span><a class="headerlink" href="#malcolm.modules.ADPandABlocks.util.SequencerRow.time2" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 10</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="malcolm.modules.ADPandABlocks.util.SequencerRow.trigger">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">trigger</span></span><a class="headerlink" href="#malcolm.modules.ADPandABlocks.util.SequencerRow.trigger" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.ADPandABlocks.util.SequencerTable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADPandABlocks.util.</span></span><span class="sig-name descname"><span class="pre">SequencerTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repeats:</span> <span class="pre">Anno(name='ALineRepeatsArray'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'numpy.uint16'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Number</span> <span class="pre">of</span> <span class="pre">times</span> <span class="pre">the</span> <span class="pre">line</span> <span class="pre">will</span> <span class="pre">repeat')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trigger:</span> <span class="pre">Anno(name='ATriggerArray'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">trigger</span> <span class="pre">condition</span> <span class="pre">to</span> <span class="pre">start</span> <span class="pre">the</span> <span class="pre">phases')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position:</span> <span class="pre">Anno(name='APositionArray'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'numpy.int32'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">position</span> <span class="pre">that</span> <span class="pre">can</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">in</span> <span class="pre">trigger</span> <span class="pre">condition')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time1:</span> <span class="pre">Anno(name='ATimeArray'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'numpy.uint32'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">time</span> <span class="pre">that</span> <span class="pre">the</span> <span class="pre">phase</span> <span class="pre">should</span> <span class="pre">take')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outa1:</span> <span class="pre">Anno(name='AOutArray'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Output</span> <span class="pre">value</span> <span class="pre">during</span> <span class="pre">the</span> <span class="pre">phase')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outb1:</span> <span class="pre">Anno(name='AOutArray'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Output</span> <span class="pre">value</span> <span class="pre">during</span> <span class="pre">the</span> <span class="pre">phase')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outc1:</span> <span class="pre">Anno(name='AOutArray'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Output</span> <span class="pre">value</span> <span class="pre">during</span> <span class="pre">the</span> <span class="pre">phase')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outd1:</span> <span class="pre">Anno(name='AOutArray'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Output</span> <span class="pre">value</span> <span class="pre">during</span> <span class="pre">the</span> <span class="pre">phase')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">oute1:</span> <span class="pre">Anno(name='AOutArray'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Output</span> <span class="pre">value</span> <span class="pre">during</span> <span class="pre">the</span> <span class="pre">phase')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outf1:</span> <span class="pre">Anno(name='AOutArray'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Output</span> <span class="pre">value</span> <span class="pre">during</span> <span class="pre">the</span> <span class="pre">phase')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time2:</span> <span class="pre">Anno(name='ATimeArray'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'numpy.uint32'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">time</span> <span class="pre">that</span> <span class="pre">the</span> <span class="pre">phase</span> <span class="pre">should</span> <span class="pre">take')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outa2:</span> <span class="pre">Anno(name='AOutArray'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Output</span> <span class="pre">value</span> <span class="pre">during</span> <span class="pre">the</span> <span class="pre">phase')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outb2:</span> <span class="pre">Anno(name='AOutArray'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Output</span> <span class="pre">value</span> <span class="pre">during</span> <span class="pre">the</span> <span class="pre">phase')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outc2:</span> <span class="pre">Anno(name='AOutArray'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Output</span> <span class="pre">value</span> <span class="pre">during</span> <span class="pre">the</span> <span class="pre">phase')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outd2:</span> <span class="pre">Anno(name='AOutArray'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Output</span> <span class="pre">value</span> <span class="pre">during</span> <span class="pre">the</span> <span class="pre">phase')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">oute2:</span> <span class="pre">Anno(name='AOutArray'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Output</span> <span class="pre">value</span> <span class="pre">during</span> <span class="pre">the</span> <span class="pre">phase')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outf2:</span> <span class="pre">Anno(name='AOutArray'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Output</span> <span class="pre">value</span> <span class="pre">during</span> <span class="pre">the</span> <span class="pre">phase')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/ADPandABlocks/util.html#SequencerTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADPandABlocks.util.SequencerTable" title="Permalink to this definition"></a></dt>
+<dd><p>Convenience <a class="reference internal" href="../../api/core_api.html#malcolm.core.Table" title="malcolm.core.Table"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> class for building sequencer tables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>repeats</strong> (<em>uint16</em>) – Number of times the line will repeat</p></li>
+<li><p><strong>trigger</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – The trigger condition to start the phases</p></li>
+<li><p><strong>position</strong> (<em>int32</em>) – The position that can be used in trigger condition</p></li>
+<li><p><strong>time1</strong> (<em>uint32</em>) – The time that the phase should take</p></li>
+<li><p><strong>outa1</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Output value during the phase</p></li>
+<li><p><strong>outb1</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Output value during the phase</p></li>
+<li><p><strong>outc1</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Output value during the phase</p></li>
+<li><p><strong>outd1</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Output value during the phase</p></li>
+<li><p><strong>oute1</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Output value during the phase</p></li>
+<li><p><strong>outf1</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Output value during the phase</p></li>
+<li><p><strong>time2</strong> (<em>uint32</em>) – The time that the phase should take</p></li>
+<li><p><strong>outa2</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Output value during the phase</p></li>
+<li><p><strong>outb2</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Output value during the phase</p></li>
+<li><p><strong>outc2</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Output value during the phase</p></li>
+<li><p><strong>outd2</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Output value during the phase</p></li>
+<li><p><strong>oute2</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Output value during the phase</p></li>
+<li><p><strong>outf2</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Output value during the phase</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.ADPandABlocks.util.DatasetBitsTable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADPandABlocks.util.</span></span><span class="sig-name descname"><span class="pre">DatasetBitsTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name:</span> <span class="pre">Union[Anno(name='ABitNames',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='Block</span> <span class="pre">and</span> <span class="pre">Field</span> <span class="pre">name</span> <span class="pre">for</span> <span class="pre">the</span> <span class="pre">Bit'),</span> <span class="pre">Sequence[str]],</span> <span class="pre">value:</span> <span class="pre">Union[Anno(name='ABitValues',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;,</span> <span class="pre">description='Current</span> <span class="pre">value</span> <span class="pre">for</span> <span class="pre">the</span> <span class="pre">Bit'),</span> <span class="pre">Sequence[bool]],</span> <span class="pre">capture:</span> <span class="pre">Union[Anno(name='ABitCaptures',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;,</span> <span class="pre">description='Request</span> <span class="pre">this</span> <span class="pre">field</span> <span class="pre">is</span> <span class="pre">captured</span> <span class="pre">in</span> <span class="pre">PCAP'),</span> <span class="pre">Sequence[bool]],</span> <span class="pre">datasetName:</span> <span class="pre">Union[Anno(name='AAttributeNames',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='NDAttribute</span> <span class="pre">name</span> <span class="pre">to</span> <span class="pre">be</span> <span class="pre">exported'),</span> <span class="pre">Sequence[str]],</span> <span class="pre">datasetType:</span> <span class="pre">Union[Anno(name='AAttributeTypes',</span> <span class="pre">typ=&lt;enum</span> <span class="pre">'AttributeDatasetType'&gt;,</span> <span class="pre">description='Types</span> <span class="pre">of</span> <span class="pre">attribute</span> <span class="pre">dataset'),</span> <span class="pre">Sequence[malcolm.modules.ADCore.util.AttributeDatasetType]]</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/ADPandABlocks/util.html#DatasetBitsTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADPandABlocks.util.DatasetBitsTable" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Block and Field name for the Bit</p></li>
+<li><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Current value for the Bit</p></li>
+<li><p><strong>capture</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Request this field is captured in PCAP</p></li>
+<li><p><strong>datasetName</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – NDAttribute name to be exported</p></li>
+<li><p><strong>datasetType</strong> (<a class="reference internal" href="../ADCore/util_api.html#malcolm.modules.ADCore.util.AttributeDatasetType" title="malcolm.modules.ADCore.util.AttributeDatasetType"><em>AttributeDatasetType</em></a>) – Types of attribute dataset</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.ADPandABlocks.util.DatasetPositionsTable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.ADPandABlocks.util.</span></span><span class="sig-name descname"><span class="pre">DatasetPositionsTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name:</span> <span class="pre">Union[Anno(name='APositionNames',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='Block</span> <span class="pre">and</span> <span class="pre">Field</span> <span class="pre">name</span> <span class="pre">for</span> <span class="pre">the</span> <span class="pre">Position'),</span> <span class="pre">Sequence[str]],</span> <span class="pre">value:</span> <span class="pre">Union[Anno(name='APositionValues',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;,</span> <span class="pre">description='Current</span> <span class="pre">scaled</span> <span class="pre">value</span> <span class="pre">for</span> <span class="pre">the</span> <span class="pre">Position'),</span> <span class="pre">Sequence[float]],</span> <span class="pre">units:</span> <span class="pre">Union[Anno(name='APositionUnits',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='Units</span> <span class="pre">for</span> <span class="pre">the</span> <span class="pre">scaled</span> <span class="pre">value</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Position'),</span> <span class="pre">Sequence[str]],</span> <span class="pre">scale:</span> <span class="pre">Union[Anno(name='APositionScales',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;,</span> <span class="pre">description='Scale</span> <span class="pre">factor</span> <span class="pre">to</span> <span class="pre">calculate</span> <span class="pre">scaled</span> <span class="pre">value</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Position'),</span> <span class="pre">Sequence[float]],</span> <span class="pre">offset:</span> <span class="pre">Union[Anno(name='APositionOffsets',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;,</span> <span class="pre">description='Offset</span> <span class="pre">to</span> <span class="pre">calculate</span> <span class="pre">scaled</span> <span class="pre">value</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Position'),</span> <span class="pre">Sequence[float]],</span> <span class="pre">capture:</span> <span class="pre">Union[Anno(name='APositionCaptures',</span> <span class="pre">typ=&lt;enum</span> <span class="pre">'PositionCapture'&gt;,</span> <span class="pre">description='Whether</span> <span class="pre">and</span> <span class="pre">what</span> <span class="pre">to</span> <span class="pre">capture</span> <span class="pre">with</span> <span class="pre">PCAP'),</span> <span class="pre">Sequence[malcolm.modules.pandablocks.util.PositionCapture]],</span> <span class="pre">datasetName:</span> <span class="pre">Union[Anno(name='AAttributeNames',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='NDAttribute</span> <span class="pre">name</span> <span class="pre">to</span> <span class="pre">be</span> <span class="pre">exported'),</span> <span class="pre">Sequence[str]],</span> <span class="pre">datasetType:</span> <span class="pre">Union[Anno(name='AAttributeTypes',</span> <span class="pre">typ=&lt;enum</span> <span class="pre">'AttributeDatasetType'&gt;,</span> <span class="pre">description='Types</span> <span class="pre">of</span> <span class="pre">attribute</span> <span class="pre">dataset'),</span> <span class="pre">Sequence[malcolm.modules.ADCore.util.AttributeDatasetType]]</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/ADPandABlocks/util.html#DatasetPositionsTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.ADPandABlocks.util.DatasetPositionsTable" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Block and Field name for the Position</p></li>
+<li><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Current scaled value for the Position</p></li>
+<li><p><strong>units</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Units for the scaled value of the Position</p></li>
+<li><p><strong>scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Scale factor to calculate scaled value of the Position</p></li>
+<li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Offset to calculate scaled value of the Position</p></li>
+<li><p><strong>capture</strong> (<a class="reference internal" href="../pandablocks/util_api.html#malcolm.modules.pandablocks.util.PositionCapture" title="malcolm.modules.pandablocks.util.PositionCapture"><em>PositionCapture</em></a>) – Whether and what to capture with PCAP</p></li>
+<li><p><strong>datasetName</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – NDAttribute name to be exported</p></li>
+<li><p><strong>datasetType</strong> (<a class="reference internal" href="../ADCore/util_api.html#malcolm.modules.ADCore.util.AttributeDatasetType" title="malcolm.modules.ADCore.util.AttributeDatasetType"><em>AttributeDatasetType</em></a>) – Types of attribute dataset</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="parts_api.html" class="btn btn-neutral float-left" title="malcolm.modules.ADPandABlocks.parts" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../ADPco/index.html" class="btn btn-neutral float-right" title="ADPco" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

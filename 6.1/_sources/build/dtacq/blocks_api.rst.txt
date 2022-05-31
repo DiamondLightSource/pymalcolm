@@ -1,0 +1,6 @@
+
+malcolm.modules.dtacq.blocks
+============================
+
+.. automodule:: malcolm.modules.dtacq.blocks
+    :members:

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supported Tags &mdash; malcolm 6.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="State Sets and Hooks" href="statesets.html" />
+    <link rel="prev" title="Message Structure" href="messages.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../contents.html" class="icon icon-home"> malcolm
+            <img src="../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                6.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="messages.html">Message Structure</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Supported Tags</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#widget-tag">Widget Tag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#linked-value-tag">Linked Value Tag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#badge-value-tag">Badge Value Tag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#port-tag">Port Tag</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#port-types">Port types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#source-port-tag">Source Port Tag</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sink-port-tag">Sink Port Tag</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#group-tag">Group Tag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#config-tag">Config Tag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#method-return-unpacked-tag">Method Return Unpacked Tag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-tag">Version Tag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hidden-method-tag">Hidden Method Tag</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../contents.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Supported Tags</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/reference/tags.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="supported-tags">
+<span id="id1"></span><h1>Supported Tags<a class="headerlink" href="#supported-tags" title="Permalink to this headline"></a></h1>
+<p><a class="reference internal" href="glossary.html#tags"><span class="std std-ref">Tags</span></a> are freeform text strings that appear in the tags field on Meta objects.
+This page lists the currently supported tags, and how they are used.</p>
+<section id="widget-tag">
+<h2>Widget Tag<a class="headerlink" href="#widget-tag" title="Permalink to this headline"></a></h2>
+<p>A widget tag can be used to tell a GUI which widget to use to display an
+Attribute. It is created by calling the <code class="xref py py-meth docutils literal notranslate"><span class="pre">tag()</span></code> method on a
+<a class="reference internal" href="../api/core_api.html#malcolm.core.Widget" title="malcolm.core.Widget"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Widget</span></code></a> enum member, like <code class="docutils literal notranslate"><span class="pre">Widget.TEXTINPUT.tag()</span></code> as introduced in the
+<a class="reference internal" href="../tutorials/counter.html#counter-tutorial"><span class="std std-ref">Counter Tutorial</span></a>. It produces one of the following tags:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 34%" />
+<col style="width: 66%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Tag</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>widget:textinput</p></td>
+<td><p>Editable text input box</p></td>
+</tr>
+<tr class="row-odd"><td><p>widget:textupdate</p></td>
+<td><p>Read only text update</p></td>
+</tr>
+<tr class="row-even"><td><p>widget:multilinetextupdate</p></td>
+<td><p>Multi line text update</p></td>
+</tr>
+<tr class="row-odd"><td><p>widget:led</p></td>
+<td><p>On/Off LED indicator</p></td>
+</tr>
+<tr class="row-even"><td><p>widget:combo</p></td>
+<td><p>Select from a number of choice values</p></td>
+</tr>
+<tr class="row-odd"><td><p>widget:icon</p></td>
+<td><p>This field gives the SVG icon for the whole Block</p></td>
+</tr>
+<tr class="row-even"><td><p>widget:help</p></td>
+<td><p>Gives a URL for the help documentation for the Block</p></td>
+</tr>
+<tr class="row-odd"><td><p>widget:group</p></td>
+<td><div class="line-block">
+<div class="line">Expandable section that other Attributes can</div>
+<div class="line">appear in</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><p>widget:table</p></td>
+<td><p>Table of rows with a widget type for each column</p></td>
+</tr>
+<tr class="row-odd"><td><p>widget:checkbox</p></td>
+<td><p>A box that can be checked or not</p></td>
+</tr>
+<tr class="row-even"><td><p>widget:flowgraph</p></td>
+<td><p>Boxes with lines for child block connections</p></td>
+</tr>
+<tr class="row-odd"><td><p>widget:tree</p></td>
+<td><p>A nested tree of object models editor</p></td>
+</tr>
+<tr class="row-even"><td><p>widget:plot</p></td>
+<td><p>A waveform plot</p></td>
+</tr>
+<tr class="row-odd"><td><p>widget:meter</p></td>
+<td><p>Progress meter</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="linked-value-tag">
+<h2>Linked Value Tag<a class="headerlink" href="#linked-value-tag" title="Permalink to this headline"></a></h2>
+<p>A Linked Value tag can be attached to an Attribute to tell the GUI that there
+is another Attribute that can be monitored that should be displayed under the
+current Attribute with the text “Linked Value”. This is typically used for
+inports whose connected outport tag contain a current value that could be
+displayed. It is the responsibility of the Controller to change these tags if
+the path to the Attribute that is to be displayed changes.</p>
+<p>These are created using the <a class="reference internal" href="../api/core_api.html#malcolm.core.linked_value_tag" title="malcolm.core.linked_value_tag"><code class="xref any py py-func docutils literal notranslate"><span class="pre">linked_value_tag</span></code></a>.</p>
+</section>
+<section id="badge-value-tag">
+<h2>Badge Value Tag<a class="headerlink" href="#badge-value-tag" title="Permalink to this headline"></a></h2>
+<p>A Badge Value tag can be attached to a Port Attribute to tell the GUI that there
+is another Attribute that can be monitored that should be displayed as a badge
+for this Port. This is used on PandA to display the additional delay that can
+be added for sink ports.</p>
+<p>These are created using the <a class="reference internal" href="../api/core_api.html#malcolm.core.badge_value_tag" title="malcolm.core.badge_value_tag"><code class="xref any py py-func docutils literal notranslate"><span class="pre">badge_value_tag</span></code></a>.</p>
+</section>
+<section id="port-tag">
+<h2>Port Tag<a class="headerlink" href="#port-tag" title="Permalink to this headline"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">layout</span></code> Attribute of a <a class="reference internal" href="../build/builtin/controllers_api.html#malcolm.modules.builtin.controllers.ManagerController" title="malcolm.modules.builtin.controllers.ManagerController"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ManagerController</span></code></a> is viewed with a FlowGraph
+widget. This widget allows the child Blocks declared in the <code class="docutils literal notranslate"><span class="pre">layout</span></code> to
+have a number of <code class="docutils literal notranslate"><span class="pre">sourcePorts</span></code> and <code class="docutils literal notranslate"><span class="pre">sinkPorts</span></code> which can be used to
+visualize the connections between Blocks. The <code class="docutils literal notranslate"><span class="pre">sourcePort</span></code> Attribute tag
+contains the value that a corresponding <code class="docutils literal notranslate"><span class="pre">sinkPort</span></code> should be set to when
+the ports are connected. The <code class="docutils literal notranslate"><span class="pre">sinkPort</span></code> tag contains the value that the
+<code class="docutils literal notranslate"><span class="pre">sinkPort</span></code> should be set to when disconnected.</p>
+<section id="port-types">
+<h3>Port types<a class="headerlink" href="#port-types" title="Permalink to this headline"></a></h3>
+<p>The following port types are defined:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 91%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>bool</p></td>
+<td><p>Boolean value. Typically used in PandA</p></td>
+</tr>
+<tr class="row-odd"><td><p>int32</p></td>
+<td><p>32-bit signed integer. Typically used in PandA</p></td>
+</tr>
+<tr class="row-even"><td><p>NDArray</p></td>
+<td><p>areaDetector NDArray port</p></td>
+</tr>
+<tr class="row-odd"><td><p>motor</p></td>
+<td><p>Motor record connection to CS or controller</p></td>
+</tr>
+<tr class="row-even"><td><p>block</p></td>
+<td><p>Malcolm level connection to another Block</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="source-port-tag">
+<h3>Source Port Tag<a class="headerlink" href="#source-port-tag" title="Permalink to this headline"></a></h3>
+<p>These are created on the child Attribute using the <code class="xref py py-meth docutils literal notranslate"><span class="pre">source_port_tag()</span></code>
+method on the <a class="reference internal" href="../api/core_api.html#malcolm.core.Port" title="malcolm.core.Port"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Port</span></code></a> type enum member. The tag is
+<code class="docutils literal notranslate"><span class="pre">sourcePort:&lt;type&gt;:&lt;connected_value&gt;</span></code> where connected_value is the value that
+a sinkPort should be set to when they are connected. For instance, a PandA
+<strong>CLOCKS</strong> Block with an Attribute <strong>A</strong> that represents a produced clock would
+use <code class="docutils literal notranslate"><span class="pre">Port.BOOL.source_port_tag(&quot;CLOCKS.A&quot;)</span></code> to create a tag
+<code class="docutils literal notranslate"><span class="pre">sourcePort:bool:CLOCKS.A</span></code></p>
+</section>
+<section id="sink-port-tag">
+<h3>Sink Port Tag<a class="headerlink" href="#sink-port-tag" title="Permalink to this headline"></a></h3>
+<p>These are created on the child Attribute using the <code class="xref py py-meth docutils literal notranslate"><span class="pre">sink_port_tag()</span></code>
+method on the <a class="reference internal" href="../api/core_api.html#malcolm.core.Port" title="malcolm.core.Port"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Port</span></code></a> type enum member. The tag is
+<code class="docutils literal notranslate"><span class="pre">sinkPort:&lt;type&gt;:&lt;disconnected_value&gt;</span></code> where disconnected_value is the value
+that the sinkPorts should be set to when disconnected from a sourcePort. For
+instance, a PandA <strong>PULSE</strong> Block with an Attribute <strong>INP</strong> that represents
+where it should get its input pulse train from would
+use <code class="docutils literal notranslate"><span class="pre">Port.BOOL.sink_port_tag(&quot;ZERO&quot;)</span></code> to create a tag
+<code class="docutils literal notranslate"><span class="pre">sinkPort:bool:ZERO</span></code></p>
+</section>
+</section>
+<section id="group-tag">
+<h2>Group Tag<a class="headerlink" href="#group-tag" title="Permalink to this headline"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">widget:group</span></code> tag on an Attribute creates a group expander area in the
+GUI that other Attributes can appear in. They signify this by using the
+<a class="reference internal" href="../api/core_api.html#malcolm.core.group_tag" title="malcolm.core.group_tag"><code class="xref any py py-func docutils literal notranslate"><span class="pre">group_tag</span></code></a> function to create a <code class="docutils literal notranslate"><span class="pre">group:&lt;group_attribute_name&gt;</span></code> tag where
+group_attribute_name is the name of the Attribute with the <code class="docutils literal notranslate"><span class="pre">widget:group</span></code>
+tag on it. For instance if the <code class="docutils literal notranslate"><span class="pre">outputs</span></code> Attribute has a <code class="docutils literal notranslate"><span class="pre">widget:group</span></code> tag
+on it, other Attributes could appear in the outputs group expander by adding a
+<code class="docutils literal notranslate"><span class="pre">group:outputs</span></code> tag.</p>
+</section>
+<section id="config-tag">
+<h2>Config Tag<a class="headerlink" href="#config-tag" title="Permalink to this headline"></a></h2>
+<p>A config tag on an Attribute marks a field as one that should be saved and
+loaded by a parent <a class="reference internal" href="../build/builtin/controllers_api.html#malcolm.modules.builtin.controllers.ManagerController" title="malcolm.modules.builtin.controllers.ManagerController"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ManagerController</span></code></a>. These are created by using the
+<a class="reference internal" href="../api/core_api.html#malcolm.core.config_tag" title="malcolm.core.config_tag"><code class="xref any py py-func docutils literal notranslate"><span class="pre">config_tag</span></code></a> function to create a <code class="docutils literal notranslate"><span class="pre">config:&lt;iteration&gt;</span></code> tag where iteration
+is a positive number. Loading of attributes takes place in a number of
+iterations, starting with the lowest number, with all Attributes in a single
+iteration being set simultaneously.</p>
+</section>
+<section id="method-return-unpacked-tag">
+<h2>Method Return Unpacked Tag<a class="headerlink" href="#method-return-unpacked-tag" title="Permalink to this headline"></a></h2>
+<p>A <code class="docutils literal notranslate"><span class="pre">method:return:unpacked</span></code> tag is created using the <a class="reference internal" href="../api/core_api.html#malcolm.core.method_return_unpacked" title="malcolm.core.method_return_unpacked"><code class="xref any py py-func docutils literal notranslate"><span class="pre">method_return_unpacked</span></code></a>
+function. Its purpose is defined in the docstring:</p>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">malcolm.core.</span></span><span class="sig-name descname"><span class="pre">method_return_unpacked</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/core/tags.html#method_return_unpacked"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>This method has a single element returns, and when called will return
+this single element unpacked rather than in a single element map</p>
+<dl class="simple">
+<dt>E.g.</dt><dd><p>hello.greet(“me”) -&gt; “Hello me” not {“return”: “Hello me”}</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="version-tag">
+<h2>Version Tag<a class="headerlink" href="#version-tag" title="Permalink to this headline"></a></h2>
+<p>A <code class="docutils literal notranslate"><span class="pre">version:pymalcolm:&lt;version&gt;</span></code> tag is created and attached to every Block so
+that clients know the version of pymalcolm that is hosting the Block.</p>
+</section>
+<section id="hidden-method-tag">
+<h2>Hidden Method Tag<a class="headerlink" href="#hidden-method-tag" title="Permalink to this headline"></a></h2>
+<p>All Methods are displayed in the GUI by default. To hide a method, add a
+<code class="docutils literal notranslate"><span class="pre">method:hidden</span></code> tag using the <code class="xref any docutils literal notranslate"><span class="pre">method_hidden</span></code> function.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="messages.html" class="btn btn-neutral float-left" title="Message Structure" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="statesets.html" class="btn btn-neutral float-right" title="State Sets and Hooks" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.modules.web.controllers.websocketclientcomms &mdash; malcolm 6.1 documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../../../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                6.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+      <li>malcolm.modules.web.controllers.websocketclientcomms</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for malcolm.modules.web.controllers.websocketclientcomms</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">deserialize_object</span><span class="p">,</span> <span class="n">json_decode</span><span class="p">,</span> <span class="n">json_encode</span>
+<span class="kn">from</span> <span class="nn">cothread</span> <span class="kn">import</span> <span class="n">cothread</span>
+<span class="kn">from</span> <span class="nn">tornado</span> <span class="kn">import</span> <span class="n">gen</span>
+<span class="kn">from</span> <span class="nn">tornado.websocket</span> <span class="kn">import</span> <span class="n">WebSocketClientConnection</span><span class="p">,</span> <span class="n">websocket_connect</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+    <span class="n">BlockMeta</span><span class="p">,</span>
+    <span class="n">BlockModel</span><span class="p">,</span>
+    <span class="n">Delta</span><span class="p">,</span>
+    <span class="n">Error</span><span class="p">,</span>
+    <span class="n">NTScalar</span><span class="p">,</span>
+    <span class="n">Post</span><span class="p">,</span>
+    <span class="n">Put</span><span class="p">,</span>
+    <span class="n">Queue</span><span class="p">,</span>
+    <span class="n">Request</span><span class="p">,</span>
+    <span class="n">Response</span><span class="p">,</span>
+    <span class="n">ResponseError</span><span class="p">,</span>
+    <span class="n">Return</span><span class="p">,</span>
+    <span class="n">Subscribe</span><span class="p">,</span>
+    <span class="n">TableMeta</span><span class="p">,</span>
+    <span class="n">Update</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules</span> <span class="kn">import</span> <span class="n">builtin</span>
+
+<span class="kn">from</span> <span class="nn">..util</span> <span class="kn">import</span> <span class="n">BlockTable</span><span class="p">,</span> <span class="n">IOLoopHelper</span>
+
+<span class="n">Key</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">Response</span><span class="p">],</span> <span class="kc">None</span><span class="p">],</span> <span class="nb">int</span><span class="p">]</span>
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Hostname of malcolm websocket server&quot;</span><span class="p">):</span>
+    <span class="n">AHostname</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Port number to run up under&quot;</span><span class="p">):</span>
+    <span class="n">APort</span> <span class="o">=</span> <span class="nb">int</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Time to wait for connection&quot;</span><span class="p">):</span>
+    <span class="n">AConnectTimeout</span> <span class="o">=</span> <span class="nb">float</span>
+
+
+<div class="viewcode-block" id="WebsocketClientComms"><a class="viewcode-back" href="../../../../../build/web/controllers_api.html#malcolm.modules.web.controllers.WebsocketClientComms">[docs]</a><span class="k">class</span> <span class="nc">WebsocketClientComms</span><span class="p">(</span><span class="n">builtin</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">ClientComms</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A class for a client to communicate with the server&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">mri</span><span class="p">:</span> <span class="n">builtin</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">AMri</span><span class="p">,</span>
+        <span class="n">hostname</span><span class="p">:</span> <span class="n">AHostname</span> <span class="o">=</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+        <span class="n">port</span><span class="p">:</span> <span class="n">APort</span> <span class="o">=</span> <span class="mi">8008</span><span class="p">,</span>
+        <span class="n">connect_timeout</span><span class="p">:</span> <span class="n">AConnectTimeout</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">mri</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="n">hostname</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect_timeout</span> <span class="o">=</span> <span class="n">connect_timeout</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connected_queue</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+        <span class="c1"># {new_id: request}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_request_lookup</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Request</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_next_id</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_conn</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">WebSocketClientConnection</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Create read-only attribute for the remotely reachable blocks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">remote_blocks</span> <span class="o">=</span> <span class="n">TableMeta</span><span class="o">.</span><span class="n">from_table</span><span class="p">(</span>
+            <span class="n">BlockTable</span><span class="p">,</span> <span class="s2">&quot;Remotely reachable blocks&quot;</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_registry</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span><span class="s2">&quot;remoteBlocks&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_blocks</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">do_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">do_init</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_start_client</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_start_client</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Called from cothread</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_conn</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">IOLoopHelper</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">recv_loop</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_connected_queue</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">connect_timeout</span><span class="p">)</span>
+            <span class="n">root_subscribe</span> <span class="o">=</span> <span class="n">Subscribe</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;blocks&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">])</span>
+            <span class="n">root_subscribe</span><span class="o">.</span><span class="n">set_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_update_remote_blocks</span><span class="p">)</span>
+            <span class="n">IOLoopHelper</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_send_request</span><span class="p">,</span> <span class="n">root_subscribe</span><span class="p">)</span>
+
+    <span class="nd">@gen</span><span class="o">.</span><span class="n">coroutine</span>
+    <span class="k">def</span> <span class="nf">recv_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Called from tornado</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;ws://</span><span class="si">%s</span><span class="s2">:</span><span class="si">%d</span><span class="s2">/ws&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hostname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_conn</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">websocket_connect</span><span class="p">(</span>
+            <span class="n">url</span><span class="p">,</span> <span class="n">connect_timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">connect_timeout</span> <span class="o">-</span> <span class="mf">0.5</span>
+        <span class="p">)</span>
+        <span class="n">cothread</span><span class="o">.</span><span class="n">Callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_connected_queue</span><span class="o">.</span><span class="n">put</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_conn</span><span class="o">.</span><span class="n">read_message</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">message</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_conn</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">cothread</span><span class="o">.</span><span class="n">Callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_report_fault</span><span class="p">)</span>
+                <span class="k">return</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">on_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+<div class="viewcode-block" id="WebsocketClientComms.on_message"><a class="viewcode-back" href="../../../../../build/web/controllers_api.html#malcolm.modules.web.controllers.WebsocketClientComms.on_message">[docs]</a>    <span class="k">def</span> <span class="nf">on_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Pass response from server to process receive queue</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            message(str): Received message</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Called in tornado loop</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got message </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">json_decode</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">deserialize_object</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">Response</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="p">(</span><span class="n">Return</span><span class="p">,</span> <span class="n">Error</span><span class="p">)):</span>
+                <span class="n">request</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request_lookup</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">Error</span><span class="p">):</span>
+                    <span class="c1"># Make the message an exception so it can be raised</span>
+                    <span class="n">response</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">ResponseError</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">request</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request_lookup</span><span class="p">[</span><span class="n">response</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>
+            <span class="c1"># Transfer the work of the callback to cothread</span>
+            <span class="n">cothread</span><span class="o">.</span><span class="n">Callback</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">callback</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="c1"># If we don&#39;t catch the exception here, tornado will spew odd</span>
+            <span class="c1"># error messages about &#39;HTTPRequest&#39; object has no attribute &#39;path&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;on_message(</span><span class="si">%r</span><span class="s2">) failed&quot;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_report_fault</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Called in cothread thread</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">value</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_set</span><span class="o">.</span><span class="n">DISABLING</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_set</span><span class="o">.</span><span class="n">FAULT</span><span class="p">,</span> <span class="s2">&quot;Server disconnected&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connected_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_request_lookup</span><span class="p">):</span>
+            <span class="n">request</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request_lookup</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">Error</span><span class="p">(</span>
+                <span class="nb">id</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="n">ResponseError</span><span class="p">(</span><span class="s2">&quot;Server disconnected&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">request</span><span class="o">.</span><span class="n">callback</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="c1"># Most things will error here, not really a problem</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Callback </span><span class="si">%s</span><span class="s2"> raised&quot;</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">callback</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_stop_client</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Called from cothread</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_conn</span><span class="p">:</span>
+            <span class="n">IOLoopHelper</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_conn</span><span class="o">.</span><span class="n">close</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_connected_queue</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">connect_timeout</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_conn</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_update_remote_blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">deserialize_object</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">Update</span><span class="p">)</span>
+        <span class="n">cothread</span><span class="o">.</span><span class="n">Callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_blocks</span><span class="o">.</span><span class="n">set_value</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">do_disable</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">do_disable</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop_client</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">do_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">do_reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_start_client</span><span class="p">()</span>
+
+<div class="viewcode-block" id="WebsocketClientComms.sync_proxy"><a class="viewcode-back" href="../../../../../build/web/controllers_api.html#malcolm.modules.web.controllers.WebsocketClientComms.sync_proxy">[docs]</a>    <span class="k">def</span> <span class="nf">sync_proxy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mri</span><span class="p">,</span> <span class="n">block</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Abstract method telling the ClientComms to sync this proxy Block</span>
+<span class="sd">        with its remote counterpart. Should wait until it is connected</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            mri (str): The mri for the remote block</span>
+<span class="sd">            block (BlockModel): The local proxy Block to keep in sync</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Send a root Subscribe to the server</span>
+        <span class="n">subscribe</span> <span class="o">=</span> <span class="n">Subscribe</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="p">[</span><span class="n">mri</span><span class="p">],</span> <span class="n">delta</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">done_queue</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">handle_response</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
+            <span class="c1"># Called from tornado</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">Delta</span><span class="p">):</span>
+                <span class="c1"># Return or Error is the end of our subscription, log and ignore</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Proxy got response </span><span class="si">%r</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
+                <span class="n">done_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">cothread</span><span class="o">.</span><span class="n">Callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle_response</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="n">done_queue</span><span class="p">)</span>
+
+        <span class="n">subscribe</span><span class="o">.</span><span class="n">set_callback</span><span class="p">(</span><span class="n">handle_response</span><span class="p">)</span>
+        <span class="n">IOLoopHelper</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_send_request</span><span class="p">,</span> <span class="n">subscribe</span><span class="p">)</span>
+        <span class="n">done_queue</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_handle_response</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">Response</span><span class="p">,</span> <span class="n">block</span><span class="p">:</span> <span class="n">BlockModel</span><span class="p">,</span> <span class="n">done_queue</span><span class="p">:</span> <span class="n">Queue</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">changes_squashed</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">change</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">changes</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_handle_change</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">change</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error handling </span><span class="si">{</span><span class="n">response</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">done_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_handle_change</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">change</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">change</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Can&#39;t delete root block with change </span><span class="si">{</span><span class="n">change</span><span class="si">!r}</span><span class="s2">&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_regenerate_block</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">change</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;health&quot;</span><span class="p">,</span> <span class="s2">&quot;meta&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">change</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="c1"># Delete a field</span>
+                <span class="n">block</span><span class="o">.</span><span class="n">remove_endpoint</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Change a single field of the block</span>
+                <span class="n">block</span><span class="o">.</span><span class="n">set_endpoint_data</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">change</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">block</span><span class="o">.</span><span class="n">apply_change</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="o">*</span><span class="n">change</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+    <span class="k">def</span> <span class="nf">_regenerate_block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">block</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">field</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;health&quot;</span><span class="p">,</span> <span class="s2">&quot;meta&quot;</span><span class="p">):</span>
+                <span class="n">block</span><span class="o">.</span><span class="n">remove_endpoint</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">field</span> <span class="o">==</span> <span class="s2">&quot;health&quot;</span><span class="p">:</span>
+                <span class="c1"># Update health attribute</span>
+                <span class="n">value</span><span class="p">:</span> <span class="n">NTScalar</span> <span class="o">=</span> <span class="n">deserialize_object</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="n">block</span><span class="o">.</span><span class="n">health</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span>
+                    <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">alarm</span><span class="o">=</span><span class="n">value</span><span class="o">.</span><span class="n">alarm</span><span class="p">,</span> <span class="n">ts</span><span class="o">=</span><span class="n">value</span><span class="o">.</span><span class="n">timeStamp</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">field</span> <span class="o">==</span> <span class="s2">&quot;meta&quot;</span><span class="p">:</span>
+                <span class="n">value</span><span class="p">:</span> <span class="n">BlockMeta</span> <span class="o">=</span> <span class="n">deserialize_object</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="n">meta</span><span class="p">:</span> <span class="n">BlockMeta</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">meta</span>
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">meta</span><span class="o">.</span><span class="n">call_types</span><span class="p">:</span>
+                    <span class="n">meta</span><span class="o">.</span><span class="n">apply_change</span><span class="p">([</span><span class="n">k</span><span class="p">],</span> <span class="n">value</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">field</span> <span class="o">!=</span> <span class="s2">&quot;typeid&quot;</span><span class="p">:</span>
+                <span class="c1"># No need to set writeable_functions as the server will do it</span>
+                <span class="n">block</span><span class="o">.</span><span class="n">set_endpoint_data</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+<div class="viewcode-block" id="WebsocketClientComms.send_put"><a class="viewcode-back" href="../../../../../build/web/controllers_api.html#malcolm.modules.web.controllers.WebsocketClientComms.send_put">[docs]</a>    <span class="k">def</span> <span class="nf">send_put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mri</span><span class="p">,</span> <span class="n">attribute_name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Abstract method to dispatch a Put to the server</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            mri (str): The mri of the Block</span>
+<span class="sd">            attribute_name (str): The name of the Attribute within the Block</span>
+<span class="sd">            value: The value to put</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">Put</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="p">[</span><span class="n">mri</span><span class="p">,</span> <span class="n">attribute_name</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">],</span> <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">request</span><span class="o">.</span><span class="n">set_callback</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">put</span><span class="p">)</span>
+        <span class="n">IOLoopHelper</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_send_request</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">Error</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">response</span><span class="o">.</span><span class="n">message</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">value</span></div>
+
+<div class="viewcode-block" id="WebsocketClientComms.send_post"><a class="viewcode-back" href="../../../../../build/web/controllers_api.html#malcolm.modules.web.controllers.WebsocketClientComms.send_post">[docs]</a>    <span class="k">def</span> <span class="nf">send_post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mri</span><span class="p">,</span> <span class="n">method_name</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Abstract method to dispatch a Post to the server</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            mri (str): The mri of the Block</span>
+<span class="sd">            method_name (str): The name of the Method within the Block</span>
+<span class="sd">            params: The parameters to send</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The return results from the server</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">Post</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="p">[</span><span class="n">mri</span><span class="p">,</span> <span class="n">method_name</span><span class="p">],</span> <span class="n">parameters</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">request</span><span class="o">.</span><span class="n">set_callback</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">put</span><span class="p">)</span>
+        <span class="n">IOLoopHelper</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_send_request</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">Error</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">response</span><span class="o">.</span><span class="n">message</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">value</span></div>
+
+    <span class="k">def</span> <span class="nf">_send_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="c1"># Called in tornado thread</span>
+        <span class="n">request</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_next_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_next_id</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_request_lookup</span><span class="p">[</span><span class="n">request</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">request</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">json_encode</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Sending message </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_conn</span><span class="o">.</span><span class="n">write_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.modules.pmac.util &mdash; malcolm 6.1 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                6.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>malcolm.modules.pmac.util</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for malcolm.modules.pmac.util</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">Array</span><span class="p">,</span> <span class="n">Sequence</span>
+<span class="kn">from</span> <span class="nn">scanpointgenerator</span> <span class="kn">import</span> <span class="n">CompoundGenerator</span><span class="p">,</span> <span class="n">Mutator</span><span class="p">,</span> <span class="n">Point</span><span class="p">,</span> <span class="n">StaticPointGenerator</span>
+<span class="kn">from</span> <span class="nn">scanpointgenerator.core.point</span> <span class="kn">import</span> <span class="n">Points</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="n">Context</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules</span> <span class="kn">import</span> <span class="n">builtin</span><span class="p">,</span> <span class="n">scanning</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules.scanning.infos</span> <span class="kn">import</span> <span class="n">MotionTriggerInfo</span>
+
+<span class="kn">from</span> <span class="nn">.infos</span> <span class="kn">import</span> <span class="n">MotorInfo</span>
+
+<span class="n">Profiles</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span>
+
+<span class="c1"># All possible PMAC CS axis assignment</span>
+<span class="n">CS_AXIS_NAMES</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="s2">&quot;ABCUVWXYZ&quot;</span><span class="p">)</span>
+
+<span class="c1"># Minimum move time for a whole profile</span>
+<span class="n">MIN_TIME</span> <span class="o">=</span> <span class="mf">0.002</span>
+<span class="c1"># minimum time between points in a profile</span>
+<span class="n">MIN_INTERVAL</span> <span class="o">=</span> <span class="mf">0.002</span>
+
+
+<span class="k">def</span> <span class="nf">cs_port_with_motors_in</span><span class="p">(</span>
+    <span class="n">context</span><span class="p">:</span> <span class="n">Context</span><span class="p">,</span>
+    <span class="n">layout_table</span><span class="p">:</span> <span class="n">builtin</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">LayoutTable</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">mri</span> <span class="ow">in</span> <span class="n">layout_table</span><span class="o">.</span><span class="n">mri</span><span class="p">:</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="n">mri</span><span class="p">)</span>
+        <span class="n">cs</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">cs</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">if</span> <span class="n">cs</span><span class="p">:</span>
+            <span class="n">cs_port</span><span class="p">,</span> <span class="n">cs_axis</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">cs</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">cs_axis</span> <span class="ow">in</span> <span class="n">CS_AXIS_NAMES</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">cs_port</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Can&#39;t find a cs port to use in </span><span class="si">{</span><span class="n">layout_table</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_motion_axes"><a class="viewcode-back" href="../../../../build/pmac/util_api.html#malcolm.modules.pmac.util.get_motion_axes">[docs]</a><span class="k">def</span> <span class="nf">get_motion_axes</span><span class="p">(</span>
+    <span class="n">generator</span><span class="p">:</span> <span class="n">CompoundGenerator</span><span class="p">,</span> <span class="n">axes_to_move</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Filter axes_to_move to only contain motion axes&quot;&quot;&quot;</span>
+    <span class="n">static_generator_axes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">generator</span><span class="o">.</span><span class="n">generators</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">StaticPointGenerator</span><span class="p">):</span>
+            <span class="n">static_generator_axes</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
+    <span class="n">axes_to_move</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">axes_to_move</span> <span class="k">if</span> <span class="n">a</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">static_generator_axes</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">axes_to_move</span></div>
+
+
+<div class="viewcode-block" id="cs_axis_mapping"><a class="viewcode-back" href="../../../../build/pmac/util_api.html#malcolm.modules.pmac.util.cs_axis_mapping">[docs]</a><span class="k">def</span> <span class="nf">cs_axis_mapping</span><span class="p">(</span>
+    <span class="n">context</span><span class="p">:</span> <span class="n">Context</span><span class="p">,</span>
+    <span class="n">layout_table</span><span class="p">:</span> <span class="n">builtin</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">LayoutTable</span><span class="p">,</span>
+    <span class="n">axes_to_move</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">MotorInfo</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Given the layout table of a PMAC, create a MotorInfo for every axis in</span>
+<span class="sd">    axes_to_move that isn&#39;t generated by a StaticPointGenerator. Check that they</span>
+<span class="sd">    are all in the same CS&quot;&quot;&quot;</span>
+    <span class="n">cs_ports</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">axis_mapping</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">MotorInfo</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">mri</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">layout_table</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">layout_table</span><span class="o">.</span><span class="n">mri</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">axes_to_move</span><span class="p">:</span>
+            <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="n">mri</span><span class="p">)</span>
+            <span class="n">max_velocity</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">maxVelocity</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span> <span class="p">(</span>
+                <span class="n">child</span><span class="o">.</span><span class="n">maxVelocityPercent</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="mf">100.0</span>
+            <span class="p">)</span>
+            <span class="n">acceleration</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_velocity</span><span class="p">)</span> <span class="o">/</span> <span class="n">child</span><span class="o">.</span><span class="n">accelerationTime</span><span class="o">.</span><span class="n">value</span>
+            <span class="n">cs</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">cs</span><span class="o">.</span><span class="n">value</span>
+            <span class="k">if</span> <span class="n">cs</span><span class="p">:</span>
+                <span class="n">cs_port</span><span class="p">,</span> <span class="n">cs_axis</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">cs</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">cs_port</span><span class="p">,</span> <span class="n">cs_axis</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span>
+            <span class="k">assert</span> <span class="n">cs_axis</span> <span class="ow">in</span> <span class="n">CS_AXIS_NAMES</span><span class="p">,</span> <span class="s2">&quot;Can only scan 1-1 mappings, </span><span class="si">%r</span><span class="s2"> is </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">name</span><span class="p">,</span>
+                <span class="n">cs_axis</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">cs_ports</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">cs_port</span><span class="p">)</span>
+            <span class="n">axis_mapping</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">MotorInfo</span><span class="p">(</span>
+                <span class="n">cs_axis</span><span class="o">=</span><span class="n">cs_axis</span><span class="p">,</span>
+                <span class="n">cs_port</span><span class="o">=</span><span class="n">cs_port</span><span class="p">,</span>
+                <span class="n">acceleration</span><span class="o">=</span><span class="n">acceleration</span><span class="p">,</span>
+                <span class="n">resolution</span><span class="o">=</span><span class="n">child</span><span class="o">.</span><span class="n">resolution</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="n">offset</span><span class="o">=</span><span class="n">child</span><span class="o">.</span><span class="n">offset</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="n">max_velocity</span><span class="o">=</span><span class="n">max_velocity</span><span class="p">,</span>
+                <span class="n">current_position</span><span class="o">=</span><span class="n">child</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="n">scannable</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">velocity_settle</span><span class="o">=</span><span class="n">child</span><span class="o">.</span><span class="n">velocitySettle</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="n">units</span><span class="o">=</span><span class="n">child</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="n">user_high_limit</span><span class="o">=</span><span class="n">child</span><span class="o">.</span><span class="n">userHighLimit</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="n">user_low_limit</span><span class="o">=</span><span class="n">child</span><span class="o">.</span><span class="n">userLowLimit</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="n">dial_high_limit</span><span class="o">=</span><span class="n">child</span><span class="o">.</span><span class="n">dialHighLimit</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="n">dial_low_limit</span><span class="o">=</span><span class="n">child</span><span class="o">.</span><span class="n">dialLowLimit</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="p">)</span>
+    <span class="n">missing</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">axes_to_move</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">axis_mapping</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">missing</span><span class="p">,</span> <span class="s2">&quot;Some scannables </span><span class="si">%s</span><span class="s2"> are not in the CS mapping </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+        <span class="n">missing</span><span class="p">,</span>
+        <span class="n">axis_mapping</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">cs_ports</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Requested axes </span><span class="si">%s</span><span class="s2"> are in multiple CS numbers </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+        <span class="n">axes_to_move</span><span class="p">,</span>
+        <span class="nb">list</span><span class="p">(</span><span class="n">cs_ports</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">cs_axis_counts</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">cs_axis</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">axis_mapping</span><span class="o">.</span><span class="n">values</span><span class="p">()])</span>
+    <span class="c1"># Any cs_axis defs that are used for more that one raw motor</span>
+    <span class="n">overlap</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">cs_axis_counts</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">overlap</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;CS axis defs </span><span class="si">{</span><span class="n">overlap</span><span class="si">}</span><span class="s2"> have more that one raw motor attached&quot;</span>
+    <span class="k">return</span> <span class="n">axis_mapping</span></div>
+
+
+<div class="viewcode-block" id="cs_axis_numbers"><a class="viewcode-back" href="../../../../build/pmac/util_api.html#malcolm.modules.pmac.util.cs_axis_numbers">[docs]</a><span class="k">def</span> <span class="nf">cs_axis_numbers</span><span class="p">(</span>
+    <span class="n">context</span><span class="p">:</span> <span class="n">Context</span><span class="p">,</span>
+    <span class="n">layout_table</span><span class="p">:</span> <span class="n">builtin</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">LayoutTable</span><span class="p">,</span>
+    <span class="n">cs_port</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Given the layout table of a PMAC, get the axis number for each name</span>
+<span class="sd">    in the table which is in the specified CS&quot;&quot;&quot;</span>
+    <span class="n">axis_numbers</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">mri</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">layout_table</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">layout_table</span><span class="o">.</span><span class="n">mri</span><span class="p">):</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="n">mri</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">axis_number</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">axisNumber</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
+            <span class="n">axis_number</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cs</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">cs</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
+            <span class="n">cs</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">cs</span> <span class="ow">and</span> <span class="n">axis_number</span><span class="p">:</span>
+            <span class="n">child_cs_port</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">cs</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">cs_port</span> <span class="o">==</span> <span class="n">child_cs_port</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">axis_numbers</span><span class="p">:</span>
+                    <span class="n">axis_numbers</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">axis_number</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">axis_numbers</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">axis_number</span>
+    <span class="k">return</span> <span class="n">axis_numbers</span></div>
+
+
+<span class="k">def</span> <span class="nf">and_all_axes</span><span class="p">(</span><span class="n">axes</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Array</span><span class="p">[</span><span class="nb">bool</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Array</span><span class="p">[</span><span class="nb">bool</span><span class="p">]:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">axes</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">axis</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+
+<div class="viewcode-block" id="all_points_same_velocities"><a class="viewcode-back" href="../../../../build/pmac/util_api.html#malcolm.modules.pmac.util.all_points_same_velocities">[docs]</a><span class="k">def</span> <span class="nf">all_points_same_velocities</span><span class="p">(</span><span class="n">points</span><span class="p">:</span> <span class="n">Points</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Array</span><span class="p">[</span><span class="nb">bool</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;return a numpy array of bool where each element is true</span>
+<span class="sd">    if the corresponding element is points has the same velocity as the</span>
+<span class="sd">    next element (for all axes at this point)&quot;&quot;&quot;</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">axis_name</span> <span class="ow">in</span> <span class="n">points</span><span class="o">.</span><span class="n">upper</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">velocities</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">points</span><span class="o">.</span><span class="n">upper</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span> <span class="o">-</span> <span class="n">points</span><span class="o">.</span><span class="n">lower</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span>
+        <span class="p">)</span> <span class="o">/</span> <span class="n">points</span><span class="o">.</span><span class="n">duration</span>
+        <span class="n">v1</span> <span class="o">=</span> <span class="n">velocities</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">v2</span> <span class="o">=</span> <span class="n">velocities</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="n">results</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">and_all_axes</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+    <span class="c1"># If we have no axes then all velocities are the same</span>
+    <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="all_points_joined"><a class="viewcode-back" href="../../../../build/pmac/util_api.html#malcolm.modules.pmac.util.all_points_joined">[docs]</a><span class="k">def</span> <span class="nf">all_points_joined</span><span class="p">(</span><span class="n">points</span><span class="p">:</span> <span class="n">Points</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Array</span><span class="p">[</span><span class="nb">bool</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Check for axes that need to move within the space between points</span>
+<span class="sd">    this check is performed on all points and returns an array of</span>
+<span class="sd">    bool where True implies that the point at this index is joined</span>
+<span class="sd">    to the point at the next index</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">no_delay</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">delay_after</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">axis_name</span> <span class="ow">in</span> <span class="n">points</span><span class="o">.</span><span class="n">upper</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">uppers</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">upper</span><span class="p">[</span><span class="n">axis_name</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">lowers</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">lower</span><span class="p">[</span><span class="n">axis_name</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="n">results</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">uppers</span> <span class="o">==</span> <span class="n">lowers</span><span class="p">,</span> <span class="n">no_delay</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">and_all_axes</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+    <span class="c1"># If we have no axes then all points are joined</span>
+    <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="point_velocities"><a class="viewcode-back" href="../../../../build/pmac/util_api.html#malcolm.modules.pmac.util.point_velocities">[docs]</a><span class="k">def</span> <span class="nf">point_velocities</span><span class="p">(</span>
+    <span class="n">axis_mapping</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">MotorInfo</span><span class="p">],</span> <span class="n">point</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span> <span class="n">entry</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Find the velocities of each axis over the entry/exit of current point&quot;&quot;&quot;</span>
+    <span class="n">velocities</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">axis_name</span><span class="p">,</span> <span class="n">motor_info</span> <span class="ow">in</span> <span class="n">axis_mapping</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="c1">#            x</span>
+        <span class="c1">#        x       x</span>
+        <span class="c1">#    x               x</span>
+        <span class="c1">#    vl  vlp vp  vpu vu</span>
+        <span class="c1"># Given distances from point,lower, position, upper, calculate</span>
+        <span class="c1"># velocity at entry (vl) or exit (vu) of point by extrapolation</span>
+        <span class="n">dp</span> <span class="o">=</span> <span class="n">point</span><span class="o">.</span><span class="n">upper</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span> <span class="o">-</span> <span class="n">point</span><span class="o">.</span><span class="n">lower</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span>
+        <span class="n">vp</span> <span class="o">=</span> <span class="n">dp</span> <span class="o">/</span> <span class="n">point</span><span class="o">.</span><span class="n">duration</span>
+        <span class="k">if</span> <span class="n">entry</span><span class="p">:</span>
+            <span class="c1"># Halfway point is vlp, so calculate dlp</span>
+            <span class="n">d_half</span> <span class="o">=</span> <span class="n">point</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span> <span class="o">-</span> <span class="n">point</span><span class="o">.</span><span class="n">lower</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Halfway point is vpu, so calculate dpu</span>
+            <span class="n">d_half</span> <span class="o">=</span> <span class="n">point</span><span class="o">.</span><span class="n">upper</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span> <span class="o">-</span> <span class="n">point</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span>
+        <span class="c1"># Extrapolate to get our entry or exit velocity</span>
+        <span class="c1"># (vl + vp) / 2 = vlp</span>
+        <span class="c1"># so vl = 2 * vlp - vp</span>
+        <span class="c1"># where vlp = dlp / (t/2)</span>
+        <span class="n">velocity</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">d_half</span> <span class="o">/</span> <span class="n">point</span><span class="o">.</span><span class="n">duration</span> <span class="o">-</span> <span class="n">vp</span>
+        <span class="n">max_velocity</span> <span class="o">=</span> <span class="n">motor_info</span><span class="o">.</span><span class="n">max_velocity</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">velocity</span><span class="p">)</span> <span class="o">-</span> <span class="n">max_velocity</span><span class="p">)</span> <span class="o">/</span> <span class="n">max_velocity</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Velocity </span><span class="si">{</span><span class="n">velocity</span><span class="si">}</span><span class="s2"> invalid for </span><span class="si">{</span><span class="n">axis_name</span><span class="si">}</span><span class="s2"> with &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;max_velocity </span><span class="si">{</span><span class="n">max_velocity</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="n">velocities</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">velocity</span>
+    <span class="k">return</span> <span class="n">velocities</span></div>
+
+
+<div class="viewcode-block" id="profile_between_points"><a class="viewcode-back" href="../../../../build/pmac/util_api.html#malcolm.modules.pmac.util.profile_between_points">[docs]</a><span class="k">def</span> <span class="nf">profile_between_points</span><span class="p">(</span>
+    <span class="n">axis_mapping</span><span class="p">:</span> <span class="p">(</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">MotorInfo</span><span class="p">]),</span>
+    <span class="n">point</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span>
+    <span class="n">next_point</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span>
+    <span class="n">min_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">MIN_TIME</span><span class="p">,</span>
+    <span class="n">min_interval</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">MIN_INTERVAL</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Make consistent time and velocity arrays for each axis</span>
+
+<span class="sd">    Try to create velocity profiles for all axes that all arrive at</span>
+<span class="sd">    &#39;distance&#39; in the same time period. The profiles will contain the</span>
+<span class="sd">    following points:-</span>
+
+<span class="sd">    in the following description acceleration can be -ve or +ve depending</span>
+<span class="sd">    on the relative sign of v1 and v2. fabs(vm) is &lt;= maximum velocity</span>
+<span class="sd">    - start point at 0 secs with velocity v1     start accelerating</span>
+<span class="sd">    - middle velocity start                      reached speed vm</span>
+<span class="sd">    - middle velocity end                        start accelerating</span>
+<span class="sd">    - end point with velocity v2                 reached target speed</span>
+
+<span class="sd">    Time at vm may be 0 in which case there are only 3 points and</span>
+<span class="sd">    acceleration to v2 starts as soon as vm is reached.</span>
+
+<span class="sd">    If the profile has to be stretched to achieve min_time then the</span>
+<span class="sd">    the middle period at speed vm is extended accordingly.</span>
+
+<span class="sd">    After generating all the profiles this function checks to ensure they</span>
+<span class="sd">    have all achieved min_time. If not min_time is reset to the slowest</span>
+<span class="sd">    profile and all profiles are recalculated.</span>
+
+<span class="sd">    Note that for each profile the area under the velocity/time plot</span>
+<span class="sd">    must equal &#39;distance&#39;. The class VelocityProfile implements the math</span>
+<span class="sd">    to achieve this.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">start_velocities</span> <span class="o">=</span> <span class="n">point_velocities</span><span class="p">(</span><span class="n">axis_mapping</span><span class="p">,</span> <span class="n">point</span><span class="p">)</span>
+    <span class="n">end_velocities</span> <span class="o">=</span> <span class="n">point_velocities</span><span class="p">(</span><span class="n">axis_mapping</span><span class="p">,</span> <span class="n">next_point</span><span class="p">,</span> <span class="n">entry</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">p</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">new_min_time</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">time_arrays</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">velocity_arrays</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">profiles</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="c1"># The first iteration reveals the slowest profile. The second generates</span>
+    <span class="c1"># all profiles with the slowest min_time</span>
+    <span class="n">iterations</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="k">while</span> <span class="n">iterations</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">axis_name</span><span class="p">,</span> <span class="n">motor_info</span> <span class="ow">in</span> <span class="n">axis_mapping</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">distance</span> <span class="o">=</span> <span class="n">next_point</span><span class="o">.</span><span class="n">lower</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span> <span class="o">-</span> <span class="n">point</span><span class="o">.</span><span class="n">upper</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span>
+            <span class="c1"># If the distance is tiny, round to zero</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">distance</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">):</span>
+                <span class="n">distance</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">motor_info</span><span class="o">.</span><span class="n">make_velocity_profile</span><span class="p">(</span>
+                <span class="n">start_velocities</span><span class="p">[</span><span class="n">axis_name</span><span class="p">],</span>
+                <span class="n">end_velocities</span><span class="p">[</span><span class="n">axis_name</span><span class="p">],</span>
+                <span class="n">distance</span><span class="p">,</span>
+                <span class="n">min_time</span><span class="p">,</span>
+                <span class="n">min_interval</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="c1"># Absolute time values that we are at that velocity</span>
+            <span class="n">profiles</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span>
+            <span class="n">new_min_time</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">new_min_time</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">t_total</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">new_min_time</span><span class="p">,</span> <span class="n">min_time</span><span class="p">):</span>
+            <span class="c1"># We&#39;ve got our consistent set - see if they require quantization</span>
+            <span class="n">quantize</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">for</span> <span class="n">axis_name</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">axis_mapping</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">quantize</span> <span class="o">=</span> <span class="n">quantize</span> <span class="ow">or</span> <span class="n">profiles</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span><span class="o">.</span><span class="n">check_quantize</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">axis_name</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">axis_mapping</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">quantize</span><span class="p">:</span>
+                    <span class="n">profiles</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span><span class="o">.</span><span class="n">quantize</span><span class="p">()</span>
+                <span class="n">time_arrays</span><span class="p">[</span><span class="n">axis_name</span><span class="p">],</span> <span class="n">velocity_arrays</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">profiles</span><span class="p">[</span>
+                    <span class="n">axis_name</span>
+                <span class="p">]</span><span class="o">.</span><span class="n">make_arrays</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">time_arrays</span><span class="p">,</span> <span class="n">velocity_arrays</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">min_time</span> <span class="o">=</span> <span class="n">new_min_time</span>
+            <span class="n">iterations</span> <span class="o">-=</span> <span class="mi">1</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Can&#39;t get a consistent time in 2 iterations&quot;</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">get_motion_trigger</span><span class="p">(</span>
+    <span class="n">part_info</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">APartInfo</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">MotionTrigger</span><span class="p">:</span>
+    <span class="n">infos</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">MotionTriggerInfo</span><span class="p">]</span> <span class="o">=</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">MotionTriggerInfo</span><span class="o">.</span><span class="n">filter_values</span><span class="p">(</span>
+        <span class="n">part_info</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">infos</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">infos</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Expected 0 or 1 MotionTriggerInfo, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">infos</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">trigger</span> <span class="o">=</span> <span class="n">infos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">trigger</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">trigger</span> <span class="o">=</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">MotionTrigger</span><span class="o">.</span><span class="n">EVERY_POINT</span>
+    <span class="k">return</span> <span class="n">trigger</span>
+
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Minimum turnaround time for non-joined points&quot;</span><span class="p">):</span>
+    <span class="n">AMinTurnaround</span> <span class="o">=</span> <span class="nb">float</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Minimum interval between turnaround points&quot;</span><span class="p">):</span>
+    <span class="n">AMinInterval</span> <span class="o">=</span> <span class="nb">float</span>
+
+
+<div class="viewcode-block" id="MinTurnaround"><a class="viewcode-back" href="../../../../build/pmac/util_api.html#malcolm.modules.pmac.util.MinTurnaround">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">MinTurnaround</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Dataclass for the Minimum turnaround information.</span>
+
+<span class="sd">    This may come from a MinTurnaroundInfo if the scan block has a MinTurnaroundPart</span>
+<span class="sd">    otherwise MIN_TIME and MIN_INTERVAL are used as default values.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">time</span><span class="p">:</span> <span class="n">AMinTurnaround</span>
+    <span class="n">interval</span><span class="p">:</span> <span class="n">AMinInterval</span></div>
+
+
+<span class="k">def</span> <span class="nf">get_min_turnaround</span><span class="p">(</span>
+    <span class="n">part_info</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">APartInfo</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MinTurnaround</span><span class="p">:</span>
+    <span class="c1"># Use the part if it exists</span>
+    <span class="n">infos</span> <span class="o">=</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">MinTurnaroundInfo</span><span class="o">.</span><span class="n">filter_values</span><span class="p">(</span><span class="n">part_info</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">infos</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">infos</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Expected 0 or 1 MinTurnaroundInfos, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">infos</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">min_turnaround</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">MIN_TIME</span><span class="p">,</span> <span class="n">infos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">gap</span><span class="p">)</span>
+        <span class="n">min_interval</span> <span class="o">=</span> <span class="n">infos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">interval</span>
+    <span class="c1"># Otherwise use the defaults</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">min_turnaround</span> <span class="o">=</span> <span class="n">MIN_TIME</span>
+        <span class="n">min_interval</span> <span class="o">=</span> <span class="n">MIN_INTERVAL</span>
+
+    <span class="k">return</span> <span class="n">MinTurnaround</span><span class="p">(</span><span class="n">min_turnaround</span><span class="p">,</span> <span class="n">min_interval</span><span class="p">)</span>
+
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Delay after value to add to even points&quot;</span><span class="p">):</span>
+    <span class="n">AEvenDelayAfter</span> <span class="o">=</span> <span class="nb">float</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Delay after value to add to odd points&quot;</span><span class="p">):</span>
+    <span class="n">AOddDelayAfter</span> <span class="o">=</span> <span class="nb">float</span>
+
+
+<div class="viewcode-block" id="AlternatingDelayAfterMutator"><a class="viewcode-back" href="../../../../build/pmac/util_api.html#malcolm.modules.pmac.util.AlternatingDelayAfterMutator">[docs]</a><span class="k">class</span> <span class="nc">AlternatingDelayAfterMutator</span><span class="p">(</span><span class="n">Mutator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Mutator to add alternating delay_after values based on the index of each point&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">even_delay_after</span><span class="p">:</span> <span class="n">AEvenDelayAfter</span><span class="p">,</span> <span class="n">odd_delay_after</span><span class="p">:</span> <span class="n">AOddDelayAfter</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delays</span> <span class="o">=</span> <span class="p">[</span><span class="n">even_delay_after</span><span class="p">,</span> <span class="n">odd_delay_after</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">mutate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">Array</span><span class="p">[</span><span class="nb">int</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Point</span><span class="p">:</span>
+        <span class="n">delay_after</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">Points</span><span class="p">):</span>
+            <span class="c1"># We have multiple points, so we should have multiple indices in a list</span>
+            <span class="c1"># or array</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
+                <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">List</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+            <span class="p">),</span> <span class="s2">&quot;Indices needs to be list or array for multiple points&quot;</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
+            <span class="n">delay_after</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
+                <span class="n">delay_after</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">delays</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">%</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># We should only have a single point</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
+                <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">)</span>
+            <span class="p">),</span> <span class="s2">&quot;Indices needs to be list or array for multiple points&quot;</span>
+            <span class="n">delay_after</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">delays</span><span class="p">[</span><span class="n">idx</span> <span class="o">%</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="n">point</span><span class="o">.</span><span class="n">delay_after</span> <span class="o">+=</span> <span class="n">delay_after</span>
+        <span class="k">return</span> <span class="n">point</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

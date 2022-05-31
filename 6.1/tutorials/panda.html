@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PandA Master Tutorial &mdash; malcolm 6.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Glossary" href="../reference/glossary.html" />
+    <link rel="prev" title="PMAC Master Tutorial" href="pmac.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../contents.html" class="icon icon-home"> malcolm
+            <img src="../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                6.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">PandA Master Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#strategy">Strategy</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#position-compare">Position Compare</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#motion-gate">Motion Gate</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#adding-to-the-scan-block">Adding to the scan Block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#setup-the-devices">Setup the Devices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#setup-the-scan">Setup the Scan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../contents.html" class="icon icon-home"></a> &raquo;</li>
+      <li>PandA Master Tutorial</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorials/panda.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="panda-master-tutorial">
+<span id="panda-tutorial"></span><h1>PandA Master Tutorial<a class="headerlink" href="#panda-master-tutorial" title="Permalink to this headline"></a></h1>
+<p>You should already know how to create a <a class="reference internal" href="../reference/glossary.html#block"><span class="std std-ref">Block</span></a> in the <a class="reference internal" href="../reference/glossary.html#scan-layer"><span class="std std-ref">Scan Layer</span></a> that
+can control a Delta Tau PMAC, sending triggers to a <a class="reference external" href="https://www.ohwr.org/project/pandabox/wikis/home">PandABox</a> which forwards
+them to detectors and captures encoder positions. We now move onto using the
+PandA in a more intelligent way, either listening to the encoder positions or
+a single gating signal for each sequence of points, and generating the trigger
+stream itself.</p>
+<section id="strategy">
+<h2>Strategy<a class="headerlink" href="#strategy" title="Permalink to this headline"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A more in-depth overview of this topic can be found in
+<a class="reference internal" href="../reference/triggering.html#trajectory-scan-triggering"><span class="std std-ref">Trajectory Scan Triggering</span></a>, with a description of PandA-based triggering
+at the bottom.</p>
+</div>
+<p>Imagine a 2D Grid scan, with a number of rows. PandA should wait until the
+start of the row, then make the right number of time based trigger signals,
+then wait for the turnaround to happen before waiting for the next row. This
+waiting can be either based on the encoder position (Position Compare), or for
+a gating signal from the motion controller that goes high for the duration of
+the row.</p>
+<p>This strategy can be extended to any sort of scan trajectory. It is implemented
+by Malcolm generating a table of sequencer rows, with 3 sequencer rows per scan
+section without gaps. These rows are described below for each case:</p>
+<section id="position-compare">
+<h3>Position Compare<a class="headerlink" href="#position-compare" title="Permalink to this headline"></a></h3>
+<ol class="arabic simple">
+<li><p>Compare on the lower bound of the motor that moves by the biggest number of
+counts during the first point of the row, producing one live trigger pulse</p></li>
+<li><p>Produce the rest of the live triggers for the row</p></li>
+<li><p>Produce a dead trigger for the start of the turnaround, waiting for the
+amount of time that the motor is going in the wrong direction during the
+turnaround</p></li>
+</ol>
+</section>
+<section id="motion-gate">
+<h3>Motion Gate<a class="headerlink" href="#motion-gate" title="Permalink to this headline"></a></h3>
+<ol class="arabic simple">
+<li><p>Wait for gating signal to go high, then produce one live trigger pulse</p></li>
+<li><p>Produce the rest of the live triggers for the row</p></li>
+<li><p>Wait for the gating signal to go low, then produce a dead trigger pulse</p></li>
+</ol>
+</section>
+</section>
+<section id="adding-to-the-scan-block">
+<h2>Adding to the scan Block<a class="headerlink" href="#adding-to-the-scan-block" title="Permalink to this headline"></a></h2>
+<p>In the <a class="reference internal" href="pmac.html#pmac-tutorial"><span class="std std-ref">PMAC Master Tutorial</span></a> you should have created a <code class="docutils literal notranslate"><span class="pre">scan_block.yaml</span></code> in the
+<code class="docutils literal notranslate"><span class="pre">etc/malcolm/blocks</span></code> subdirectory. We will now add a new
+<a class="reference internal" href="../build/ADPandABlocks/blocks_api.html#malcolm.modules.ADPandABlocks.blocks.panda_seq_trigger_block" title="malcolm.modules.ADPandABlocks.blocks.panda_seq_trigger_block"><code class="xref any py py-func docutils literal notranslate"><span class="pre">panda_seq_trigger_block</span></code></a> and its corresponding <a class="reference internal" href="../build/ADPandABlocks/parts_api.html#malcolm.modules.ADPandABlocks.parts.PandASeqTriggerPart" title="malcolm.modules.ADPandABlocks.parts.PandASeqTriggerPart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">PandASeqTriggerPart</span></code></a> to it. It
+will hold the <a class="reference internal" href="../reference/glossary.html#mri"><span class="std std-ref">mri</span></a> of the PandA and Brick that are performing the scan, and
+will set the PandA sequencer tables to the correct values:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>...
+
+- scanning.parts.DetectorChildPart:
+    name: PANDA-01
+    mri: BLxxI-ML-PANDA-01
+    initial_visibility: True
+
+- ADPandABlocks.blocks.panda_seq_trigger_block:
+    mri: $(mri_prefix):TRIG
+    panda: BLxxI-ML-PANDA-01
+    pmac: BLxxI-ML-BRICK-01
+
+# Make this initially invisible so it doesn&#39;t disturb existing scans
+- ADPandABlocks.parts.PandASeqTriggerPart:
+    name: TRIG
+    mri: $(mri_prefix):TRIG
+    initial_visibility: False
+</pre></div>
+</div>
+<p>The <a class="reference internal" href="../build/scanning/parts_api.html#malcolm.modules.scanning.parts.DetectorChildPart" title="malcolm.modules.scanning.parts.DetectorChildPart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DetectorChildPart</span></code></a> definition for the PandA is unchanged, the TRIG Block
+purely holds the data of which panda and which pmac to use, so all of the logic
+is contained in the TRIG Part.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The PandAPcompPart has initial_visibility set to False, which means that the
+block is not part of the layout by default. We do this because we are adding
+this Part to an existing scan Block definition, which already has instances
+and possibly saved configs. Loading a saved config will only affect Parts
+and Blocks contained within it, so any existing saved config will not touch
+this new TRIG Part. If it was visible, it would contribute to the existing
+scans too, which would make them error as the PandA wouldn’t have been setup
+for it.</p>
+</div>
+</section>
+<section id="setup-the-devices">
+<h2>Setup the Devices<a class="headerlink" href="#setup-the-devices" title="Permalink to this headline"></a></h2>
+<p>We can now run up imalcolm by executing <code class="docutils literal notranslate"><span class="pre">etc/malcolm/BLxxI-ML-MALC-01.yaml</span></code>,
+and open <a class="reference external" href="http://localhost:8008/gui/BLxxI-ML-SCAN-01">http://localhost:8008/gui/BLxxI-ML-SCAN-01</a> to see our scan Block.
+First, just check that the config we saved in the previous tutorial still works.
+It should run with no modifications. If this is all fine, then the motion
+controller will require no changes:</p>
+<img alt="../_images/panda_0.png" src="../_images/panda_0.png" />
+<p>We can then navigate back up and to the PandA, and load the <a class="reference internal" href="../reference/glossary.html#template-design"><span class="std std-ref">Template Design</span></a>
+<code class="docutils literal notranslate"><span class="pre">template_double_seq_pcomp</span></code>:</p>
+<img alt="../_images/panda_1.png" src="../_images/panda_1.png" />
+<p>This design sets up a pair of SEQ blocks that Malcolm will write to to produce
+the live and dead signals based on encoder inputs or motion gating signal. You
+should wire any input encoders to <code class="docutils literal notranslate"><span class="pre">posa</span></code>, <code class="docutils literal notranslate"><span class="pre">posb</span></code>, <code class="docutils literal notranslate"><span class="pre">posc</span></code> of <strong>both</strong> SEQ
+Blocks, and the motion gating signal to <code class="docutils literal notranslate"><span class="pre">bita</span></code> of <strong>both</strong> SEQ Blocks if you
+are using that mode.</p>
+<p>The Blocks after the SEQ blocks are very similar to the PMAC live and dead
+frame processing (minus the PULSE block as PandA will drop its pulse outputs
+on disable). The live and dead signals are turned into a detector trigger, PCAP
+trigger and gate.</p>
+<p>The Blocks before the SEQ blocks make sure that the SEQ Blocks act as a double
+buffered design, when one ends it flips to the other, until no more frames are
+to be output. There is a delay on the inputs of LUT3 to make sure that SEQ1 is
+always the first to fire. There is also an SRGATE that acts as a trigger to
+start when the motors are in position.</p>
+<p>So that Malcolm knows which scannable is connected to which input of the SEQ
+Blocks, the Positions table needs to be setup:</p>
+<img alt="../_images/panda_2.png" src="../_images/panda_2.png" />
+<p>The positions the sequencer inputs are connected to need to be setup with the
+correct scale and offset (normally inherited from the EPICS motor records with
+ADPandABlocksMotorSync.template), and a dataset name that matches the scannable
+name.</p>
+<p>We also need to tell Malcolm what sequencers to use and how to enable when the
+motors are in position. We do this with the <a class="reference internal" href="../reference/glossary.html#exports"><span class="std std-ref">Exports</span></a> table:</p>
+<img alt="../_images/panda_3.png" src="../_images/panda_3.png" />
+<p>The names on the right are listed in the documentation for the
+<a class="reference internal" href="../build/ADPandABlocks/parts_api.html#malcolm.modules.ADPandABlocks.parts.PandASeqTriggerPart" title="malcolm.modules.ADPandABlocks.parts.PandASeqTriggerPart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">PandASeqTriggerPart</span></code></a> as the interface it expects to be exported by the PandA.
+This allows for mixing of functionality in a single design, with multiple parts
+possibly working on different parts of the same PandA. The names on the left are
+the child fields that should be exported.</p>
+<p>In this case we are exporting everything that needs to change, namely the two
+SEQ tables, and the SRGATE <code class="docutils literal notranslate"><span class="pre">forceSet()</span></code> Method.</p>
+<p>Now we have changed the inputs and outputs to this chain of Blocks, we can
+save the design with a new name.</p>
+</section>
+<section id="setup-the-scan">
+<h2>Setup the Scan<a class="headerlink" href="#setup-the-scan" title="Permalink to this headline"></a></h2>
+<p>We can now setup the scan Block in the same way as the <a class="reference internal" href="pmac.html#pmac-tutorial"><span class="std std-ref">PMAC Master Tutorial</span></a> by:</p>
+<ul class="simple">
+<li><p>Setting the scan <code class="docutils literal notranslate"><span class="pre">Label</span></code></p></li>
+<li><p>Setting <code class="docutils literal notranslate"><span class="pre">Simultaneous</span> <span class="pre">Axes</span></code></p></li>
+<li><p>Saving the design with a name that is similar to the label</p></li>
+</ul>
+<p>We can also switch the row triggering mode between Postion Compare (the default)
+and Motion Controller gating signal:</p>
+<img alt="../_images/panda_4.png" src="../_images/panda_4.png" />
+<p>This will make a saved config that captures the device design names:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;layout&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">&quot;BRICK-01&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mf">139.60000610351562</span><span class="p">,</span>
+        <span class="s2">&quot;visible&quot;</span><span class="p">:</span> <span class="n">true</span>
+      <span class="p">},</span>
+      <span class="s2">&quot;PANDA-01&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.3333333333333712</span><span class="p">,</span>
+        <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">1.1111111111110858</span><span class="p">,</span>
+        <span class="s2">&quot;visible&quot;</span><span class="p">:</span> <span class="n">true</span>
+      <span class="p">},</span>
+      <span class="s2">&quot;TRIG&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mf">378.5</span><span class="p">,</span>
+        <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.5</span><span class="p">,</span>
+        <span class="s2">&quot;visible&quot;</span><span class="p">:</span> <span class="n">true</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;exports&quot;</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="s2">&quot;simultaneousAxes&quot;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="s2">&quot;stagea&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;stagex&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;minTurnaround&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="s2">&quot;minTurnaroundInterval&quot;</span><span class="p">:</span> <span class="mf">0.006</span><span class="p">,</span>
+    <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;PandA Master Tomography&quot;</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;children&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;BRICK&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">&quot;design&quot;</span><span class="p">:</span> <span class="s2">&quot;a_z_in_cs1&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;PANDABOX&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">&quot;design&quot;</span><span class="p">:</span> <span class="s2">&quot;panda_master&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;TRIG&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">&quot;panda&quot;</span><span class="p">:</span> <span class="s2">&quot;BL49P-ML-PANDA-01&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;pmac&quot;</span><span class="p">:</span> <span class="s2">&quot;BL49P-ML-BRICK-01&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;rowTrigger&quot;</span><span class="p">:</span> <span class="s2">&quot;Motion Controller&quot;</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We have made a new design for SCAN-01. This means we can switch between
+trigger schemes on the same scan Block without having to change anything in
+GDA. If you need both trigger schemes to be available in GDA, then leave the
+first scan as it was, and make a second scan Block, setting it up according
+to the instructions above</p>
+</div>
+<p>If we now want this to always be the default setup for this Scan, then we
+can set the <code class="docutils literal notranslate"><span class="pre">initial_design</span></code> for this scan instance in
+<code class="docutils literal notranslate"><span class="pre">etc/malcolm/BLxxI-ML-MALC-01.yaml</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>...
+
+# Define the Scans
+- BLxxI.blocks.scan_block:
+    mri_prefix: BLxxI-ML-SCAN-01
+    config_dir: $(config_dir)
+    initial_design: panda_master_tomo
+
+# More scans here...
+
+...
+</pre></div>
+</div>
+</section>
+<section id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline"></a></h2>
+<p>This tutorial has given us an understanding of how to perform a scan with the
+PandA acting as master, doing position compare on encoders or listing for a row
+gating signal and sending time based triggers to a detector. The next tutorial
+will show how PandA can trigger multiple detectors at different rates.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pmac.html" class="btn btn-neutral float-left" title="PMAC Master Tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../reference/glossary.html" class="btn btn-neutral float-right" title="Glossary" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

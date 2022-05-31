@@ -1,0 +1,12 @@
+
+profiling
+=========
+
+.. module:: malcolm.modules.profiling
+
+.. toctree::
+    :maxdepth: 1
+    :caption: malcolm.modules.profiling
+
+    blocks <blocks_api.rst>
+    parts <parts_api.rst>

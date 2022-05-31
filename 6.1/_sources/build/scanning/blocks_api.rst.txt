@@ -1,0 +1,6 @@
+
+malcolm.modules.scanning.blocks
+===============================
+
+.. automodule:: malcolm.modules.scanning.blocks
+    :members:

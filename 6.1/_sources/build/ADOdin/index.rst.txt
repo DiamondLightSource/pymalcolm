@@ -1,0 +1,12 @@
+
+ADOdin
+======
+
+.. module:: malcolm.modules.ADOdin
+
+.. toctree::
+    :maxdepth: 1
+    :caption: malcolm.modules.ADOdin
+
+    blocks <blocks_api.rst>
+    parts <parts_api.rst>

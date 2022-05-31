@@ -1,0 +1,6 @@
+
+malcolm.modules.pva.blocks
+==========================
+
+.. automodule:: malcolm.modules.pva.blocks
+    :members:

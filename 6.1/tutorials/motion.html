@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Motion Tutorial &mdash; malcolm 6.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Detector Tutorial" href="detector.html" />
+    <link rel="prev" title="Counter Tutorial" href="counter.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../contents.html" class="icon icon-home"> malcolm
+            <img src="../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                6.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Motion Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#creating-device-blocks">Creating Device Blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#controller-for-device-blocks">Controller for Device Blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#adding-functionality-to-a-managercontroller">Adding functionality to a ManagerController</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-it-looks-in-the-gui">How it looks in the GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#deleting-blocks">Deleting Blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#load-save">Load/Save</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../contents.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Motion Tutorial</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorials/motion.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="motion-tutorial">
+<span id="id1"></span><h1>Motion Tutorial<a class="headerlink" href="#motion-tutorial" title="Permalink to this headline"></a></h1>
+<p>You should already know how to create a <a class="reference internal" href="../reference/glossary.html#part"><span class="std std-ref">Part</span></a> that attaches <a class="reference internal" href="../reference/glossary.html#attribute"><span class="std std-ref">Attributes</span></a> and <a class="reference internal" href="../reference/glossary.html#method"><span class="std std-ref">Methods</span></a> to a <a class="reference internal" href="../reference/glossary.html#block"><span class="std std-ref">Block</span></a>. The Blocks we have made in
+previous tutorials are quite simple and low level and might correspond to the
+interface provided by EPICS devices: a collection of Attributes that we can set
+and simple Methods we can call that cause the device to operate in a particular
+way. We call Blocks like this the <a class="reference internal" href="../reference/glossary.html#hardware-layer"><span class="std std-ref">Hardware Layer</span></a>. To get more complicated
+functionality we need to compose these together into a higher level
+<a class="reference internal" href="../reference/glossary.html#device-layer"><span class="std std-ref">Device Layer</span></a> containing Blocks that will control a number of child Hardware
+Blocks to synchronise them and use them for a particular application.</p>
+<p>In this tutorial we will build a simple Device Block that represents motion
+controller hardware moving two motors. A pair of counter Blocks will serve as
+“motors”.</p>
+<section id="creating-device-blocks">
+<h2>Creating Device Blocks<a class="headerlink" href="#creating-device-blocks" title="Permalink to this headline"></a></h2>
+<p>Let’s dive right in and look at the <a class="reference internal" href="../reference/glossary.html#process-definition"><span class="std std-ref">Process Definition</span></a>
+<code class="docutils literal notranslate"><span class="pre">./malcolm/modules/demo/DEMO-MOTION.yaml</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define a directory to store config in</span>
+<span class="p p-Indicator">-</span> <span class="nt">builtin.defines.tmp_dir</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">config_dir</span>
+
+<span class="c1"># Create some Blocks</span>
+<span class="p p-Indicator">-</span> <span class="nt">demo.blocks.motion_block</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">MOTION</span>
+    <span class="nt">config_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(config_dir)</span>
+
+<span class="c1"># Add a webserver</span>
+<span class="p p-Indicator">-</span> <span class="nt">web.blocks.web_server_block</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">WEB</span>
+</pre></div>
+</div>
+<p>First we create a temporary directory to hold saved configs. In production we
+would point this to a persistent file-system, but here we ask Malcolm to create
+a directory somewhere in <code class="docutils literal notranslate"><span class="pre">/tmp</span></code> for us.</p>
+<p>Apart from the web server block, all that we do here is load a single Motion
+Block. We have to look at <code class="docutils literal notranslate"><span class="pre">./malcolm/modules/demo/blocks/motion_block.yaml</span></code> to
+see what one of those does:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define the parameters this Block will take</span>
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mri</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Malcolm resource id of the Block</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">config_dir</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Where to store saved configs</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.defines.docstring</span><span class="p">:</span>
+    <span class="nt">value</span><span class="p">:</span> <span class="p p-Indicator">|</span>
+      <span class="no">Device Block that controls 2 child counters to simulate a motor controller</span>
+      <span class="no">with move methods</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.controllers.ManagerController</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(mri)</span>
+    <span class="nt">config_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(config_dir)</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(docstring)</span>
+
+<span class="c1"># Add the Counter blocks</span>
+<span class="p p-Indicator">-</span> <span class="nt">demo.blocks.counter_block</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(mri):COUNTERX</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">demo.blocks.counter_block</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(mri):COUNTERY</span>
+
+<span class="c1"># Add Parts to use the Counter blocks within Motion block</span>
+<span class="p p-Indicator">-</span> <span class="nt">demo.parts.CounterMovePart</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">x</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(mri):COUNTERX</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">demo.parts.CounterMovePart</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">y</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(mri):COUNTERY</span>
+</pre></div>
+</div>
+<p>We instantiate two Counter blocks (<code class="docutils literal notranslate"><span class="pre">$(mir):COUNTERX</span></code> and <code class="docutils literal notranslate"><span class="pre">$(mir):COUNTERY</span></code>)
+and instantiate two CounterMoveParts (<code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">y</span></code>) that will connect to them.
+We then use a <a class="reference internal" href="../build/builtin/controllers_api.html#malcolm.modules.builtin.controllers.ManagerController" title="malcolm.modules.builtin.controllers.ManagerController"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ManagerController</span></code></a> to construct our Block.</p>
+<p>This tree of Blocks is probably better viewed as a diagram:</p>
+<div class="graphviz"><object data="../_images/graphviz-2e1324d5bf6ca7bf3173e4d0748065f8dc5387b4.svg" type="image/svg+xml" class="graphviz">
+<p class="warning">digraph motion_child_connections {
+newrank=true;  // Sensible ranking of clusters
+bgcolor=transparent
+compound=true
+node [fontname=Arial fontsize=10 shape=rect style=filled fillcolor=&quot;#8BC4E9&quot;]
+graph [fontname=Arial fontsize=10]
+edge [fontname=Arial fontsize=10 arrowhead=vee]
+
+subgraph cluster_device {
+    label=&quot;Device Layer&quot;
+            style=filled
+            color=lightgrey
+
+    subgraph cluster_motion {
+        label=&quot;MOTION&quot;
+        ranksep=0.1
+                color=white
+        motion_c [label=&quot;ManagerController&quot;]
+        x [label=&lt;CounterMovePart&lt;BR/&gt;name: 'x'&gt;]
+        y [label=&lt;CounterMovePart&lt;BR/&gt;name: 'y'&gt;]
+        motion_c -&gt; x [style=invis]
+        motion_c -&gt; y [style=invis]
+    }
+}
+
+subgraph cluster_hardware {
+    label=&quot;Hardware Layer&quot;
+            style=filled
+            color=lightgrey
+
+    subgraph cluster_counterx {
+        label=&quot;COUNTERX&quot;
+        color=white
+        counterx_c [label=&quot;BasicController&quot;]
+        counterx_p [label=&quot;CounterPart&quot;]
+        counterx_c -&gt; counterx_p [style=invis]
+    }
+
+    subgraph cluster_countery {
+        label=&quot;COUNTERY&quot;
+        color=white
+        countery_c [label=&quot;BasicController&quot;]
+        countery_p [label=&quot;CounterPart&quot;]
+        countery_c -&gt; countery_p [style=invis]
+    }
+}
+
+x -&gt; counterx_c [lhead=cluster_counterx minlen=3 style=dashed]
+y -&gt; countery_c [lhead=cluster_countery minlen=3 style=dashed]
+}</p></object></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Blocks in the Device layer create their child Blocks. This is because their
+children have only one logical parent, the Device they belong to.</p>
+</div>
+</section>
+<section id="controller-for-device-blocks">
+<h2>Controller for Device Blocks<a class="headerlink" href="#controller-for-device-blocks" title="Permalink to this headline"></a></h2>
+<p>All Blocks in the Device Layer control child Blocks. A <a class="reference internal" href="../reference/glossary.html#controller"><span class="std std-ref">Controller</span></a> that
+provides functionality aimed at managing child Blocks is called a
+<a class="reference internal" href="../build/builtin/controllers_api.html#malcolm.modules.builtin.controllers.ManagerController" title="malcolm.modules.builtin.controllers.ManagerController"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ManagerController</span></code></a>. It provides functionality like Load/Save, disabling and
+enabling child Blocks, and a state machine to protect against these functions
+being called at the wrong time. Settings of its children are managed using
+<a class="reference internal" href="../reference/glossary.html#design"><span class="std std-ref">Designs</span></a> which can be swapped between at runtime.</p>
+<p>It has the following Attributes:</p>
+<table class="colwidths-given docutils align-default">
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 80%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Attribute</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">health</span></code></p></td>
+<td><p>If something goes wrong, this will show the error message, otherwise it
+has the value “OK”</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">state</span></code></p></td>
+<td><p>The current state the Block is in, determines which Methods and
+Attributes are writeable at present</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">layout</span></code></p></td>
+<td><p>A Table of child Blocks, whether they are currently visible (enabled),
+and their X and Y positions for visualization in the web GUI</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">design</span></code></p></td>
+<td><p>The current saved design name. It is a choice (populated at startup)
+of all the design names that have previously been saved. When selected
+it will restore the settings of the Block and its children to the
+contents of the design file</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">exports</span></code></p></td>
+<td><p>A Table of extra fields that can be promoted up to the parent.
+(Use to be demonstrated in a later tutorial.)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">modified</span></code></p></td>
+<td><p>A read-only LED indicating if any of our settings or our children have
+changed since the last save</p></td>
+</tr>
+</tbody>
+</table>
+<p>And the following Methods:</p>
+<table class="colwidths-given docutils align-default">
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 80%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">disable</span></code></p></td>
+<td><p>Disable any functionality, connections, and polling that the Block
+is currently doing</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">reset</span></code></p></td>
+<td><p>If Disabled or in Fault state, clear any errors and restart any
+connections and polling that the Block normally does</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">save</span></code></p></td>
+<td><p>Save the attributes of the parent and immediate children to a JSON
+file with the given design name, in a directory specified when the
+ManagerController was created.</p></td>
+</tr>
+</tbody>
+</table>
+<p>And implements the following StateMachine:</p>
+<div class="graphviz"><object data="../_images/graphviz-177c6ecedd8ae0322b244dd4b3efeca0e61c0bd0.svg" type="image/svg+xml" class="graphviz">
+<p class="warning">digraph {
+    newrank=true;  // Sensible ranking of clusters
+    bgcolor=transparent
+    compound=true
+    rankdir=LR
+    node [fontname=Arial fontsize=10 shape=rect style=filled fillcolor=&quot;#8BC4E9&quot;]
+    graph [fontname=Arial fontsize=11]
+    edge [fontname=Arial fontsize=10 arrowhead=vee]
+    Fault [fillcolor=&quot;#F03232&quot;]
+    Disabled [fillcolor=&quot;#AAAAAA&quot;]
+
+    subgraph cluster_normal {
+        Ready [fillcolor=&quot;#BBE7BB&quot;]
+        Ready -&gt; Saving [label=&quot;save()&quot;]
+        Saving -&gt; Ready [weight=0]
+        Ready -&gt; Loading [label=&quot;put\ndesign&quot;]
+        Loading -&gt; Ready [weight=0]
+        Resetting -&gt; Ready
+    }
+    Resetting -&gt; Disabling [ltail=cluster_normal label=&quot;disable()&quot;]
+    Resetting -&gt; Fault [ltail=cluster_normal label=&quot;on_error&quot;]
+
+    Fault -&gt; Resetting [label=&quot;reset()&quot;]
+    Fault -&gt; Disabling [label=&quot;disable()&quot;]
+    Disabling -&gt; Fault [label=&quot;on_error&quot;]
+    Disabling -&gt; Disabled
+    Disabled -&gt; Resetting [label=&quot;reset()&quot;]
+
+    label=&quot;Unlabelled transitions take place in response to internal actions\n
+           Labelled transitions are triggered externally.&quot;;
+    labelloc=bottom;
+}</p></object></div>
+</section>
+<section id="adding-functionality-to-a-managercontroller">
+<h2>Adding functionality to a ManagerController<a class="headerlink" href="#adding-functionality-to-a-managercontroller" title="Permalink to this headline"></a></h2>
+<p>In the previous tutorials we have implemented a subclass of <a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Part</span></code></a> to add
+functionality to our Controller. In this tutorial we have to manage a child
+Block, so we will subclass <a class="reference internal" href="../build/builtin/parts_api.html#malcolm.modules.builtin.parts.ChildPart" title="malcolm.modules.builtin.parts.ChildPart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ChildPart</span></code></a>, which has functions to manage a single
+child Block, like Load/Save.</p>
+<p>The aim of this tutorial is to make something that looks like a motion
+controller, so we will make our Part expose a single method “moveX” (or “moveY”)
+that will “move” it’s child Block by doing a Put to the counter value.</p>
+<p>We instantiate two parts, so here are some of the Methods and Attributes
+created:</p>
+<div class="graphviz"><object data="../_images/graphviz-3f4a6e850ada48a6fa6591a9a5bf1f8db3cc3883.svg" type="image/svg+xml" class="graphviz">
+<p class="warning">digraph motion_controllers_and_parts {
+newrank=true;  // Sensible ranking of clusters
+bgcolor=transparent
+node [fontname=Arial fontsize=10 shape=rect style=filled fillcolor=&quot;#8BC4E9&quot;]
+graph [fontname=Arial fontsize=11]
+edge [fontname=Arial fontsize=10 arrowhead=none]
+
+controller [label=&lt;ManagerController&lt;BR/&gt;mri: 'MOTION'&gt;]
+mpart1 [label=&lt;CounterMovePart&lt;BR/&gt;name: 'x'&gt;]
+mpart2 [label=&lt;CounterMovePart&lt;BR/&gt;name: 'y'&gt;]
+
+subgraph cluster_control {
+    label=&quot;Control&quot;
+    labelloc=&quot;b&quot;
+    controller -&gt; mpart1
+    controller -&gt; mpart2
+}
+
+block [label=&lt;Block&lt;BR/&gt;mri: 'MOTION'&gt;]
+design [label=&lt;Attribute&lt;BR/&gt;name: 'design'&gt;]
+save [label=&lt;Method&lt;BR/&gt;name: 'save'&gt;]
+moveX [label=&lt;Method&lt;BR/&gt;name: 'moveX'&gt;]
+moveY [label=&lt;Method&lt;BR/&gt;name: 'moveY'&gt;]
+
+subgraph cluster_view {
+    label=&quot;View&quot;
+    labelloc=&quot;b&quot;
+    block -&gt; design
+    block -&gt; save
+    block -&gt; moveX
+    block -&gt; moveY
+}
+
+{rank=same;controller block}
+{rank=same;mpart1 mpart2 design save moveX moveY}
+
+mpart1 -&gt; moveX [style=dashed]
+mpart2 -&gt; moveY [style=dashed]
+controller -&gt; design [style=dashed]
+controller -&gt; save [style=dashed]
+controller -&gt; block [arrowhead=vee dir=from style=dashed label=produces]
+}</p></object></div>
+<p>Lets take a look at <code class="docutils literal notranslate"><span class="pre">./malcolm/modules/demo/parts/countermovepart.py</span></code> to see
+how it does this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">add_call_types</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="n">PartRegistrar</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules</span> <span class="kn">import</span> <span class="n">builtin</span>
+
+<span class="c1"># Pull re-used annotypes into our namespace in case we are subclassed</span>
+<span class="n">APartName</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">APartName</span>
+<span class="n">AMri</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">AMri</span>
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;The demand value to move our counter motor to&quot;</span><span class="p">):</span>
+    <span class="n">ADemand</span> <span class="o">=</span> <span class="nb">float</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;The amount of time to get to the demand position&quot;</span><span class="p">):</span>
+    <span class="n">ADuration</span> <span class="o">=</span> <span class="nb">float</span>
+
+<span class="c1"># How long between ticks of the &quot;motor&quot; position while moving</span>
+<span class="n">UPDATE_TICK</span> <span class="o">=</span> <span class="mf">0.1</span>
+
+
+<span class="c1"># We will set these attributes on the child block, so don&#39;t save them</span>
+<span class="nd">@builtin</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">no_save</span><span class="p">(</span><span class="s2">&quot;counter&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">CounterMovePart</span><span class="p">(</span><span class="n">builtin</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">ChildPart</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Provides control of a `counter_block` within a `ManagerController`&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">APartName</span><span class="p">,</span> <span class="n">mri</span><span class="p">:</span> <span class="n">AMri</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">mri</span><span class="p">,</span> <span class="n">stateful</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">initial_visibility</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">registrar</span><span class="p">:</span> <span class="n">PartRegistrar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">registrar</span><span class="p">)</span>
+        <span class="c1"># Method</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">add_method_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">move</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;Move&quot;</span><span class="p">,</span> <span class="n">needs_context</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">builtin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">,</span> <span class="n">demand</span><span class="p">:</span> <span class="n">ADemand</span><span class="p">,</span> <span class="n">duration</span><span class="p">:</span> <span class="n">ADuration</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Move the counter to the demand value, taking duration seconds like</span>
+<span class="sd">        a motor would do&quot;&quot;&quot;</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+        <span class="n">distance</span> <span class="o">=</span> <span class="n">demand</span> <span class="o">-</span> <span class="n">child</span><span class="o">.</span><span class="n">counter</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">remaining</span> <span class="o">=</span> <span class="n">duration</span>
+        <span class="c1"># &quot;Move&quot; the motor, ticking at UPDATE_TICK rate</span>
+        <span class="k">while</span> <span class="n">remaining</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">child</span><span class="o">.</span><span class="n">counter</span><span class="o">.</span><span class="n">put_value</span><span class="p">(</span><span class="n">demand</span> <span class="o">-</span> <span class="n">distance</span> <span class="o">*</span> <span class="n">remaining</span> <span class="o">/</span> <span class="n">duration</span><span class="p">)</span>
+            <span class="n">context</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">remaining</span><span class="p">,</span> <span class="n">UPDATE_TICK</span><span class="p">))</span>
+            <span class="n">remaining</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">duration</span> <span class="o">-</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="c1"># Final move to make sure we end up at the right place</span>
+        <span class="n">child</span><span class="o">.</span><span class="n">counter</span><span class="o">.</span><span class="n">put_value</span><span class="p">(</span><span class="n">demand</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The first thing to note is the imports, we are pulling in a malcolm module
+<code class="docutils literal notranslate"><span class="pre">builtin</span></code>. Anything that can be instantiated in a YAML file lives in a module
+rather than in <code class="docutils literal notranslate"><span class="pre">malcolm.core</span></code>. By convention we import modules by name into
+our namespace rather than importing from them. This makes it clear where things
+come from in the code. We also explicitly pull a couple of annotypes into our
+namespace (as explained below) for annotating <code class="docutils literal notranslate"><span class="pre">__init__</span></code>, and create an
+annotype that we will use in our <code class="docutils literal notranslate"><span class="pre">move()</span></code> Method.</p>
+<p>Moving on to the class definition, we see a decorator <a class="reference internal" href="../build/builtin/util_api.html#malcolm.modules.builtin.util.no_save" title="malcolm.modules.builtin.util.no_save"><code class="xref any py py-func docutils literal notranslate"><span class="pre">no_save</span></code></a>. This defines
+the set of Attributes of our child Counter Block that we will set with our
+Methods and shouldn’t appear in the design when we <code class="docutils literal notranslate"><span class="pre">save()</span></code>. In this case
+“counter” is the only Attribute we set and therefore don’t want to save.</p>
+<p>The CounterMovePart subclasses <a class="reference internal" href="../build/builtin/parts_api.html#malcolm.modules.builtin.parts.ChildPart" title="malcolm.modules.builtin.parts.ChildPart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ChildPart</span></code></a>, but this time we do some extra work in
+the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method. Whenever we override <code class="docutils literal notranslate"><span class="pre">__init__</span></code> it is important to
+call the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> that we have just overridden, and that is what the
+<a class="reference external" href="https://docs.python.org/3/library/functions.html#super" title="(in Python v3.10)"><code class="xref any docutils literal notranslate"><span class="pre">super</span></code></a> call does. This is a Python construct that lets us reliably call methods
+of our superclass that we have just overridden, even if multiple inheritance is
+used. If someone instantiates CounterMovePart, then
+<code class="docutils literal notranslate"><span class="pre">super(CounterMovePart,</span> <span class="pre">self).__init__</span></code> will return the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> function of
+<a class="reference internal" href="../build/builtin/parts_api.html#malcolm.modules.builtin.parts.ChildPart" title="malcolm.modules.builtin.parts.ChildPart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ChildPart</span></code></a>, bound so that <code class="docutils literal notranslate"><span class="pre">self</span></code> does not need to be passed into it.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It’s not necessary to understand what <a class="reference external" href="https://docs.python.org/3/library/functions.html#super" title="(in Python v3.10)"><code class="xref any docutils literal notranslate"><span class="pre">super</span></code></a> does, but it is necessary to
+use it when you need to call the method you have just overridden, otherwise
+your class may not behave correctly if subclassed and multiple inheritance
+is used.</p>
+</div>
+<p>When overriding an <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method we need to know what arguments to pass
+to the base class and their types. Looking at the docs and sources of
+<code class="docutils literal notranslate"><span class="pre">ChildPart.__init</span></code> we can see:</p>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.builtin.parts.</span></span><span class="sig-name descname"><span class="pre">ChildPart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">Anno(name='APartName'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Part</span> <span class="pre">within</span> <span class="pre">the</span> <span class="pre">Controller')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mri:</span> <span class="pre">Anno(name='AMri'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Malcolm</span> <span class="pre">resource</span> <span class="pre">id</span> <span class="pre">of</span> <span class="pre">child</span> <span class="pre">object')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_visibility:</span> <span class="pre">Optional[Anno(name='AInitialVisibility'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Whether</span> <span class="pre">the</span> <span class="pre">part</span> <span class="pre">is</span> <span class="pre">initially</span> <span class="pre">visible</span> <span class="pre">with</span> <span class="pre">no</span> <span class="pre">config</span> <span class="pre">loaded</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">None</span> <span class="pre">means</span> <span class="pre">only</span> <span class="pre">if</span> <span class="pre">child</span> <span class="pre">Source/Sink</span> <span class="pre">Ports</span> <span class="pre">connect</span> <span class="pre">to</span> <span class="pre">another</span> <span class="pre">Block')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stateful:</span> <span class="pre">Anno(name='AStateful'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='If</span> <span class="pre">the</span> <span class="pre">child</span> <span class="pre">is</span> <span class="pre">a</span> <span class="pre">StatefulController</span> <span class="pre">then</span> <span class="pre">this</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">True')</span> <span class="pre">=</span> <span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/builtin/parts/childpart.html#ChildPart"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – The name of the Part within the Controller</p></li>
+<li><p><strong>mri</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Malcolm resource id of child object</p></li>
+<li><p><strong>initial_visibility</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Whether the part is initially visible with no config loaded, None means only if child Source/Sink Ports connect to another Block</p></li>
+<li><p><strong>stateful</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – If the child is a StatefulController then this should be True</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">APartName</span><span class="p">,</span>
+        <span class="n">mri</span><span class="p">:</span> <span class="n">AMri</span><span class="p">,</span>
+        <span class="n">initial_visibility</span><span class="p">:</span> <span class="n">UInitialVisibility</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">stateful</span><span class="p">:</span> <span class="n">AStateful</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</pre></div>
+</div>
+<p>We need to pass <code class="docutils literal notranslate"><span class="pre">name</span></code> and <code class="docutils literal notranslate"><span class="pre">mri</span></code> straight down to the superclass, but
+we know that a Counter Block is not stateful, so we can pass <code class="docutils literal notranslate"><span class="pre">stateful=False</span></code>,
+and we want the child Block to be immediately visible as soon as the parent
+Block is initialized, so we pass <code class="docutils literal notranslate"><span class="pre">initial_visibility=True</span></code>.</p>
+<p>We also add a type comment to the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method that tells anyone using
+the Part what parameters should be passed to the initializer. As we are passing
+the arguments straight down to the superclass, we can reuse the annotypes, which
+means we will inherit the description assigned to them.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We pull <code class="docutils literal notranslate"><span class="pre">APartName</span></code> and <code class="docutils literal notranslate"><span class="pre">AMri</span></code> into our namespace before using it in the
+<code class="docutils literal notranslate"><span class="pre">__init__</span></code> type comment. This is so that anyone who subclasses us can
+easily reuse the same annotypes without having to go up to our parent to
+get them.</p>
+</div>
+<p>In <code class="docutils literal notranslate"><span class="pre">setup()</span></code> we export a single Method, but as we are expecting to have
+many of these Parts in a single Controller, we prefix the Method name with the
+name of the Part, so it is unique in the Block. For our example, we have two
+CounterMoveParts, <code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">y</span></code>, so the resulting Block should have <code class="docutils literal notranslate"><span class="pre">xMove()</span></code>
+and <code class="docutils literal notranslate"><span class="pre">yMove()</span></code> Methods. The <code class="docutils literal notranslate"><span class="pre">needs_context=True</span></code> argument tells Malcolm that
+when the move Method is called, it should be passed a <a class="reference internal" href="../reference/glossary.html#context"><span class="std std-ref">Context</span></a> object as the
+first argument. This utility object makes us a <a class="reference internal" href="../api/core_api.html#malcolm.core.Block" title="malcolm.core.Block"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Block</span></code></a> view so we can interact
+with our child Block.</p>
+<p>Finally we define the <code class="docutils literal notranslate"><span class="pre">move()</span></code> Method. As well as the <a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Context</span></code></a> we requested,
+it takes arguments <code class="docutils literal notranslate"><span class="pre">demand</span></code> and <code class="docutils literal notranslate"><span class="pre">duration</span></code> which are described by annotypes.
+We use the <code class="docutils literal notranslate"><span class="pre">context</span></code> to create a <a class="reference internal" href="../api/core_api.html#malcolm.core.Block" title="malcolm.core.Block"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Block</span></code></a> view of the Counter child Block, then
+repeatedly get its <code class="docutils literal notranslate"><span class="pre">counter</span></code> <a class="reference internal" href="../api/core_api.html#malcolm.core.Attribute" title="malcolm.core.Attribute"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Attribute</span></code></a> view and call <a class="reference internal" href="../api/core_api.html#malcolm.core.Attribute.put_value" title="malcolm.core.Attribute.put_value"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Attribute.put_value</span></code></a>
+on it so that the Counter Block sets its counter value to a number of values,
+ending up at <code class="docutils literal notranslate"><span class="pre">demand</span></code>. Each put_value waits for completion (which is almost
+instant).</p>
+</section>
+<section id="how-it-looks-in-the-gui">
+<h2>How it looks in the GUI<a class="headerlink" href="#how-it-looks-in-the-gui" title="Permalink to this headline"></a></h2>
+<p>Let’s run up the demo and see how it looks in the GUI:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[me@mypc pymalcolm]$ pipenv run imalcolm malcolm/modules/demo/DEMO-MOTION.yaml
+Loading malcolm...
+Python 3.7.2 (default, Jan 20 2020, 11:03:41)
+Type &#39;copyright&#39;, &#39;credits&#39; or &#39;license&#39; for more information
+IPython 7.19.0 -- An enhanced Interactive Python. Type &#39;?&#39; for help.
+
+
+Welcome to iMalcolm.
+
+self.mri_list:
+    [&#39;MOTION:COUNTERX&#39;, &#39;MOTION:COUNTERY&#39;, &#39;MOTION&#39;, &#39;WEB&#39;]
+
+# To create a view of an existing Block
+block = self.block_view(&quot;&lt;mri&gt;&quot;)
+
+# To create a proxy of a Block in another Malcolm
+self.make_proxy(&quot;&lt;client_comms_mri&gt;&quot;, &quot;&lt;mri&gt;&quot;)
+block = self.block_view(&quot;&lt;mri&gt;&quot;)
+
+# To view state of Blocks in a GUI
+!firefox localhost:8008
+
+In [1]:
+</pre></div>
+</div>
+<p>Open <a class="reference external" href="http://localhost:8008">http://localhost:8008</a> in your favourite browser and click on the “…”
+button next to “Select a root block” to select the <strong>MOTION</strong> Block. You will
+see the <strong>MOTION</strong> Block appear in the left hand pane:</p>
+<img alt="../_images/motion_0.png" src="../_images/motion_0.png" />
+<p>If you click on the “Edit” button next to “Layout”, then click “Auto Layout”,
+you will see the children of the MOTION Block, our two counter Blocks controlled
+by parts named x and y:</p>
+<img alt="../_images/motion_1.png" src="../_images/motion_1.png" />
+<p>Let’s try a motor move. If you select the “x” Block by left clicking on it, a
+right hand pane will pop out showing a view of the counter Block just like
+we saw in the previous tutorial. If you expand the section on the left titled
+“X Move”, you will see a method that takes a arguments “Demand”, “Duration”, and
+an “X MOVE” button to run the method. Fill in a demand value and duration and
+hit the button and you will see the counter value change:</p>
+<img alt="../_images/motion_2.png" src="../_images/motion_2.png" />
+</section>
+<section id="deleting-blocks">
+<h2>Deleting Blocks<a class="headerlink" href="#deleting-blocks" title="Permalink to this headline"></a></h2>
+<p>Let’s pretend that a motor is broken and we don’t want to expose “X Move” any
+more. We can do this by hiding it from the layout, so it doesn’t contribute
+to the Parent Block any more. If we click on “x” and hit the delete key, or
+start dragging it to the bin that will appear in the bottom right of the screen,
+then it will disappear. You will now see that the “X Move” Method has vanished:</p>
+<img alt="../_images/motion_3.png" src="../_images/motion_3.png" />
+<p>This mechanism can be used to enable and disable Parts at runtime without
+restarting Malcolm, and it opens the way for swapping between dynamic
+configurations.</p>
+</section>
+<section id="load-save">
+<h2>Load/Save<a class="headerlink" href="#load-save" title="Permalink to this headline"></a></h2>
+<p>To swap between dynamic configurations we use the concept of designs. The state
+of the parent and it’s immediate children can be saved to a file and restored
+at a later date. These configurations are stored on a per Block basis in the
+<code class="docutils literal notranslate"><span class="pre">config_dir</span></code> specified in the top level YAML file.</p>
+<p>If you look at the left hand sign of the screen you should see a “Modified” LED
+which should be lit. This is saying that there are unsaved changes since either
+startup or the last save. This is true, as we have deleted one of our parts.
+Let’s save our current design by expanding the “Save” section, filling in the
+design name, and hitting “SAVE”:</p>
+<img alt="../_images/motion_4.png" src="../_images/motion_4.png" />
+<p>When you press save, Malcolm will check if it writing to a temporary directory,
+and if so warn us what it has written with a message like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">malcolm</span><span class="o">.</span><span class="n">modules</span><span class="o">.</span><span class="n">builtin</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">managercontroller</span><span class="o">.</span><span class="n">ManagerController</span><span class="o">.</span><span class="n">MOTION</span><span class="p">:</span> <span class="n">Saving</span> <span class="n">to</span> <span class="n">tmp</span> <span class="n">directory</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">tmpHGUXzA</span><span class="o">/</span><span class="n">MOTION</span><span class="o">/</span><span class="n">only_y</span><span class="o">.</span><span class="n">json</span>
+</pre></div>
+</div>
+<p>If we take a look at <code class="docutils literal notranslate"><span class="pre">/tmp/*/MOTION/only_y.json</span></code> we can see what got saved:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;layout&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="s2">&quot;visible&quot;</span><span class="p">:</span> <span class="n">false</span>
+      <span class="p">},</span>
+      <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mf">58.30000305175781</span><span class="p">,</span>
+        <span class="s2">&quot;visible&quot;</span><span class="p">:</span> <span class="n">true</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;exports&quot;</span><span class="p">:</span> <span class="p">{}</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;children&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">&quot;delta&quot;</span><span class="p">:</span> <span class="mf">1.0</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">&quot;delta&quot;</span><span class="p">:</span> <span class="mf">1.0</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>We can see that x is marked as not visible, and for both x and y we have saved
+the “delta” value of the Blocks.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The counter value didn’t get saved because we specified it in <code class="docutils literal notranslate"><span class="pre">no_save</span></code>.
+If we had left this out, then each time the motor moved the modified LED
+would light, and when we restored a design the ‘motor’ would move!</p>
+</div>
+<p>Let’s try making some changes. Click on the Palette and drag “x” back onto the
+screen. Click on “y” and change delta, then we will see this:</p>
+<img alt="../_images/motion_5.png" src="../_images/motion_5.png" />
+<p>Notice that “X Move” has reappeared, and tooltip for the Modified LED gives a
+message about y.delta.value changing as well as the layout change. If we
+re-select the Design to be “only_y” you should see the Modified LED clear,
+the X Block vanish, and the “X Move” Method disappear too.</p>
+</section>
+<section id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline"></a></h2>
+<p>This tutorial has given us an understanding of how ManagerControllers can be
+used to create Device Blocks that control child Hardware Blocks, how ChildParts
+can be turned on and off at runtime, and settings loaded and saved to make
+designs. In the next tutorial we will see another more complicated Device
+Block that implements a configure/run type interface.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="counter.html" class="btn btn-neutral float-left" title="Counter Tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="detector.html" class="btn btn-neutral float-right" title="Detector Tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

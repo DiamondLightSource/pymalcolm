@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.yamlutil &mdash; malcolm 6.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                6.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>malcolm.yamlutil</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for malcolm.yamlutil</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">importlib</span>
+<span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">MutableSequence</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">NO_DEFAULT</span><span class="p">,</span> <span class="n">Anno</span>
+<span class="kn">from</span> <span class="nn">ruamel.yaml</span> <span class="kn">import</span> <span class="n">YAML</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.compat</span> <span class="kn">import</span> <span class="n">OrderedDict</span><span class="p">,</span> <span class="n">raise_with_traceback</span>
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="n">Controller</span><span class="p">,</span> <span class="n">Define</span><span class="p">,</span> <span class="n">MethodMeta</span><span class="p">,</span> <span class="n">Part</span><span class="p">,</span> <span class="n">YamlError</span>
+
+<span class="c1"># Create a module level logger</span>
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">SECTION_NAMES</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">,</span> <span class="s2">&quot;controllers&quot;</span><span class="p">,</span> <span class="s2">&quot;parts&quot;</span><span class="p">,</span> <span class="s2">&quot;blocks&quot;</span><span class="p">,</span> <span class="s2">&quot;includes&quot;</span><span class="p">,</span> <span class="s2">&quot;defines&quot;</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">_create_takes_arguments</span><span class="p">(</span><span class="n">sections</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;Section&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Anno</span><span class="p">]:</span>
+    <span class="n">takes_arguments</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">sections</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">section</span><span class="o">.</span><span class="n">section</span> <span class="o">==</span> <span class="s2">&quot;parameters&quot;</span><span class="p">:</span>
+            <span class="n">takes_arguments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">section</span><span class="o">.</span><span class="n">instantiate</span><span class="p">({}))</span>
+    <span class="n">annos</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">takes_arguments</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="n">NO_DEFAULT</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span>
+        <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">takes_arguments</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">NO_DEFAULT</span>
+    <span class="p">]</span>
+    <span class="k">return</span> <span class="n">annos</span>
+
+
+<span class="k">def</span> <span class="nf">_create_blocks_and_parts</span><span class="p">(</span>
+    <span class="n">sections</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;Section&quot;</span><span class="p">],</span> <span class="n">params</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Controller</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Part</span><span class="p">]]:</span>
+    <span class="n">controllers</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">sections</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">section</span><span class="o">.</span><span class="n">section</span> <span class="o">==</span> <span class="s2">&quot;blocks&quot;</span><span class="p">:</span>
+            <span class="c1"># Any child blocks</span>
+            <span class="n">controllers</span> <span class="o">+=</span> <span class="n">section</span><span class="o">.</span><span class="n">instantiate</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">section</span><span class="o">.</span><span class="n">section</span> <span class="o">==</span> <span class="s2">&quot;includes&quot;</span><span class="p">:</span>
+            <span class="c1"># Includes can have child blocks and/or lists of parts</span>
+            <span class="n">new_c</span><span class="p">,</span> <span class="n">new_p</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">instantiate</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+            <span class="n">controllers</span> <span class="o">+=</span> <span class="n">new_c</span>
+            <span class="n">parts</span> <span class="o">+=</span> <span class="n">new_p</span>
+        <span class="k">elif</span> <span class="n">section</span><span class="o">.</span><span class="n">section</span> <span class="o">==</span> <span class="s2">&quot;parts&quot;</span><span class="p">:</span>
+            <span class="c1"># A single part</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">section</span><span class="o">.</span><span class="n">instantiate</span><span class="p">(</span><span class="n">params</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">controllers</span><span class="p">,</span> <span class="n">parts</span>
+
+
+<span class="k">def</span> <span class="nf">_create_defines</span><span class="p">(</span>
+    <span class="n">sections</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;Section&quot;</span><span class="p">],</span> <span class="n">yamlname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">yamldir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="c1"># Start with some</span>
+    <span class="n">defines</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">yamlname</span><span class="o">=</span><span class="n">yamlname</span><span class="p">,</span> <span class="n">yamldir</span><span class="o">=</span><span class="n">yamldir</span><span class="p">,</span> <span class="n">docstring</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="c1"># Add in the parameter defaults</span>
+    <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">sections</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">section</span><span class="o">.</span><span class="n">section</span> <span class="o">==</span> <span class="s2">&quot;parameters&quot;</span><span class="p">:</span>
+            <span class="n">parameter</span><span class="p">:</span> <span class="n">Anno</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">instantiate</span><span class="p">(</span><span class="n">defines</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">parameter</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">NO_DEFAULT</span><span class="p">:</span>
+                <span class="n">defines</span><span class="p">[</span><span class="n">parameter</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">parameter</span><span class="o">.</span><span class="n">default</span>
+    <span class="k">if</span> <span class="n">params</span><span class="p">:</span>
+        <span class="n">defines</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">sections</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">section</span><span class="o">.</span><span class="n">section</span> <span class="o">==</span> <span class="s2">&quot;defines&quot;</span><span class="p">:</span>
+            <span class="n">define</span><span class="p">:</span> <span class="n">Define</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">instantiate</span><span class="p">(</span><span class="n">defines</span><span class="p">)</span>
+            <span class="n">defines</span><span class="p">[</span><span class="n">define</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">define</span><span class="o">.</span><span class="n">value</span>
+    <span class="k">return</span> <span class="n">defines</span>
+
+
+<div class="viewcode-block" id="check_yaml_names"><a class="viewcode-back" href="../../api/yamlutil_api.html#malcolm.yamlutil.check_yaml_names">[docs]</a><span class="k">def</span> <span class="nf">check_yaml_names</span><span class="p">(</span><span class="n">globals_d</span><span class="p">:</span> <span class="p">(</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]))</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Check that all include_creators and block_creators have the same</span>
+<span class="sd">    name as the base of their file path, and return them in a list suitable</span>
+<span class="sd">    for publishing as __all__&quot;&quot;&quot;</span>
+    <span class="n">all_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">globals_d</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="s2">&quot;yamlname&quot;</span><span class="p">):</span>
+            <span class="k">assert</span> <span class="n">v</span><span class="o">.</span><span class="n">yamlname</span> <span class="o">==</span> <span class="n">k</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%r</span><span class="s2"> should be called </span><span class="si">%r</span><span class="s2"> as it comes from </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">k</span><span class="p">,</span>
+                <span class="n">v</span><span class="o">.</span><span class="n">yamlname</span><span class="p">,</span>
+                <span class="n">v</span><span class="o">.</span><span class="n">yamlname</span> <span class="o">+</span> <span class="s2">&quot;.yaml&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">all_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">all_list</span></div>
+
+
+<span class="k">def</span> <span class="nf">make_include_creator</span><span class="p">(</span>
+    <span class="n">yaml_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Controller</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Part</span><span class="p">]]]:</span>
+    <span class="n">sections</span><span class="p">,</span> <span class="n">yamlname</span><span class="p">,</span> <span class="n">docstring</span> <span class="o">=</span> <span class="n">Section</span><span class="o">.</span><span class="n">from_yaml</span><span class="p">(</span><span class="n">yaml_path</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+    <span class="n">yamldir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">yaml_path</span><span class="p">))</span>
+
+    <span class="c1"># Check we don&#39;t have any controllers</span>
+    <span class="n">controller_sections</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sections</span> <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">section</span> <span class="o">==</span> <span class="s2">&quot;controllers&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">controller_sections</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Expected exactly 0 controllers, got </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+        <span class="n">controller_sections</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Add any parameters to the takes arguments</span>
+    <span class="k">def</span> <span class="nf">include_creator</span><span class="p">(</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># Create the param dict of the static defined arguments</span>
+        <span class="n">defines</span> <span class="o">=</span> <span class="n">_create_defines</span><span class="p">(</span><span class="n">sections</span><span class="p">,</span> <span class="n">yamlname</span><span class="p">,</span> <span class="n">yamldir</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_create_blocks_and_parts</span><span class="p">(</span><span class="n">sections</span><span class="p">,</span> <span class="n">defines</span><span class="p">)</span>
+
+    <span class="n">creator</span> <span class="o">=</span> <span class="n">creator_with_nice_signature</span><span class="p">(</span>
+        <span class="n">include_creator</span><span class="p">,</span> <span class="n">sections</span><span class="p">,</span> <span class="n">yamlname</span><span class="p">,</span> <span class="n">yaml_path</span><span class="p">,</span> <span class="n">docstring</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">creator</span>
+
+
+<span class="c1"># Add any parameters to the takes arguments</span>
+<span class="k">def</span> <span class="nf">creator_with_nice_signature</span><span class="p">(</span><span class="n">creator</span><span class="p">,</span> <span class="n">sections</span><span class="p">,</span> <span class="n">yamlname</span><span class="p">,</span> <span class="n">yaml_path</span><span class="p">,</span> <span class="n">docstring</span><span class="p">):</span>
+    <span class="n">takes</span> <span class="o">=</span> <span class="n">_create_takes_arguments</span><span class="p">(</span><span class="n">sections</span><span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">anno</span> <span class="ow">in</span> <span class="n">takes</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">anno</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="n">NO_DEFAULT</span><span class="p">:</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">anno</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">anno</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">anno</span><span class="o">.</span><span class="n">default</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">func</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">def creator_from_yaml(</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="si">}</span><span class="s2">):</span>
+<span class="s2">    return creator(locals())&quot;&quot;&quot;</span>
+    <span class="c1"># Copied from decorator pypi module</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="nb">compile</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">yaml_path</span><span class="p">,</span> <span class="s2">&quot;single&quot;</span><span class="p">)</span>
+    <span class="n">exec</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="nb">locals</span><span class="p">())</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="nb">locals</span><span class="p">()[</span><span class="s2">&quot;creator_from_yaml&quot;</span><span class="p">]</span>
+    <span class="n">ret</span><span class="o">.</span><span class="n">return_type</span> <span class="o">=</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Any return value&quot;</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="s2">&quot;return&quot;</span><span class="p">)</span>
+    <span class="n">ret</span><span class="o">.</span><span class="n">call_types</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">((</span><span class="n">anno</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">anno</span><span class="p">)</span> <span class="k">for</span> <span class="n">anno</span> <span class="ow">in</span> <span class="n">takes</span><span class="p">)</span>
+    <span class="n">ret</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">docstring</span>
+    <span class="n">ret</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="n">yamlname</span>
+    <span class="n">ret</span><span class="o">.</span><span class="n">yamlname</span> <span class="o">=</span> <span class="n">yamlname</span>
+    <span class="k">return</span> <span class="n">ret</span>
+
+
+<div class="viewcode-block" id="make_block_creator"><a class="viewcode-back" href="../../api/yamlutil_api.html#malcolm.yamlutil.make_block_creator">[docs]</a><span class="k">def</span> <span class="nf">make_block_creator</span><span class="p">(</span>
+    <span class="n">yaml_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Controller</span><span class="p">]]:</span>
+    <span class="sd">&quot;&quot;&quot;Make a collection function that will create a list of blocks</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        yaml_path (str): File path to YAML file, or a file in the same dir</span>
+<span class="sd">        filename (str): If give, use this filename as the last element in</span>
+<span class="sd">            the yaml_path (so yaml_path can be __file__)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A collection function decorated with @takes. This can be used in other</span>
+<span class="sd">        blocks or instantiated by the process. If the YAML text specified</span>
+<span class="sd">        controllers or parts then a block instance with the given name will be</span>
+<span class="sd">        instantiated. If there are any blocks listed then they will be called.</span>
+<span class="sd">        All created controllers by this or any sub collection will be returned</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sections</span><span class="p">,</span> <span class="n">yamlname</span><span class="p">,</span> <span class="n">docstring</span> <span class="o">=</span> <span class="n">Section</span><span class="o">.</span><span class="n">from_yaml</span><span class="p">(</span><span class="n">yaml_path</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+    <span class="n">yamldir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">yaml_path</span><span class="p">))</span>
+
+    <span class="c1"># Check we have only one controller</span>
+    <span class="n">controller_sections</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sections</span> <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">section</span> <span class="o">==</span> <span class="s2">&quot;controllers&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">controller_sections</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Expected exactly 1 controller, got </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+        <span class="n">controller_sections</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">controller_section</span> <span class="o">=</span> <span class="n">controller_sections</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">block_creator</span><span class="p">(</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># Create the param dict of the static defined arguments</span>
+        <span class="n">defines</span> <span class="o">=</span> <span class="n">_create_defines</span><span class="p">(</span><span class="n">sections</span><span class="p">,</span> <span class="n">yamlname</span><span class="p">,</span> <span class="n">yamldir</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">controllers</span><span class="p">,</span> <span class="n">parts</span> <span class="o">=</span> <span class="n">_create_blocks_and_parts</span><span class="p">(</span><span class="n">sections</span><span class="p">,</span> <span class="n">defines</span><span class="p">)</span>
+        <span class="c1"># Make the controller</span>
+        <span class="n">controller</span> <span class="o">=</span> <span class="n">controller_section</span><span class="o">.</span><span class="n">instantiate</span><span class="p">(</span><span class="n">defines</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">:</span>
+            <span class="n">controller</span><span class="o">.</span><span class="n">add_part</span><span class="p">(</span><span class="n">part</span><span class="p">)</span>
+        <span class="n">controllers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">controller</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">controllers</span>
+
+    <span class="n">creator</span> <span class="o">=</span> <span class="n">creator_with_nice_signature</span><span class="p">(</span>
+        <span class="n">block_creator</span><span class="p">,</span> <span class="n">sections</span><span class="p">,</span> <span class="n">yamlname</span><span class="p">,</span> <span class="n">yaml_path</span><span class="p">,</span> <span class="n">docstring</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">creator</span></div>
+
+
+<span class="k">class</span> <span class="nc">Section</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">lineno</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">param_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lineno</span> <span class="o">=</span> <span class="n">lineno</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="c1"># Check the name</span>
+        <span class="n">split</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">split</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">YamlError</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">:</span><span class="si">%d</span><span class="s2">: Expected something like &#39;builtin.parts.ChildPart&#39;. &quot;</span>
+                <span class="s2">&quot;Got </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">lineno</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="n">section</span> <span class="o">=</span> <span class="n">split</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">section</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">SECTION_NAMES</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">YamlError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">:</span><span class="si">%d</span><span class="s2">: Unknown section name </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">lineno</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">section</span> <span class="o">=</span> <span class="n">section</span>
+        <span class="k">if</span> <span class="n">param_dict</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">param_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># dictify yaml&#39;s intermediate dict like object</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">param_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">param_dict</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">instantiate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">substitutions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Keep recursing down from base using dotted name, then call it with</span>
+<span class="sd">        self.params and args</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            substitutions (dict): Substitutions to make to self.param_dict</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The found object called with (*args, map_from_d)</span>
+
+<span class="sd">        E.g. if ob is malcolm.parts, and name is &quot;ca.CADoublePart&quot;, then the</span>
+<span class="sd">        object will be malcolm.parts.ca.CADoublePart</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">param_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">substitute_params</span><span class="p">(</span><span class="n">substitutions</span><span class="p">)</span>
+        <span class="n">pkg</span><span class="p">,</span> <span class="n">ident</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">pkg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;malcolm.modules.</span><span class="si">{</span><span class="n">pkg</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ob</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">pkg</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">raise_with_traceback</span><span class="p">(</span>
+                <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s2">:</span><span class="si">%d</span><span class="s2">:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lineno</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
+            <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ob</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">ob</span><span class="p">,</span> <span class="n">ident</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">raise_with_traceback</span><span class="p">(</span>
+                <span class="ne">ImportError</span><span class="p">(</span>
+                    <span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s2">:</span><span class="si">%d</span><span class="s2">:</span><span class="se">\n</span><span class="s2">Package </span><span class="si">%r</span><span class="s2"> has no ident </span><span class="si">%r</span><span class="s2">&quot;</span>
+                    <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lineno</span><span class="p">,</span> <span class="n">pkg</span><span class="p">,</span> <span class="n">ident</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">meta</span> <span class="o">=</span> <span class="n">MethodMeta</span><span class="o">.</span><span class="n">from_callable</span><span class="p">(</span><span class="n">ob</span><span class="p">,</span> <span class="n">returns</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="n">meta</span><span class="o">.</span><span class="n">takes</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">param_dict</span><span class="p">)</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">ob</span><span class="p">(</span><span class="o">**</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">sourcefile</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getsourcefile</span><span class="p">(</span><span class="n">ob</span><span class="p">)</span>
+            <span class="n">lineno</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getsourcelines</span><span class="p">(</span><span class="n">ob</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">raise_with_traceback</span><span class="p">(</span>
+                <span class="n">YamlError</span><span class="p">(</span>
+                    <span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s2">:</span><span class="si">%d</span><span class="s2">:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">:</span><span class="si">%d</span><span class="s2">:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span>
+                    <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lineno</span><span class="p">,</span> <span class="n">sourcefile</span><span class="p">,</span> <span class="n">lineno</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ret</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_yaml</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">yaml_path</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Split a dictionary into parameters controllers parts blocks defines</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            yaml_path (str): File path to YAML file, or a file in the same dir</span>
+<span class="sd">            filename (str): If give, use this filename as the last element in</span>
+<span class="sd">                the yaml_path (so yaml_path can be __file__)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: (sections, yamlname, docstring) where sections is a</span>
+<span class="sd">                list of created sections</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">filename</span><span class="p">:</span>
+            <span class="c1"># different filename to support passing __file__</span>
+            <span class="n">yaml_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">yaml_path</span><span class="p">),</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">yaml_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span>
+            <span class="s2">&quot;.yaml&quot;</span>
+        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Expected a/path/to/&lt;yamlname&gt;.yaml, got </span><span class="si">{</span><span class="n">yaml_path</span><span class="si">!r}</span><span class="s2">&quot;</span>
+        <span class="n">yamlname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">yaml_path</span><span class="p">)[:</span><span class="o">-</span><span class="mi">5</span><span class="p">]</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Parsing </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">yaml_path</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">yaml_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="c1"># First separate them into their relevant sections</span>
+        <span class="n">yaml</span> <span class="o">=</span> <span class="n">YAML</span><span class="p">(</span><span class="n">typ</span><span class="o">=</span><span class="s2">&quot;rt&quot;</span><span class="p">)</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="n">docstring</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">sections</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Expected section length 1, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">lineno</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">_yaml_line_col</span><span class="o">.</span><span class="n">line</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">cls</span><span class="p">(</span><span class="n">yaml_path</span><span class="p">,</span> <span class="n">lineno</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">d</span><span class="p">[</span><span class="n">name</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;builtin.defines.docstring&quot;</span><span class="p">:</span>
+                <span class="n">docstring</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">sections</span><span class="p">,</span> <span class="n">yamlname</span><span class="p">,</span> <span class="n">docstring</span>
+
+    <span class="k">def</span> <span class="nf">substitute_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">substitutions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Substitute param values in our param_dict from params</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            substitutions (Map or dict): Values to substitute. E.g. Map of</span>
+<span class="sd">                {&quot;name&quot;: &quot;me&quot;}</span>
+
+<span class="sd">        E.g. if self.param_dict is:</span>
+<span class="sd">            {&quot;name&quot;: &quot;$(name):pos&quot;, &quot;exposure&quot;: 1.0}</span>
+<span class="sd">        And substitutions is:</span>
+<span class="sd">            {&quot;name&quot;: &quot;me&quot;}</span>
+<span class="sd">        After the call self.param_dict will be:</span>
+<span class="sd">            {&quot;name&quot;: &quot;me:pos&quot;, &quot;exposure&quot;: 1.0}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">param_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># TODO: this should be yaml.add_implicit_resolver()</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">param_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">replace_substitutions</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">substitutions</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">param_dict</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Section(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">param_dict</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">replace_substitutions</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">substitutions</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">MutableSequence</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="n">replace_substitutions</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">substitutions</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">substitutions</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;$(</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">substitutions</span><span class="p">[</span><span class="n">s</span><span class="p">]))</span>
+    <span class="k">return</span> <span class="n">value</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>
