@@ -3,7 +3,7 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
-`6.1`_ -
+`6.1`_ - 2022-05-31
 -------------------
 
 Fixed:
@@ -23,6 +23,19 @@ Fixed:
       "func": "(A|B)&C",
       ...
     },
+- PmacChildPart: a generator with a very small move on one axis could result
+  in infinity or NaN when calculating the profile points during turnarounds,
+  especially for non-continuous scans. Very small distances <= 1e-12 are now
+  rounded to zero.
+- HdfWriterPart: removed auto_ndattr_default tag when generating XML layout
+  as it doesn't conform to ADCore schema.
+
+Added:
+
+- PmacChildPart now checks the move to start ramp and tail off ramp against
+  the soft limits of the axes and raises an Exception if the check fails.
+  The move to start is checked during Configure and the tail off can be
+  checked during Configure or Run, depending on the size of the trajectory.
 
 `6.0`_ - 2022-05-11
 -------------------
