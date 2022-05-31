@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.pmac.util &mdash; malcolm 6.0+7.g75b7c892 documentation</title>
+  <title>malcolm.modules.pmac.util &mdash; malcolm 6.0+9.g61ba69a2 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
@@ -375,6 +375,9 @@
     <span class="k">while</span> <span class="n">iterations</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">axis_name</span><span class="p">,</span> <span class="n">motor_info</span> <span class="ow">in</span> <span class="n">axis_mapping</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">distance</span> <span class="o">=</span> <span class="n">next_point</span><span class="o">.</span><span class="n">lower</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span> <span class="o">-</span> <span class="n">point</span><span class="o">.</span><span class="n">upper</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span>
+            <span class="c1"># If the distance is tiny, round to zero</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">distance</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">):</span>
+                <span class="n">distance</span> <span class="o">=</span> <span class="mf">0.0</span>
             <span class="n">p</span> <span class="o">=</span> <span class="n">motor_info</span><span class="o">.</span><span class="n">make_velocity_profile</span><span class="p">(</span>
                 <span class="n">start_velocities</span><span class="p">[</span><span class="n">axis_name</span><span class="p">],</span>
                 <span class="n">end_velocities</span><span class="p">[</span><span class="n">axis_name</span><span class="p">],</span>
