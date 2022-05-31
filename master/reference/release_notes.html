@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Change Log &mdash; malcolm 6.0+9.g61ba69a2 documentation</title>
+  <title>Change Log &mdash; malcolm 6.1 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -34,7 +34,7 @@
             <img src="../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                6.0
+                6.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -71,7 +71,7 @@
 <li class="toctree-l1"><a class="reference internal" href="triggering.html">Trajectory Scan Triggering</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Change Log</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#id1">6.1 -</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">6.1 - 2022-05-31</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id2">6.0 - 2022-05-11</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id3">5.4 - 2022-03-30</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id4">5.3 - 2022-03-18</a></li>
@@ -166,7 +166,7 @@
 <p>All notable changes to this project will be documented in this file.
 This project adheres to <a class="reference external" href="http://semver.org/">Semantic Versioning</a> after 2-1.</p>
 <section id="id1">
-<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/6.0...6.1">6.1</a> -<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
+<h2><a class="reference external" href="https://github.com/dls-controls/pymalcolm/compare/6.0...6.1">6.1</a> - 2022-05-31<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
 <p>Fixed:</p>
 <ul>
 <li><p>template_double_seq_pcomp: Fixed a bug in the standard design that allowed
@@ -184,6 +184,19 @@ SRGATE. <strong>Existing scan designs should be updated with this change too.</s
 </pre></div>
 </div>
 </li>
+<li><p>PmacChildPart: a generator with a very small move on one axis could result
+in infinity or NaN when calculating the profile points during turnarounds,
+especially for non-continuous scans. Very small distances &lt;= 1e-12 are now
+rounded to zero.</p></li>
+<li><p>HdfWriterPart: removed auto_ndattr_default tag when generating XML layout
+as it doesn’t conform to ADCore schema.</p></li>
+</ul>
+<p>Added:</p>
+<ul class="simple">
+<li><p>PmacChildPart now checks the move to start ramp and tail off ramp against
+the soft limits of the axes and raises an Exception if the check fails.
+The move to start is checked during Configure and the tail off can be
+checked during Configure or Run, depending on the size of the trajectory.</p></li>
 </ul>
 </section>
 <section id="id2">
