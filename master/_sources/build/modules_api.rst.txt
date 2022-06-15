@@ -19,6 +19,7 @@ malcolm.modules
     ADPilatus/index
     ADSimDetector/index
     ADTetrAMM/index
+    ADTucsen/index
     adUtil/index
     aravisGigE/index
     asyn/index
