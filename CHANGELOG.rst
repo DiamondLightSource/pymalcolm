@@ -833,7 +833,7 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _6.1: https://github.com/dls-controls/pymalcolm/compare/6.1...6.2
+.. _6.2: https://github.com/dls-controls/pymalcolm/compare/6.1...6.2
 .. _6.1: https://github.com/dls-controls/pymalcolm/compare/6.0...6.1
 .. _6.0: https://github.com/dls-controls/pymalcolm/compare/5.4...6.0
 .. _5.4: https://github.com/dls-controls/pymalcolm/compare/5.3...5.4
