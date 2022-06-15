@@ -3,6 +3,13 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
+`6.2`_ -
+-------------------
+
+Added:
+
+- ADTucsen driver and runnable blocks.
+
 `6.1`_ - 2022-05-31
 -------------------
 
@@ -826,6 +833,7 @@ Added:
 
 - Initial release with hello world and websocket comms
 
+.. _6.1: https://github.com/dls-controls/pymalcolm/compare/6.1...6.2
 .. _6.1: https://github.com/dls-controls/pymalcolm/compare/6.0...6.1
 .. _6.0: https://github.com/dls-controls/pymalcolm/compare/5.4...6.0
 .. _5.4: https://github.com/dls-controls/pymalcolm/compare/5.3...5.4
