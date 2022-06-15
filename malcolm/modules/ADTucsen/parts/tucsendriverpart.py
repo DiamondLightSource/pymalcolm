@@ -1,8 +1,9 @@
 from typing import Any
-from annotypes import Anno, Any, add_call_types
-import cothread
 
-from malcolm.modules import ADCore, scanning, builtin
+import cothread
+from annotypes import Anno, add_call_types
+
+from malcolm.modules import ADCore, builtin, scanning
 
 # Pull re-used annotypes into our namespace in case we are subclassed
 APartName = builtin.parts.APartName
@@ -15,8 +16,9 @@ with Anno("Directory to write data to"):
 class TucsenDriverPart(ADCore.parts.DetectorDriverPart):
     def __init__(self, name, mri):
         # type: (APartName, AMri) -> None
-        super(TucsenDriverPart, self).__init__(name, mri, soft_trigger_modes=[
-                "Internal", "Software"])
+        super(TucsenDriverPart, self).__init__(
+            name, mri, soft_trigger_modes=["Internal", "Software"]
+        )
 
     @add_call_types
     def on_configure(
@@ -30,12 +32,12 @@ class TucsenDriverPart(ADCore.parts.DetectorDriverPart):
         **kwargs: Any,
     ) -> None:
         super(TucsenDriverPart, self).on_configure(
-            context, completed_steps, steps_to_do, part_info, generator, fileDir, **kwargs)
+            context,
+            completed_steps,
+            steps_to_do,
+            part_info,
+            generator,
+            fileDir,
+            **kwargs,
+        )
         cothread.Sleep(1.5)
-
-    @add_call_types
-    def on_run(self, context):
-        # type: (scanning.hooks.AContext) -> None
-        super(TucsenDriverPart, self).on_run(context)
-        child = context.block_view(self.mri)
-

@@ -309,9 +309,7 @@ class PmacChildPart(builtin.parts.ChildPart):
                 0, velocity, min_ramp_time=MIN_TIME
             )
             start_pos = first_point.lower[axis_name] - acceleration_distance
-            assert (
-                motor_info.check_position_within_soft_limits(start_pos) is True
-            ), (
+            assert motor_info.check_position_within_soft_limits(start_pos) is True, (
                 f"{motor_info.scannable}: ramp start position {start_pos} outside "
                 f"soft limits {motor_info.user_low_limit, motor_info.user_high_limit}"
             )
@@ -974,9 +972,7 @@ class PmacChildPart(builtin.parts.ChildPart):
             )
             tail_off = motor_info.ramp_distance(velocity, 0)
             tail_off_pos = point.upper[axis_name] + tail_off
-            assert (
-                motor_info.check_position_within_soft_limits(tail_off_pos) is True
-            ), (
+            assert motor_info.check_position_within_soft_limits(tail_off_pos) is True, (
                 f"{motor_info.scannable}: tail off position {tail_off_pos} outside "
                 f"soft limits {motor_info.user_low_limit, motor_info.user_high_limit}"
             )
