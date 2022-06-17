@@ -58,9 +58,11 @@ class EigerOdinWriterPart(ADOdin.parts.OdinWriterPart):
         formatName: scanning.hooks.AFormatName = "odin",
         fileTemplate: scanning.hooks.AFileTemplate = "%s.h5",
     ) -> None:
+        Sleep(3.0)
         child = context.block_view(self.mri)
         child_eiger = context.block_view(self.eiger_mri)
-        child_eiger.when_value_matches("acquiring", True, timeout=DEFAULT_TIMEOUT)
+        # Don't wait for acquiring - instead we are interested in when eiger stale params PV goes to zero. 
+        child_eiger.when_value_matches("staleParameters", False, timeout=DEFAULT_TIMEOUT)
 
         # The above condition for acquiring going True is not currently enough to
         # guarantee that bitdepth has been updated.  Having to add Sleep for now.

@@ -51,6 +51,7 @@
 - ADEiger.parts.EigerDriverPart:
     name: DRV
     mri: $(mri_prefix):DRV
+    writer_mri: $(mri_prefix):$(writer_suffix)
     soft_trigger_modes:
         - Internal
 

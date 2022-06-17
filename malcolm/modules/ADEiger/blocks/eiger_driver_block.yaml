@@ -56,3 +56,10 @@
     name: bitdepth
     description: Eiger bitdepth - determined by driver (mainly based on exposure time)
     rbv: $(prefix):BitDepthImage_RBV
+
+# 
+- ca.parts.CABooleanPart:
+    name: staleParameters
+    description: Stale parameters flag - used by detector to indicate computed parameters ready to read out
+    rbv: $(prefix):StaleParameters_RBV
+
