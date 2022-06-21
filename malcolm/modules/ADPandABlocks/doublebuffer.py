@@ -242,14 +242,14 @@ class DoubleBuffer:
 
                 if table.repeats.value != 1:
                     logging.warning(
-                        "Repeats on Seq table {} should be set to '1', Malcolm has"
-                        "overwritten value for this scan".format(table.label.value)
+                        f"Repeats on Seq table {table.label.value} should be set to "
+                        "'1', Malcolm has overwritten value for this scan"
                     )
                     table.repeats.put_value(1)
                 if table.prescale.value != 0:
                     logging.warning(
-                        "Prescale on Seq table {} should be set to '0', Malcolm has"
-                        "overwritten value for this scan".format(table.label.value)
+                        f"Prescale on Seq table {table.label.value} should be set to "
+                        "'0', Malcolm has overwritten value for this scan"
                     )
                     table.prescale.put_value(0)
             self._finished = False
