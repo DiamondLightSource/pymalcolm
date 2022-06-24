@@ -63,3 +63,11 @@
     description: Stale parameters flag - used by detector to indicate computed parameters ready to read out
     rbv: $(prefix):StaleParameters_RBV
 
+- builtin.parts.ChoicePart:
+    name: staleParametersLatch
+    description: Stale parameters latch on high
+    choices: 
+        - Latched
+        - Clear
+    value: Clear
+    writeable: True

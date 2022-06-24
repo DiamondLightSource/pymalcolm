@@ -1,6 +1,6 @@
 from annotypes import add_call_types
 
-from malcolm.core import Context, PartRegistrar, APartName, DEFAULT_TIMEOUT
+from malcolm.core import Context, PartRegistrar, APartName, DEFAULT_TIMEOUT, BooleanMeta
 from malcolm.modules import ADCore, builtin, scanning
 
 from malcolm.modules.ADCore.parts.detectordriverpart import USoftTriggerModes, AMainDatasetUseful, AVersionRequirement, AMinAcquirePeriod
@@ -26,6 +26,7 @@ class EigerDriverPart(ADCore.parts.DetectorDriverPart):
         min_acquire_period: AMinAcquirePeriod = 0.0
     ) -> None:
         self.writer_mri = writer_mri
+        #self.staleParametersLatch =  BooleanMeta("Latches high on stale parameters PV", ["True", "False"], False).create_attribute_model(False)
         super().__init__(name, mri, soft_trigger_modes, main_dataset_useful, runs_on_windows, required_version, min_acquire_period)
 
 
@@ -38,6 +39,7 @@ class EigerDriverPart(ADCore.parts.DetectorDriverPart):
     def arm_detector(self, context: Context) -> None:
         child = context.block_view(self.mri)
         child.numImagesPerSeries.put_value(1)
+        child.staleParametersLatch.put_value("Latched")
 
         child_writer = context.block_view(self.writer_mri)
         
@@ -45,8 +47,9 @@ class EigerDriverPart(ADCore.parts.DetectorDriverPart):
         # we wait for the writer to start before starting the detector, as this ensures the filename 
         # has been written. 
         child_writer.when_value_matches("running", True, timeout=DEFAULT_TIMEOUT)
-        #TODO: synchronise at this point on the file writer starting
+
         super().arm_detector(context)
+        child.staleParametersLatch.put_value("Clear")
         # Wait for the fan to be ready before returning from configure
         child.when_value_matches("fanStateReady", 1)
 

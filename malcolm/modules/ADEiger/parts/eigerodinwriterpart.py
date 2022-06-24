@@ -63,7 +63,7 @@ class EigerOdinWriterPart(ADOdin.parts.OdinWriterPart):
         child_eiger = context.block_view(self.eiger_mri)
         # Don't wait for acquiring - instead we are interested in when eiger stale params PV goes to zero. 
         # Note this can fail if staleParameters goes true and then false before we get to this check. 
-        child_eiger.when_value_matches("staleParameters", True, timeout=DEFAULT_TIMEOUT)
+        child_eiger.when_value_matches("staleParametersLatch", "Latched", timeout=DEFAULT_TIMEOUT)
         child_eiger.when_value_matches("staleParameters", False, timeout=DEFAULT_TIMEOUT)
 
         # The above condition for acquiring going True is not currently enough to
