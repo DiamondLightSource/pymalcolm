@@ -72,4 +72,4 @@ class EigerOdinWriterPart(ADOdin.parts.OdinWriterPart):
         #Sleep(1.0)
 
         child.put_attribute_values(dict(dataType=f"UInt{child_eiger.bitdepth.value}"))
-        super().on_configure(context, completed_steps, steps_to_do, generator, fileDir, formatName, fileTemplate)
+        return super().on_configure(context, completed_steps, steps_to_do, generator, fileDir, formatName, fileTemplate)
