@@ -9,7 +9,7 @@ from malcolm.modules.ADCore.util import APartRunsOnWindows
 # Pull re-used annotypes into our namespace in case we are subclassed
 AMri = builtin.parts.AMri
 
-@builtin.util.no_save("numImagesPerSeries")
+@builtin.util.no_save("numImagesPerSeries", "staleParametersLatch")
 class EigerDriverPart(ADCore.parts.DetectorDriverPart):
     """Overrides default AD behaviour because the Eiger AD support
     does not count frames when Odin is consuming the frames."""

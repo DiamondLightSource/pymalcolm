@@ -177,7 +177,8 @@ class ManagerController(StatefulController):
         
         bypass_git = True
         if bypass_git:
-            self.log.warning("Disabled all git interaction, ignored command: %s", args)
+            pass
+            #self.log.warning("Disabled all git interaction, ignored command: %s", args)
         elif self.use_git:
             try:
                 output = subprocess.check_output(
