@@ -207,7 +207,6 @@ class RunnableController(builtin.controllers.ManagerController):
             ss.ARMED,
             ss.PAUSED,
             ss.RUNNING,
-            ss.POSTRUN,
             ss.FINISHED,
         )
         self.set_writeable_in(
