@@ -19,7 +19,7 @@ def make_async_logging(log_config):
 
     # Create a new handler to replace all the above that just pops messages on
     # a queue, and set it as the handler for the root logger (and children)
-    q = queue.Queue()
+    q = queue.SimpleQueue()
     log_config["handlers"]["queue"] = {
         "class": "logging.handlers.QueueHandler",
         "queue": q,
