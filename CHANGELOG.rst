@@ -9,6 +9,11 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 Added:
 
 - ADTucsen driver and runnable blocks.
+- Bugfix: Resolve deadlock that caused malcolm to hang. This was caused by a deadlock
+  between the logging thread and the cothread thread.
+- Disallow pausing in PostRun state. This results in malcolm attempting to recapture
+  the last point in the map, which leads to the brick going into "CS Error:
+  Insufficient calculation time", because the path generated seems to backtrack.
 
 `6.1`_ - 2022-05-31
 -------------------
