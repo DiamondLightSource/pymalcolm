@@ -101,6 +101,9 @@ class SequencerPart(Part):
         attr = NumberMeta("int16", "repeats", writeable=True).create_attribute_model(1)
         registrar.add_attribute_model("repeats", attr, writeable_func=attr.set_value)
 
+        attr = NumberMeta("int16", "prescale", writeable=True).create_attribute_model(0)
+        registrar.add_attribute_model("prescale", attr, writeable_func=attr.set_value)
+
 
 class GatePart(Part):
     enable_set = None
@@ -772,6 +775,9 @@ class TestDoubleBuffer(ChildTestCase):
         # Check to ensure repeats is set correctly
         for table in self.db._table_map.values():
             assert table.repeats.value == 1
+        # Check to ensure Prescale is set correctly
+        for table in self.db._table_map.values():
+            assert table.prescale.value == 0
 
         self.seq_parts[1].table_set.assert_called_once()
         table1 = self.seq_parts[1].table_set.call_args[0][0]

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Type, TypeVar
 
 from malcolm.core import Block, Context, Future
@@ -238,7 +239,19 @@ class DoubleBuffer:
             # The template sets repeats to 1 however older designs may not have
             # been updated.
             for table in self._table_map.values():
-                table.repeats.put_value(1)
+
+                if table.repeats.value != 1:
+                    logging.warning(
+                        f"Repeats on Seq table {table.label.value} should be set to "
+                        "'1', Malcolm has overwritten value for this scan"
+                    )
+                    table.repeats.put_value(1)
+                if table.prescale.value != 0:
+                    logging.warning(
+                        f"Prescale on Seq table {table.label.value} should be set to "
+                        "'0', Malcolm has overwritten value for this scan"
+                    )
+                    table.prescale.put_value(0)
             self._finished = False
 
     def _seq_active_handler(self, value: bool, table: str = "seqA") -> None:
