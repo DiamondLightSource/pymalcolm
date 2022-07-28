@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 from shutil import copy, rmtree
 from tempfile import mkdtemp
+import pytest
 
 import h5py
 import numpy as np
@@ -12,6 +13,7 @@ from scanpointgenerator import CompoundGenerator, LineGenerator, SquashingExclud
 from malcolm.core import BadValueError, Context, Process
 from malcolm.modules.ADOdin.blocks import odin_writer_block
 from malcolm.modules.ADOdin.parts import OdinWriterPart
+from malcolm.modules.ADOdin.parts.odinwriterpart import files_shape, create_vds
 from malcolm.modules.ADOdin.parts.odinwriterpart import greater_than_zero
 from malcolm.testutil import ChildTestCase
 
@@ -155,6 +157,48 @@ class TestOdinWriterPart(ChildTestCase):
             data = np.full((1536, 2048), value, np.uint16)
             raw["data"][idx] = data
             raw.close()
+
+    def test_shape_one_frame_one_file(self):
+        expected_shape = (1,)
+        shape = files_shape(1, 1, 1)
+
+        assert shape == expected_shape
+
+    def test_shape_one_frame_block_size_one_file(self):
+        expected_shape = (1,)
+        shape = files_shape(1, 1000, 1)
+
+        assert shape == expected_shape
+
+    def test_shape_many_frames_four_files(self):
+        expected_shape = (1001, 1001, 1001, 1000)
+        shape = files_shape(4003, 1, 4)
+
+        assert shape == expected_shape
+
+    def test_shape_many_frames_block_size_four_files(self):
+        expected_shape = (1003, 1000, 1000, 1000)
+        shape = files_shape(4003, 1000, 4)
+
+        assert shape == expected_shape
+
+    @pytest.mark.xfail
+    def test_shape_blocks_per_file(self):
+        # This is what should happen if blocks_per_file is set to 1
+        expected_shape = (1000, 1000, 1000, 1000, 1000, 1000, 1000, 200)
+        shape = files_shape(7200, 1000, 4)
+
+        assert shape == expected_shape
+
+    def test_vds_blocks_per_file_assertion_error(self):
+        xs = LineGenerator("x", "mm", 0.0, 4.0, 3)
+        compound = CompoundGenerator([xs], [], [])
+        compound.prepare()
+
+        self.set_attributes(self.child, blocksPerFile=1)
+        child = self.context.block_view(self.o.mri)
+        with pytest.raises(AssertionError):
+            create_vds(compound, "name", "path", child, "uid", "sum")
 
     def test_excalibur_vds(self):
         """

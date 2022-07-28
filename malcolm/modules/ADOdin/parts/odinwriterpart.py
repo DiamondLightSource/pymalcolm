@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Iterator, List, Optional
+from typing import Dict, Iterator, List, Optional, Tuple
 
 import h5py
 from annotypes import Anno, add_call_types
@@ -70,11 +70,11 @@ def create_dataset_infos(
         )
 
 
-def files_shape(frames, block_size, file_count):
+def files_shape(frames: int, block_size: int, file_count: int) -> Tuple[int, ...]:
     # all files get at least per_file blocks
-    per_file = int(frames) / int(file_count * block_size)
+    per_file = frames // (file_count * block_size)
     # this is the remainder once per_file blocks have been distributed
-    remainder = int(frames) % int(file_count * block_size)
+    remainder = frames % (file_count * block_size)
 
     # distribute the remainder
     remainders = [
@@ -84,7 +84,7 @@ def files_shape(frames, block_size, file_count):
     # pad the remainders list with zeros
     remainders += [0] * (file_count - len(remainders))
 
-    shape = tuple(int(per_file * block_size + remainders[i]) for i in range(file_count))
+    shape = tuple(per_file * block_size + remainders[i] for i in range(file_count))
     return shape
 
 
@@ -136,8 +136,11 @@ def create_vds(generator, raw_name, vds_path, child, uid_name, sum_name):
     image_width = int(child.imageWidth.value)
     image_height = int(child.imageHeight.value)
     block_size = int(child.blockSize.value)
+    blocks_per_file = int(child.blocksPerFile.value)
     hdf_count = int(child.numProcesses.value)
     data_type = str(child.dataType.value)
+
+    assert blocks_per_file == 0, "Non-zero blocks per file not currently supported"
 
     # hdf_shape tuple represents the number of images in each file
     hdf_shape = files_shape(generator.size, block_size, hdf_count)
