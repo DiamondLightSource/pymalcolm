@@ -26,3 +26,10 @@
     description: Reshape dataset to 2D if no resgrades (legacy support)
     pv: $(prefix):SquashAuxDim
 #    rbv_suffix: _RBV
+
+- ca.parts.CABooleanPart:
+    name: applyDTC
+    description: Apply DTC correction to the frame int32 -> float64
+    pv: $(prefix):ApplyDTC
+#    rbv_suffix: _RBV
+
