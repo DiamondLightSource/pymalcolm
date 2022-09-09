@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>util &mdash; malcolm 6.2 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="system" href="../system/index.html" />
+    <link rel="prev" title="malcolm.modules.scanning.parts" href="parts_api.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                6.2
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../modules_api.html">malcolm.modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../ADAndor/index.html">ADAndor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADAndor3/index.html">ADAndor3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADCore/index.html">ADCore</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADEiger/index.html">ADEiger</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADEthercat/index.html">ADEthercat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADMerlin/index.html">ADMerlin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADOdin/index.html">ADOdin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADPandABlocks/index.html">ADPandABlocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADPco/index.html">ADPco</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADPilatus/index.html">ADPilatus</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADSimDetector/index.html">ADSimDetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADTetrAMM/index.html">ADTetrAMM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADTucsen/index.html">ADTucsen</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../adUtil/index.html">adUtil</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../aravisGigE/index.html">aravisGigE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../asyn/index.html">asyn</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../builtin/index.html">builtin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ca/index.html">ca</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demo/index.html">demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dtacq/index.html">dtacq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pandablocks/index.html">pandablocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pmac/index.html">pmac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../profiling/index.html">profiling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pva/index.html">pva</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">scanning</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="blocks_api.html">blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="controllers_api.html">controllers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="hooks_api.html">hooks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="infos_api.html">infos</a></li>
+<li class="toctree-l3"><a class="reference internal" href="parts_api.html">parts</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../system/index.html">system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../web/index.html">web</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../xmap/index.html">xmap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../xspress3/index.html">xspress3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../zebra/index.html">zebra</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../modules_api.html">malcolm.modules</a> &raquo;</li>
+          <li><a href="index.html">scanning</a> &raquo;</li>
+      <li>util</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/build/scanning/util_api.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-malcolm.modules.scanning.util">
+<span id="util"></span><h1>util<a class="headerlink" href="#module-malcolm.modules.scanning.util" title="Permalink to this headline"></a></h1>
+<p>scanning.utils provides shared utility functions and classes.
+For consistency and to avoid circular dependencies, the following
+rules are applied:
+- All types required to initialize hook classes are in the hooks namespace
+- All types required to initialize info classes are in the infos namespace
+- util depends on hooks and infos (not vice versa)</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.util.ConfigureParams">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.util.</span></span><span class="sig-name descname"><span class="pre">ConfigureParams</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">generator:</span> <span class="pre">Anno(name='AGenerator'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'scanpointgenerator.core.compoundgenerator.CompoundGenerator'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Generator</span> <span class="pre">instance</span> <span class="pre">providing</span> <span class="pre">specification</span> <span class="pre">for</span> <span class="pre">scan')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axesToMove:</span> <span class="pre">Optional[Union[Anno(name='AAxesToMove'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='List</span> <span class="pre">of</span> <span class="pre">axes</span> <span class="pre">in</span> <span class="pre">inner</span> <span class="pre">dimension</span> <span class="pre">of</span> <span class="pre">generator</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">moved')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Sequence[str]]]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">breakpoints:</span> <span class="pre">Optional[Anno(name='ABreakpoints'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'numpy.int32'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='List</span> <span class="pre">of</span> <span class="pre">points</span> <span class="pre">at</span> <span class="pre">which</span> <span class="pre">the</span> <span class="pre">run</span> <span class="pre">will</span> <span class="pre">return</span> <span class="pre">in</span> <span class="pre">Armed</span> <span class="pre">state')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/scanning/util.html#ConfigureParams"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.scanning.util.ConfigureParams" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>generator</strong> (<em>CompoundGenerator</em>) – Generator instance providing specification for scan</p></li>
+<li><p><strong>axesToMove</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – List of axes in inner dimension of generator that should be moved</p></li>
+<li><p><strong>breakpoints</strong> (<em>int32</em>) – List of points at which the run will return in Armed state</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.util.PointGeneratorMeta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.util.</span></span><span class="sig-name descname"><span class="pre">PointGeneratorMeta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">description:</span> <span class="pre">Anno(name='AMetaDescription',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='Description</span> <span class="pre">of</span> <span class="pre">what</span> <span class="pre">this</span> <span class="pre">element</span> <span class="pre">represents')</span> <span class="pre">=</span> <span class="pre">'',</span> <span class="pre">tags:</span> <span class="pre">Union[Anno(name='ATags',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='Generic</span> <span class="pre">text</span> <span class="pre">tags</span> <span class="pre">for</span> <span class="pre">client</span> <span class="pre">tools</span> <span class="pre">to</span> <span class="pre">interpret'),</span> <span class="pre">Sequence[str],</span> <span class="pre">str]</span> <span class="pre">=</span> <span class="pre">(),</span> <span class="pre">writeable:</span> <span class="pre">Anno(name='AWriteable',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;,</span> <span class="pre">description='Whether</span> <span class="pre">this</span> <span class="pre">element</span> <span class="pre">is</span> <span class="pre">currently</span> <span class="pre">writeable')</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">label:</span> <span class="pre">Anno(name='ALabel',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='A</span> <span class="pre">human</span> <span class="pre">readable</span> <span class="pre">label</span> <span class="pre">for</span> <span class="pre">the</span> <span class="pre">element')</span> <span class="pre">=</span> <span class="pre">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/scanning/util.html#PointGeneratorMeta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.scanning.util.PointGeneratorMeta" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>description</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Description of what this element represents</p></li>
+<li><p><strong>tags</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Generic text tags for client tools to interpret</p></li>
+<li><p><strong>writeable</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Whether this element is currently writeable</p></li>
+<li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – A human readable label for the element</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.util.PointGeneratorMeta.attribute_class">
+<span class="sig-name descname"><span class="pre">attribute_class</span></span><a class="headerlink" href="#malcolm.modules.scanning.util.PointGeneratorMeta.attribute_class" title="Permalink to this definition"></a></dt>
+<dd><p>alias of <a class="reference internal" href="../../api/core_api.html#malcolm.core.NTUnion" title="malcolm.core.models.NTUnion"><code class="xref py py-class docutils literal notranslate"><span class="pre">malcolm.core.models.NTUnion</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.util.DatasetTable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.util.</span></span><span class="sig-name descname"><span class="pre">DatasetTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name:</span> <span class="pre">Union[Anno(name='ADatasetNames',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='Dataset</span> <span class="pre">names'),</span> <span class="pre">Sequence[str]],</span> <span class="pre">filename:</span> <span class="pre">Union[Anno(name='AFilenames',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='Filenames</span> <span class="pre">of</span> <span class="pre">HDF</span> <span class="pre">files</span> <span class="pre">relative</span> <span class="pre">to</span> <span class="pre">fileDir'),</span> <span class="pre">Sequence[str]],</span> <span class="pre">type:</span> <span class="pre">Union[Anno(name='ADatasetTypes',</span> <span class="pre">typ=&lt;enum</span> <span class="pre">'DatasetType'&gt;,</span> <span class="pre">description='Types</span> <span class="pre">of</span> <span class="pre">dataset'),</span> <span class="pre">Sequence[malcolm.modules.scanning.infos.DatasetType]],</span> <span class="pre">rank:</span> <span class="pre">Union[Anno(name='ARanks',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'numpy.int32'&gt;,</span> <span class="pre">description='Rank</span> <span class="pre">(number</span> <span class="pre">of</span> <span class="pre">dimensions)</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">dataset'),</span> <span class="pre">Sequence[numpy.int32]],</span> <span class="pre">path:</span> <span class="pre">Union[Anno(name='APaths',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='Dataset</span> <span class="pre">paths</span> <span class="pre">within</span> <span class="pre">HDF</span> <span class="pre">files'),</span> <span class="pre">Sequence[str]],</span> <span class="pre">uniqueid:</span> <span class="pre">Union[Anno(name='AUniqueIDs',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='UniqueID</span> <span class="pre">array</span> <span class="pre">paths</span> <span class="pre">within</span> <span class="pre">HDF</span> <span class="pre">files'),</span> <span class="pre">Sequence[str]]</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/scanning/util.html#DatasetTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.scanning.util.DatasetTable" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Dataset names</p></li>
+<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Filenames of HDF files relative to fileDir</p></li>
+<li><p><strong>type</strong> (<a class="reference internal" href="infos_api.html#malcolm.modules.scanning.infos.DatasetType" title="malcolm.modules.scanning.infos.DatasetType"><em>DatasetType</em></a>) – Types of dataset</p></li>
+<li><p><strong>rank</strong> (<em>int32</em>) – Rank (number of dimensions) of the dataset</p></li>
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Dataset paths within HDF files</p></li>
+<li><p><strong>uniqueid</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – UniqueID array paths within HDF files</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.util.DetectorTable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.util.</span></span><span class="sig-name descname"><span class="pre">DetectorTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">enable:</span> <span class="pre">Union[Anno(name='AEnable',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;,</span> <span class="pre">description='Whether</span> <span class="pre">the</span> <span class="pre">detectors</span> <span class="pre">are</span> <span class="pre">enabled</span> <span class="pre">or</span> <span class="pre">not'),</span> <span class="pre">Sequence[bool]],</span> <span class="pre">name:</span> <span class="pre">Union[Anno(name='ADetectorNames',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='Detector</span> <span class="pre">names'),</span> <span class="pre">Sequence[str]],</span> <span class="pre">mri:</span> <span class="pre">Union[Anno(name='ADetectorMris',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='Detector</span> <span class="pre">block</span> <span class="pre">mris'),</span> <span class="pre">Sequence[str]],</span> <span class="pre">exposure:</span> <span class="pre">Union[Anno(name='AExposures',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;,</span> <span class="pre">description='Exposure</span> <span class="pre">of</span> <span class="pre">each</span> <span class="pre">detector</span> <span class="pre">frame</span> <span class="pre">for</span> <span class="pre">the</span> <span class="pre">current</span> <span class="pre">scan'),</span> <span class="pre">Sequence[float]],</span> <span class="pre">framesPerStep:</span> <span class="pre">Union[Anno(name='AFramesPerStep',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'numpy.int32'&gt;,</span> <span class="pre">description='Number</span> <span class="pre">of</span> <span class="pre">detector</span> <span class="pre">frames</span> <span class="pre">for</span> <span class="pre">each</span> <span class="pre">generator</span> <span class="pre">point'),</span> <span class="pre">Sequence[numpy.int32]]</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/scanning/util.html#DetectorTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.scanning.util.DetectorTable" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>enable</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Whether the detectors are enabled or not</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Detector names</p></li>
+<li><p><strong>mri</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Detector block mris</p></li>
+<li><p><strong>exposure</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Exposure of each detector frame for the current scan</p></li>
+<li><p><strong>framesPerStep</strong> (<em>int32</em>) – Number of detector frames for each generator point</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.util.RunnableStates">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.util.</span></span><span class="sig-name descname"><span class="pre">RunnableStates</span></span><a class="reference internal" href="../../_modules/malcolm/modules/scanning/util.html#RunnableStates"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.scanning.util.RunnableStates" title="Permalink to this definition"></a></dt>
+<dd><p>This state set covers controllers and parts that can be configured and
+then run, and have the ability to pause and rewind</p>
+<div class="graphviz"><object data="../../_images/graphviz-73c347e8a5d4563839e8f00eb93a6628f2312c35.svg" type="image/svg+xml" class="graphviz">
+<p class="warning">digraph {
+
+    newrank=true;  // Sensible ranking of clusters
+    bgcolor=transparent
+    compound=true
+    rankdir=LR
+    node [fontname=Arial fontsize=10 shape=rect style=filled fillcolor=&quot;#8BC4E9&quot;]
+    graph [fontname=Arial fontsize=11]
+    edge [fontname=Arial fontsize=10 arrowhead=vee]
+    Fault [fillcolor=&quot;#F03232&quot;]
+    Disabled [fillcolor=&quot;#AAAAAA&quot;]
+
+    subgraph cluster_normal {
+        subgraph cluster_abortable {
+            Ready [fillcolor=&quot;#BBE7BB&quot;]
+            Ready -&gt; Configuring [label=&quot;configure()&quot; weight=30]
+            Ready -&gt; Saving [label=&quot;save()&quot;]
+            Saving -&gt; Ready [weight=0]
+            Ready -&gt; Loading [label=&quot;put\ndesign&quot;]
+            Loading -&gt; Ready [weight=0]
+            Armed [fillcolor=&quot;#BBE7BB&quot;]
+            Configuring -&gt; Armed
+            Armed -&gt; Running [label=&quot;run()&quot;]
+            Armed -&gt; Seeking [label=&quot;put\nsteps&quot;]
+            Running -&gt; PostRun
+            Running -&gt; Seeking [label=&quot;pause()&quot;]
+            PostRun -&gt; Finished
+            PostRun -&gt; Armed
+            PostRun -&gt; Seeking [label=&quot;pause()&quot;]
+            Finished [fillcolor=&quot;#BBE7BB&quot;]
+            Finished -&gt; Seeking [label=&quot;pause()&quot;]
+            Finished -&gt; Configuring [label=&quot;configure()&quot; weight=30]
+            Seeking -&gt; Armed
+            Seeking -&gt; Paused
+            Paused -&gt; Seeking [label=&quot;put\nsteps&quot;]
+            Paused -&gt; Running [label=&quot;resume()&quot;]
+        }
+        Aborted [fillcolor=&quot;#FFBE89&quot;]
+        Resetting -&gt; Ready
+        Seeking -&gt; Aborting [ltail=cluster_abortable label=&quot;abort()&quot;]
+        Aborting -&gt; Aborted
+        Aborted -&gt; Resetting [label=&quot;reset()&quot;]
+        Armed -&gt; Resetting [label=&quot;reset()&quot;]
+        Finished -&gt; Resetting [label=&quot;reset()&quot;]
+    }
+    Aborted -&gt; Disabling [ltail=cluster_normal label=&quot;disable()&quot;]
+    Aborted -&gt; Fault [ltail=cluster_normal label=&quot;on_error&quot;]
+
+    Fault -&gt; Resetting [label=&quot;reset()&quot;]
+    Fault -&gt; Disabling [label=&quot;disable()&quot;]
+    Disabling -&gt; Fault [label=&quot;on_error&quot;]
+    Disabling -&gt; Disabled
+    Disabled -&gt; Resetting [label=&quot;reset()&quot;]
+
+    {rank=min Ready Resetting Fault}
+    {rank=same Loading Saving Configuring}
+    {rank=same Armed Seeking Finished Aborted Disabling}
+    {rank=max Paused Running PostRun Aborting Disabled}
+
+    label=&quot;Unlabelled transitions take place in response to internal actions\n
+           Labelled transitions are triggered externally.&quot;;
+    labelloc=bottom;
+}</p></object></div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="parts_api.html" class="btn btn-neutral float-left" title="malcolm.modules.scanning.parts" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../system/index.html" class="btn btn-neutral float-right" title="system" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

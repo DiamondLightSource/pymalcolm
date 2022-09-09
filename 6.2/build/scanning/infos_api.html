@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.modules.scanning.infos &mdash; malcolm 6.2 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="malcolm.modules.scanning.parts" href="parts_api.html" />
+    <link rel="prev" title="malcolm.modules.scanning.hooks" href="hooks_api.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                6.2
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../modules_api.html">malcolm.modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../ADAndor/index.html">ADAndor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADAndor3/index.html">ADAndor3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADCore/index.html">ADCore</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADEiger/index.html">ADEiger</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADEthercat/index.html">ADEthercat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADMerlin/index.html">ADMerlin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADOdin/index.html">ADOdin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADPandABlocks/index.html">ADPandABlocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADPco/index.html">ADPco</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADPilatus/index.html">ADPilatus</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADSimDetector/index.html">ADSimDetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADTetrAMM/index.html">ADTetrAMM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADTucsen/index.html">ADTucsen</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../adUtil/index.html">adUtil</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../aravisGigE/index.html">aravisGigE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../asyn/index.html">asyn</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../builtin/index.html">builtin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ca/index.html">ca</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demo/index.html">demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dtacq/index.html">dtacq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pandablocks/index.html">pandablocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pmac/index.html">pmac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../profiling/index.html">profiling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pva/index.html">pva</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">scanning</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="blocks_api.html">blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="controllers_api.html">controllers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="hooks_api.html">hooks</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">infos</a></li>
+<li class="toctree-l3"><a class="reference internal" href="parts_api.html">parts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="util_api.html">util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../system/index.html">system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../web/index.html">web</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../xmap/index.html">xmap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../xspress3/index.html">xspress3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../zebra/index.html">zebra</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../modules_api.html">malcolm.modules</a> &raquo;</li>
+          <li><a href="index.html">scanning</a> &raquo;</li>
+      <li>malcolm.modules.scanning.infos</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/build/scanning/infos_api.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-malcolm.modules.scanning.infos">
+<span id="malcolm-modules-scanning-infos"></span><h1>malcolm.modules.scanning.infos<a class="headerlink" href="#module-malcolm.modules.scanning.infos" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.infos.DatasetType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.infos.</span></span><span class="sig-name descname"><span class="pre">DatasetType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/scanning/infos.html#DatasetType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.scanning.infos.DatasetType" title="Permalink to this definition"></a></dt>
+<dd><p>NeXus type of a produced dataset</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.infos.DatasetType.PRIMARY">
+<span class="sig-name descname"><span class="pre">PRIMARY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'primary'</span></em><a class="headerlink" href="#malcolm.modules.scanning.infos.DatasetType.PRIMARY" title="Permalink to this definition"></a></dt>
+<dd><p>Detector data, like the 2D data from an imaging detector</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.infos.DatasetType.SECONDARY">
+<span class="sig-name descname"><span class="pre">SECONDARY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'secondary'</span></em><a class="headerlink" href="#malcolm.modules.scanning.infos.DatasetType.SECONDARY" title="Permalink to this definition"></a></dt>
+<dd><p>Calculated from detector data, like the sum of each frame</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.infos.DatasetType.MONITOR">
+<span class="sig-name descname"><span class="pre">MONITOR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'monitor'</span></em><a class="headerlink" href="#malcolm.modules.scanning.infos.DatasetType.MONITOR" title="Permalink to this definition"></a></dt>
+<dd><p>Data that only makes sense when considered with detector data, like a
+measure of beam current with an ion chamber</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.infos.DatasetType.POSITION_SET">
+<span class="sig-name descname"><span class="pre">POSITION_SET</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'position_set'</span></em><a class="headerlink" href="#malcolm.modules.scanning.infos.DatasetType.POSITION_SET" title="Permalink to this definition"></a></dt>
+<dd><p>The demand positions of an axis as specified by the generator</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.infos.DatasetType.POSITION_VALUE">
+<span class="sig-name descname"><span class="pre">POSITION_VALUE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'position_value'</span></em><a class="headerlink" href="#malcolm.modules.scanning.infos.DatasetType.POSITION_VALUE" title="Permalink to this definition"></a></dt>
+<dd><p>The readback positions of an axis that moves during the scan</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.infos.DatasetType.POSITION_MIN">
+<span class="sig-name descname"><span class="pre">POSITION_MIN</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'position_min'</span></em><a class="headerlink" href="#malcolm.modules.scanning.infos.DatasetType.POSITION_MIN" title="Permalink to this definition"></a></dt>
+<dd><p>The minimum value of the readback position of an axis in each frame</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.infos.DatasetType.POSITION_MAX">
+<span class="sig-name descname"><span class="pre">POSITION_MAX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'position_max'</span></em><a class="headerlink" href="#malcolm.modules.scanning.infos.DatasetType.POSITION_MAX" title="Permalink to this definition"></a></dt>
+<dd><p>The maximum value of the readback position of an axis in each frame</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.infos.ParameterTweakInfo">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.infos.</span></span><span class="sig-name descname"><span class="pre">ParameterTweakInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/external_api.html#Any" title="Any"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/scanning/infos.html#ParameterTweakInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.scanning.infos.ParameterTweakInfo" title="Permalink to this definition"></a></dt>
+<dd><p>Info about a configure() parameter that needs to be tweaked</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parameter</strong> – Parameter name, e.g. “generator”</p></li>
+<li><p><strong>value</strong> – The value it should be changed to</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.infos.ConfigureParamsInfo">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.infos.</span></span><span class="sig-name descname"><span class="pre">ConfigureParamsInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metas</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/external_api.html#Dict" title="Dict"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../api/core_api.html#malcolm.core.VMeta" title="malcolm.core.models.VMeta"><span class="pre">malcolm.core.models.VMeta</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">required</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/external_api.html#List" title="List"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">defaults</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/external_api.html#Dict" title="Dict"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../api/external_api.html#Any" title="Any"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/scanning/infos.html#ConfigureParamsInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.scanning.infos.ConfigureParamsInfo" title="Permalink to this definition"></a></dt>
+<dd><p>Info about the parameters that should be passed to the Part in configure.
+The Controller will validate these when Block.configure() is called, and
+pass them to all Parts that have registered interest in them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>metas</strong> – Metas for the extra parameters</p></li>
+<li><p><strong>required</strong> – List of required parameters</p></li>
+<li><p><strong>defaults</strong> – Default values for parameters</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.infos.RunProgressInfo">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.infos.</span></span><span class="sig-name descname"><span class="pre">RunProgressInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/scanning/infos.html#RunProgressInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.scanning.infos.RunProgressInfo" title="Permalink to this definition"></a></dt>
+<dd><p>Info about how far the current run has progressed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>steps</strong> – The number of completed steps</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.infos.MinTurnaroundInfo">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.infos.</span></span><span class="sig-name descname"><span class="pre">MinTurnaroundInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/scanning/infos.html#MinTurnaroundInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.scanning.infos.MinTurnaroundInfo" title="Permalink to this definition"></a></dt>
+<dd><p>Info about the minimum time gap that should be left between points
+that are not joined together</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gap</strong> – The minimum time gap in seconds</p></li>
+<li><p><strong>interval</strong> – the minimum interval between two turnaround points</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.infos.DatasetProducedInfo">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.infos.</span></span><span class="sig-name descname"><span class="pre">DatasetProducedInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#malcolm.modules.scanning.infos.DatasetType" title="malcolm.modules.scanning.infos.DatasetType"><span class="pre">malcolm.modules.scanning.infos.DatasetType</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rank</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">uniqueid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/scanning/infos.html#DatasetProducedInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.scanning.infos.DatasetProducedInfo" title="Permalink to this definition"></a></dt>
+<dd><p>Declare that we will write the following dataset to file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – Dataset name</p></li>
+<li><p><strong>filename</strong> – Filename relative to the fileDir we were given</p></li>
+<li><p><strong>type</strong> – What NeXuS dataset type it produces</p></li>
+<li><p><strong>rank</strong> – The rank of the dataset including generator dims</p></li>
+<li><p><strong>path</strong> – The path of the dataset within the file</p></li>
+<li><p><strong>uniqueid</strong> – The path of the UniqueID dataset within the file</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.infos.MotionTrigger">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.infos.</span></span><span class="sig-name descname"><span class="pre">MotionTrigger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/scanning/infos.html#MotionTrigger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.scanning.infos.MotionTrigger" title="Permalink to this definition"></a></dt>
+<dd><p>Request from a trigger source to the motion controller of what triggers
+it needs</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.infos.MotionTrigger.NONE">
+<span class="sig-name descname"><span class="pre">NONE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#malcolm.modules.scanning.infos.MotionTrigger.NONE" title="Permalink to this definition"></a></dt>
+<dd><p>No Triggers required</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.infos.MotionTrigger.ROW_GATE">
+<span class="sig-name descname"><span class="pre">ROW_GATE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#malcolm.modules.scanning.infos.MotionTrigger.ROW_GATE" title="Permalink to this definition"></a></dt>
+<dd><p>Trigger that spans each continuous joined section</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.infos.MotionTrigger.EVERY_POINT">
+<span class="sig-name descname"><span class="pre">EVERY_POINT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#malcolm.modules.scanning.infos.MotionTrigger.EVERY_POINT" title="Permalink to this definition"></a></dt>
+<dd><p>One trigger for each point</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.infos.MotionTriggerInfo">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.infos.</span></span><span class="sig-name descname"><span class="pre">MotionTriggerInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trigger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#malcolm.modules.scanning.infos.MotionTrigger" title="malcolm.modules.scanning.infos.MotionTrigger"><span class="pre">malcolm.modules.scanning.infos.MotionTrigger</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/scanning/infos.html#MotionTriggerInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.scanning.infos.MotionTriggerInfo" title="Permalink to this definition"></a></dt>
+<dd><p>Declare that we need triggers of a certain sort from the motor controller</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>trigger</strong> – What type is required</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.infos.DetectorMutiframeInfo">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.infos.</span></span><span class="sig-name descname"><span class="pre">DetectorMutiframeInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/scanning/infos.html#DetectorMutiframeInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.scanning.infos.DetectorMutiframeInfo" title="Permalink to this definition"></a></dt>
+<dd><p>Declare that we are able to produce mutiple frames per point for this
+detector</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>mri</strong> – The mri of the detector in the DetectorTable</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.infos.ExposureDeadtimeInfo">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.infos.</span></span><span class="sig-name descname"><span class="pre">ExposureDeadtimeInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">readout_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency_accuracy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_exposure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/scanning/infos.html#ExposureDeadtimeInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.scanning.infos.ExposureDeadtimeInfo" title="Permalink to this definition"></a></dt>
+<dd><p>Detector exposure time should be generator.duration - deadtime</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>readout_time</strong> – The per frame readout time of the detector</p></li>
+<li><p><strong>frequency_accuracy</strong> – The crystal accuracy in ppm</p></li>
+<li><p><strong>min_exposure</strong> – The minimum exposure time this detector supports</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.infos.ExposureDeadtimeInfo.calculate_exposure">
+<span class="sig-name descname"><span class="pre">calculate_exposure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">exposure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/scanning/infos.html#ExposureDeadtimeInfo.calculate_exposure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.scanning.infos.ExposureDeadtimeInfo.calculate_exposure" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the exposure to set the detector to given the duration of
+the frame and the readout_time and frequency_accuracy</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.infos.ExposureDeadtimeInfo.calculate_minimum_duration">
+<span class="sig-name descname"><span class="pre">calculate_minimum_duration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exposure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/scanning/infos.html#ExposureDeadtimeInfo.calculate_minimum_duration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.scanning.infos.ExposureDeadtimeInfo.calculate_minimum_duration" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the minimum frame duration required for the frame</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.scanning.infos.ExposureDeadtimeInfo.calculate_maximum_exposure">
+<span class="sig-name descname"><span class="pre">calculate_maximum_exposure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/scanning/infos.html#ExposureDeadtimeInfo.calculate_maximum_exposure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.scanning.infos.ExposureDeadtimeInfo.calculate_maximum_exposure" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the maximum possible exposure based on a duration</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="hooks_api.html" class="btn btn-neutral float-left" title="malcolm.modules.scanning.hooks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="parts_api.html" class="btn btn-neutral float-right" title="malcolm.modules.scanning.parts" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

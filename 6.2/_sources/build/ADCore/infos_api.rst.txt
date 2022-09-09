@@ -1,0 +1,6 @@
+
+malcolm.modules.ADCore.infos
+============================
+
+.. automodule:: malcolm.modules.ADCore.infos
+    :members:

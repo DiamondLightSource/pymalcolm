@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.core.hook &mdash; malcolm 6.2 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                6.2
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>malcolm.core.hook</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for malcolm.core.hook</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">Dict</span><span class="p">,</span>
+    <span class="n">Generic</span><span class="p">,</span>
+    <span class="n">List</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Sequence</span><span class="p">,</span>
+    <span class="n">Tuple</span><span class="p">,</span>
+    <span class="n">Type</span><span class="p">,</span>
+    <span class="n">TypeVar</span><span class="p">,</span>
+    <span class="n">Union</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">WithCallTypes</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.compat</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+
+<span class="kn">from</span> <span class="nn">.concurrency</span> <span class="kn">import</span> <span class="n">Queue</span><span class="p">,</span> <span class="n">Spawned</span>
+<span class="kn">from</span> <span class="nn">.errors</span> <span class="kn">import</span> <span class="n">AbortedError</span>
+<span class="kn">from</span> <span class="nn">.info</span> <span class="kn">import</span> <span class="n">Info</span>
+<span class="kn">from</span> <span class="nn">.loggable</span> <span class="kn">import</span> <span class="n">Loggable</span>
+
+<span class="c1"># Create a module level logger</span>
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
+
+<span class="n">Hooked</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span>
+<span class="n">ArgsGen</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+
+
+<span class="k">def</span> <span class="nf">make_args_gen</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArgsGen</span><span class="p">:</span>
+    <span class="n">call_types</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="s2">&quot;call_types&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">arg_spec</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getfullargspec</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="n">need_args</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">arg_spec</span><span class="o">.</span><span class="n">args</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s2">&quot;self&quot;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">need_args</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">call_types</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Function </span><span class="si">{</span><span class="n">func</span><span class="si">}</span><span class="s2"> takes arguments but doesn&#39;t have call_types. Did you &quot;</span>
+            <span class="s2">&quot;forget to decorate with @add_call_types?&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">args_gen</span><span class="p">(</span><span class="n">keys</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">call_types</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">args_gen</span>
+
+
+<div class="viewcode-block" id="Hookable"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.Hookable">[docs]</a><span class="k">class</span> <span class="nc">Hookable</span><span class="p">(</span><span class="n">Loggable</span><span class="p">,</span> <span class="n">WithCallTypes</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Baseclass of something that can be attached to a hook&quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">hooked</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="s2">&quot;Hook&quot;</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Hooked</span><span class="p">,</span> <span class="n">ArgsGen</span><span class="p">]],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="Hookable.register_hooked"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.Hookable.register_hooked">[docs]</a>    <span class="k">def</span> <span class="nf">register_hooked</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">hooks</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="s2">&quot;Hook&quot;</span><span class="p">],</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="s2">&quot;Hook&quot;</span><span class="p">]]],</span>
+        <span class="n">func</span><span class="p">:</span> <span class="n">Hooked</span><span class="p">,</span>
+        <span class="n">args_gen</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ArgsGen</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Register func to be run when any of the hooks are run by parent</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            hooks: A Hook class or list of Hook classes of interest</span>
+<span class="sd">            func: The callable that should be run on that Hook</span>
+<span class="sd">            args_gen: Optionally specify the argument names that should be</span>
+<span class="sd">                passed to func. If not given then use func.call_types.keys</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hooked</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hooked</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">args_gen</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">args_gen</span> <span class="o">=</span> <span class="n">make_args_gen</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">hooks</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">):</span>
+            <span class="n">hooks</span> <span class="o">=</span> <span class="p">[</span><span class="n">hooks</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">hook_cls</span> <span class="ow">in</span> <span class="n">hooks</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hooked</span><span class="p">[</span><span class="n">hook_cls</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args_gen</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Hookable.on_hook"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.Hookable.on_hook">[docs]</a>    <span class="k">def</span> <span class="nf">on_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hook</span><span class="p">:</span> <span class="s2">&quot;Hook&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Takes a hook, and optionally calls hook.run on a function&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hooked</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">func</span><span class="p">,</span> <span class="n">args_gen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hooked</span><span class="p">[</span><span class="nb">type</span><span class="p">(</span><span class="n">hook</span><span class="p">)]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">hook</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args_gen</span><span class="p">)</span></div></div>
+
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;The child that the hook is being passed to&quot;</span><span class="p">):</span>
+    <span class="n">AHookable</span> <span class="o">=</span> <span class="n">Hookable</span>
+
+
+<div class="viewcode-block" id="Hook"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.Hook">[docs]</a><span class="k">class</span> <span class="nc">Hook</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">WithCallTypes</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Something that children can register with to be called&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">:</span> <span class="n">AHookable</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">child</span> <span class="o">=</span> <span class="n">child</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Queue</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spawn</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Spawned</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spawned</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Spawned</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+
+    <span class="k">def</span> <span class="nf">set_spawn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spawn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Spawned</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;Hook&quot;</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spawn</span> <span class="o">=</span> <span class="n">spawn</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">set_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queue</span><span class="p">:</span> <span class="n">Queue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Hook&quot;</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span> <span class="o">=</span> <span class="n">queue</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+<div class="viewcode-block" id="Hook.prepare"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.Hook.prepare">[docs]</a>    <span class="k">def</span> <span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Override this if we need to prepare before running&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">T</span><span class="p">],</span> <span class="n">args_gen</span><span class="p">:</span> <span class="n">ArgsGen</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Spawn the function, passing kwargs specified by func.call_types or</span>
+<span class="sd">        keys if given&quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">spawned</span>
+        <span class="p">),</span> <span class="s2">&quot;Hook has already spawned a function, cannot run another&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prepare</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">args_gen</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">args_gen</span> <span class="o">=</span> <span class="n">make_args_gen</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="c1"># TODO: should we check the return types here?</span>
+        <span class="n">supplied</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span><span class="p">)</span>
+        <span class="n">demanded</span> <span class="o">=</span> <span class="n">args_gen</span><span class="p">(</span><span class="n">supplied</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">supplied</span><span class="p">)</span><span class="o">.</span><span class="n">issuperset</span><span class="p">(</span>
+            <span class="n">demanded</span>
+        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Hook demanded arguments </span><span class="si">{</span><span class="n">demanded</span><span class="si">}</span><span class="s2">, but only supplied </span><span class="si">{</span><span class="n">supplied</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">demanded</span><span class="p">}</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spawn</span><span class="p">,</span> <span class="s2">&quot;No spawned function&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spawned</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spawn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">T</span><span class="p">],</span> <span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">result</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate_return</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">AbortedError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2"> has been aborted&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">child</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">e</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># pylint:disable=broad-except</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">(**</span><span class="si">%s</span><span class="s2">) raised exception </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">child</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">e</span>
+            <span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">e</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="p">,</span> <span class="s2">&quot;No queue to put result&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">))</span>
+
+<div class="viewcode-block" id="Hook.stop"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.Hook.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Override this if we can stop&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> cannot be stopped&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Hook.validate_return"><a class="viewcode-back" href="../../../api/core_api.html#malcolm.core.Hook.validate_return">[docs]</a>    <span class="k">def</span> <span class="nf">validate_return</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ret</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Override this if the function is expected to return something to</span>
+<span class="sd">        to validate its value&quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">ret</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Expected no return, got </span><span class="si">{</span><span class="n">ret</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="kc">None</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">start_hooks</span><span class="p">(</span><span class="n">hooks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Hook</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Queue</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Hook</span><span class="p">]]:</span>
+    <span class="c1"># This queue will hold (part, result) tuples</span>
+    <span class="n">hook_queue</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+    <span class="n">hook_spawned</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># now start them off</span>
+    <span class="k">for</span> <span class="n">hook</span> <span class="ow">in</span> <span class="n">hooks</span><span class="p">:</span>
+        <span class="n">hook</span><span class="o">.</span><span class="n">set_queue</span><span class="p">(</span><span class="n">hook_queue</span><span class="p">)</span>
+        <span class="n">hook</span><span class="o">.</span><span class="n">child</span><span class="o">.</span><span class="n">on_hook</span><span class="p">(</span><span class="n">hook</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">hook</span><span class="o">.</span><span class="n">spawned</span><span class="p">:</span>
+            <span class="n">hook_spawned</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hook</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">hook_queue</span><span class="p">,</span> <span class="n">hook_spawned</span>
+
+
+<span class="k">def</span> <span class="nf">wait_hooks</span><span class="p">(</span>
+    <span class="n">logger</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="p">],</span>
+    <span class="n">hook_queue</span><span class="p">:</span> <span class="n">Queue</span><span class="p">,</span>
+    <span class="n">hook_spawned</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Hook</span><span class="p">],</span>
+    <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">exception_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Info</span><span class="p">]]:</span>
+    <span class="c1"># timeout is time to wait for spawned processes to complete on abort,</span>
+    <span class="c1"># not time for them to run for</span>
+    <span class="c1"># Wait for them all to finish</span>
+    <span class="n">return_dict</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">spawned_hook</span> <span class="ow">in</span> <span class="n">hook_spawned</span><span class="p">:</span>
+        <span class="n">return_dict</span><span class="p">[</span><span class="n">spawned_hook</span><span class="o">.</span><span class="n">child</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">hook_spawned_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">hook_spawned</span><span class="p">)</span>
+    <span class="k">while</span> <span class="n">hook_spawned_set</span><span class="p">:</span>
+        <span class="n">hook</span><span class="p">:</span> <span class="n">Hook</span>
+        <span class="n">ret</span><span class="p">:</span> <span class="n">Any</span>
+        <span class="n">hook</span><span class="p">,</span> <span class="n">ret</span> <span class="o">=</span> <span class="n">hook_queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="n">hook_spawned_set</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">hook</span><span class="p">)</span>
+        <span class="c1"># Wait for the process to terminate</span>
+        <span class="k">assert</span> <span class="n">hook</span><span class="o">.</span><span class="n">spawned</span><span class="p">,</span> <span class="s2">&quot;No spawned process&quot;</span>
+        <span class="n">hook</span><span class="o">.</span><span class="n">spawned</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">duration</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
+        <span class="k">if</span> <span class="n">logger</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">hook_spawned_set</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: Child </span><span class="si">%s</span><span class="s2"> returned </span><span class="si">%r</span><span class="s2"> after </span><span class="si">%s</span><span class="s2">s. Still waiting for </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="n">hook</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">hook</span><span class="o">.</span><span class="n">child</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">ret</span><span class="p">,</span>
+                    <span class="n">duration</span><span class="p">,</span>
+                    <span class="p">[</span><span class="n">h</span><span class="o">.</span><span class="n">child</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">hook_spawned_set</span><span class="p">],</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: Child </span><span class="si">%s</span><span class="s2"> returned </span><span class="si">%r</span><span class="s2"> after </span><span class="si">%s</span><span class="s2">s. Returning...&quot;</span><span class="p">,</span>
+                    <span class="n">hook</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">hook</span><span class="o">.</span><span class="n">child</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">ret</span><span class="p">,</span>
+                    <span class="n">duration</span><span class="p">,</span>
+                <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">)</span> <span class="ow">and</span> <span class="n">exception_check</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">AbortedError</span><span class="p">):</span>
+                <span class="c1"># If AbortedError, all tasks have already been stopped.</span>
+                <span class="c1"># Got an error, so stop and wait all hook runners</span>
+                <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">hook_spawned</span><span class="p">:</span>
+                    <span class="n">h</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+            <span class="c1"># Wait for them to finish</span>
+            <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">hook_spawned</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">h</span><span class="o">.</span><span class="n">spawned</span><span class="p">,</span> <span class="s2">&quot;No spawned functions&quot;</span>
+                <span class="n">h</span><span class="o">.</span><span class="n">spawned</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ret</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">return_dict</span><span class="p">[</span><span class="n">hook</span><span class="o">.</span><span class="n">child</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ret</span>
+
+    <span class="k">return</span> <span class="n">return_dict</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

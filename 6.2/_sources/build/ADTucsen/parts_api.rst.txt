@@ -1,0 +1,6 @@
+
+malcolm.modules.ADTucsen.parts
+==============================
+
+.. automodule:: malcolm.modules.ADTucsen.parts
+    :members:
