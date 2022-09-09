@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.ADPandABlocks.parts.pandaseqtriggerpart &mdash; malcolm 6.1+6.g7076e017 documentation</title>
+  <title>malcolm.modules.ADPandABlocks.parts.pandaseqtriggerpart &mdash; malcolm 6.1+15.g287790c2 documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -182,8 +182,8 @@
     <span class="k">def</span> <span class="nf">_how_long_moving_wrong_way</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">axis_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">point</span><span class="p">:</span> <span class="n">Point</span><span class="p">,</span> <span class="n">increasing</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Return the duration that the given axis is moving in the opposite direction from</span>
-<span class="sd">        that required for `point`, during the prior turnaround.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Return the duration that the given axis is moving in the opposite direction</span>
+<span class="sd">        from that required for `point`, during the prior turnaround.&quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_turnaround</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: no MinTurnaround assigned&quot;</span>
         <span class="n">min_turnaround</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_turnaround</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">point</span><span class="o">.</span><span class="n">delay_after</span><span class="p">)</span>
         <span class="n">time_arrays</span><span class="p">,</span> <span class="n">velocity_arrays</span> <span class="o">=</span> <span class="n">pmac</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">profile_between_points</span><span class="p">(</span>
