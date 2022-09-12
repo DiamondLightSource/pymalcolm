@@ -83,7 +83,7 @@ should also work in any environment where pipenv is available.
 
 First download the source code::
 
-    $ git clone git://github.com/dls-controls/pymalcolm.git
+    $ git clone https://github.com/dls-controls/pymalcolm.git
     $ cd pymalcolm
 
 To be able to use Malcolm run::
