@@ -70,6 +70,40 @@ def create_dataset_infos(
         )
 
 
+# def create_raw_dataset_infos(
+#     name: str,
+#     rank: int,
+#     filenames: List[str],
+# ) -> Iterator[Info]:
+#     for i, f in enumerate(filenames):
+#         yield scanning.infos.DatasetProducedInfo(
+#             name=f"{name}.raw{i+1}",
+#             filename=f,
+#             type=scanning.infos.DatasetType.RAW,
+#             rank=rank,
+#             path="/data",
+#             uniqueid="",
+#         )
+
+
+def create_raw_dataset_infos(
+    name: str,
+    rank: int,
+    filename: str,
+    n_raw: int
+) -> Iterator[Info]:
+    for i in range(1,n_raw+1):
+        yield scanning.infos.DatasetProducedInfo(
+            name=f"{name}.raw{i+1}",
+            filename=filename,
+            type=scanning.infos.DatasetType.RAW,
+            rank=rank,
+            path="/raw" + str(i),
+            uniqueid="",
+        )
+
+
+
 def files_shape(frames, block_size, file_count):
     # all files get at least per_file blocks
     per_file = int(frames) / int(file_count * block_size)
@@ -114,7 +148,7 @@ def one_vds(
         log_level=1,
     )
     gen.generate_vds()
-
+    
     # this VDS shapes the data to match the dimensions of the scan
     gen = ReshapeVDSGenerator(
         path=vds_folder,
@@ -173,6 +207,11 @@ def create_vds(generator, raw_name, vds_path, child, uid_name, sum_name):
         "data",
         data_type.lower(),
     )
+    with h5py.File(vds_path, "r+", libver="latest") as vds:
+      count = 1
+      for f in files:
+          vds['raw' + str(count)] = h5py.ExternalLink(f, "/data")
+          count += 1
 
     shape = (hdf_shape, 1, 1)
 
@@ -385,6 +424,17 @@ class OdinWriterPart(builtin.parts.ChildPart):
         dataset_infos = list(
             create_dataset_infos(formatName, generator, fileName, self.secondary_set)
         )
+        raw_file_names = [
+            f"{raw_file_basename}_{i + 1:06d}.h5"
+            for i in range(int(child.numProcesses.value))
+        ]
+        dataset_infos += list(
+            create_raw_dataset_infos(
+                formatName, len(generator.dimensions) + 2, fileName, int(child.numProcesses.value)
+            )
+        )
+        # print('ON CONFIGURE RETURN DATASET_INFO')
+        # print(str(dataset_infos))
         return dataset_infos
 
     @add_call_types
