@@ -101,6 +101,15 @@ def create_raw_dataset_infos(
             path="/raw" + str(i),
             uniqueid="",
         )
+    for i in range(1,n_raw+1):
+        yield scanning.infos.DatasetProducedInfo(
+            name=f"{name}.uid{i+1}",
+            filename=filename,
+            type=scanning.infos.DatasetType.RAW,
+            rank=rank,
+            path="/uid" + str(i),
+            uniqueid="",
+        )
 
 
 
@@ -211,6 +220,7 @@ def create_vds(generator, raw_name, vds_path, child, uid_name, sum_name):
       count = 1
       for f in files:
           vds['raw' + str(count)] = h5py.ExternalLink(f, "/data")
+          vds['uid' + str(count)] = h5py.ExternalLink(f, "/uid")
           count += 1
 
     shape = (hdf_shape, 1, 1)
