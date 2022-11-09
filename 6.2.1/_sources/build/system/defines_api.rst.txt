@@ -1,0 +1,6 @@
+
+malcolm.modules.system.defines
+==============================
+
+.. automodule:: malcolm.modules.system.defines
+    :members:

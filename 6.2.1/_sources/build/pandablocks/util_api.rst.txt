@@ -1,0 +1,6 @@
+
+malcolm.modules.pandablocks.util
+================================
+
+.. automodule:: malcolm.modules.pandablocks.util
+    :members:

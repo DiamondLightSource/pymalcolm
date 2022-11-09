@@ -1,0 +1,12 @@
+
+ca
+==
+
+.. module:: malcolm.modules.ca
+
+.. toctree::
+    :maxdepth: 1
+    :caption: malcolm.modules.ca
+
+    parts <parts_api.rst>
+    util <util_api.rst>

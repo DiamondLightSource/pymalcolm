@@ -1,0 +1,11 @@
+
+asyn
+====
+
+.. module:: malcolm.modules.asyn
+
+.. toctree::
+    :maxdepth: 1
+    :caption: malcolm.modules.asyn
+
+    parts <parts_api.rst>

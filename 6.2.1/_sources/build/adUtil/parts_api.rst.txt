@@ -1,0 +1,6 @@
+
+malcolm.modules.adUtil.parts
+============================
+
+.. automodule:: malcolm.modules.adUtil.parts
+    :members:

@@ -1,0 +1,12 @@
+
+ADEthercat
+==========
+
+.. module:: malcolm.modules.ADEthercat
+
+.. toctree::
+    :maxdepth: 1
+    :caption: malcolm.modules.ADEthercat
+
+    blocks <blocks_api.rst>
+    parts <parts_api.rst>

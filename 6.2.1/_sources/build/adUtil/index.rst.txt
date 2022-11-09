@@ -1,0 +1,12 @@
+
+adUtil
+======
+
+.. module:: malcolm.modules.adUtil
+
+.. toctree::
+    :maxdepth: 1
+    :caption: malcolm.modules.adUtil
+
+    blocks <blocks_api.rst>
+    parts <parts_api.rst>

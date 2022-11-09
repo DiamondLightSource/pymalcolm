@@ -1,0 +1,6 @@
+
+malcolm.modules.ADPco.blocks
+============================
+
+.. automodule:: malcolm.modules.ADPco.blocks
+    :members:

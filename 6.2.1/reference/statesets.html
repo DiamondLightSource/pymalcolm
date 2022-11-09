@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>State Sets and Hooks &mdash; malcolm 6.2.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Infos" href="infos.html" />
+    <link rel="prev" title="Supported Tags" href="tags.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../contents.html" class="icon icon-home"> malcolm
+            <img src="../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                6.2.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tags.html">Supported Tags</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">State Sets and Hooks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#statefulcontroller">StatefulController</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#managercontroller">ManagerController</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#runnablecontroller">RunnableController</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../contents.html" class="icon icon-home"></a> &raquo;</li>
+      <li>State Sets and Hooks</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/reference/statesets.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="state-sets-and-hooks">
+<span id="statesets"></span><h1>State Sets and Hooks<a class="headerlink" href="#state-sets-and-hooks" title="Permalink to this headline"></a></h1>
+<p>If a malcolm Block has a <code class="docutils literal notranslate"><span class="pre">state</span></code> attribute, its controller has a StateSet that
+controls the valid transitions that it can make. These are arranged in a
+heirarchy.</p>
+<section id="statefulcontroller">
+<h2>StatefulController<a class="headerlink" href="#statefulcontroller" title="Permalink to this headline"></a></h2>
+<p>A <a class="reference internal" href="../build/builtin/controllers_api.html#malcolm.modules.builtin.controllers.StatefulController" title="malcolm.modules.builtin.controllers.StatefulController"><code class="xref any py py-class docutils literal notranslate"><span class="pre">StatefulController</span></code></a> has Ready, Fault and Disable states. It is used in blocks
+in the <a class="reference internal" href="glossary.html#hardware-layer"><span class="std std-ref">Hardware Layer</span></a>. It implements the following statemachine:</p>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.builtin.util.</span></span><span class="sig-name descname"><span class="pre">StatefulStates</span></span><a class="reference internal" href="../_modules/malcolm/modules/builtin/util.html#StatefulStates"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>This state set covers controllers and parts that can be disabled and have
+faults, but otherwise have no state.</p>
+<div class="graphviz"><object data="../_images/graphviz-11d382bfbe10c9d61d211845201fd61635f1abc5.svg" type="image/svg+xml" class="graphviz">
+<p class="warning">digraph {
+    newrank=true;  // Sensible ranking of clusters
+    bgcolor=transparent
+    compound=true
+    rankdir=LR
+    node [fontname=Arial fontsize=10 shape=rect style=filled fillcolor=&quot;#8BC4E9&quot;]
+    graph [fontname=Arial fontsize=11]
+    edge [fontname=Arial fontsize=10 arrowhead=vee]
+    Fault [fillcolor=&quot;#F03232&quot;]
+    Disabled [fillcolor=&quot;#AAAAAA&quot;]
+
+    subgraph cluster_normal {
+        Ready [fillcolor=&quot;#BBE7BB&quot;]
+        Resetting -&gt; Ready
+    }
+    Resetting -&gt; Disabling [ltail=cluster_normal label=&quot;disable()&quot;]
+    Resetting -&gt; Fault [ltail=cluster_normal label=&quot;on_error&quot;]
+
+    Fault -&gt; Resetting [label=&quot;reset()&quot;]
+    Fault -&gt; Disabling [label=&quot;disable()&quot;]
+    Disabling -&gt; Fault [label=&quot;on_error&quot;]
+    Disabling -&gt; Disabled
+    Disabled -&gt; Resetting [label=&quot;reset()&quot;]
+
+    label=&quot;Unlabelled transitions take place in response to internal actions\n
+           Labelled transitions are triggered externally.&quot;;
+    labelloc=bottom;
+}</p></object></div>
+</dd></dl>
+
+<p>The following <a class="reference internal" href="glossary.html#hook"><span class="std std-ref">Hooks</span></a> are run during state transitions:</p>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.builtin.hooks.</span></span><span class="sig-name descname"><span class="pre">InitHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">part:</span> <span class="pre">Anno(name='APart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.part.Part'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">part</span> <span class="pre">that</span> <span class="pre">has</span> <span class="pre">attached</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">Hook')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/builtin/hooks.html#InitHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Called when this controller is told to start by the process</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
+<li><p><strong>context</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.builtin.hooks.</span></span><span class="sig-name descname"><span class="pre">ResetHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">part:</span> <span class="pre">Anno(name='APart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.part.Part'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">part</span> <span class="pre">that</span> <span class="pre">has</span> <span class="pre">attached</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">Hook')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/builtin/hooks.html#ResetHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Called at reset() to reset all parts to a known good state</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
+<li><p><strong>context</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.builtin.hooks.</span></span><span class="sig-name descname"><span class="pre">HaltHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">part:</span> <span class="pre">Anno(name='APart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.part.Part'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">part</span> <span class="pre">that</span> <span class="pre">has</span> <span class="pre">attached</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">Hook')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/builtin/hooks.html#HaltHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Called when this controller is told to halt</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
+<li><p><strong>context</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.builtin.hooks.</span></span><span class="sig-name descname"><span class="pre">DisableHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">part:</span> <span class="pre">Anno(name='APart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.part.Part'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">part</span> <span class="pre">that</span> <span class="pre">has</span> <span class="pre">attached</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">Hook')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/builtin/hooks.html#DisableHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Called at disable() to stop all parts updating their attributes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
+<li><p><strong>context</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="managercontroller">
+<h2>ManagerController<a class="headerlink" href="#managercontroller" title="Permalink to this headline"></a></h2>
+<p>A <a class="reference internal" href="../build/builtin/controllers_api.html#malcolm.modules.builtin.controllers.ManagerController" title="malcolm.modules.builtin.controllers.ManagerController"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ManagerController</span></code></a> adds Loading/Saving. It is used in simple blocks in the
+<a class="reference internal" href="glossary.html#device-layer"><span class="std std-ref">Device Layer</span></a>. It implements the following statemachine:</p>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.builtin.util.</span></span><span class="sig-name descname"><span class="pre">ManagerStates</span></span><a class="reference internal" href="../_modules/malcolm/modules/builtin/util.html#ManagerStates"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>This state set covers controllers and parts that have loadable and
+savable child state.</p>
+<div class="graphviz"><object data="../_images/graphviz-ac01b98733289a85657d67646db70c064f168978.svg" type="image/svg+xml" class="graphviz">
+<p class="warning">digraph {
+    newrank=true;  // Sensible ranking of clusters
+    bgcolor=transparent
+    compound=true
+    rankdir=LR
+    node [fontname=Arial fontsize=10 shape=rect style=filled fillcolor=&quot;#8BC4E9&quot;]
+    graph [fontname=Arial fontsize=11]
+    edge [fontname=Arial fontsize=10 arrowhead=vee]
+    Fault [fillcolor=&quot;#F03232&quot;]
+    Disabled [fillcolor=&quot;#AAAAAA&quot;]
+
+    subgraph cluster_normal {
+        Ready [fillcolor=&quot;#BBE7BB&quot;]
+        Ready -&gt; Saving [label=&quot;save()&quot;]
+        Saving -&gt; Ready [weight=0]
+        Ready -&gt; Loading [label=&quot;put\ndesign&quot;]
+        Loading -&gt; Ready [weight=0]
+        Resetting -&gt; Ready
+    }
+    Resetting -&gt; Disabling [ltail=cluster_normal label=&quot;disable()&quot;]
+    Resetting -&gt; Fault [ltail=cluster_normal label=&quot;on_error&quot;]
+
+    Fault -&gt; Resetting [label=&quot;reset()&quot;]
+    Fault -&gt; Disabling [label=&quot;disable()&quot;]
+    Disabling -&gt; Fault [label=&quot;on_error&quot;]
+    Disabling -&gt; Disabled
+    Disabled -&gt; Resetting [label=&quot;reset()&quot;]
+
+    label=&quot;Unlabelled transitions take place in response to internal actions\n
+           Labelled transitions are triggered externally.&quot;;
+    labelloc=bottom;
+}</p></object></div>
+</dd></dl>
+
+<p>The following <a class="reference internal" href="glossary.html#hook"><span class="std std-ref">Hooks</span></a> are run during state transitions:</p>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.builtin.hooks.</span></span><span class="sig-name descname"><span class="pre">LayoutHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">part:</span> <span class="pre">Anno(name='APart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.part.Part'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">part</span> <span class="pre">that</span> <span class="pre">has</span> <span class="pre">attached</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">Hook')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ports:</span> <span class="pre">Anno(name='APortMap'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=(&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotypes._array.Array[malcolm.modules.builtin.infos.PortInfo])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">PortInfos</span> <span class="pre">for</span> <span class="pre">all</span> <span class="pre">the</span> <span class="pre">parts')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layout:</span> <span class="pre">Anno(name='ALayoutTable'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.modules.builtin.util.LayoutTable'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='A</span> <span class="pre">possibly</span> <span class="pre">partial</span> <span class="pre">set</span> <span class="pre">of</span> <span class="pre">changes</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">layout</span> <span class="pre">table</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">acted</span> <span class="pre">on')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/builtin/hooks.html#LayoutHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Called when layout table set and at init to update child layout</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
+<li><p><strong>context</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+<li><p><strong>ports</strong> – The PortInfos for all the parts</p></li>
+<li><p><strong>layout</strong> (<a class="reference internal" href="../build/builtin/util_api.html#malcolm.modules.builtin.util.LayoutTable" title="malcolm.modules.builtin.util.LayoutTable"><em>LayoutTable</em></a>) – A possibly partial set of changes to the layout table that should be acted on</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">validate_return</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">ret:</span> <span class="pre">Optional[Union[Anno(name='ALayoutInfos',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.modules.builtin.infos.LayoutInfo'&gt;,</span> <span class="pre">description='The</span> <span class="pre">current</span> <span class="pre">layout</span> <span class="pre">information'),</span> <span class="pre">Sequence[malcolm.modules.builtin.infos.LayoutInfo],</span> <span class="pre">malcolm.modules.builtin.infos.LayoutInfo]])</span> <span class="pre">-&gt;</span> <span class="pre">Anno(name='ALayoutInfos',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.modules.builtin.infos.LayoutInfo'&gt;,</span> <span class="pre">description='The</span> <span class="pre">current</span> <span class="pre">layout</span> <span class="pre">information'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/builtin/hooks.html#LayoutHook.validate_return"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Check that all returned infos are LayoutInfos</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.builtin.hooks.</span></span><span class="sig-name descname"><span class="pre">LoadHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">part:</span> <span class="pre">Anno(name='APart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.part.Part'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">part</span> <span class="pre">that</span> <span class="pre">has</span> <span class="pre">attached</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">Hook')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">structure:</span> <span class="pre">Anno(name='AStructure'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=(&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typing.Any)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">serialized</span> <span class="pre">structure</span> <span class="pre">to</span> <span class="pre">load')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init:</span> <span class="pre">Anno(name='AInit'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Whether</span> <span class="pre">this</span> <span class="pre">operation</span> <span class="pre">is</span> <span class="pre">taking</span> <span class="pre">place</span> <span class="pre">at</span> <span class="pre">init')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/builtin/hooks.html#LoadHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Called at load() to load child settings from a structure</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
+<li><p><strong>context</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+<li><p><strong>structure</strong> – The serialized structure to load</p></li>
+<li><p><strong>init</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – Whether this operation is taking place at init</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.builtin.hooks.</span></span><span class="sig-name descname"><span class="pre">SaveHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">part:</span> <span class="pre">Anno(name='APart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.part.Part'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">part</span> <span class="pre">that</span> <span class="pre">has</span> <span class="pre">attached</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">Hook')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/builtin/hooks.html#SaveHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Called at save() to serialize child settings into a dict structure</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
+<li><p><strong>context</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">validate_return</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ret:</span> <span class="pre">Anno(name='AStructure'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=(&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typing.Any)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">serialized</span> <span class="pre">structure</span> <span class="pre">to</span> <span class="pre">load'))</span> <span class="pre">-&gt;</span> <span class="pre">Anno(name='AStructure'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=(&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typing.Any)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">serialized</span> <span class="pre">structure</span> <span class="pre">to</span> <span class="pre">load'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/builtin/hooks.html#SaveHook.validate_return"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Check that a serialized structure is returned</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="runnablecontroller">
+<h2>RunnableController<a class="headerlink" href="#runnablecontroller" title="Permalink to this headline"></a></h2>
+<p>A <a class="reference internal" href="../build/scanning/controllers_api.html#malcolm.modules.scanning.controllers.RunnableController" title="malcolm.modules.scanning.controllers.RunnableController"><code class="xref any py py-class docutils literal notranslate"><span class="pre">RunnableController</span></code></a> adds Configuring/Running/Aborting/Seeking. It is used in
+blocks that support scans in the <a class="reference internal" href="glossary.html#device-layer"><span class="std std-ref">Device Layer</span></a> or <a class="reference internal" href="glossary.html#scan-layer"><span class="std std-ref">Scan Layer</span></a>. It implements
+the following statemachine:</p>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.util.</span></span><span class="sig-name descname"><span class="pre">RunnableStates</span></span><a class="reference internal" href="../_modules/malcolm/modules/scanning/util.html#RunnableStates"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>This state set covers controllers and parts that can be configured and
+then run, and have the ability to pause and rewind</p>
+<div class="graphviz"><object data="../_images/graphviz-c2190327b0d6db878d1318568460d756b0d86e12.svg" type="image/svg+xml" class="graphviz">
+<p class="warning">digraph {
+
+    newrank=true;  // Sensible ranking of clusters
+    bgcolor=transparent
+    compound=true
+    rankdir=LR
+    node [fontname=Arial fontsize=10 shape=rect style=filled fillcolor=&quot;#8BC4E9&quot;]
+    graph [fontname=Arial fontsize=11]
+    edge [fontname=Arial fontsize=10 arrowhead=vee]
+    Fault [fillcolor=&quot;#F03232&quot;]
+    Disabled [fillcolor=&quot;#AAAAAA&quot;]
+
+    subgraph cluster_normal {
+        subgraph cluster_abortable {
+            Ready [fillcolor=&quot;#BBE7BB&quot;]
+            Ready -&gt; Configuring [label=&quot;configure()&quot; weight=30]
+            Ready -&gt; Saving [label=&quot;save()&quot;]
+            Saving -&gt; Ready [weight=0]
+            Ready -&gt; Loading [label=&quot;put\ndesign&quot;]
+            Loading -&gt; Ready [weight=0]
+            Armed [fillcolor=&quot;#BBE7BB&quot;]
+            Configuring -&gt; Armed
+            Armed -&gt; Running [label=&quot;run()&quot;]
+            Armed -&gt; Seeking [label=&quot;put\nsteps&quot;]
+            Running -&gt; PostRun
+            Running -&gt; Seeking [label=&quot;pause()&quot;]
+            PostRun -&gt; Finished
+            PostRun -&gt; Armed
+            PostRun -&gt; Seeking [label=&quot;pause()&quot;]
+            Finished [fillcolor=&quot;#BBE7BB&quot;]
+            Finished -&gt; Seeking [label=&quot;pause()&quot;]
+            Finished -&gt; Configuring [label=&quot;configure()&quot; weight=30]
+            Seeking -&gt; Armed
+            Seeking -&gt; Paused
+            Paused -&gt; Seeking [label=&quot;put\nsteps&quot;]
+            Paused -&gt; Running [label=&quot;resume()&quot;]
+        }
+        Aborted [fillcolor=&quot;#FFBE89&quot;]
+        Resetting -&gt; Ready
+        Seeking -&gt; Aborting [ltail=cluster_abortable label=&quot;abort()&quot;]
+        Aborting -&gt; Aborted
+        Aborted -&gt; Resetting [label=&quot;reset()&quot;]
+        Armed -&gt; Resetting [label=&quot;reset()&quot;]
+        Finished -&gt; Resetting [label=&quot;reset()&quot;]
+    }
+    Aborted -&gt; Disabling [ltail=cluster_normal label=&quot;disable()&quot;]
+    Aborted -&gt; Fault [ltail=cluster_normal label=&quot;on_error&quot;]
+
+    Fault -&gt; Resetting [label=&quot;reset()&quot;]
+    Fault -&gt; Disabling [label=&quot;disable()&quot;]
+    Disabling -&gt; Fault [label=&quot;on_error&quot;]
+    Disabling -&gt; Disabled
+    Disabled -&gt; Resetting [label=&quot;reset()&quot;]
+
+    {rank=min Ready Resetting Fault}
+    {rank=same Loading Saving Configuring}
+    {rank=same Armed Seeking Finished Aborted Disabling}
+    {rank=max Paused Running PostRun Aborting Disabled}
+
+    label=&quot;Unlabelled transitions take place in response to internal actions\n
+           Labelled transitions are triggered externally.&quot;;
+    labelloc=bottom;
+}</p></object></div>
+</dd></dl>
+
+<p>The following <a class="reference internal" href="glossary.html#hook"><span class="std std-ref">Hooks</span></a> are run during state transitions:</p>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.hooks.</span></span><span class="sig-name descname"><span class="pre">ValidateHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">part:</span> <span class="pre">Anno(name='APart',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.part.Part'&gt;,</span> <span class="pre">description='The</span> <span class="pre">part</span> <span class="pre">that</span> <span class="pre">has</span> <span class="pre">attached</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">Hook'),</span> <span class="pre">context:</span> <span class="pre">Anno(name='AContext',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;,</span> <span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks'),</span> <span class="pre">part_info:</span> <span class="pre">Union[Anno(name='APartInfo',</span> <span class="pre">typ=(&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">annotypes._array.Array[malcolm.core.info.Info]),</span> <span class="pre">description='The</span> <span class="pre">Infos</span> <span class="pre">returned</span> <span class="pre">from</span> <span class="pre">other</span> <span class="pre">Parts'),</span> <span class="pre">Mapping[str,</span> <span class="pre">Sequence[malcolm.core.info.Info]]],</span> <span class="pre">generator:</span> <span class="pre">Anno(name='AGenerator',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'scanpointgenerator.core.compoundgenerator.CompoundGenerator'&gt;,</span> <span class="pre">description='Generator</span> <span class="pre">instance</span> <span class="pre">providing</span> <span class="pre">specification</span> <span class="pre">for</span> <span class="pre">scan'),</span> <span class="pre">axesToMove:</span> <span class="pre">Anno(name='AAxesToMove',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='List</span> <span class="pre">of</span> <span class="pre">axes</span> <span class="pre">in</span> <span class="pre">inner</span> <span class="pre">dimension</span> <span class="pre">of</span> <span class="pre">generator</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">moved'),</span> <span class="pre">breakpoints:</span> <span class="pre">Anno(name='ABreakpoints',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'numpy.int32'&gt;,</span> <span class="pre">description='List</span> <span class="pre">of</span> <span class="pre">points</span> <span class="pre">at</span> <span class="pre">which</span> <span class="pre">the</span> <span class="pre">run</span> <span class="pre">will</span> <span class="pre">return</span> <span class="pre">in</span> <span class="pre">Armed</span> <span class="pre">state'),</span> <span class="pre">**kwargs:</span> <span class="pre">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/scanning/hooks.html#ValidateHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Called at validate() to check parameters are valid</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
+<li><p><strong>context</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+<li><p><strong>part_info</strong> – The Infos returned from other Parts</p></li>
+<li><p><strong>generator</strong> (<em>CompoundGenerator</em>) – Generator instance providing specification for scan</p></li>
+<li><p><strong>axesToMove</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – List of axes in inner dimension of generator that should be moved</p></li>
+<li><p><strong>breakpoints</strong> (<em>int32</em>) – List of points at which the run will return in Armed state</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">validate_return</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">ret:</span> <span class="pre">Optional[Union[Anno(name='AParameterTweakInfos',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.modules.scanning.infos.ParameterTweakInfo'&gt;,</span> <span class="pre">description='Parameters</span> <span class="pre">that</span> <span class="pre">need</span> <span class="pre">to</span> <span class="pre">be</span> <span class="pre">changed</span> <span class="pre">to</span> <span class="pre">make</span> <span class="pre">them</span> <span class="pre">compatible'),</span> <span class="pre">Sequence[malcolm.modules.scanning.infos.ParameterTweakInfo],</span> <span class="pre">malcolm.modules.scanning.infos.ParameterTweakInfo]])</span> <span class="pre">-&gt;</span> <span class="pre">Anno(name='AParameterTweakInfos',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.modules.scanning.infos.ParameterTweakInfo'&gt;,</span> <span class="pre">description='Parameters</span> <span class="pre">that</span> <span class="pre">need</span> <span class="pre">to</span> <span class="pre">be</span> <span class="pre">changed</span> <span class="pre">to</span> <span class="pre">make</span> <span class="pre">them</span> <span class="pre">compatible'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/scanning/hooks.html#ValidateHook.validate_return"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Check that all returned infos are ParameterTweakInfo that list
+the parameters that need to be changed to make them compatible with
+this part. ValidateHook will be re-run with the modified parameters.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.hooks.</span></span><span class="sig-name descname"><span class="pre">ReportStatusHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">part:</span> <span class="pre">Anno(name='APart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.part.Part'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">part</span> <span class="pre">that</span> <span class="pre">has</span> <span class="pre">attached</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">Hook')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/scanning/hooks.html#ReportStatusHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Called before Validate, Configure, PostRunArmed and Seek hooks to report
+the current configuration of all parts</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
+<li><p><strong>context</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">validate_return</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">ret:</span> <span class="pre">Optional[Union[Anno(name='AInfos',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.info.Info'&gt;,</span> <span class="pre">description='Infos</span> <span class="pre">about</span> <span class="pre">current</span> <span class="pre">Part</span> <span class="pre">status</span> <span class="pre">to</span> <span class="pre">be</span> <span class="pre">passed</span> <span class="pre">to</span> <span class="pre">other</span> <span class="pre">parts'),</span> <span class="pre">Sequence[malcolm.core.info.Info],</span> <span class="pre">malcolm.core.info.Info]])</span> <span class="pre">-&gt;</span> <span class="pre">Anno(name='AInfos',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.info.Info'&gt;,</span> <span class="pre">description='Infos</span> <span class="pre">about</span> <span class="pre">current</span> <span class="pre">Part</span> <span class="pre">status</span> <span class="pre">to</span> <span class="pre">be</span> <span class="pre">passed</span> <span class="pre">to</span> <span class="pre">other</span> <span class="pre">parts'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/scanning/hooks.html#ReportStatusHook.validate_return"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Check that all parts return Info objects relevant to other parts</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.hooks.</span></span><span class="sig-name descname"><span class="pre">PreConfigureHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">part:</span> <span class="pre">Anno(name='APart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.part.Part'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">part</span> <span class="pre">that</span> <span class="pre">has</span> <span class="pre">attached</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">Hook')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/scanning/hooks.html#PreConfigureHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Called before configure() to get the device into a suitable state to
+report status and run configure. Typically will load a saved design.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
+<li><p><strong>context</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.hooks.</span></span><span class="sig-name descname"><span class="pre">ConfigureHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">part:</span> <span class="pre">Anno(name='APart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.part.Part'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">part</span> <span class="pre">that</span> <span class="pre">has</span> <span class="pre">attached</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">Hook')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">completed_steps:</span> <span class="pre">Anno(name='ACompletedSteps'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'int'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Number</span> <span class="pre">of</span> <span class="pre">steps</span> <span class="pre">already</span> <span class="pre">completed')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps_to_do:</span> <span class="pre">Anno(name='AStepsToDo'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'int'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Number</span> <span class="pre">of</span> <span class="pre">steps</span> <span class="pre">we</span> <span class="pre">should</span> <span class="pre">configure</span> <span class="pre">for')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">part_info:</span> <span class="pre">Anno(name='APartInfo'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=(&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotypes._array.Array[malcolm.core.info.Info])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">Infos</span> <span class="pre">returned</span> <span class="pre">from</span> <span class="pre">other</span> <span class="pre">Parts')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generator:</span> <span class="pre">Anno(name='AGenerator'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'scanpointgenerator.core.compoundgenerator.CompoundGenerator'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Generator</span> <span class="pre">instance</span> <span class="pre">providing</span> <span class="pre">specification</span> <span class="pre">for</span> <span class="pre">scan')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axesToMove:</span> <span class="pre">Anno(name='AAxesToMove'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='List</span> <span class="pre">of</span> <span class="pre">axes</span> <span class="pre">in</span> <span class="pre">inner</span> <span class="pre">dimension</span> <span class="pre">of</span> <span class="pre">generator</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">moved')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">breakpoints:</span> <span class="pre">Anno(name='ABreakpoints'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'numpy.int32'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='List</span> <span class="pre">of</span> <span class="pre">points</span> <span class="pre">at</span> <span class="pre">which</span> <span class="pre">the</span> <span class="pre">run</span> <span class="pre">will</span> <span class="pre">return</span> <span class="pre">in</span> <span class="pre">Armed</span> <span class="pre">state')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/scanning/hooks.html#ConfigureHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Called at configure() to configure child block for a run</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
+<li><p><strong>context</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+<li><p><strong>completed_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Number of steps already completed</p></li>
+<li><p><strong>steps_to_do</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Number of steps we should configure for</p></li>
+<li><p><strong>part_info</strong> – The Infos returned from other Parts</p></li>
+<li><p><strong>generator</strong> (<em>CompoundGenerator</em>) – Generator instance providing specification for scan</p></li>
+<li><p><strong>axesToMove</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – List of axes in inner dimension of generator that should be moved</p></li>
+<li><p><strong>breakpoints</strong> (<em>int32</em>) – List of points at which the run will return in Armed state</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configure_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../api/external_api.html#Callable" title="Callable"><span class="pre">Callable</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../build/scanning/infos_api.html#malcolm.modules.scanning.infos.ConfigureParamsInfo" title="malcolm.modules.scanning.infos.ConfigureParamsInfo"><span class="pre">malcolm.modules.scanning.infos.ConfigureParamsInfo</span></a></span></span><a class="reference internal" href="../_modules/malcolm/modules/scanning/hooks.html#ConfigureHook.create_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Create a <a class="reference internal" href="../build/scanning/infos_api.html#malcolm.modules.scanning.infos.ConfigureParamsInfo" title="malcolm.modules.scanning.infos.ConfigureParamsInfo"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ConfigureParamsInfo</span></code></a> describing the extra parameters
+that should be passed at configure</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">validate_return</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">ret:</span> <span class="pre">Optional[Union[Anno(name='AInfos',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.info.Info'&gt;,</span> <span class="pre">description='Infos</span> <span class="pre">about</span> <span class="pre">current</span> <span class="pre">Part</span> <span class="pre">status</span> <span class="pre">to</span> <span class="pre">be</span> <span class="pre">passed</span> <span class="pre">to</span> <span class="pre">other</span> <span class="pre">parts'),</span> <span class="pre">Sequence[malcolm.core.info.Info],</span> <span class="pre">malcolm.core.info.Info]])</span> <span class="pre">-&gt;</span> <span class="pre">Anno(name='AInfos',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.info.Info'&gt;,</span> <span class="pre">description='Infos</span> <span class="pre">about</span> <span class="pre">current</span> <span class="pre">Part</span> <span class="pre">status</span> <span class="pre">to</span> <span class="pre">be</span> <span class="pre">passed</span> <span class="pre">to</span> <span class="pre">other</span> <span class="pre">parts'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/scanning/hooks.html#ConfigureHook.validate_return"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Check that all parts return Info objects for storing as attributes</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.hooks.</span></span><span class="sig-name descname"><span class="pre">PostConfigureHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">part:</span> <span class="pre">Anno(name='APart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.part.Part'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">part</span> <span class="pre">that</span> <span class="pre">has</span> <span class="pre">attached</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">Hook')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">part_info:</span> <span class="pre">Anno(name='APartInfo'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=(&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotypes._array.Array[malcolm.core.info.Info])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">Infos</span> <span class="pre">returned</span> <span class="pre">from</span> <span class="pre">other</span> <span class="pre">Parts')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/scanning/hooks.html#PostConfigureHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Called at the end of configure() to store configuration info calculated
+in the Configure hook</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
+<li><p><strong>context</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+<li><p><strong>part_info</strong> – The Infos returned from other Parts</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.hooks.</span></span><span class="sig-name descname"><span class="pre">PreRunHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">part:</span> <span class="pre">Anno(name='APart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.part.Part'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">part</span> <span class="pre">that</span> <span class="pre">has</span> <span class="pre">attached</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">Hook')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/scanning/hooks.html#PreRunHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Called at the start of run()</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
+<li><p><strong>context</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.hooks.</span></span><span class="sig-name descname"><span class="pre">RunHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">part:</span> <span class="pre">Anno(name='APart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.part.Part'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">part</span> <span class="pre">that</span> <span class="pre">has</span> <span class="pre">attached</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">Hook')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/scanning/hooks.html#RunHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Called at run() to start the configured steps running</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
+<li><p><strong>context</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.hooks.</span></span><span class="sig-name descname"><span class="pre">PostRunArmedHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">part:</span> <span class="pre">Anno(name='APart',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.part.Part'&gt;,</span> <span class="pre">description='The</span> <span class="pre">part</span> <span class="pre">that</span> <span class="pre">has</span> <span class="pre">attached</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">Hook'),</span> <span class="pre">context:</span> <span class="pre">Anno(name='AContext',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;,</span> <span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks'),</span> <span class="pre">completed_steps:</span> <span class="pre">Anno(name='ACompletedSteps',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'int'&gt;,</span> <span class="pre">description='Number</span> <span class="pre">of</span> <span class="pre">steps</span> <span class="pre">already</span> <span class="pre">completed'),</span> <span class="pre">steps_to_do:</span> <span class="pre">Anno(name='AStepsToDo',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'int'&gt;,</span> <span class="pre">description='Number</span> <span class="pre">of</span> <span class="pre">steps</span> <span class="pre">we</span> <span class="pre">should</span> <span class="pre">configure</span> <span class="pre">for'),</span> <span class="pre">part_info:</span> <span class="pre">Union[Anno(name='APartInfo',</span> <span class="pre">typ=(&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">annotypes._array.Array[malcolm.core.info.Info]),</span> <span class="pre">description='The</span> <span class="pre">Infos</span> <span class="pre">returned</span> <span class="pre">from</span> <span class="pre">other</span> <span class="pre">Parts'),</span> <span class="pre">Mapping[str,</span> <span class="pre">Sequence[malcolm.core.info.Info]]],</span> <span class="pre">generator:</span> <span class="pre">Anno(name='AGenerator',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'scanpointgenerator.core.compoundgenerator.CompoundGenerator'&gt;,</span> <span class="pre">description='Generator</span> <span class="pre">instance</span> <span class="pre">providing</span> <span class="pre">specification</span> <span class="pre">for</span> <span class="pre">scan'),</span> <span class="pre">axesToMove:</span> <span class="pre">Anno(name='AAxesToMove',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">description='List</span> <span class="pre">of</span> <span class="pre">axes</span> <span class="pre">in</span> <span class="pre">inner</span> <span class="pre">dimension</span> <span class="pre">of</span> <span class="pre">generator</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">moved'),</span> <span class="pre">**kwargs:</span> <span class="pre">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/scanning/hooks.html#PostRunArmedHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Called at the end of run() when there are more steps to be run</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
+<li><p><strong>context</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+<li><p><strong>completed_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Number of steps already completed</p></li>
+<li><p><strong>steps_to_do</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Number of steps we should configure for</p></li>
+<li><p><strong>part_info</strong> – The Infos returned from other Parts</p></li>
+<li><p><strong>generator</strong> (<em>CompoundGenerator</em>) – Generator instance providing specification for scan</p></li>
+<li><p><strong>axesToMove</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – List of axes in inner dimension of generator that should be moved</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.hooks.</span></span><span class="sig-name descname"><span class="pre">PostRunReadyHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">part:</span> <span class="pre">Anno(name='APart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.part.Part'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">part</span> <span class="pre">that</span> <span class="pre">has</span> <span class="pre">attached</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">Hook')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/scanning/hooks.html#PostRunReadyHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Called at the end of run() when there are no more steps to be run</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
+<li><p><strong>context</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.hooks.</span></span><span class="sig-name descname"><span class="pre">PauseHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">part:</span> <span class="pre">Anno(name='APart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.part.Part'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">part</span> <span class="pre">that</span> <span class="pre">has</span> <span class="pre">attached</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">Hook')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/scanning/hooks.html#PauseHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Called at pause() to pause the current scan before Seek is called</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
+<li><p><strong>context</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.hooks.</span></span><span class="sig-name descname"><span class="pre">SeekHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">part:</span> <span class="pre">Anno(name='APart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.part.Part'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">part</span> <span class="pre">that</span> <span class="pre">has</span> <span class="pre">attached</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">Hook')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">completed_steps:</span> <span class="pre">Anno(name='ACompletedSteps'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'int'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Number</span> <span class="pre">of</span> <span class="pre">steps</span> <span class="pre">already</span> <span class="pre">completed')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps_to_do:</span> <span class="pre">Anno(name='AStepsToDo'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'int'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Number</span> <span class="pre">of</span> <span class="pre">steps</span> <span class="pre">we</span> <span class="pre">should</span> <span class="pre">configure</span> <span class="pre">for')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">part_info:</span> <span class="pre">Anno(name='APartInfo'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=(&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotypes._array.Array[malcolm.core.info.Info])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">Infos</span> <span class="pre">returned</span> <span class="pre">from</span> <span class="pre">other</span> <span class="pre">Parts')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generator:</span> <span class="pre">Anno(name='AGenerator'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'scanpointgenerator.core.compoundgenerator.CompoundGenerator'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Generator</span> <span class="pre">instance</span> <span class="pre">providing</span> <span class="pre">specification</span> <span class="pre">for</span> <span class="pre">scan')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axesToMove:</span> <span class="pre">Anno(name='AAxesToMove'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='List</span> <span class="pre">of</span> <span class="pre">axes</span> <span class="pre">in</span> <span class="pre">inner</span> <span class="pre">dimension</span> <span class="pre">of</span> <span class="pre">generator</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">moved')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/scanning/hooks.html#SeekHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Called at seek() or at the end of pause() to reconfigure for a different
+number of completed_steps</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
+<li><p><strong>context</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+<li><p><strong>completed_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Number of steps already completed</p></li>
+<li><p><strong>steps_to_do</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Number of steps we should configure for</p></li>
+<li><p><strong>part_info</strong> – The Infos returned from other Parts</p></li>
+<li><p><strong>generator</strong> (<em>CompoundGenerator</em>) – Generator instance providing specification for scan</p></li>
+<li><p><strong>axesToMove</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – List of axes in inner dimension of generator that should be moved</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.scanning.hooks.</span></span><span class="sig-name descname"><span class="pre">AbortHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">part:</span> <span class="pre">Anno(name='APart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.part.Part'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">part</span> <span class="pre">that</span> <span class="pre">has</span> <span class="pre">attached</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">Hook')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/malcolm/modules/scanning/hooks.html#AbortHook"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Called at abort() to stop the current scan</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>part</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
+<li><p><strong>context</strong> (<a class="reference internal" href="../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tags.html" class="btn btn-neutral float-left" title="Supported Tags" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="infos.html" class="btn btn-neutral float-right" title="Infos" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

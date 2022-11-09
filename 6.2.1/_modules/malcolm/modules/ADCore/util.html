@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.modules.ADCore.util &mdash; malcolm 6.2.1 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                6.2.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>malcolm.modules.ADCore.util</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for malcolm.modules.ADCore.util</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">Array</span>
+<span class="kn">from</span> <span class="nn">packaging.version</span> <span class="kn">import</span> <span class="n">Version</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="n">IncompatibleError</span><span class="p">,</span> <span class="n">Table</span>
+
+<span class="c1"># If things don&#39;t get new frames in this time (seconds), consider them</span>
+<span class="c1"># stalled and raise</span>
+<span class="n">FRAME_TIMEOUT</span> <span class="o">=</span> <span class="mi">60</span>
+
+
+<div class="viewcode-block" id="AttributeDatasetType"><a class="viewcode-back" href="../../../../build/ADCore/util_api.html#malcolm.modules.ADCore.util.AttributeDatasetType">[docs]</a><span class="k">class</span> <span class="nc">AttributeDatasetType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Used to signal from a detector driver that it is producing an NDAttribute</span>
+<span class="sd">    that should be published to the user, and what its NeXus type is&quot;&quot;&quot;</span>
+
+    <span class="c1">#: Primary data that is directly relevant to the user, like a transmission</span>
+    <span class="c1">#: diode.</span>
+    <span class="n">DETECTOR</span> <span class="o">=</span> <span class="s2">&quot;detector&quot;</span>
+    <span class="c1">#: Data that only makes sense when considered with detector data, like a</span>
+    <span class="c1">#: measure of beam current with an ion chamber</span>
+    <span class="n">MONITOR</span> <span class="o">=</span> <span class="s2">&quot;monitor&quot;</span>
+    <span class="c1">#: Readback position of a motor that is taking part in the experiment</span>
+    <span class="n">POSITION</span> <span class="o">=</span> <span class="s2">&quot;position&quot;</span></div>
+
+
+<div class="viewcode-block" id="DataType"><a class="viewcode-back" href="../../../../build/ADCore/util_api.html#malcolm.modules.ADCore.util.DataType">[docs]</a><span class="k">class</span> <span class="nc">DataType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The datatype that should be used for the NDAttribute&quot;&quot;&quot;</span>
+
+    <span class="n">INT</span> <span class="o">=</span> <span class="s2">&quot;INT&quot;</span>  <span class="c1">#: int32</span>
+    <span class="n">DOUBLE</span> <span class="o">=</span> <span class="s2">&quot;DOUBLE&quot;</span>  <span class="c1">#: float64</span>
+    <span class="n">STRING</span> <span class="o">=</span> <span class="s2">&quot;STRING&quot;</span>  <span class="c1">#: string</span>
+    <span class="n">DBRNATIVE</span> <span class="o">=</span> <span class="s2">&quot;DBR_NATIVE&quot;</span>  <span class="c1">#: Whatever native type the PV has</span></div>
+
+
+<div class="viewcode-block" id="SourceType"><a class="viewcode-back" href="../../../../build/ADCore/util_api.html#malcolm.modules.ADCore.util.SourceType">[docs]</a><span class="k">class</span> <span class="nc">SourceType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Where to get the NDAttribute data from&quot;&quot;&quot;</span>
+
+    <span class="n">PARAM</span> <span class="o">=</span> <span class="s2">&quot;paramAttribute&quot;</span>  <span class="c1">#: From an asyn parameter of this driver</span>
+    <span class="n">PV</span> <span class="o">=</span> <span class="s2">&quot;PVAttribute&quot;</span>  <span class="c1">#: From a PV name</span></div>
+
+
+<div class="viewcode-block" id="StatisticsName"><a class="viewcode-back" href="../../../../build/ADCore/util_api.html#malcolm.modules.ADCore.util.StatisticsName">[docs]</a><span class="k">class</span> <span class="nc">StatisticsName</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The types of statistics calculated by the areaDetector NDPluginStats&quot;&quot;&quot;</span>
+
+    <span class="n">MIN</span> <span class="o">=</span> <span class="s2">&quot;MIN_VALUE&quot;</span>  <span class="c1">#: Minimum counts in any element</span>
+    <span class="n">MIN_X</span> <span class="o">=</span> <span class="s2">&quot;MIN_X&quot;</span>  <span class="c1">#: X position of minimum counts</span>
+    <span class="n">MIN_Y</span> <span class="o">=</span> <span class="s2">&quot;MIN_Y&quot;</span>  <span class="c1">#: Y position of minimum counts</span>
+    <span class="n">MAX</span> <span class="o">=</span> <span class="s2">&quot;MAX_VALUE&quot;</span>  <span class="c1">#: Maximum counts in any element</span>
+    <span class="n">MAX_X</span> <span class="o">=</span> <span class="s2">&quot;MAX_X&quot;</span>  <span class="c1">#: X position of maximum counts</span>
+    <span class="n">MAX_Y</span> <span class="o">=</span> <span class="s2">&quot;MAX_Y&quot;</span>  <span class="c1">#: Y position of maximum counts</span>
+    <span class="n">MEAN</span> <span class="o">=</span> <span class="s2">&quot;MEAN_VALUE&quot;</span>  <span class="c1">#: Mean counts of all elements</span>
+    <span class="n">SIGMA</span> <span class="o">=</span> <span class="s2">&quot;SIGMA_VALUE&quot;</span>  <span class="c1">#: Sigma of all elements</span>
+    <span class="n">SUM</span> <span class="o">=</span> <span class="s2">&quot;TOTAL&quot;</span>  <span class="c1">#: Sum of all elements</span>
+    <span class="n">NET</span> <span class="o">=</span> <span class="s2">&quot;NET&quot;</span>  <span class="c1">#: Sum of all elements not in background region</span></div>
+
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Is the IOC this part connects to running on Windows?&quot;</span><span class="p">):</span>
+    <span class="n">APartRunsOnWindows</span> <span class="o">=</span> <span class="nb">bool</span>
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;NDAttribute name to be exported&quot;</span><span class="p">):</span>
+    <span class="n">AAttributeNames</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span>
+    <span class="s2">&quot;source ID for attribute (PV name for PVAttribute,&quot;</span>
+    <span class="o">+</span> <span class="s2">&quot;asyn param name for paramAttribute)&quot;</span>
+<span class="p">):</span>
+    <span class="n">ASourceIds</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;PV descriptions&quot;</span><span class="p">):</span>
+    <span class="n">ADescriptions</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Types of attribute dataset&quot;</span><span class="p">):</span>
+    <span class="n">AAttributeTypes</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="n">AttributeDatasetType</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Type of attribute source&quot;</span><span class="p">):</span>
+    <span class="n">ASourceTypes</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="n">SourceType</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Type of attribute data&quot;</span><span class="p">):</span>
+    <span class="n">ADataTypes</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="n">DataType</span><span class="p">]]</span>
+<span class="n">UAttributeNames</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">AAttributeNames</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="n">USourceIds</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">ASourceIds</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="n">UDescriptions</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">ADescriptions</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="n">UAttributeTypes</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">AAttributeTypes</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">AttributeDatasetType</span><span class="p">]]</span>
+<span class="n">UDataTypes</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">ADataTypes</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">DataType</span><span class="p">]]</span>
+<span class="n">USourceTypes</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">ASourceTypes</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SourceType</span><span class="p">]]</span>
+
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Minimum required version for compatibility&quot;</span><span class="p">):</span>
+    <span class="n">AVersionRequirement</span> <span class="o">=</span> <span class="nb">str</span>
+
+
+<div class="viewcode-block" id="ExtraAttributesTable"><a class="viewcode-back" href="../../../../build/ADCore/util_api.html#malcolm.modules.ADCore.util.ExtraAttributesTable">[docs]</a><span class="k">class</span> <span class="nc">ExtraAttributesTable</span><span class="p">(</span><span class="n">Table</span><span class="p">):</span>
+    <span class="c1"># Allow CamelCase as arguments will be serialized</span>
+    <span class="c1"># noinspection PyPep8Naming</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">UAttributeNames</span><span class="p">,</span>
+        <span class="n">sourceId</span><span class="p">:</span> <span class="n">USourceIds</span><span class="p">,</span>
+        <span class="n">description</span><span class="p">:</span> <span class="n">UDescriptions</span><span class="p">,</span>
+        <span class="n">sourceType</span><span class="p">:</span> <span class="n">USourceTypes</span><span class="p">,</span>
+        <span class="n">dataType</span><span class="p">:</span> <span class="n">UDataTypes</span><span class="p">,</span>
+        <span class="n">datasetType</span><span class="p">:</span> <span class="n">UAttributeTypes</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">AAttributeNames</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sourceId</span> <span class="o">=</span> <span class="n">ASourceIds</span><span class="p">(</span><span class="n">sourceId</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">ADescriptions</span><span class="p">(</span><span class="n">description</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sourceType</span> <span class="o">=</span> <span class="n">ASourceTypes</span><span class="p">(</span><span class="n">sourceType</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataType</span> <span class="o">=</span> <span class="n">ADataTypes</span><span class="p">(</span><span class="n">dataType</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">datasetType</span> <span class="o">=</span> <span class="n">AAttributeTypes</span><span class="p">(</span><span class="n">datasetType</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="make_xml_filename"><a class="viewcode-back" href="../../../../build/ADCore/util_api.html#malcolm.modules.ADCore.util.make_xml_filename">[docs]</a><span class="k">def</span> <span class="nf">make_xml_filename</span><span class="p">(</span><span class="n">file_dir</span><span class="p">,</span> <span class="n">mri</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;attributes&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a Block-specific filename for attribute or layout XML file&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">file_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mri</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">.xml&quot;</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">check_driver_version</span><span class="p">(</span><span class="n">driver</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">required</span><span class="p">:</span> <span class="n">AVersionRequirement</span><span class="p">):</span>
+    <span class="n">driver_version</span> <span class="o">=</span> <span class="n">Version</span><span class="p">(</span><span class="n">driver</span><span class="p">)</span>
+    <span class="n">required_version</span> <span class="o">=</span> <span class="n">Version</span><span class="p">(</span><span class="n">required</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="n">required_version</span><span class="o">.</span><span class="n">major</span> <span class="o">!=</span> <span class="n">driver_version</span><span class="o">.</span><span class="n">major</span>
+        <span class="ow">or</span> <span class="n">driver_version</span><span class="o">.</span><span class="n">minor</span> <span class="o">&lt;</span> <span class="n">required_version</span><span class="o">.</span><span class="n">minor</span>
+    <span class="p">):</span>
+        <span class="k">raise</span> <span class="p">(</span>
+            <span class="n">IncompatibleError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Detector driver v</span><span class="si">{</span><span class="n">driver_version</span><span class="si">}</span><span class="s2"> detected. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Malcolm requires v</span><span class="si">{</span><span class="n">required_version</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

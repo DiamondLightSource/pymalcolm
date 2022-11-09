@@ -1,0 +1,6 @@
+
+malcolm.modules.demo.util
+=========================
+
+.. automodule:: malcolm.modules.demo.util
+    :members:
