@@ -3,6 +3,13 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
+`6.2.1`_ - 2022-11-09
+-------------------
+
+Fixed:
+
+- Minor changes to fix tutorials.
+
 `6.2`_ - 2022-08-24
 -------------------
 
@@ -845,6 +852,7 @@ Added:
 
 - Initial release with hello world and websocket comms
 
+.. _6.2.1: https://github.com/dls-controls/pymalcolm/compare/6.2...6.2.1
 .. _6.2: https://github.com/dls-controls/pymalcolm/compare/6.1...6.2
 .. _6.1: https://github.com/dls-controls/pymalcolm/compare/6.0...6.1
 .. _6.0: https://github.com/dls-controls/pymalcolm/compare/5.4...6.0
