@@ -29,10 +29,6 @@
     mri: $(mri_prefix)
     config_dir: $(config_dir)
 
-- ADPilatus.blocks.ADPilatus_driver_block:
-    mri: $(mri_prefix):DRV
-    prefix: $(pv_prefix):CAM
-
 - ADCore.parts.DetectorDriverPart:
     name: $(detector_name)
     mri: $(mri_prefix):DRV
