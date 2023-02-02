@@ -4,6 +4,8 @@ from malcolm.modules import ADCore, builtin, pandablocks, scanning
 
 from ..parts.pandadatasetbussespart import PandADatasetBussesPart
 
+from ..includes import panda_adbase_parts
+
 with Anno("Prefix for areaDetector records"):
     APrefix = str
 # Re-export the things we are reusing from pandablocks
@@ -64,7 +66,7 @@ class PandARunnableController(
                 self._client, self.mri, block_name, block_data, self._doc_url_base
             )
             # Add the areaDetector control parts
-            _, ps = ADCore.includes.adbase_parts(prefix=self.prefix)
+            _, ps = panda_adbase_parts(prefix=self.prefix)
             for p in ps:
                 controller.add_part(p)
             child_part = ADCore.parts.DetectorDriverPart(
