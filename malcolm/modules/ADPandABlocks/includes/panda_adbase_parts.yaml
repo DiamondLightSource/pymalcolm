@@ -1,0 +1,76 @@
+- builtin.parameters.string:
+    name: prefix
+    description: The root PV for the all records
+
+- builtin.parameters.string:
+    name: post_acquire_status
+    description: The value of ADStatus when acquire returns at the end of an acquisition
+    default: Idle
+
+- builtin.parameters.string:
+    name: num_images_pv_suffix
+    description: The PV suffix for number of images
+    default: NumImages
+
+- ADCore.includes.ndarraybase_parts:
+    prefix: $(prefix)
+
+- ca.parts.CAChoicePart:
+    name: imageMode
+    description: Whether to take 1, many, or unlimited images at start
+    pv: $(prefix):ImageMode
+    rbv_suffix: _RBV
+
+- ca.parts.CALongPart:
+    name: numImages
+    description: Number of images to take if imageMode=Multiple
+    pv: $(prefix):$(num_images_pv_suffix)
+    rbv_suffix: _RBV
+
+- ca.parts.CAActionPart:
+    name: start
+    description: Demand for starting acquisition
+    pv: $(prefix):Acquire
+    status_pv: $(prefix):DetectorState_RBV
+    good_status: $(post_acquire_status)
+
+- ca.parts.CAActionPart:
+    name: stop
+    description: Stop acquisition
+    pv: $(prefix):Acquire
+    value: 0
+    wait: False
+
+# For docs: before acquiring
+- ca.parts.CABooleanPart:
+    name: acquiring
+    description: If detector is currently acquiring
+    rbv: $(prefix):DetectorState_RBV
+
+- ca.parts.CAChoicePart:
+    name: triggerMode
+    description: What is triggering the detector to take frames
+    pv: $(prefix):TriggerMode
+    rbv_suffix: _RBV
+
+- ca.parts.CADoublePart:
+    name: exposure
+    description: Exposure time for each frame
+    pv: $(prefix):AcquireTime
+    rbv_suffix: _RBV
+
+- ca.parts.CADoublePart:
+    name: acquirePeriod
+    description: Duration of each frame including readout
+    pv: $(prefix):AcquirePeriod
+    rbv_suffix: _RBV
+
+- ca.parts.CALongPart:
+    name: arraySizeX
+    description: width of the image in pixels
+    rbv: $(prefix):ArraySizeX_RBV
+
+- ca.parts.CALongPart:
+      name: arraySizeY
+      description: height of the image in pixels
+      rbv: $(prefix):ArraySizeY_RBV
