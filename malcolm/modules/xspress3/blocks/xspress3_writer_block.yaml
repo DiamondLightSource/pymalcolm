@@ -1,0 +1,126 @@
+- builtin.parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- builtin.parameters.string:
+    name: prefix
+    description: The root PV for the all records
+
+- builtin.defines.docstring:
+    value: |
+      Hardware block corresponding to PVs used for Odin File Writer
+
+      - OdinDataDriver.template should have pv prefix $(prefix)
+
+- builtin.controllers.StatefulController:
+    mri: $(mri)
+    description: $(docstring)
+
+- ca.parts.CALongPart:
+    name: numCapture
+    description: Number of frames to capture
+    pv: $(prefix):NumCapture
+    rbv_suffix: _RBV
+
+- ca.parts.CALongPart:
+    name: numCaptured
+    description: Number of frames captured since last 'start'
+    rbv: $(prefix):NumCaptured_RBV
+
+- ca.parts.CALongPart:
+    name: numProcesses
+    description: number of receiver/writer pairs and hence HDF files
+    rbv: $(prefix):NumProcesses_RBV
+
+- ca.parts.CALongPart:
+    name: imageHeight
+    description: Height of the data frames
+    pv: $(prefix):ImageHeight
+    rbv_suffix: _RBV
+
+- ca.parts.CALongPart:
+    name: imageWidth
+    description: Width of the data frames
+    pv: $(prefix):ImageWidth
+    rbv_suffix: _RBV
+    
+- ca.parts.CALongPart:
+    name: numFramesChunks
+    description: Size of chunks in frames
+    pv: $(prefix):NumFramesChunks
+    rbv_suffix: _RBV
+
+- ca.parts.CALongPart:
+    name: numRowChunks
+    description: Number of Rows per Chunk
+    pv: $(prefix):NumRowChunks
+    rbv_suffix: _RBV
+
+- ca.parts.CALongPart:
+    name: numColChunks
+    description: Number of Columns per Chunk
+    pv: $(prefix):NumColChunks
+    rbv_suffix: _RBV
+
+- ca.parts.CALongPart:
+    name: blockSize
+    description: Number of contiguous frames written to each file
+    pv: $(prefix):BlockSize
+    rbv_suffix: _RBV
+
+- ca.parts.CALongPart:
+    name: blocksPerFile
+    description: Number of blocks per file
+    pv: $(prefix):BlocksPerFile
+    rbv_suffix: _RBV
+
+
+- ca.parts.CAStringPart:
+    name: dataType
+    description: type of the pixel data
+    rbv: $(prefix):DataType
+
+#- ca.parts.CALongPa#-rt:
+#    name: flushData# PerNFrames
+#    description: Nu# mber of frames to capture between HDF dataset flushes
+#    pv: $(prefix):N# umFramesFlush
+#    rbv_suffix: _RB# V
+
+# Filename
+- ca.parts.CACharArrayPart:
+    name: filePath
+    description: Directory to write files into
+    pv: $(prefix):FilePath
+    rbv_suffix: _RBV
+
+- ca.parts.CACharArrayPart:
+    name: fileName
+    description: Filename within directory
+    pv: $(prefix):FileName
+    rbv_suffix: _RBV
+
+# commands
+- ca.parts.CAActionPart:
+    name: start
+    description: Demand for starting acquisition
+    pv: $(prefix):Capture
+    status_pv: $(prefix):WriteStatus
+    good_status: Write OK
+
+- ca.parts.CAActionPart:
+    name: stop
+    description: Demand for stopping acquisition
+    pv: $(prefix):Capture
+    value: 0
+    wait: False
+
+# status
+- ca.parts.CABooleanPart:
+    name: running
+    description: If detector is currently acquiring
+    rbv: $(prefix):Capture_RBV
+
+- ca.parts.CACharArrayPart:
+    name: writeMessage
+    description: Error message if in error
+    rbv: $(prefix):WriteMessage
