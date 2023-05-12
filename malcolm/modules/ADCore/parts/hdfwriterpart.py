@@ -41,6 +41,9 @@ SUFFIXES = "NXY3456789"
 with Anno("Toggle writing of all ND attributes to HDF file"):
     AWriteAllNDAttributes = bool
 
+with Anno("Toggle generating layout xml file"):
+    AUseDefaultXml = bool
+
 # Pull re-used annotypes into our namespace in case we are subclassed
 APartName = APartName
 AMri = builtin.parts.AMri
@@ -374,6 +377,7 @@ class HDFWriterPart(builtin.parts.ChildPart):
         mri: AMri,
         runs_on_windows: APartRunsOnWindows = False,
         write_all_nd_attributes: AWriteAllNDAttributes = True,
+        use_default_xml: AUseDefaultXml = False,
         required_version: AVersionRequirement = None,
     ) -> None:
         super().__init__(name, mri)
@@ -397,6 +401,12 @@ class HDFWriterPart(builtin.parts.ChildPart):
             tags=[Widget.CHECKBOX.tag(), config_tag()],
         ).create_attribute_model(write_all_nd_attributes)
         self.required_version = required_version
+        self.use_default_xml = BooleanMeta(
+            "Toggles whether to use the default xml or whether"
+            "to generate one. Large scans should use default",
+            writeable=True,
+            tags=[Widget.CHECKBOX.tag(), config_tag()],
+        ).create_attribute_model(use_default_xml)
 
     @add_call_types
     def on_validate(
@@ -437,6 +447,11 @@ class HDFWriterPart(builtin.parts.ChildPart):
             "writeAllNdAttributes",
             self.write_all_nd_attributes,
             self.write_all_nd_attributes.set_value,
+        )
+        registrar.add_attribute_model(
+            "useDefaultXml",
+            self.use_default_xml,
+            self.use_default_xml.set_value,
         )
         # Tell the controller to expose some extra configure parameters
         registrar.report(scanning.hooks.ConfigureHook.create_info(self.on_configure))
@@ -492,16 +507,19 @@ class HDFWriterPart(builtin.parts.ChildPart):
             )
         )
         futures += set_dimensions(child, generator)
-        xml = make_layout_xml(generator, part_info, self.write_all_nd_attributes.value)
-        self.layout_filename = make_xml_filename(file_dir, self.mri, suffix="layout")
-        assert self.layout_filename, "No layout filename"
-        with open(self.layout_filename, "w") as f:
-            f.write(xml)
-        layout_filename_pv_value = self.layout_filename
-        if self.runs_on_windows:
-            layout_filename_pv_value = FilePathTranslatorInfo.translate_filepath(
-                part_info, self.layout_filename
-            )
+        if self.use_default_xml.value==False:
+            xml = make_layout_xml(generator, part_info, self.write_all_nd_attributes.value)
+            self.layout_filename = make_xml_filename(file_dir, self.mri, suffix="layout")
+            assert self.layout_filename, "No layout filename"
+            with open(self.layout_filename, "w") as f:
+               f.write(xml)
+            layout_filename_pv_value = self.layout_filename
+            if self.runs_on_windows:
+                layout_filename_pv_value = FilePathTranslatorInfo.translate_filepath(
+                    part_info, self.layout_filename
+                )
+        else:
+            layout_filename_pv_value=""
         futures += child.put_attribute_values_async(
             dict(
                 xmlLayout=layout_filename_pv_value,
@@ -520,7 +538,8 @@ class HDFWriterPart(builtin.parts.ChildPart):
             "arrayCounterReadback", greater_than_zero
         )
         # Check XML
-        self._check_xml_is_valid(child)
+        if self.use_default_xml==False:
+            self._check_xml_is_valid(child)
         # Return the dataset information
         dataset_infos = list(
             create_dataset_infos(formatName, part_info, generator, filename)
