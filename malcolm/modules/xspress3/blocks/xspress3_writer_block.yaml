@@ -74,6 +74,11 @@
     pv: $(prefix):BlocksPerFile
     rbv_suffix: _RBV
 
+- ca.parts.CALongPart:
+    name: chunkSize
+    description: Size of the chunk of memory to be written each time
+    pv: $(prefix):ChunkSize
+    rbv_suffix: _RBV
 
 - ca.parts.CAStringPart:
     name: dataType

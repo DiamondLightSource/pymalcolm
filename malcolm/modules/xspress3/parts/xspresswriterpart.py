@@ -235,12 +235,10 @@ def create_vds(generator, raw_name, vds_path, child, sum_name):
             vds['raw/dtc_chan' + str(i)] = h5py.ExternalLink(metafile, "/dtc_chan{}".format(str(i)))
             vds['raw/scalar_chan' + str(i)] = h5py.ExternalLink(metafile, "/scalar_chan{}".format(str(i)))
         for f in files:
-            print('f inside the create_vds method: {}'.format(str(f)))
             vds['raw/mca' + str(4*count-4)] = h5py.ExternalLink(f, "/mca_{}".format(str(4*count-4)))
             vds['raw/mca' + str(4*count-3)] = h5py.ExternalLink(f, "/mca_{}".format(str(4*count-3)))
             vds['raw/mca' + str(4*count-2)] = h5py.ExternalLink(f, "/mca_{}".format(str(4*count-2)))
             vds['raw/mca' + str(4*count-1)] = h5py.ExternalLink(f, "/mca_{}".format(str(4*count-1)))
-            print(list(vds))    
             count += 1
 
     shape = (hdf_shape, 1, 1)
@@ -260,11 +258,6 @@ def create_vds(generator, raw_name, vds_path, child, sum_name):
         "sum",
         "uint64",
     )
-    print('list of the keys in each file:')
-    with h5py.File(vds_path, "r", libver="latest") as test:
-        for f in files:
-            print('filename: {}'.format(str(f)))
-            print(list(test.keys()))
 
 set_bases = ["/entry/xspress/", "/entry/xspress_sum/"]
 set_data = ["/data", "/sum"]
@@ -295,8 +288,6 @@ def add_nexus_nodes(generator, vds_file_path):
 
     with h5py.File(vds_file_path, "r+", libver="latest") as vds:
         for data, node in zip(set_data, set_bases):
-            print('data = {}'.format(str(data)))
-            print('node = {}'.format(str(node)))
             # create a group for this entry
             vds.require_group(node)
             # points to the axis demand data sets
@@ -333,7 +324,7 @@ def add_nexus_nodes(generator, vds_file_path):
 
 
 # We will set these attributes on the child block, so don't save them
-@builtin.util.no_save("fileName", "filePath", "numCapture")
+@builtin.util.no_save("fileName", "filePath", "numCapture","chunkSize")
 class XspressWriterPart(builtin.parts.ChildPart):
     """Part for controlling an `xspress3_writer_block` in a Device"""
 
@@ -395,14 +386,23 @@ class XspressWriterPart(builtin.parts.ChildPart):
     ) -> scanning.hooks.UInfos:
 
         self.exposure_time = generator.duration
-
         # On initial configure, expect to get the demanded number of frames
         self.done_when_reaches = completed_steps + self.num_pairs*steps_to_do
         print('self.done_when_reaches = {}'.format(self.done_when_reaches))
         self.unique_id_offset = 0
         child = context.block_view(self.mri)
+        print("on_configure child.ChunkSize.value = {}".format(int(child.chunkSize.value)))
+        print("on_configure self.exposure_time  = {}".format(float(self.exposure_time)))
+        print("on_configure generator.size = {}".format(int(generator.size)))
         file_dir = fileDir.rstrip(os.sep)
 
+        chunk = int(1/float(self.exposure_time))
+        if(chunk < 1):
+            chunk=1
+        if(chunk > 1000):
+            chunk=1000
+        self.chunkSize.put_value(chunk)
+        print("new chunkSize value: {}".format(chunk))
         # derive file path from template as AreaDetector would normally do
         fileName = fileTemplate.replace("%s", formatName)
 
@@ -432,7 +432,6 @@ class XspressWriterPart(builtin.parts.ChildPart):
             "numCaptured", greater_than_zero
         )
 
-        print('vds_full_filename: {}'.format(vds_full_filename))
         create_vds(
             generator,
             raw_file_basename,
@@ -451,14 +450,12 @@ class XspressWriterPart(builtin.parts.ChildPart):
             for i in range(int(child.numProcesses.value))
         ]
         raw_file_names += [f"{raw_file_basename}_meta.h5"]
-        print('raw_file_names:\n{}'.format(raw_file_names))
         dataset_infos += list(
             create_raw_dataset_infos(
                 formatName, len(generator.dimensions) + 2, fileName, int(child.numProcesses.value)
             )
         )
 
-        print(str(dataset_infos))
         return dataset_infos
 
     @add_call_types
