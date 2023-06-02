@@ -1,5 +1,6 @@
 import os
 import time
+import h5py
 from typing import Dict, Iterator, List, Optional
 from xml.etree import cElementTree as ET
 
@@ -59,6 +60,8 @@ def create_dataset_infos(
     part_info: scanning.hooks.APartInfo,
     generator: CompoundGenerator,
     filename: str,
+    remove_demand_positions_from_xml: bool,
+    set_path: str,
 ) -> Iterator[Info]:
     # Update the dataset table
     uniqueid = "/entry/NDAttributes/NDArrayUniqueId"
@@ -117,17 +120,25 @@ def create_dataset_infos(
             path=f"/entry/{dataset_info.name}/{dataset_info.name}",
             uniqueid=uniqueid,
         )
-
-    # Add any setpoint dimensions
-    for dim in generator.axes:
-        yield scanning.infos.DatasetProducedInfo(
-            name=f"{dim}.value_set",
-            filename=filename,
-            type=scanning.util.DatasetType.POSITION_SET,
-            rank=1,
-            path=f"/entry/detector/{dim}_set",
-            uniqueid="",
-        )
+        # Add any setpoint dimensions
+        for dim in generator.axes:
+            if remove_demand_positions_from_xml is True:
+                file_name = filename.replace(".", "additional.")
+                path = set_path % dim
+            else:
+                file_name=filename
+                path=f"/entry/detector/{dim}_set"
+            print ("file_name", file_name)
+            print ("h5 path", path)
+            print ("name", f"{dim}.value_set")
+            yield scanning.infos.DatasetProducedInfo(
+                name=f"{dim}.value_set",
+                filename=file_name,
+                type=scanning.util.DatasetType.POSITION_SET,
+                rank=1,
+                path=path,
+                uniqueid="",
+            )
 
 
 def set_dimensions(child: Block, generator: CompoundGenerator) -> List[Future]:
@@ -240,6 +251,29 @@ def make_nxdata(
                     make_set_points(d, axis, data_el, generator.units[axis])
     return data_el
 
+def _write_additional_hdf (
+    file_name: str,
+    generator: CompoundGenerator,
+    h5_file_dir: str,
+    set_path : str,
+):
+    filepath = h5_file_dir + "/" + file_name.replace(".", "additional.")
+    print("Filepath", filepath)
+    # Open the file with the latest libver so SWMR works
+    hdf = h5py.File(filepath, "w", libver="latest")
+    # Write the datasets
+    # The detector dataset containing the simulated data
+    # Make the setpoint dataset
+    for d in generator.dimensions:
+        for axis in d.axes:
+            # Make a data set for the axes, holding an array holding
+            # floating point data, for each point specified in the generator
+            ds = hdf.create_dataset(set_path % axis, data=d.get_positions(axis))
+            ds.attrs["units"] = generator.units[axis]
+    # Datasets made, we can switch to SWMR mode now
+    hdf.swmr_mode = True
+    return hdf
+    # hdf.close()
 
 def make_layout_xml(
     generator: CompoundGenerator,
@@ -406,6 +440,8 @@ class HDFWriterPart(builtin.parts.ChildPart):
         self.num_captured_offset = 0
         # The HDF5 layout file we write to say where the datasets go
         self.layout_filename: Optional[str] = None
+        self._hdf: h5py.File = None
+
         self.runs_on_windows = runs_on_windows
         # How long to wait between frame updates before error
         self.frame_timeout = 0.0
@@ -441,6 +477,9 @@ class HDFWriterPart(builtin.parts.ChildPart):
         # can't wait for it, so just wait for the running attribute to be false
         child = context.block_view(self.mri)
         child.when_value_matches("running", False)
+        if self._hdf:
+            self._hdf.close()
+            self._hdf = None
         # Delete the layout XML file
         if self.layout_filename and os.path.isfile(self.layout_filename):
             os.remove(self.layout_filename)
@@ -537,8 +576,6 @@ class HDFWriterPart(builtin.parts.ChildPart):
             layout_filename_pv_value = FilePathTranslatorInfo.translate_filepath(
                 part_info, self.layout_filename
             )
-        # else:
-        #    layout_filename_pv_value=""
         futures += child.put_attribute_values_async(
             dict(
                 xmlLayout=layout_filename_pv_value,
@@ -557,11 +594,14 @@ class HDFWriterPart(builtin.parts.ChildPart):
             "arrayCounterReadback", greater_than_zero
         )
         # Check XML
+        set_path = "/entry/%s_set"
         if self.remove_demand_positions_from_xml.value is False:
             self._check_xml_is_valid(child)
+        else:
+            self._hdf=_write_additional_hdf(filename, generator, h5_file_dir, set_path)
         # Return the dataset information
         dataset_infos = list(
-            create_dataset_infos(formatName, part_info, generator, filename)
+            create_dataset_infos(formatName, part_info, generator, filename, self.remove_demand_positions_from_xml.value, set_path)
         )
         return dataset_infos
 
