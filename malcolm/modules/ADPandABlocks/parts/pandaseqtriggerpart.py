@@ -74,8 +74,8 @@ class SeqTriggers:
     def _how_long_moving_wrong_way(
         self, axis_name: str, point: Point, increasing: bool
     ) -> float:
-        """Return the duration that the given axis is moving in the opposite direction from
-        that required for `point`, during the prior turnaround."""
+        """Return the duration that the given axis is moving in the opposite direction
+        from that required for `point`, during the prior turnaround."""
         assert self.min_turnaround, f"{self.name}: no MinTurnaround assigned"
         min_turnaround = max(self.min_turnaround.time, point.delay_after)
         time_arrays, velocity_arrays = pmac.util.profile_between_points(

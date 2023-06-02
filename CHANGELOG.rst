@@ -3,17 +3,31 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
+`6.2.1`_ - 2022-11-09
+-------------------
+
+Fixed:
+
+- Minor changes to fix tutorials.
+
 `6.2`_ - 2022-08-24
 -------------------
 
 Added:
 
 - ADTucsen driver and runnable blocks.
+
+Fixed:
+
 - Bugfix: Resolve deadlock that caused malcolm to hang. This was caused by a deadlock
   between the logging thread and the cothread thread.
 - Disallow pausing in PostRun state. This results in malcolm attempting to recapture
   the last point in the map, which leads to the brick going into "CS Error:
   Insufficient calculation time", because the path generated seems to backtrack.
+- doublebuffer: If Prescale was set to a non-zero value on one of the sequencer
+  tables it would cause timing problems in scans using the seqTriggerPart.
+  This fix sets Prescale to zero during configure and logs a warning in the
+  malcolm readback.
 
 `6.1`_ - 2022-05-31
 -------------------
@@ -838,6 +852,7 @@ Added:
 
 - Initial release with hello world and websocket comms
 
+.. _6.2.1: https://github.com/dls-controls/pymalcolm/compare/6.2...6.2.1
 .. _6.2: https://github.com/dls-controls/pymalcolm/compare/6.1...6.2
 .. _6.1: https://github.com/dls-controls/pymalcolm/compare/6.0...6.1
 .. _6.0: https://github.com/dls-controls/pymalcolm/compare/5.4...6.0
