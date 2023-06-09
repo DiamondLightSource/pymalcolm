@@ -121,24 +121,21 @@ def create_dataset_infos(
             uniqueid=uniqueid,
         )
         # Add any setpoint dimensions
-        for dim in generator.axes:
-            if remove_demand_positions_from_xml is True:
-                file_name = filename.replace(".", "additional.")
-                path = set_path % dim
-            else:
-                file_name=filename
-                path=f"/entry/detector/{dim}_set"
-            print ("file_name", file_name)
-            print ("h5 path", path)
-            print ("name", f"{dim}.value_set")
-            yield scanning.infos.DatasetProducedInfo(
-                name=f"{dim}.value_set",
-                filename=file_name,
-                type=scanning.util.DatasetType.POSITION_SET,
-                rank=1,
-                path=path,
-                uniqueid="",
-            )
+    for dim in generator.axes:
+        if remove_demand_positions_from_xml is True:
+            file_name = filename.replace(".", "additional.")
+            path = set_path % dim
+        else:
+            file_name = filename
+            path = f"/entry/detector/{dim}_set"
+        yield scanning.infos.DatasetProducedInfo(
+            name=f"{dim}.value_set",
+            filename=file_name,
+            type=scanning.util.DatasetType.POSITION_SET,
+            rank=1,
+            path=path,
+            uniqueid="",
+        )
 
 
 def set_dimensions(child: Block, generator: CompoundGenerator) -> List[Future]:
@@ -251,14 +248,14 @@ def make_nxdata(
                     make_set_points(d, axis, data_el, generator.units[axis])
     return data_el
 
-def _write_additional_hdf (
+
+def _write_additional_hdf(
     file_name: str,
     generator: CompoundGenerator,
     h5_file_dir: str,
-    set_path : str,
+    set_path: str,
 ):
     filepath = h5_file_dir + "/" + file_name.replace(".", "additional.")
-    print("Filepath", filepath)
     # Open the file with the latest libver so SWMR works
     hdf = h5py.File(filepath, "w", libver="latest")
     # Write the datasets
@@ -274,6 +271,7 @@ def _write_additional_hdf (
     hdf.swmr_mode = True
     return hdf
     # hdf.close()
+
 
 def make_layout_xml(
     generator: CompoundGenerator,
@@ -595,13 +593,21 @@ class HDFWriterPart(builtin.parts.ChildPart):
         )
         # Check XML
         set_path = "/entry/%s_set"
-        if self.remove_demand_positions_from_xml.value is False:
-            self._check_xml_is_valid(child)
-        else:
-            self._hdf=_write_additional_hdf(filename, generator, h5_file_dir, set_path)
+        if self.remove_demand_positions_from_xml.value is not False:
+            self._hdf = _write_additional_hdf(
+                filename, generator, h5_file_dir, set_path
+            )
+        self._check_xml_is_valid(child)
         # Return the dataset information
         dataset_infos = list(
-            create_dataset_infos(formatName, part_info, generator, filename, self.remove_demand_positions_from_xml.value, set_path)
+            create_dataset_infos(
+                formatName,
+                part_info,
+                generator,
+                filename,
+                self.remove_demand_positions_from_xml.value,
+                set_path,
+            )
         )
         return dataset_infos
 
