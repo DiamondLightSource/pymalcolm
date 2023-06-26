@@ -49,15 +49,6 @@ def create_dataset_infos(
         uniqueid="/entry/xspress/uid",
     )
 
-    # Add other datasources
-    yield scanning.infos.DatasetProducedInfo(
-        name=f"{name}.{secondary_set}",
-        filename=filename,
-        type=scanning.infos.DatasetType.SECONDARY,
-        rank=generator_rank + 2,
-        path=f"/entry/xspress_sum/{secondary_set}",
-        uniqueid="/entry/xspress/uid",
-    )
 
     # Add any setpoint dimensions
     for dim in generator.axes:
@@ -78,48 +69,31 @@ def create_raw_dataset_infos(
     filename: str,
     n_raw: int
 ) -> Iterator[Info]:
-    for i in range(1,n_raw+1):
+    for i in range(8): #change this to be realted to the number of channels
         yield scanning.infos.DatasetProducedInfo(
-            name=f"{name}.raw{i}",
+            name=f"{name}.raw_mca{i}",
             filename=filename,
             type=scanning.infos.DatasetType.RAW,
             rank=rank,
-            path="/raw/mca",
-            uniqueid="",
+            path="/raw/mca" + str(i),
+            uniqueid=""
         )
         yield scanning.infos.DatasetProducedInfo(
-            name=f"{name}.sum{i}",
+            name=f"{name}.dtc_chan{i}",
             filename=filename,
             type=scanning.infos.DatasetType.RAW,
             rank=rank,
-            path="/raw/sum",
+            path="/raw/dtc_chan" + str(i),
             uniqueid="",
         )
         yield scanning.infos.DatasetProducedInfo(
-            name=f"{name}.uid{i+1}",
+            name=f"{name}.scalar_chan{i}",
             filename=filename,
             type=scanning.infos.DatasetType.RAW,
             rank=rank,
-            path="/raw/uid",
+            path="/raw/scalar_chan" + str(i),
             uniqueid="",
         )
-
-    yield scanning.infos.DatasetProducedInfo(
-        name=f"{name}.dtc_chan",
-        filename=filename,
-        type=scanning.infos.DatasetType.RAW,
-        rank=rank,
-        path="/raw/dtc_chan",
-        uniqueid="",
-    )
-    yield scanning.infos.DatasetProducedInfo(
-        name=f"{name}.scalar_chan",
-        filename=filename,
-        type=scanning.infos.DatasetType.RAW,
-        rank=rank,
-        path="/raw/scalar_chan",
-        uniqueid="",
-    )
 
 
 def files_shape(frames, block_size, file_count):
@@ -235,6 +209,7 @@ def create_vds(generator, raw_name, vds_path, child, sum_name):
             vds['raw/dtc_chan' + str(i)] = h5py.ExternalLink(metafile, "/dtc_chan{}".format(str(i)))
             vds['raw/scalar_chan' + str(i)] = h5py.ExternalLink(metafile, "/scalar_chan{}".format(str(i)))
         for f in files:
+            print("Filename: {}".format(f))
             vds['raw/mca' + str(4*count-4)] = h5py.ExternalLink(f, "/mca_{}".format(str(4*count-4)))
             vds['raw/mca' + str(4*count-3)] = h5py.ExternalLink(f, "/mca_{}".format(str(4*count-3)))
             vds['raw/mca' + str(4*count-2)] = h5py.ExternalLink(f, "/mca_{}".format(str(4*count-2)))
@@ -243,27 +218,11 @@ def create_vds(generator, raw_name, vds_path, child, sum_name):
 
     shape = (hdf_shape, 1, 1)
 
-    # prepare a vds for the sums | Jake told me that the sum might not need to be in a vds format as we don't have much use for two separate sums, two 1x4k datasets
-    one_vds(
-        vds_folder,
-        vds_name,
-        files,
-        1,
-        1,
-        shape,
-        generator,
-        alternates,
-        block_size,
-        sum_name,
-        "sum",
-        "uint64",
-    )
 
-set_bases = ["/entry/xspress/", "/entry/xspress_sum/"]
-set_data = ["/data", "/sum"]
 
-# set_bases = ["/entry/xspress/"]
-# set_data = ["/data"]
+set_bases = ["/entry/xspress/"]
+set_data = ["/data"]
+
 
 def add_nexus_nodes(generator, vds_file_path):
     """Add in the additional information to make this into a standard nexus
@@ -284,7 +243,7 @@ def add_nexus_nodes(generator, vds_file_path):
         else:
             pad_dims.append(".")
 
-    pad_dims += ["."] * 2  # assume a 2 dimensional detector
+    pad_dims += ["."] * 2  # assume a 2 dimensional detector | is xspress a 2 dimensional detector?
 
     with h5py.File(vds_file_path, "r+", libver="latest") as vds:
         for data, node in zip(set_data, set_bases):
@@ -388,21 +347,18 @@ class XspressWriterPart(builtin.parts.ChildPart):
         self.exposure_time = generator.duration
         # On initial configure, expect to get the demanded number of frames
         self.done_when_reaches = completed_steps + self.num_pairs*steps_to_do
-        print('self.done_when_reaches = {}'.format(self.done_when_reaches))
+
         self.unique_id_offset = 0
         child = context.block_view(self.mri)
-        print("on_configure child.ChunkSize.value = {}".format(int(child.chunkSize.value)))
-        print("on_configure self.exposure_time  = {}".format(float(self.exposure_time)))
-        print("on_configure generator.size = {}".format(int(generator.size)))
         file_dir = fileDir.rstrip(os.sep)
 
         chunk = int(1/float(self.exposure_time))
         if(chunk < 1):
             chunk=1
-        if(chunk > 1000):
-            chunk=1000
-        self.chunkSize.put_value(chunk)
-        print("new chunkSize value: {}".format(chunk))
+        if(chunk > 1024):
+            chunk=1024
+        # print("new chunkSize value: {}".format(chunk))
+        child.chunkSize.put_value(chunk)
         # derive file path from template as AreaDetector would normally do
         fileName = fileTemplate.replace("%s", formatName)
 
@@ -509,6 +465,6 @@ class XspressWriterPart(builtin.parts.ChildPart):
 
     def update_completed_steps(self, value: int) -> None:
         completed_steps = value + self.unique_id_offset
-        print('completed_steps = {}'.format(completed_steps))
+        # print('completed_steps = {}'.format(completed_steps))
         assert self.registrar, "No registrar"
         self.registrar.report(scanning.infos.RunProgressInfo(completed_steps))
