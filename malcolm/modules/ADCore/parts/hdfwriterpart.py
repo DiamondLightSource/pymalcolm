@@ -120,7 +120,7 @@ def create_dataset_infos(
             path=f"/entry/{dataset_info.name}/{dataset_info.name}",
             uniqueid=uniqueid,
         )
-        # Add any setpoint dimensions
+    # Add any setpoint dimensions
     for dim in generator.axes:
         if remove_demand_positions_from_xml is True:
             file_name = filename.replace(".", "additional.")
@@ -258,8 +258,6 @@ def _write_additional_hdf(
     filepath = h5_file_dir + "/" + file_name.replace(".", "additional.")
     # Open the file with the latest libver so SWMR works
     hdf = h5py.File(filepath, "w", libver="latest")
-    # Write the datasets
-    # The detector dataset containing the simulated data
     # Make the setpoint dataset
     for d in generator.dimensions:
         for axis in d.axes:
@@ -270,7 +268,6 @@ def _write_additional_hdf(
     # Datasets made, we can switch to SWMR mode now
     hdf.swmr_mode = True
     return hdf
-    # hdf.close()
 
 
 def make_layout_xml(
@@ -475,6 +472,7 @@ class HDFWriterPart(builtin.parts.ChildPart):
         # can't wait for it, so just wait for the running attribute to be false
         child = context.block_view(self.mri)
         child.when_value_matches("running", False)
+        # Close the hdf file, if necessary
         if self._hdf:
             self._hdf.close()
             self._hdf = None
