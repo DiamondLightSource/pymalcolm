@@ -39,7 +39,7 @@ def create_dataset_infos(
 ) -> Iterator[Info]:
     # Update the dataset tableExternalLink
     generator_rank = len(generator.dimensions)
-    # Add the primary datasource
+    # Add the primary datasource | need this otherwise we can't link things on the nexus file
     yield scanning.infos.DatasetProducedInfo(
         name=f"{name}.data",
         filename=filename,
@@ -67,16 +67,16 @@ def create_raw_dataset_infos(
     name: str,
     rank: int,
     filename: str,
-    n_raw: int
+    num_channels: int
 ) -> Iterator[Info]:
-    for i in range(8): #change this to be realted to the number of channels
+    for i in range(num_channels):
         yield scanning.infos.DatasetProducedInfo(
             name=f"{name}.raw_mca{i}",
             filename=filename,
             type=scanning.infos.DatasetType.RAW,
             rank=rank,
             path="/raw/mca" + str(i),
-            uniqueid=""
+            uniqueid="",
         )
         yield scanning.infos.DatasetProducedInfo(
             name=f"{name}.dtc_chan{i}",
@@ -187,13 +187,12 @@ def create_vds(generator, raw_name, vds_path, child, sum_name):
     
 
     shape = (hdf_shape, image_height, image_width)
-    print('shape: {}'.format(shape))
     # prepare a vds for the image data
     one_vds(
         vds_folder,
         vds_name,
         files,
-        1,
+        image_width,
         image_height,
         shape,
         generator,
@@ -203,21 +202,16 @@ def create_vds(generator, raw_name, vds_path, child, sum_name):
         "data",
         data_type.lower(),
     )
+
+    chan_per_file = int(image_width/hdf_count)
+    file_counter = 0
     with h5py.File(vds_path, "r+", libver="latest") as vds:
-        count = 1
-        for i in range(8): #add a more generic way of running through the number of channels
+        for i in range(image_width): #add a more generic way of running through the number of channels
             vds['raw/dtc_chan' + str(i)] = h5py.ExternalLink(metafile, "/dtc_chan{}".format(str(i)))
             vds['raw/scalar_chan' + str(i)] = h5py.ExternalLink(metafile, "/scalar_chan{}".format(str(i)))
-        for f in files:
-            print("Filename: {}".format(f))
-            vds['raw/mca' + str(4*count-4)] = h5py.ExternalLink(f, "/mca_{}".format(str(4*count-4)))
-            vds['raw/mca' + str(4*count-3)] = h5py.ExternalLink(f, "/mca_{}".format(str(4*count-3)))
-            vds['raw/mca' + str(4*count-2)] = h5py.ExternalLink(f, "/mca_{}".format(str(4*count-2)))
-            vds['raw/mca' + str(4*count-1)] = h5py.ExternalLink(f, "/mca_{}".format(str(4*count-1)))
-            count += 1
-
-    shape = (hdf_shape, 1, 1)
-
+            if(i >= (chan_per_file*(file_counter + 1))):
+                file_counter+=1
+            vds['raw/mca' + str(i)] = h5py.ExternalLink(files[file_counter], "/mca_{}".format(str(i)))
 
 
 set_bases = ["/entry/xspress/"]
@@ -246,6 +240,7 @@ def add_nexus_nodes(generator, vds_file_path):
     pad_dims += ["."] * 2  # assume a 2 dimensional detector | is xspress a 2 dimensional detector?
 
     with h5py.File(vds_file_path, "r+", libver="latest") as vds:
+        vds.swmr_mode = True
         for data, node in zip(set_data, set_bases):
             # create a group for this entry
             vds.require_group(node)
@@ -408,7 +403,7 @@ class XspressWriterPart(builtin.parts.ChildPart):
         raw_file_names += [f"{raw_file_basename}_meta.h5"]
         dataset_infos += list(
             create_raw_dataset_infos(
-                formatName, len(generator.dimensions) + 2, fileName, int(child.numProcesses.value)
+                formatName, len(generator.dimensions) + 2, fileName, int(child.imageWidth.value)
             )
         )
 
