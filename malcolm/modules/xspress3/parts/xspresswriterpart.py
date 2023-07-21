@@ -3,7 +3,6 @@ from typing import Dict, Iterator, List, Optional
 
 import h5py
 from annotypes import Anno, add_call_types
-from numpy import block
 from scanpointgenerator import CompoundGenerator
 from vdsgen import InterleaveVDSGenerator, ReshapeVDSGenerator
 
@@ -28,7 +27,8 @@ with Anno("name of secondary dataset (e.g. sum)"):
 with Anno("number of FR/FP pairs"):
     ANumberPairs = int
 
-dict_filewriter = ['A','B','C','D','E','F','G','H']
+dict_filewriter = ["A", "B", "C", "D", "E", "F", "G", "H"]
+
 
 def greater_than_zero(v: int) -> bool:
     return v > 0
@@ -39,7 +39,7 @@ def create_dataset_infos(
 ) -> Iterator[Info]:
     # Update the dataset tableExternalLink
     generator_rank = len(generator.dimensions)
-    # Add the primary datasource | need this otherwise we can't link things on the nexus file
+    # Add the primary datasource
     yield scanning.infos.DatasetProducedInfo(
         name=f"{name}.data",
         filename=filename,
@@ -48,7 +48,6 @@ def create_dataset_infos(
         path="/entry/xspress/data",
         uniqueid="/entry/xspress/uid",
     )
-
 
     # Add any setpoint dimensions
     for dim in generator.axes:
@@ -62,12 +61,8 @@ def create_dataset_infos(
         )
 
 
-
 def create_raw_dataset_infos(
-    name: str,
-    rank: int,
-    filename: str,
-    num_channels: int
+    name: str, rank: int, filename: str, num_channels: int
 ) -> Iterator[Info]:
     for i in range(num_channels):
         yield scanning.infos.DatasetProducedInfo(
@@ -97,7 +92,7 @@ def create_raw_dataset_infos(
 
 
 def files_shape(frames, block_size, file_count):
-    print('file shape based on {} frames with a {} block size and a {} file count.'.format(frames,block_size,file_count))
+
     # all files get at least per_file blocks
     per_file = int(frames) / int(file_count * block_size)
     # this is the remainder once per_file blocks have been distributed
@@ -141,7 +136,7 @@ def one_vds(
         log_level=1,
     )
     gen.generate_vds()
-    
+
     # this VDS shapes the data to match the dimensions of the scan
     gen = ReshapeVDSGenerator(
         path=vds_folder,
@@ -178,13 +173,13 @@ def create_vds(generator, raw_name, vds_path, child, sum_name):
             "block to unroll the scan into one long line"
         )
     alternates = None
-    
+
     files = [
-        os.path.join(vds_folder, f"{raw_name}_{dict_filewriter[i]}_{0:06d}.h5") for i in range(hdf_count)
+        os.path.join(vds_folder, f"{raw_name}_{dict_filewriter[i]}_{0:06d}.h5")
+        for i in range(hdf_count)
     ]
 
-    metafile = os.path.join(vds_folder,f"{raw_name}_meta.h5")
-    
+    metafile = os.path.join(vds_folder, f"{raw_name}_meta.h5")
 
     shape = (hdf_shape, image_height, image_width)
     # prepare a vds for the image data
@@ -203,15 +198,23 @@ def create_vds(generator, raw_name, vds_path, child, sum_name):
         data_type.lower(),
     )
 
-    chan_per_file = int(image_width/hdf_count)
+    chan_per_file = int(image_width / hdf_count)
     file_counter = 0
     with h5py.File(vds_path, "r+", libver="latest") as vds:
-        for i in range(image_width): #add a more generic way of running through the number of channels
-            vds['raw/dtc_chan' + str(i)] = h5py.ExternalLink(metafile, "/dtc_chan{}".format(str(i)))
-            vds['raw/scalar_chan' + str(i)] = h5py.ExternalLink(metafile, "/scalar_chan{}".format(str(i)))
-            if(i >= (chan_per_file*(file_counter + 1))):
-                file_counter+=1
-            vds['raw/mca' + str(i)] = h5py.ExternalLink(files[file_counter], "/mca_{}".format(str(i)))
+        for i in range(
+            image_width
+        ):  # add a more generic way of running through the number of channels
+            vds["raw/dtc_chan" + str(i)] = h5py.ExternalLink(
+                metafile, "/dtc_chan{}".format(str(i))
+            )
+            vds["raw/scalar_chan" + str(i)] = h5py.ExternalLink(
+                metafile, "/scalar_chan{}".format(str(i))
+            )
+            if i >= (chan_per_file * (file_counter + 1)):
+                file_counter += 1
+            vds["raw/mca" + str(i)] = h5py.ExternalLink(
+                files[file_counter], "/mca_{}".format(str(i))
+            )
 
 
 set_bases = ["/entry/xspress/"]
@@ -237,7 +240,9 @@ def add_nexus_nodes(generator, vds_file_path):
         else:
             pad_dims.append(".")
 
-    pad_dims += ["."] * 2  # assume a 2 dimensional detector | is xspress a 2 dimensional detector?
+    pad_dims += [
+        "."
+    ] * 2  # assume a 2 dimensional detector | is xspress a 2 dimensional detector?
 
     with h5py.File(vds_file_path, "r+", libver="latest") as vds:
         vds.swmr_mode = True
@@ -278,7 +283,7 @@ def add_nexus_nodes(generator, vds_file_path):
 
 
 # We will set these attributes on the child block, so don't save them
-@builtin.util.no_save("fileName", "filePath", "numCapture","chunkSize")
+@builtin.util.no_save("fileName", "filePath", "numCapture", "chunkSize")
 class XspressWriterPart(builtin.parts.ChildPart):
     """Part for controlling an `xspress3_writer_block` in a Device"""
 
@@ -341,17 +346,17 @@ class XspressWriterPart(builtin.parts.ChildPart):
 
         self.exposure_time = generator.duration
         # On initial configure, expect to get the demanded number of frames
-        self.done_when_reaches = completed_steps + self.num_pairs*steps_to_do
+        self.done_when_reaches = completed_steps + self.num_pairs * steps_to_do
 
         self.unique_id_offset = 0
         child = context.block_view(self.mri)
         file_dir = fileDir.rstrip(os.sep)
 
-        chunk = int(1/float(self.exposure_time))
-        if(chunk < 1):
-            chunk=1
-        if(chunk > 1024):
-            chunk=1024
+        chunk = int(1 / float(self.exposure_time))
+        if chunk < 1:
+            chunk = 1
+        if chunk > 1024:
+            chunk = 1024
         # print("new chunkSize value: {}".format(chunk))
         child.chunkSize.put_value(chunk)
         # derive file path from template as AreaDetector would normally do
@@ -403,7 +408,10 @@ class XspressWriterPart(builtin.parts.ChildPart):
         raw_file_names += [f"{raw_file_basename}_meta.h5"]
         dataset_infos += list(
             create_raw_dataset_infos(
-                formatName, len(generator.dimensions) + 2, fileName, int(child.imageWidth.value)
+                formatName,
+                len(generator.dimensions) + 2,
+                fileName,
+                int(child.imageWidth.value),
             )
         )
 
