@@ -70,14 +70,10 @@ def create_dataset_infos(
         )
 
 
-
 def create_raw_dataset_infos(
-    name: str,
-    rank: int,
-    filename: str,
-    n_raw: int
+    name: str, rank: int, filename: str, n_raw: int
 ) -> Iterator[Info]:
-    for i in range(1,n_raw+1):
+    for i in range(1, n_raw + 1):
         yield scanning.infos.DatasetProducedInfo(
             name=f"{name}.raw{i+1}",
             filename=filename,
@@ -86,7 +82,7 @@ def create_raw_dataset_infos(
             path="/raw" + str(i),
             uniqueid="",
         )
-    for i in range(1,n_raw+1):
+    for i in range(1, n_raw + 1):
         yield scanning.infos.DatasetProducedInfo(
             name=f"{name}.uid{i+1}",
             filename=filename,
@@ -95,7 +91,6 @@ def create_raw_dataset_infos(
             path="/uid" + str(i),
             uniqueid="",
         )
-
 
 
 def files_shape(frames, block_size, file_count):
@@ -142,7 +137,7 @@ def one_vds(
         log_level=1,
     )
     gen.generate_vds()
-    
+
     # this VDS shapes the data to match the dimensions of the scan
     gen = ReshapeVDSGenerator(
         path=vds_folder,
@@ -202,11 +197,11 @@ def create_vds(generator, raw_name, vds_path, child, uid_name, sum_name):
         data_type.lower(),
     )
     with h5py.File(vds_path, "r+", libver="latest") as vds:
-      count = 1
-      for f in files:
-          vds['raw' + str(count)] = h5py.ExternalLink(f, "/data")
-          vds['uid' + str(count)] = h5py.ExternalLink(f, "/uid")
-          count += 1
+        count = 1
+        for f in files:
+            vds["raw" + str(count)] = h5py.ExternalLink(f, "/data")
+            vds["uid" + str(count)] = h5py.ExternalLink(f, "/uid")
+            count += 1
 
     shape = (hdf_shape, 1, 1)
 
@@ -422,7 +417,10 @@ class OdinWriterPart(builtin.parts.ChildPart):
 
         dataset_infos += list(
             create_raw_dataset_infos(
-                formatName, len(generator.dimensions) + 2, fileName, int(child.numProcesses.value)
+                formatName,
+                len(generator.dimensions) + 2,
+                fileName,
+                int(child.numProcesses.value),
             )
         )
 

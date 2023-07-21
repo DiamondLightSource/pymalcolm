@@ -125,6 +125,45 @@ expected_xml = (
     "</hdf5_layout>\n"
 )
 
+expected_xml_no_position = (
+    '<?xml version="1.0" ?>\n'
+    "<hdf5_layout>\n"
+    '<group name="entry">\n'
+    '<attribute name="NX_class" source="constant" type="string" value="NXentry" />\n'
+    '<group name="detector">\n'
+    '<attribute name="signal" source="constant" type="string" value="detector" />\n'
+    '<dataset det_default="true" name="detector" source="detector">\n'
+    '<attribute name="NX_class" source="constant" type="string" value="SDS" />\n'
+    "</dataset>\n"
+    "</group>\n"
+    '<group name="sum">\n'
+    '<attribute name="signal" source="constant" type="string" value="sum" />\n'
+    '<dataset name="sum" ndattribute="StatsTotal" source="ndattribute" />\n'
+    "</group>\n"
+    '<group name="I0.data">\n'
+    '<attribute name="signal" source="constant" type="string" value="I0.data" />\n'
+    '<dataset name="I0.data" ndattribute="COUNTER1.COUNTER" source="ndattribute" />\n'
+    "</group>\n"
+    '<group name="It.data">\n'
+    '<attribute name="signal" source="constant" type="string" value="It.data" />\n'
+    '<dataset name="It.data" ndattribute="COUNTER2.COUNTER" source="ndattribute" />\n'
+    "</group>\n"
+    '<group name="t1x.value">\n'
+    '<attribute name="signal" source="constant" type="string" value="t1x.value" />\n'
+    '<dataset name="t1x.value" ndattribute="INENC1.VAL" source="ndattribute" />\n'
+    "</group>\n"
+    '<group name="NDAttributes" ndattr_default="true">\n'
+    '<attribute name="NX_class" source="constant" type="string" '
+    'value="NXcollection" />\n'
+    '<dataset name="NDArrayUniqueId" ndattribute="NDArrayUniqueId" '
+    'source="ndattribute" />\n'
+    '<dataset name="NDArrayTimeStamp" ndattribute="NDArrayTimeStamp" '
+    'source="ndattribute" />\n'
+    "</group>\n"
+    "</group>\n"
+    "</hdf5_layout>\n"
+)
+
 expected_xml_limited_attr = expected_xml.replace(
     '<group name="NDAttributes" ndattr_default="true">',
     '<group name="NDAttributes" ndattr_default="false">',
@@ -181,7 +220,7 @@ class TestHDFWriterPart(ChildTestCase):
 
         check_mock.assert_called_once_with("1.1", "1.0")
 
-    def configure_and_check_output(self, on_windows=False):
+    def configure_and_check_output(self, on_windows=False, remove_xml=False):
         energy = LineGenerator("energy", "kEv", 13.0, 15.2, 2)
         spiral = SpiralGenerator(["x", "y"], ["mm", "mm"], [0.0, 0.0], 5.0, scale=2.0)
         generator = CompoundGenerator([energy, spiral], [], [], 0.1)
@@ -208,6 +247,7 @@ class TestHDFWriterPart(ChildTestCase):
         }
         if on_windows:
             part_info["WINPATH"] = [FilePathTranslatorInfo("Y", "/tmp", "")]
+        self.o.remove_demand_positions_from_xml.value = remove_xml
         infos = self.o.on_configure(
             self.context,
             completed_steps,
@@ -218,6 +258,13 @@ class TestHDFWriterPart(ChildTestCase):
             formatName,
             fileTemplate,
         )
+        if remove_xml:
+            h5filename = "thing-xspress3additional.h5"
+            h5path = "/entry/"
+        else:
+            h5filename = "thing-xspress3.h5"
+            h5path = "/entry/detector/"
+
         assert len(infos) == 8
         assert infos[0].name == "xspress3.data"
         assert infos[0].filename == "thing-xspress3.h5"
@@ -255,24 +302,24 @@ class TestHDFWriterPart(ChildTestCase):
         assert infos[4].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
 
         assert infos[5].name == "energy.value_set"
-        assert infos[5].filename == "thing-xspress3.h5"
+        assert infos[5].filename == h5filename
         assert infos[5].type == DatasetType.POSITION_SET
         assert infos[5].rank == 1
-        assert infos[5].path == "/entry/detector/energy_set"
+        assert infos[5].path == h5path + "energy_set"
         assert infos[5].uniqueid == ""
 
         assert infos[6].name == "x.value_set"
-        assert infos[6].filename == "thing-xspress3.h5"
+        assert infos[6].filename == h5filename
         assert infos[6].type == DatasetType.POSITION_SET
         assert infos[6].rank == 1
-        assert infos[6].path == "/entry/detector/x_set"
+        assert infos[6].path == h5path + "x_set"
         assert infos[6].uniqueid == ""
 
         assert infos[7].name == "y.value_set"
-        assert infos[7].filename == "thing-xspress3.h5"
+        assert infos[7].filename == h5filename
         assert infos[7].type == DatasetType.POSITION_SET
         assert infos[7].rank == 1
-        assert infos[7].path == "/entry/detector/y_set"
+        assert infos[7].path == h5path + "y_set"
         assert infos[7].uniqueid == ""
 
         expected_xml_filename_local = "/tmp/BLOCK_HDF5-layout.xml"
@@ -347,6 +394,18 @@ class TestHDFWriterPart(ChildTestCase):
 
         actual_tree = ElementTree.XML(actual_xml)
         expected_tree = ElementTree.XML(expected_xml)
+        assert ElementTree.dump(actual_tree) == ElementTree.dump(expected_tree)
+
+    def test_remove_position_data(self):
+        self.mock_when_value_matches(self.child)
+        self.o = HDFWriterPart(name="m", mri="BLOCK:HDF5")
+        self.mock_xml_is_valid_check(self.o)
+        self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
+        actual_xml = self.configure_and_check_output(remove_xml=True)
+        assert actual_xml == expected_xml_no_position
+
+        actual_tree = ElementTree.XML(actual_xml)
+        expected_tree = ElementTree.XML(expected_xml_no_position)
         assert ElementTree.dump(actual_tree) == ElementTree.dump(expected_tree)
 
     def test_honours_write_all_attributes_flag(self):
