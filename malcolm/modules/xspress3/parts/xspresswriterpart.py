@@ -1,6 +1,7 @@
 import os
 from typing import Dict, Iterator, List, Optional
 
+import time
 import h5py
 from annotypes import Anno, add_call_types
 from scanpointgenerator import CompoundGenerator
@@ -381,6 +382,10 @@ class XspressWriterPart(builtin.parts.ChildPart):
         )
         context.wait_all_futures(futures)
 
+        # I had to add this delay here otherwise the Metadata
+        # chunk size would not be configured properly.
+        # Not sure why this is happening though 
+        time.sleep(0.5)
         # Start the plugin
         self.start_future = child.start_async()
         # Start a future waiting for the first array
