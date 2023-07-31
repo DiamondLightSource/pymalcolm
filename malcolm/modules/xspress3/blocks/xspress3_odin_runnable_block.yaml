@@ -23,6 +23,10 @@
     name: processes
     description: Number of FR/FP pairs
 
+- builtin.parameters.int32:
+    name: num_datasets
+    description: Total number of datasets that will be writen
+
 - builtin.parameters.string:
     name: writer_suffix
     description: PV suffix for Odin data writer
@@ -43,7 +47,7 @@
 
 - xspress3.blocks.xspress3_driver_block:
     mri: $(mri_prefix):$(drv_suffix)
-    prefix: $(pv_prefix)
+    prefix: $(pv_prefix):$(drv_suffix)
 
 - ADCore.parts.DetectorDriverPart:
     name: Xspress3Odin
@@ -73,6 +77,7 @@
     sum_name: $(sum_name)
     secondary_set: $(secondary_set)
     num_pairs: $(processes)
+    num_datasets: $(num_datasets)
 
 - scanning.parts.DatasetTablePart:
     name: DSET

@@ -2,6 +2,7 @@ import os
 from typing import Dict, Iterator, List, Optional
 
 import time
+
 import h5py
 from annotypes import Anno, add_call_types
 from scanpointgenerator import CompoundGenerator
@@ -27,6 +28,9 @@ with Anno("name of secondary dataset (e.g. sum)"):
     ASecondaryDataset = str
 with Anno("number of FR/FP pairs"):
     ANumberPairs = int
+
+with Anno("number of mca datasets to be written in total"):
+    ANumberDataset = int
 
 dict_filewriter = ["A", "B", "C", "D", "E", "F", "G", "H"]
 
@@ -63,9 +67,9 @@ def create_dataset_infos(
 
 
 def create_raw_dataset_infos(
-    name: str, rank: int, filename: str, num_channels: int
+    name: str, rank: int, filename: str, num_datasets: int
 ) -> Iterator[Info]:
-    for i in range(num_channels):
+    for i in range(num_datasets):
         yield scanning.infos.DatasetProducedInfo(
             name=f"{name}.raw_mca{i}",
             filename=filename,
@@ -153,7 +157,7 @@ def one_vds(
     gen.generate_vds()
 
 
-def create_vds(generator, raw_name, vds_path, child, sum_name):
+def create_vds(generator, raw_name, vds_path, child, num_datasets):
     vds_folder, vds_name = os.path.split(vds_path)
     image_width = int(child.imageWidth.value)
     image_height = int(child.imageHeight.value)
@@ -199,11 +203,11 @@ def create_vds(generator, raw_name, vds_path, child, sum_name):
         data_type.lower(),
     )
 
-    chan_per_file = int(image_width / hdf_count)
+    chan_per_file = int(num_datasets / hdf_count)
     file_counter = 0
     with h5py.File(vds_path, "r+", libver="latest") as vds:
         for i in range(
-            image_width
+            num_datasets
         ):  # add a more generic way of running through the number of channels
             vds["raw/dtc_chan" + str(i)] = h5py.ExternalLink(
                 metafile, "/dtc_chan{}".format(str(i))
@@ -284,7 +288,7 @@ def add_nexus_nodes(generator, vds_file_path):
 
 
 # We will set these attributes on the child block, so don't save them
-@builtin.util.no_save("fileName", "filePath", "numCapture", "chunkSize")
+@builtin.util.no_save("fileName", "filePath", "numCapture")
 class XspressWriterPart(builtin.parts.ChildPart):
     """Part for controlling an `xspress3_writer_block` in a Device"""
 
@@ -303,10 +307,12 @@ class XspressWriterPart(builtin.parts.ChildPart):
         sum_name: ASumName = "sum",
         secondary_set: ASecondaryDataset = "sum",
         num_pairs: ANumberPairs = 1,
+        num_datasets: ANumberDataset = 1,
     ) -> None:
         self.sum_name = sum_name
         self.secondary_set = secondary_set
         self.num_pairs = num_pairs
+        self.num_datasets = num_datasets
         super().__init__(name, mri, initial_visibility)
 
     @add_call_types
@@ -358,8 +364,7 @@ class XspressWriterPart(builtin.parts.ChildPart):
             chunk = 1
         if chunk > 1024:
             chunk = 1024
-        # print("new chunkSize value: {}".format(chunk))
-        child.chunkSize.put_value(chunk)
+        child.numFramesChunks.put_value(chunk)
         # derive file path from template as AreaDetector would normally do
         fileName = fileTemplate.replace("%s", formatName)
 
@@ -384,7 +389,7 @@ class XspressWriterPart(builtin.parts.ChildPart):
 
         # I had to add this delay here otherwise the Metadata
         # chunk size would not be configured properly.
-        # Not sure why this is happening though 
+        # Not sure why this is happening though
         time.sleep(0.5)
         # Start the plugin
         self.start_future = child.start_async()
@@ -398,7 +403,7 @@ class XspressWriterPart(builtin.parts.ChildPart):
             raw_file_basename,
             vds_full_filename,
             child,
-            self.sum_name,
+            self.num_datasets,
         )
         add_nexus_nodes(generator, vds_full_filename)
 
@@ -408,7 +413,7 @@ class XspressWriterPart(builtin.parts.ChildPart):
         )
         raw_file_names = [
             f"{raw_file_basename}_{dict_filewriter[i]}_{0:06d}.h5"
-            for i in range(int(child.numProcesses.value))
+            for i in range(self.num_pairs)
         ]
         raw_file_names += [f"{raw_file_basename}_meta.h5"]
         dataset_infos += list(
@@ -416,7 +421,7 @@ class XspressWriterPart(builtin.parts.ChildPart):
                 formatName,
                 len(generator.dimensions) + 2,
                 fileName,
-                int(child.imageWidth.value),
+                int(self.num_datasets),
             )
         )
 
