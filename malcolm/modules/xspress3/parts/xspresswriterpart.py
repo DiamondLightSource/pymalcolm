@@ -245,9 +245,7 @@ def add_nexus_nodes(generator, vds_file_path):
         else:
             pad_dims.append(".")
 
-    pad_dims += [
-        "."
-    ] * 2  # assume a 2 dimensional detector | is xspress a 2 dimensional detector?
+    pad_dims += ["."] * 2  # assume a 2 dimensional detector
 
     with h5py.File(vds_file_path, "r+", libver="latest") as vds:
         vds.swmr_mode = True
@@ -288,7 +286,7 @@ def add_nexus_nodes(generator, vds_file_path):
 
 
 # We will set these attributes on the child block, so don't save them
-@builtin.util.no_save("fileName", "filePath", "numCapture")
+@builtin.util.no_save("fileName", "filePath", "numCapture", "numFramesChunks")
 class XspressWriterPart(builtin.parts.ChildPart):
     """Part for controlling an `xspress3_writer_block` in a Device"""
 
