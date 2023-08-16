@@ -206,19 +206,17 @@ def create_vds(generator, raw_name, vds_path, child, num_datasets):
     chan_per_file = int(num_datasets / hdf_count)
     file_counter = 0
     with h5py.File(vds_path, "r+", libver="latest") as vds:
-        for i in range(
-            num_datasets
-        ):  # add a more generic way of running through the number of channels
-            vds["raw/dtc_chan" + str(i)] = h5py.ExternalLink(
-                metafile, "/dtc_chan{}".format(str(i))
+        for chan in range(num_datasets):
+            vds["raw/dtc_chan" + str(chan)] = h5py.ExternalLink(
+                metafile, "/dtc_chan{}".format(str(chan))
             )
-            vds["raw/scalar_chan" + str(i)] = h5py.ExternalLink(
-                metafile, "/scalar_chan{}".format(str(i))
+            vds["raw/scalar_chan" + str(chan)] = h5py.ExternalLink(
+                metafile, "/scalar_chan{}".format(str(chan))
             )
-            if i >= (chan_per_file * (file_counter + 1)):
+            if chan >= (chan_per_file * (file_counter + 1)):
                 file_counter += 1
-            vds["raw/mca" + str(i)] = h5py.ExternalLink(
-                files[file_counter], "/mca_{}".format(str(i))
+            vds["raw/mca" + str(chan)] = h5py.ExternalLink(
+                files[file_counter], "/mca_{}".format(str(chan))
             )
 
 
