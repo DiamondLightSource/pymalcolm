@@ -99,8 +99,8 @@ def make_logging_config(args):
                 "class": "pygelf.GelfTcpHandler",
                 # Obviously a DLS-specific configuration: the graylog server
                 # address and port
-                "host": "graylog2.diamond.ac.uk",
-                "port": 12202,
+                "host": "graylog-log-target.diamond.ac.uk",
+                "port": 12223,
                 "debug": True,
                 "level": "DEBUG",
                 #  The following custom fields will be disabled if setting this
