@@ -358,8 +358,8 @@ class XspressWriterPart(builtin.parts.ChildPart):
         chunk = int(1 / float(self.exposure_time))
         if chunk < 1:
             chunk = 1
-        if chunk > 1024:
-            chunk = 1024
+        if chunk >= 4000:
+            chunk = 4096
         child.numFramesChunks.put_value(chunk)
         # derive file path from template as AreaDetector would normally do
         fileName = fileTemplate.replace("%s", formatName)
