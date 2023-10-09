@@ -1,5 +1,6 @@
 import os
 import time
+import h5py
 from typing import Dict, Iterator, List, Optional
 from xml.etree import cElementTree as ET
 
@@ -41,6 +42,9 @@ SUFFIXES = "NXY3456789"
 with Anno("Toggle writing of all ND attributes to HDF file"):
     AWriteAllNDAttributes = bool
 
+with Anno("Toggle whether demand positions are in XML"):
+    ARemoveDemandXml = bool
+
 # Pull re-used annotypes into our namespace in case we are subclassed
 APartName = APartName
 AMri = builtin.parts.AMri
@@ -56,6 +60,8 @@ def create_dataset_infos(
     part_info: scanning.hooks.APartInfo,
     generator: CompoundGenerator,
     filename: str,
+    remove_demand_positions_from_xml: bool,
+    set_path: str,
 ) -> Iterator[Info]:
     # Update the dataset table
     uniqueid = "/entry/NDAttributes/NDArrayUniqueId"
@@ -114,15 +120,20 @@ def create_dataset_infos(
             path=f"/entry/{dataset_info.name}/{dataset_info.name}",
             uniqueid=uniqueid,
         )
-
     # Add any setpoint dimensions
     for dim in generator.axes:
+        if remove_demand_positions_from_xml is True:
+            file_name = filename.replace(".", "additional.")
+            path = set_path % dim
+        else:
+            file_name = filename
+            path = f"/entry/detector/{dim}_set"
         yield scanning.infos.DatasetProducedInfo(
             name=f"{dim}.value_set",
-            filename=filename,
+            filename=file_name,
             type=scanning.util.DatasetType.POSITION_SET,
             rank=1,
-            path=f"/entry/detector/{dim}_set",
+            path=path,
             uniqueid="",
         )
 
@@ -177,6 +188,7 @@ def make_nxdata(
     rank: int,
     entry_el: ET.Element,
     generator: CompoundGenerator,
+    remove_demand_positions_from_xml: bool = False,
     link: bool = False,
 ) -> ET.Element:
     # Make a dataset for the data
@@ -189,57 +201,80 @@ def make_nxdata(
         value=name,
         type="string",
     )
-    pad_dims = []
-    for d in generator.dimensions:
-        if len(d.axes) == 1:
-            pad_dims.append(f"{d.axes[0]}_set")
-        else:
-            pad_dims.append(".")
+    if remove_demand_positions_from_xml is False:
+        pad_dims = []
+        for d in generator.dimensions:
+            if len(d.axes) == 1:
+                pad_dims.append(f"{d.axes[0]}_set")
+            else:
+                pad_dims.append(".")
 
-    pad_dims += ["."] * rank
-    ET.SubElement(
-        data_el,
-        "attribute",
-        name="axes",
-        source="constant",
-        value=",".join(pad_dims),
-        type="string",
-    )
-    ET.SubElement(
-        data_el,
-        "attribute",
-        name="NX_class",
-        source="constant",
-        value="NXdata",
-        type="string",
-    )
-    # Add in the indices into the dimensions array that our axes refer to
-    for i, d in enumerate(generator.dimensions):
-        for axis in d.axes:
-            ET.SubElement(
-                data_el,
-                "attribute",
-                name=f"{axis}_set_indices",
-                source="constant",
-                value=str(i),
-                type="string",
-            )
-            if link:
+        pad_dims += ["."] * rank
+        ET.SubElement(
+            data_el,
+            "attribute",
+            name="axes",
+            source="constant",
+            value=",".join(pad_dims),
+            type="string",
+        )
+        ET.SubElement(
+            data_el,
+            "attribute",
+            name="NX_class",
+            source="constant",
+            value="NXdata",
+            type="string",
+        )
+        # Add in the indices into the dimensions array that our axes refer to
+        for i, d in enumerate(generator.dimensions):
+            for axis in d.axes:
                 ET.SubElement(
                     data_el,
-                    "hardlink",
-                    name=f"{axis}_set",
-                    target=f"/entry/detector/{axis}_set",
+                    "attribute",
+                    name=f"{axis}_set_indices",
+                    source="constant",
+                    value=str(i),
+                    type="string",
                 )
-            else:
-                make_set_points(d, axis, data_el, generator.units[axis])
+                if link:
+                    ET.SubElement(
+                        data_el,
+                        "hardlink",
+                        name=f"{axis}_set",
+                        target=f"/entry/detector/{axis}_set",
+                    )
+                else:
+                    make_set_points(d, axis, data_el, generator.units[axis])
     return data_el
+
+
+def _write_additional_hdf(
+    file_name: str,
+    generator: CompoundGenerator,
+    h5_file_dir: str,
+    set_path: str,
+):
+    filepath = h5_file_dir + "/" + file_name.replace(".", "additional.")
+    # Open the file with the latest libver so SWMR works
+    hdf = h5py.File(filepath, "w", libver="latest")
+    # Make the setpoint dataset
+    for d in generator.dimensions:
+        for axis in d.axes:
+            # Make a data set for the axes, holding an array holding
+            # floating point data, for each point specified in the generator
+            ds = hdf.create_dataset(set_path % axis, data=d.get_positions(axis))
+            ds.attrs["units"] = generator.units[axis]
+    # Datasets made, we can switch to SWMR mode now
+    hdf.swmr_mode = True
+    return hdf
 
 
 def make_layout_xml(
     generator: CompoundGenerator,
     part_info: scanning.hooks.APartInfo,
     write_all_nd_attributes: bool = False,
+    remove_demand_positions_from_xml: bool = False,
 ) -> str:
     # Make a root element with an NXEntry
     root_el = ET.Element("hdf5_layout")
@@ -265,7 +300,9 @@ def make_layout_xml(
 
     # Make an NXData element with the detector data in it in
     # /entry/detector/detector
-    data_el = make_nxdata("detector", primary_rank, entry_el, generator)
+    data_el = make_nxdata(
+        "detector", primary_rank, entry_el, generator, remove_demand_positions_from_xml
+    )
     det_el = ET.SubElement(
         data_el, "dataset", name="detector", source="detector", det_default="true"
     )
@@ -285,7 +322,12 @@ def make_layout_xml(
     for calc_dataset_info in calc_dataset_infos:
         # if we are a secondary source, use the same rank as the det
         attr_el = make_nxdata(
-            calc_dataset_info.name, primary_rank, entry_el, generator, link=True
+            calc_dataset_info.name,
+            primary_rank,
+            entry_el,
+            generator,
+            remove_demand_positions_from_xml,
+            link=True,
         )
         ET.SubElement(
             attr_el,
@@ -302,7 +344,12 @@ def make_layout_xml(
     for dataset_info in dataset_infos:
         # if we are a secondary source, use the same rank as the det
         attr_el = make_nxdata(
-            dataset_info.name, primary_rank, entry_el, generator, link=True
+            dataset_info.name,
+            primary_rank,
+            entry_el,
+            generator,
+            remove_demand_positions_from_xml,
+            link=True,
         )
         ET.SubElement(
             attr_el,
@@ -374,6 +421,7 @@ class HDFWriterPart(builtin.parts.ChildPart):
         mri: AMri,
         runs_on_windows: APartRunsOnWindows = False,
         write_all_nd_attributes: AWriteAllNDAttributes = True,
+        remove_demand_positions_from_xml: ARemoveDemandXml = False,
         required_version: AVersionRequirement = None,
     ) -> None:
         super().__init__(name, mri)
@@ -387,6 +435,8 @@ class HDFWriterPart(builtin.parts.ChildPart):
         self.num_captured_offset = 0
         # The HDF5 layout file we write to say where the datasets go
         self.layout_filename: Optional[str] = None
+        self._hdf: h5py.File = None
+
         self.runs_on_windows = runs_on_windows
         # How long to wait between frame updates before error
         self.frame_timeout = 0.0
@@ -397,6 +447,12 @@ class HDFWriterPart(builtin.parts.ChildPart):
             tags=[Widget.CHECKBOX.tag(), config_tag()],
         ).create_attribute_model(write_all_nd_attributes)
         self.required_version = required_version
+        self.remove_demand_positions_from_xml = BooleanMeta(
+            "Toggles whether to remove demand positions from xml"
+            "Large scans should use remove them",
+            writeable=True,
+            tags=[Widget.CHECKBOX.tag(), config_tag()],
+        ).create_attribute_model(remove_demand_positions_from_xml)
 
     @add_call_types
     def on_validate(
@@ -416,6 +472,10 @@ class HDFWriterPart(builtin.parts.ChildPart):
         # can't wait for it, so just wait for the running attribute to be false
         child = context.block_view(self.mri)
         child.when_value_matches("running", False)
+        # Close the hdf file, if necessary
+        if self._hdf:
+            self._hdf.close()
+            self._hdf = None
         # Delete the layout XML file
         if self.layout_filename and os.path.isfile(self.layout_filename):
             os.remove(self.layout_filename)
@@ -437,6 +497,11 @@ class HDFWriterPart(builtin.parts.ChildPart):
             "writeAllNdAttributes",
             self.write_all_nd_attributes,
             self.write_all_nd_attributes.set_value,
+        )
+        registrar.add_attribute_model(
+            "removeDemandXml",
+            self.remove_demand_positions_from_xml,
+            self.remove_demand_positions_from_xml.set_value,
         )
         # Tell the controller to expose some extra configure parameters
         registrar.report(scanning.hooks.ConfigureHook.create_info(self.on_configure))
@@ -492,7 +557,12 @@ class HDFWriterPart(builtin.parts.ChildPart):
             )
         )
         futures += set_dimensions(child, generator)
-        xml = make_layout_xml(generator, part_info, self.write_all_nd_attributes.value)
+        xml = make_layout_xml(
+            generator,
+            part_info,
+            self.write_all_nd_attributes.value,
+            self.remove_demand_positions_from_xml.value,
+        )
         self.layout_filename = make_xml_filename(file_dir, self.mri, suffix="layout")
         assert self.layout_filename, "No layout filename"
         with open(self.layout_filename, "w") as f:
@@ -520,10 +590,22 @@ class HDFWriterPart(builtin.parts.ChildPart):
             "arrayCounterReadback", greater_than_zero
         )
         # Check XML
+        set_path = "/entry/%s_set"
+        if self.remove_demand_positions_from_xml.value is not False:
+            self._hdf = _write_additional_hdf(
+                filename, generator, h5_file_dir, set_path
+            )
         self._check_xml_is_valid(child)
         # Return the dataset information
         dataset_infos = list(
-            create_dataset_infos(formatName, part_info, generator, filename)
+            create_dataset_infos(
+                formatName,
+                part_info,
+                generator,
+                filename,
+                self.remove_demand_positions_from_xml.value,
+                set_path,
+            )
         )
         return dataset_infos
 
