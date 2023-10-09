@@ -196,7 +196,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         assert units.meta.writeable is True
         assert units.meta.typeid == ChoiceMeta.typeid
         assert units.meta.tags == ["group:parameters", "widget:combo", "config:1"]
-        assert units.meta.choices == ["s", "ms", "us"]
+        assert units.meta.choices == ["min", "s", "ms", "us"]
 
         inp = b.inp
         assert inp.meta.writeable is True
