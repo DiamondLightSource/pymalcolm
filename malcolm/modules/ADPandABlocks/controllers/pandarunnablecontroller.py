@@ -1,10 +1,8 @@
 from annotypes import Anno
 
-from malcolm.modules import ADCore, builtin, pandablocks, scanning
+from malcolm.modules import ADCore, ADPandABlocks, builtin, pandablocks, scanning
 
 from ..parts.pandadatasetbussespart import PandADatasetBussesPart
-
-from ..includes import panda_adbase_parts
 
 with Anno("Prefix for areaDetector records"):
     APrefix = str
@@ -63,7 +61,7 @@ class PandARunnableController(
                 self._client, self.mri, block_name, block_data, self._doc_url_base
             )
             # Add the areaDetector control parts
-            _, ps = panda_adbase_parts(prefix=self.prefix)
+            _, ps = ADPandABlocks.includes.panda_adbase_parts(prefix=self.prefix)
             for p in ps:
                 controller.add_part(p)
             child_part = ADCore.parts.DetectorDriverPart(
