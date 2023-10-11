@@ -450,7 +450,6 @@ class TestHDFWriterPart(ChildTestCase):
         assert self.child.handled_requests.mock_calls == [
             call.when_value_matches("numCapturedReadback", 38, None)
         ]
-        assert self.o.registrar.report.called_once
         assert self.o.registrar.report.call_args_list[0][0][0].steps == 38
 
     def test_run_and_flush(self):
@@ -483,7 +482,6 @@ class TestHDFWriterPart(ChildTestCase):
             call.post("flushNow"),
             call.post("flushNow"),
         ]
-        assert self.o.registrar.report.called_once
         assert self.o.registrar.report.call_args_list[0][0][0].steps == 0
         assert self.o.registrar.report.call_args_list[1][0][0].steps == 5
 

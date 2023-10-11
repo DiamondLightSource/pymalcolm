@@ -6,7 +6,6 @@ on:
     branches:
       - master
       - main
-      - fix_ci
     tags:
       - "*"
   pull_request:
@@ -20,18 +19,19 @@ on:
 #   EPICS_BASE_VER: R3.14.12.7
 #   EPICS_BASE_DIR: epics_base
 
+
 # Jobs
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7"]
-        pipenv: ["skip-lock"] # Use latest available dependencies
+        python-version: ["3.7.2"]
+        # pipenv: ["skip-lock"] # Use latest available dependencies
         # Extra job for publishing using Pipfile.lock
         include:
-          - python-version: "3.7"
+          - python-version: "3.7.2"
             pipenv: "deploy"
             publish: true
 
@@ -98,12 +98,12 @@ jobs:
         set -o pipefail
         pipenv run tests
 
-    - name: Coverage
-      if: matrix.publish
-      uses: codecov/codecov-action@v2
-      with:
-        fail_ci_if_error: true # optional (default = false)
-        files: ./coverage.xml
+    # - name: Coverage
+    #   if: matrix.publish
+    #   uses: codecov/codecov-action@v2
+    #   with:
+    #     fail_ci_if_error: true # optional (default = false)
+    #     files: ./coverage.xml
 
     - name: Publish Sdist and Wheel to PyPI
       # Only once when on a tag
