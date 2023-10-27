@@ -109,9 +109,7 @@ def create_raw_dataset_infos(
     )
 
 
-
 def files_shape(frames, block_size, file_count):
-
     # all files get at least per_file blocks
     per_file = int(frames) / int(file_count * block_size)
     # this is the remainder once per_file blocks have been distributed
@@ -220,7 +218,6 @@ def create_vds(generator, raw_name, vds_path, child, num_datasets):
     chan_per_file = int(num_datasets / hdf_count)
     file_counter = 0
     with h5py.File(vds_path, "r+", libver="latest") as vds:
-
         # MCA will have one dataset per channels shaped like [num_frames, 1]
         for chan in range(num_datasets):
             if chan >= (chan_per_file * (file_counter + 1)):
@@ -228,7 +225,7 @@ def create_vds(generator, raw_name, vds_path, child, num_datasets):
             vds["raw/mca" + str(chan)] = h5py.ExternalLink(
                 files[file_counter], "/mca_{}".format(str(chan))
             )
-        
+
         # UIDs will have one dataset per writer shaped like [num_frames]
         file_counter = 0
         for f in range(hdf_count):
@@ -236,7 +233,9 @@ def create_vds(generator, raw_name, vds_path, child, num_datasets):
 
         # Scalars will have one dataset per scalar with shape [num_frames, num_channels]
         for scalar in range(9):
-            vds["raw/scalar_chan" + str(scalar)] = h5py.ExternalLink(metafile, "/scalar_chan{}".format(str(scalar)))
+            vds["raw/scalar_chan" + str(scalar)] = h5py.ExternalLink(
+                metafile, "/scalar_chan{}".format(str(scalar))
+            )
 
         # DTC has only one dataset shaped like [num_frames, num_channels]
         vds["raw/dtc_chan"] = h5py.ExternalLink(metafile, "/dtc_chan")
@@ -368,7 +367,6 @@ class XspressWriterPart(builtin.parts.ChildPart):
         formatName: scanning.hooks.AFormatName = "xspress3",
         fileTemplate: scanning.hooks.AFileTemplate = "%s.h5",
     ) -> scanning.hooks.UInfos:
-
         self.exposure_time = generator.duration
         # On initial configure, expect to get the demanded number of frames
         self.done_when_reaches = completed_steps + self.num_pairs * steps_to_do
@@ -440,7 +438,7 @@ class XspressWriterPart(builtin.parts.ChildPart):
                 len(generator.dimensions) + 2,
                 fileName,
                 int(self.num_datasets),
-                self.num_pairs
+                self.num_pairs,
             )
         )
 
