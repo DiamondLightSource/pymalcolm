@@ -67,7 +67,7 @@ def create_dataset_infos(
 
 
 def create_raw_dataset_infos(
-    name: str, rank: int, filename: str, num_datasets: int
+    name: str, rank: int, filename: str, num_datasets: int, pairs: int
 ) -> Iterator[Info]:
     for i in range(num_datasets):
         yield scanning.infos.DatasetProducedInfo(
@@ -78,14 +78,8 @@ def create_raw_dataset_infos(
             path="/raw/mca" + str(i),
             uniqueid="",
         )
-        yield scanning.infos.DatasetProducedInfo(
-            name=f"{name}.dtc_chan{i}",
-            filename=filename,
-            type=scanning.infos.DatasetType.RAW,
-            rank=rank,
-            path="/raw/dtc_chan" + str(i),
-            uniqueid="",
-        )
+
+    for i in range(9):
         yield scanning.infos.DatasetProducedInfo(
             name=f"{name}.scalar_chan{i}",
             filename=filename,
@@ -94,6 +88,26 @@ def create_raw_dataset_infos(
             path="/raw/scalar_chan" + str(i),
             uniqueid="",
         )
+
+    for i in range(pairs):
+        yield scanning.infos.DatasetProducedInfo(
+            name=f"{name}.uid{i+1}",
+            filename=filename,
+            type=scanning.infos.DatasetType.RAW,
+            rank=rank,
+            path="/raw/uid" + str(i),
+            uniqueid="",
+        )
+
+    yield scanning.infos.DatasetProducedInfo(
+        name=f"{name}.dtc_chan",
+        filename=filename,
+        type=scanning.infos.DatasetType.RAW,
+        rank=rank,
+        path="/raw/dtc_chan",
+        uniqueid="",
+    )
+
 
 
 def files_shape(frames, block_size, file_count):
@@ -206,18 +220,26 @@ def create_vds(generator, raw_name, vds_path, child, num_datasets):
     chan_per_file = int(num_datasets / hdf_count)
     file_counter = 0
     with h5py.File(vds_path, "r+", libver="latest") as vds:
+
+        # MCA will have one dataset per channels shaped like [num_frames, 1]
         for chan in range(num_datasets):
-            vds["raw/dtc_chan" + str(chan)] = h5py.ExternalLink(
-                metafile, "/dtc_chan{}".format(str(chan))
-            )
-            vds["raw/scalar_chan" + str(chan)] = h5py.ExternalLink(
-                metafile, "/scalar_chan{}".format(str(chan))
-            )
             if chan >= (chan_per_file * (file_counter + 1)):
                 file_counter += 1
             vds["raw/mca" + str(chan)] = h5py.ExternalLink(
                 files[file_counter], "/mca_{}".format(str(chan))
             )
+        
+        # UIDs will have one dataset per writer shaped like [num_frames]
+        file_counter = 0
+        for f in range(hdf_count):
+            vds["raw/uid" + str(f)] = h5py.ExternalLink(files[f], "/uid")
+
+        # Scalars will have one dataset per scalar with shape [num_frames, num_channels]
+        for scalar in range(9):
+            vds["raw/scalar_chan" + str(scalar)] = h5py.ExternalLink(metafile, "/scalar_chan{}".format(str(scalar)))
+
+        # DTC has only one dataset shaped like [num_frames, num_channels]
+        vds["raw/dtc_chan"] = h5py.ExternalLink(metafile, "/dtc_chan")
 
 
 set_bases = ["/entry/xspress/"]
@@ -418,6 +440,7 @@ class XspressWriterPart(builtin.parts.ChildPart):
                 len(generator.dimensions) + 2,
                 fileName,
                 int(self.num_datasets),
+                self.num_pairs
             )
         )
 
