@@ -81,11 +81,11 @@ def create_raw_dataset_infos(
 
     for i in range(9):
         yield scanning.infos.DatasetProducedInfo(
-            name=f"{name}.scalar_chan{i}",
+            name=f"{name}.scalar_{i}",
             filename=filename,
             type=scanning.infos.DatasetType.RAW,
             rank=rank,
-            path="/raw/scalar_chan" + str(i),
+            path="/raw/scalar_" + str(i),
             uniqueid="",
         )
 
@@ -100,11 +100,11 @@ def create_raw_dataset_infos(
         )
 
     yield scanning.infos.DatasetProducedInfo(
-        name=f"{name}.dtc_chan",
+        name=f"{name}.dtc",
         filename=filename,
         type=scanning.infos.DatasetType.RAW,
         rank=rank,
-        path="/raw/dtc_chan",
+        path="/raw/dtc",
         uniqueid="",
     )
 
@@ -233,12 +233,12 @@ def create_vds(generator, raw_name, vds_path, child, num_datasets):
 
         # Scalars will have one dataset per scalar with shape [num_frames, num_channels]
         for scalar in range(9):
-            vds["raw/scalar_chan" + str(scalar)] = h5py.ExternalLink(
-                metafile, "/scalar_chan{}".format(str(scalar))
+            vds["raw/scalar_" + str(scalar)] = h5py.ExternalLink(
+                metafile, "/scalar_{}".format(str(scalar))
             )
 
         # DTC has only one dataset shaped like [num_frames, num_channels]
-        vds["raw/dtc_chan"] = h5py.ExternalLink(metafile, "/dtc_chan")
+        vds["raw/dtc"] = h5py.ExternalLink(metafile, "/dtc")
 
 
 set_bases = ["/entry/xspress/"]
