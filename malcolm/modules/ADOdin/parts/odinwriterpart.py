@@ -75,7 +75,7 @@ def create_raw_dataset_infos(
 ) -> Iterator[Info]:
     for i in range(1, n_raw + 1):
         yield scanning.infos.DatasetProducedInfo(
-            name=f"{name}.raw{i+1}",
+            name=f"{name}.raw{i}",
             filename=filename,
             type=scanning.infos.DatasetType.RAW,
             rank=rank,
@@ -84,7 +84,7 @@ def create_raw_dataset_infos(
         )
     for i in range(1, n_raw + 1):
         yield scanning.infos.DatasetProducedInfo(
-            name=f"{name}.uid{i+1}",
+            name=f"{name}.uid{i}",
             filename=filename,
             type=scanning.infos.DatasetType.RAW,
             rank=rank,
