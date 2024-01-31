@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PMAC Master Tutorial &mdash; malcolm 6.2.1+17.g7ae84dd1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="PandA Master Tutorial" href="panda.html" />
+    <link rel="prev" title="AreaDetector Tutorial" href="areadetector.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../contents.html" class="icon icon-home"> malcolm
+            <img src="../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                6.2.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">PMAC Master Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#strategy">Strategy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#epics-prerequisites">EPICS Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#make-a-malcolm-directory-for-a-beamline">Make a Malcolm directory for a beamline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#define-the-process-definition">Define the Process Definition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#define-a-pmac-block">Define a PMAC Block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#define-a-scan-block">Define a scan Block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#expose-blocks-in-a-module">Expose Blocks in a module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#setup-the-devices">Setup the Devices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#setup-the-scan">Setup the Scan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../contents.html" class="icon icon-home"></a> &raquo;</li>
+      <li>PMAC Master Tutorial</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorials/pmac.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pmac-master-tutorial">
+<span id="pmac-tutorial"></span><h1>PMAC Master Tutorial<a class="headerlink" href="#pmac-master-tutorial" title="Permalink to this headline"></a></h1>
+<p>You should already know how to create a <a class="reference internal" href="../reference/glossary.html#block"><span class="std std-ref">Block</span></a> in the <a class="reference internal" href="../reference/glossary.html#scan-layer"><span class="std std-ref">Scan Layer</span></a> that
+can control multiple Detectors, and control a dummy motor controller. Let’s
+look at how we can control a real motor controller (a Delta Tau Turbo PMAC
+based system like the <a class="reference external" href="http://faradaymotioncontrols.co.uk/geo-brick-lv/">GeoBrick LV IMS-II</a>) and capture encoder positions with
+a <a class="reference external" href="https://www.ohwr.org/project/pandabox/wikis/home">PandABox</a>.</p>
+<section id="strategy">
+<h2>Strategy<a class="headerlink" href="#strategy" title="Permalink to this headline"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A more in-depth overview of this topic can be found in
+<a class="reference internal" href="../reference/triggering.html#trajectory-scan-triggering"><span class="std std-ref">Trajectory Scan Triggering</span></a>.</p>
+</div>
+<p>We will use the simplest triggering method possible here, the PMAC is master
+and generates a series of live pulses (marking a detector trigger, and the end
+of the last frame if there was one) and dead pulses (just marking the end of
+the last frame without starting a new one).</p>
+<p>In our snake scan example:</p>
+<img alt="../_images/detector_0.png" src="../_images/detector_0.png" />
+<p>A live pulse would be output 5 times on the first row, at the beginning of each
+coloured frame. Where the colour changes at the turnaround, a dead pulse would
+be output. This pattern is repeated on each row.</p>
+<p>These live and dead pulses will be passed to the PandA which sends a trigger to
+the detector on each live pulse, and uses the signals itself to capture the
+average encoder position for each live frame.</p>
+</section>
+<section id="epics-prerequisites">
+<h2>EPICS Prerequisites<a class="headerlink" href="#epics-prerequisites" title="Permalink to this headline"></a></h2>
+<p>We assume for this tutorial that you have created one or more IOCS that contain:</p>
+<ul class="simple">
+<li><p>A GeoBrick Controller template from the <a class="reference external" href="https://github.com/dls-controls/pmac">EPICS pmac</a> module with PV prefix
+that looks like <code class="docutils literal notranslate"><span class="pre">BLxxI-MO-BRICK-01</span></code>.</p></li>
+<li><p>A GeoBrick Trajectory template with the same prefix.</p></li>
+<li><p>One or more CS templates.</p></li>
+<li><p>One or more dls_pmac_asyn_motor instances.</p></li>
+<li><p>An ADPandABlocks template from the <a class="reference external" href="https://github.com/PandABlocks/ADPandABlocks">ADPandaBlocks</a> module with a PV prefix
+that looks like <code class="docutils literal notranslate"><span class="pre">BLxxI-MO-PANDA-01:DRV:</span></code></p></li>
+<li><p>NDPosPlugin and NDFileHDF5 <a class="reference external" href="https://cars9.uchicago.edu/software/epics/areaDetector.html">areaDetector</a> plugins with the PV prefixes of
+<code class="docutils literal notranslate"><span class="pre">BLxxI-MO-PANDA-01:POS:</span></code> and <code class="docutils literal notranslate"><span class="pre">BLxxI-MO-PANDA-01:HDF5:</span></code></p></li>
+</ul>
+</section>
+<section id="make-a-malcolm-directory-for-a-beamline">
+<h2>Make a Malcolm directory for a beamline<a class="headerlink" href="#make-a-malcolm-directory-for-a-beamline" title="Permalink to this headline"></a></h2>
+<p>The first thing we need is a directory for our beamline specific Blocks and
+<a class="reference internal" href="../reference/glossary.html#process-definition"><span class="std std-ref">Process Definition</span></a> to live in. At DLS we will typically make a directory
+<code class="docutils literal notranslate"><span class="pre">etc/malcolm</span></code> in the <code class="docutils literal notranslate"><span class="pre">BL</span></code> IOC directory for this purpose, but it could be
+anywhere. We will refer to this directory as <code class="docutils literal notranslate"><span class="pre">etc/malcolm</span></code> for the rest of
+the tutorial. We will also create an <code class="docutils literal notranslate"><span class="pre">etc/malcolm/blocks</span></code> subdirectory for
+any beamline specific Blocks we create.</p>
+</section>
+<section id="define-the-process-definition">
+<h2>Define the Process Definition<a class="headerlink" href="#define-the-process-definition" title="Permalink to this headline"></a></h2>
+<p>Let’s make a Process Definition in <code class="docutils literal notranslate"><span class="pre">etc/malcolm/BLxxI-ML-MALC-01.yaml</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1">#!/dls_sw/prod/python3/RHEL7-x86_64/pymalcolm/4.4/prefix/bin/imalcolm</span>
+
+<span class="c1"># Define the directory that this YAML file lives in as a Malcolm module</span>
+<span class="c1"># so we can use Blocks defined there as BLxxI.blocks.yyy</span>
+<span class="p p-Indicator">-</span> <span class="nt">builtin.defines.module_path</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BLxxI</span>
+    <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(yamldir)</span>
+
+<span class="c1"># This is where all the saved and loaded designs will live</span>
+<span class="p p-Indicator">-</span> <span class="nt">builtin.defines.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">config_dir</span>
+    <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/dls_sw/ixx/epics/malcolm</span>
+
+<span class="c1"># Scan the DLS redirector for IOCs to monitor, optional</span>
+<span class="p p-Indicator">-</span> <span class="nt">system.defines.redirector_iocs</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">iocs</span>
+    <span class="nt">yamlname</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(yamlname)</span>
+
+<span class="c1"># Define the motion controllers</span>
+<span class="p p-Indicator">-</span> <span class="nt">BLxxI.blocks.brick01_block</span><span class="p">:</span>
+    <span class="nt">mri_prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BLxxI-ML-BRICK-01</span>
+    <span class="nt">pv_prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BLxxI-MO-BRICK-01</span>
+    <span class="nt">config_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(config_dir)</span>
+
+<span class="c1"># More motion controllers here...</span>
+
+<span class="c1"># Define the Detectors</span>
+<span class="p p-Indicator">-</span> <span class="nt">ADPandABlocks.blocks.panda_runnable_block</span><span class="p">:</span>
+    <span class="nt">mri_prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BLxxI-ML-PANDA-01</span>
+    <span class="nt">pv_prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BLxxI-MO-PANDA-01</span>
+    <span class="nt">hostname</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">blxxi-mo-panda-01</span>
+    <span class="nt">config_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(config_dir)</span>
+
+<span class="c1"># More non-panda detectors here...</span>
+
+<span class="c1"># Define the Scans</span>
+<span class="p p-Indicator">-</span> <span class="nt">BLxxI.blocks.pmac_master_scan_block</span><span class="p">:</span>
+    <span class="nt">mri_prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BLxxI-ML-SCAN-01</span>
+    <span class="nt">config_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(config_dir)</span>
+    <span class="nt">initial_design</span><span class="p">:</span>
+
+<span class="c1"># More scans here...</span>
+
+<span class="c1"># Define the ServerComms</span>
+<span class="p p-Indicator">-</span> <span class="nt">system.blocks.system_block</span><span class="p">:</span>
+    <span class="nt">mri_prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(yamlname)</span>
+    <span class="nt">iocs</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(iocs)</span>
+    <span class="nt">pv_prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(yamlname)</span>
+    <span class="nt">config_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(config_dir)</span>
+</pre></div>
+</div>
+<p>The first thing to note is the <code class="docutils literal notranslate"><span class="pre">#!</span></code> line at the top of the file. This means
+that we can make the YAML file executable, and when it is executed
+<code class="docutils literal notranslate"><span class="pre">imalcolm.py</span></code> will be run with the path of the YAML file passed as an
+argument. The full path to <code class="docutils literal notranslate"><span class="pre">imalcolm.py</span></code> allows us to pin to a particular
+version of Malcolm - with the example above using the 4.4 release version. You
+can also use the configured tool version, which is usually the latest
+release, with the following path:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1">#!/dls_sw/prod/tools/RHEL7-x86_64/defaults/bin/imalcolm</span>
+</pre></div>
+</div>
+<p>Alternatively, you can also run from a created virtual environment from a
+checked-out version of Malcolm using:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">[</span><span class="nv">me@mypc pymalcolm</span><span class="p p-Indicator">]</span><span class="l l-Scalar l-Scalar-Plain">$ pipenv run /path/to/yaml/dir/BLxxI-ML-MALC-01.yaml</span>
+</pre></div>
+</div>
+<p>After this, we’ve defined a <code class="docutils literal notranslate"><span class="pre">BLxxI</span></code> module, and created two beamline specific
+Blocks from it (<code class="docutils literal notranslate"><span class="pre">brick01_block</span></code> and <code class="docutils literal notranslate"><span class="pre">scan_block</span></code>), and then
+created two Blocks from definitions already in Malcolm (
+<code class="docutils literal notranslate"><span class="pre">pandablocks_runnable_block</span></code>, <code class="docutils literal notranslate"><span class="pre">system_block</span></code>).
+Let’s look at how those beamline specific Blocks are defined.</p>
+</section>
+<section id="define-a-pmac-block">
+<h2>Define a PMAC Block<a class="headerlink" href="#define-a-pmac-block" title="Permalink to this headline"></a></h2>
+<p>In the <code class="docutils literal notranslate"><span class="pre">etc/malcolm/blocks</span></code> subdirectory we will make <code class="docutils literal notranslate"><span class="pre">brick01_block.yaml</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mri_prefix</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">MRI for created block</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">pv_prefix</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">PV prefix that was used to construct the pmac controller</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">config_dir</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Where to store saved configs</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.controllers.ManagerController</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(mri_prefix)</span>
+    <span class="nt">config_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(config_dir)</span>
+
+<span class="c1"># Label so that we can tell at a glance what this PMAC controls at runtime</span>
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parts.LabelPart</span><span class="p">:</span>
+    <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Brick with X and Y Sample stage motors</span>
+
+<span class="c1"># Raw motor Blocks and their corresponding Parts</span>
+<span class="p p-Indicator">-</span> <span class="nt">pmac.includes.rawmotor_collection</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BLxxI-ML-STAGE-01:X</span>
+    <span class="nt">pv_prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BLxxI-MO-STAGE-01:X</span>
+    <span class="nt">scannable</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">stagex</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">pmac.includes.rawmotor_collection</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BLxxI-ML-STAGE-01:Y</span>
+    <span class="nt">pv_prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BLxxI-MO-STAGE-01:Y</span>
+    <span class="nt">scannable</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">stagey</span>
+
+<span class="c1"># Co-ordinate system Block and its corresponding Part</span>
+<span class="p p-Indicator">-</span> <span class="nt">pmac.includes.cs_collection</span><span class="p">:</span>
+    <span class="nt">mri_prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(mri_prefix)</span>
+    <span class="nt">pv_prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(pv_prefix)</span>
+    <span class="nt">cs</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
+
+<span class="c1"># Trajectory scan and status Blocks and their corresponding Parts</span>
+<span class="p p-Indicator">-</span> <span class="nt">pmac.includes.trajectory_collection</span><span class="p">:</span>
+    <span class="nt">mri_prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(mri_prefix)</span>
+    <span class="nt">pv_prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(pv_prefix)</span>
+</pre></div>
+</div>
+<p>Here we are constructing a Block specific to <code class="docutils literal notranslate"><span class="pre">BLxxI-MO-BRICK-01</span></code>. We still
+pass in <code class="docutils literal notranslate"><span class="pre">mri_prefix</span></code> and <code class="docutils literal notranslate"><span class="pre">pv_prefix</span></code> because it makes it easier to see
+from the top level what is creating what.</p>
+<p>We then create a <a class="reference internal" href="../build/builtin/controllers_api.html#malcolm.modules.builtin.controllers.ManagerController" title="malcolm.modules.builtin.controllers.ManagerController"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ManagerController</span></code></a>, with a number of child Blocks and Parts
+(produced by <code class="docutils literal notranslate"><span class="pre">includes</span></code>) that represent raw motors, co-ordinate systems,
+the trajectory scan and PMAC status EPICS templates.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The Motors we define are raw motors. These correspond to physical axes in
+the motor controller. If there is a co-ordinate system with kinematics, then
+the compound co-ordinate system motors should also be exposed with a
+<a class="reference internal" href="../build/pmac/includes_api.html#malcolm.modules.pmac.includes.compoundmotor_collection" title="malcolm.modules.pmac.includes.compoundmotor_collection"><code class="xref any py py-func docutils literal notranslate"><span class="pre">compoundmotor_collection</span></code></a>.</p>
+<p>In this example we have raw motors <code class="docutils literal notranslate"><span class="pre">stagex</span></code> and <code class="docutils literal notranslate"><span class="pre">stagey</span></code> which we could
+demand a scan in, but if we had a 2-jack system, our raw motors would be
+<code class="docutils literal notranslate"><span class="pre">t1jack1</span></code> and <code class="docutils literal notranslate"><span class="pre">t1jack2</span></code>, so we would expose compound motors <code class="docutils literal notranslate"><span class="pre">t1x</span></code> and
+<code class="docutils literal notranslate"><span class="pre">t1pitch</span></code> to demand a scan in.</p>
+</div>
+</section>
+<section id="define-a-scan-block">
+<h2>Define a scan Block<a class="headerlink" href="#define-a-scan-block" title="Permalink to this headline"></a></h2>
+<p>In the <code class="docutils literal notranslate"><span class="pre">etc/malcolm/blocks</span></code> subdirectory we will also make
+<code class="docutils literal notranslate"><span class="pre">scan_block.yaml</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mri_prefix</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">MRI for created block</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">config_dir</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Where to store saved configs</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">initial_design</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Initial design to load for the scan</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">scanning.controllers.RunnableController</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(mri_prefix)</span>
+    <span class="nt">config_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(config_dir)</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="p p-Indicator">|</span>
+      <span class="no">Hardware triggered scan, with PMAC providing trigger signals at</span>
+      <span class="no">up to 300Hz</span>
+    <span class="nt">initial_design</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(initial_design)</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parts.LabelPart</span><span class="p">:</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">scanning.parts.SimultaneousAxesPart</span><span class="p">:</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">scanning.parts.DatasetTablePart</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">DSET</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">pmac.parts.PmacChildPart</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BRICK-01</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BLxxI-ML-BRICK-01</span>
+    <span class="nt">initial_visibility</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">True</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">scanning.parts.DetectorChildPart</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">PANDA-01</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BLxxI-ML-PANDA-01</span>
+    <span class="nt">initial_visibility</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">True</span>
+</pre></div>
+</div>
+<p>Again we take the <code class="docutils literal notranslate"><span class="pre">mri_prefix</span></code> and <code class="docutils literal notranslate"><span class="pre">config_dir</span></code> needed to create the Block,
+but this time we also take an <code class="docutils literal notranslate"><span class="pre">initial_design</span></code>. This will allow us to create
+multiple instances of this scan Block with different configurations, and load
+the correct configuration for each Block. We pass this <code class="docutils literal notranslate"><span class="pre">initial_design</span></code>
+through to the <a class="reference internal" href="../build/scanning/controllers_api.html#malcolm.modules.scanning.controllers.RunnableController" title="malcolm.modules.scanning.controllers.RunnableController"><code class="xref any py py-class docutils literal notranslate"><span class="pre">RunnableController</span></code></a>, then add a number of parts:</p>
+<table class="colwidths-given docutils align-default">
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 80%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Part</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="../build/builtin/parts_api.html#malcolm.modules.builtin.parts.LabelPart" title="malcolm.modules.builtin.parts.LabelPart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">LabelPart</span></code></a></p></td>
+<td><p>Defines a human readable label for the Block. Typically 4 or 5 words
+that describe the science case for this scan instance. Initially blank.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../build/scanning/parts_api.html#malcolm.modules.scanning.parts.SimultaneousAxesPart" title="malcolm.modules.scanning.parts.SimultaneousAxesPart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">SimultaneousAxesPart</span></code></a></p></td>
+<td><p>Defines the superset of all axes that can be supplied as <code class="docutils literal notranslate"><span class="pre">axesToMove</span></code>
+at <code class="docutils literal notranslate"><span class="pre">configure()</span></code>. Typically the scannable names of all of the motors
+in a single co-ordinate system with fastest moving motor first, like
+<code class="docutils literal notranslate"><span class="pre">[&quot;stagex&quot;,</span> <span class="pre">&quot;stagey&quot;,</span> <span class="pre">&quot;stagez&quot;]</span></code>. Initially blank.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../build/scanning/parts_api.html#malcolm.modules.scanning.parts.DatasetTablePart" title="malcolm.modules.scanning.parts.DatasetTablePart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DatasetTablePart</span></code></a></p></td>
+<td><p>As introduced in the <a class="reference internal" href="detector.html#detector-tutorial"><span class="std std-ref">Detector Tutorial</span></a>, this part will report the
+datasets that any detectors produce.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../build/pmac/parts_api.html#malcolm.modules.pmac.parts.PmacChildPart" title="malcolm.modules.pmac.parts.PmacChildPart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">PmacChildPart</span></code></a></p></td>
+<td><p>Takes the generator passed to <code class="docutils literal notranslate"><span class="pre">configure()</span></code>, and iterates through it
+in chunks, producing trajectory scan points that can be passed down to
+a Pmac Block, like the one we created above.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../build/scanning/parts_api.html#malcolm.modules.scanning.parts.DetectorChildPart" title="malcolm.modules.scanning.parts.DetectorChildPart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DetectorChildPart</span></code></a></p></td>
+<td><p>As in the <a class="reference internal" href="scanning.html#scanning-tutorial"><span class="std std-ref">Scanning Tutorial</span></a>, this part controls a detector, which is
+a runnable child block with a <code class="docutils literal notranslate"><span class="pre">datasets</span></code> Attribute.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The fields that are likely to differ between scan instances (like
+simultaneousAxes and label) are not given defaults here to avoid confusion.
+They will be filled in at runtime and be placed in saved designs.</p>
+</div>
+</section>
+<section id="expose-blocks-in-a-module">
+<h2>Expose Blocks in a module<a class="headerlink" href="#expose-blocks-in-a-module" title="Permalink to this headline"></a></h2>
+<p>We’ve made two YAML files to represent Blocks that can be instantiated by
+passing them parameters, but Malcolm expects Blocks creators to be
+Python callables that it can pass parameters to. This means we need to turn
+the YAML files into Python objects in some way. We could insert some magic here,
+but as <a class="reference external" href="https://www.python.org/dev/peps/pep-0020/">PEP 20</a> says:</p>
+<blockquote>
+<div><p>Explicit is better than implicit.</p>
+</div></blockquote>
+<p>So let’s declare to Malcolm exactly which YAML files should be turned into
+Python objects. We do this by placing a special file called <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code>
+into the <code class="docutils literal notranslate"><span class="pre">etc/malcolm/blocks</span></code> directory. This tells Python that this directory
+is a Python module, and to run the contents of <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code> whenever the
+module is imported. We can place the following lines into this file to make a
+couple of Block creators from the YAML file:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">malcolm.yamlutil</span> <span class="kn">import</span> <span class="n">make_block_creator</span><span class="p">,</span> <span class="n">check_yaml_names</span>
+
+<span class="c1"># Create some Block definitions from YAML files</span>
+<span class="n">brick01_block</span> <span class="o">=</span> <span class="n">make_block_creator</span><span class="p">(</span>
+    <span class="vm">__file__</span><span class="p">,</span> <span class="s2">&quot;brick01_block.yaml&quot;</span><span class="p">)</span>
+<span class="n">scan_block</span> <span class="o">=</span> <span class="n">make_block_creator</span><span class="p">(</span>
+    <span class="vm">__file__</span><span class="p">,</span> <span class="s2">&quot;scan_block.yaml&quot;</span><span class="p">)</span>
+
+<span class="c1"># Expose all of the Block definitions, and nothing else</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="n">check_yaml_names</span><span class="p">(</span><span class="nb">globals</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>This calls <a class="reference internal" href="../api/yamlutil_api.html#malcolm.yamlutil.make_block_creator" title="malcolm.yamlutil.make_block_creator"><code class="xref any py py-func docutils literal notranslate"><span class="pre">make_block_creator</span></code></a> a number of times on YAML files to turn them
+into Python objects, then <a class="reference internal" href="../api/yamlutil_api.html#malcolm.yamlutil.check_yaml_names" title="malcolm.yamlutil.check_yaml_names"><code class="xref any py py-func docutils literal notranslate"><span class="pre">check_yaml_names</span></code></a> filters out anything that hasn’t
+been derived from a YAML file, creating the <code class="docutils literal notranslate"><span class="pre">__all__</span></code> variable that tells
+Python what the public API of this module is.</p>
+<p>Finally, we also need an <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code> in <code class="docutils literal notranslate"><span class="pre">etc/malcolm</span></code> so that Python
+knows the whole directory is a Python module. You can create it just by
+running:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">touch etc/malcolm/__init__.py</span>
+</pre></div>
+</div>
+</section>
+<section id="setup-the-devices">
+<h2>Setup the Devices<a class="headerlink" href="#setup-the-devices" title="Permalink to this headline"></a></h2>
+<p>We can now run up imalcolm by executing <code class="docutils literal notranslate"><span class="pre">etc/malcolm/BLxxI-ML-MALC-01.yaml</span></code>,
+and open <a class="reference external" href="http://localhost:8008/gui/BLxxI-ML-SCAN-01">http://localhost:8008/gui/BLxxI-ML-SCAN-01</a> to see our scan Block. The
+first thing we should do is setup the motion controller. If we click the Auto
+Layout button, then click through to the <code class="docutils literal notranslate"><span class="pre">BRICK-01</span></code> layout and Auto Layout
+that, we will see the layout of motors in co-ordinate systems. We need to
+assign the two raw motors to any axes a-z in the co-ordinate system so that
+they can be trajectory scanned, then save the brick design:</p>
+<img alt="../_images/pmac_0.png" src="../_images/pmac_0.png" />
+<p>The Brick is now in such a state that the <a class="reference internal" href="../build/pmac/parts_api.html#malcolm.modules.pmac.parts.PmacChildPart" title="malcolm.modules.pmac.parts.PmacChildPart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">PmacChildPart</span></code></a> can run a scan on
+any motors in CS1, which correspond to the raw axes on the Pmac.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Output Triggers is checked, this means that the PMAC will be told to output
+GPIO triggers according to the scanpointgenerator point requested. A live
+frame signal will be sent at the beginning of each point, then a dead frame
+signal will be sent at the end of each point if it doesn’t join onto the
+next point.</p>
+</div>
+<p>We can then navigate back up and to the PandA, and load the <a class="reference internal" href="../reference/glossary.html#template-design"><span class="std std-ref">Template Design</span></a>
+<code class="docutils literal notranslate"><span class="pre">template_live_dead_framed_pcap</span></code>:</p>
+<img alt="../_images/pmac_1.png" src="../_images/pmac_1.png" />
+<p>This design assumes you have the live and dead frame signals from the PMAC
+connected to TTLIN1 and TTLIN2. If this is not the case, you can connect them
+to the correct inputs, like the FMC_24V_IN signals for example.</p>
+<p>Each rising edge of a live frame generates a short trigger pulse, which is sent
+to a detector on TTLOUT2. Again, you can connect detectors on different outputs
+to this signal. The reason we don’t connect it directly to the live frame signal
+is because when you interrupt the PMAC it doesn’t reset the GPIOs, and the arm
+of the detector may come before these signals are reset, creating one false
+trigger.</p>
+<p>Next we come to the Frame Gate. This is set high by a live frame pulse, and
+set low by a dead frame. It will be high for an entire series of joined frames,
+and low during the turnarounds. We use this to gate the PCAP averaging of
+positions so they are not averaged during the turnarounds.</p>
+<p>Fed from this is the End of Frame signal. This fires whenever we get a live or
+dead frame signal, but not while the Frame Gate is active. This effectively
+means we will get a short pulse at the end of each frame, which we use to
+trigger PCAP to output the current capture values, and advance to the next
+frame.</p>
+<p>Now we have changed the inputs and outputs to this chain of Blocks, we can
+save the design with a new name.</p>
+</section>
+<section id="setup-the-scan">
+<h2>Setup the Scan<a class="headerlink" href="#setup-the-scan" title="Permalink to this headline"></a></h2>
+<p>Now we have setup each Block in the <a class="reference internal" href="../reference/glossary.html#device-layer"><span class="std std-ref">Device Layer</span></a>, it is time to setup the
+Scan Block. We do this by:</p>
+<ul class="simple">
+<li><p>Setting the scan <code class="docutils literal notranslate"><span class="pre">Label</span></code> to a suitable short phrase that can be placed on
+a GDA GUI. E.g. “Small stage tomography”, or “Fine stage XRF + Imaging”</p></li>
+<li><p>Setting <code class="docutils literal notranslate"><span class="pre">Simultaneous</span> <span class="pre">Axes</span></code> to the scannable names of all of the motors
+in the CS with fastest moving motor first, like
+<code class="docutils literal notranslate"><span class="pre">[&quot;stagex&quot;,</span> <span class="pre">&quot;stagey&quot;,</span> <span class="pre">&quot;stagez&quot;]</span></code></p></li>
+<li><p>Saving the design with a name that is similar to the label. E.g. “t1_tomo” or
+“t2_xspress3_excalibur”</p></li>
+</ul>
+<p>This will make a saved config that captures the device design names:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">{</span>
+  <span class="s">&quot;attributes&quot;</span><span class="p p-Indicator">:</span> <span class="p p-Indicator">{</span>
+    <span class="s">&quot;layout&quot;</span><span class="p p-Indicator">:</span> <span class="p p-Indicator">{</span>
+      <span class="s">&quot;BRICK-01&quot;</span><span class="p p-Indicator">:</span> <span class="p p-Indicator">{</span>
+        <span class="s">&quot;x&quot;</span><span class="p p-Indicator">:</span> <span class="nv">0.0</span><span class="p p-Indicator">,</span>
+        <span class="s">&quot;y&quot;</span><span class="p p-Indicator">:</span> <span class="nv">139.60000610351562</span><span class="p p-Indicator">,</span>
+        <span class="s">&quot;visible&quot;</span><span class="p p-Indicator">:</span> <span class="nv">true</span>
+      <span class="p p-Indicator">},</span>
+      <span class="s">&quot;PANDA-01&quot;</span><span class="p p-Indicator">:</span> <span class="p p-Indicator">{</span>
+        <span class="s">&quot;x&quot;</span><span class="p p-Indicator">:</span> <span class="nv">0.0</span><span class="p p-Indicator">,</span>
+        <span class="s">&quot;y&quot;</span><span class="p p-Indicator">:</span> <span class="nv">0.0</span><span class="p p-Indicator">,</span>
+        <span class="s">&quot;visible&quot;</span><span class="p p-Indicator">:</span> <span class="nv">true</span>
+      <span class="p p-Indicator">}</span>
+    <span class="p p-Indicator">},</span>
+    <span class="s">&quot;exports&quot;</span><span class="p p-Indicator">:</span> <span class="p p-Indicator">{},</span>
+    <span class="s">&quot;simultaneousAxes&quot;</span><span class="p p-Indicator">:</span> <span class="p p-Indicator">[</span>
+       <span class="s">&quot;stagea&quot;</span><span class="p p-Indicator">,</span>
+       <span class="s">&quot;stagex&quot;</span>
+    <span class="p p-Indicator">],</span>
+    <span class="s">&quot;label&quot;</span><span class="p p-Indicator">:</span> <span class="s">&quot;PMAC</span><span class="nv"> </span><span class="s">Master</span><span class="nv"> </span><span class="s">Tomography&quot;</span>
+  <span class="p p-Indicator">},</span>
+  <span class="s">&quot;children&quot;</span><span class="p p-Indicator">:</span> <span class="p p-Indicator">{</span>
+    <span class="s">&quot;BRICK-01&quot;</span><span class="p p-Indicator">:</span> <span class="p p-Indicator">{</span>
+      <span class="s">&quot;design&quot;</span><span class="p p-Indicator">:</span> <span class="s">&quot;a_z_in_cs1&quot;</span>
+    <span class="p p-Indicator">},</span>
+    <span class="s">&quot;PANDA-01&quot;</span><span class="p p-Indicator">:</span> <span class="p p-Indicator">{</span>
+      <span class="s">&quot;design&quot;</span><span class="p p-Indicator">:</span> <span class="s">&quot;pmac_master&quot;</span>
+    <span class="p p-Indicator">}</span>
+  <span class="p p-Indicator">}</span>
+<span class="p p-Indicator">}</span>
+</pre></div>
+</div>
+<p>We can now run a test scan to make sure the correct data is produced, either
+with a generator on the commandline, or with the Web GUI, as in previous
+tutorials. If it all works as expected, we can set the <code class="docutils literal notranslate"><span class="pre">initial_design</span></code> for
+this scan instance in <code class="docutils literal notranslate"><span class="pre">etc/malcolm/BLxxI-ML-MALC-01.yaml</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nn">...</span>
+
+<span class="c1"># Define the Scans</span>
+<span class="p p-Indicator">-</span> <span class="nt">BLxxI.blocks.scan_block</span><span class="p">:</span>
+    <span class="nt">mri_prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BLxxI-ML-SCAN-01</span>
+    <span class="nt">config_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(config_dir)</span>
+    <span class="nt">initial_design</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">pmac_master_tomo</span>
+
+<span class="c1"># More scans here...</span>
+
+<span class="nn">...</span>
+</pre></div>
+</div>
+<p>If we need a similar scan with a different set of detectors active, we can
+just make a new instance of the same scan block, repeat the setup scan steps
+with a new label and design name, and save this design in a similar way.</p>
+</section>
+<section id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline"></a></h2>
+<p>This tutorial has given us an understanding of how to perform a scan with the
+PMAC acting as master, sending trigger pulses to a PandA. We are limited to
+about 300Hz as we have to send all the points down to the PMAC via the
+trajectory scan. In the next tutorial we will see how the PandA can act as
+master, using the positions from the encoders to generate pulses, allowing
+kHz rates of scanning.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="areadetector.html" class="btn btn-neutral float-left" title="AreaDetector Tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="panda.html" class="btn btn-neutral float-right" title="PandA Master Tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

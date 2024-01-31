@@ -1,0 +1,12 @@
+
+ADTucsen
+========
+
+.. module:: malcolm.modules.ADTucsen
+
+.. toctree::
+    :maxdepth: 1
+    :caption: malcolm.modules.ADTucsen
+
+    blocks <blocks_api.rst>
+    parts <parts_api.rst>

@@ -1,0 +1,6 @@
+
+malcolm.modules.builtin.controllers
+===================================
+
+.. automodule:: malcolm.modules.builtin.controllers
+    :members:

@@ -1,0 +1,11 @@
+
+aravisGigE
+==========
+
+.. module:: malcolm.modules.aravisGigE
+
+.. toctree::
+    :maxdepth: 1
+    :caption: malcolm.modules.aravisGigE
+
+    blocks <blocks_api.rst>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.modules.pmac.infos &mdash; malcolm 6.2.1+17.g7ae84dd1 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                6.2.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>malcolm.modules.pmac.infos</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for malcolm.modules.pmac.infos</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="n">Info</span>
+
+<span class="kn">from</span> <span class="nn">.velocityprofile</span> <span class="kn">import</span> <span class="n">VelocityProfile</span>
+
+
+<div class="viewcode-block" id="PmacVariablesInfo"><a class="viewcode-back" href="../../../../build/pmac/infos_api.html#malcolm.modules.pmac.infos.PmacVariablesInfo">[docs]</a><span class="k">class</span> <span class="nc">PmacVariablesInfo</span><span class="p">(</span><span class="n">Info</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;List variable values for variables required in kinematics</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        i_variables: i variable list</span>
+<span class="sd">        p_variables: p variable list</span>
+<span class="sd">        m_variables: m variable list</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i_variables</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">p_variables</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">m_variables</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i_variables</span> <span class="o">=</span> <span class="n">i_variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">p_variables</span> <span class="o">=</span> <span class="n">p_variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m_variables</span> <span class="o">=</span> <span class="n">m_variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_variables</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">i_variables</span><span class="p">,</span> <span class="n">p_variables</span><span class="p">,</span> <span class="n">m_variables</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="PmacCsKinematicsInfo"><a class="viewcode-back" href="../../../../build/pmac/infos_api.html#malcolm.modules.pmac.infos.PmacCsKinematicsInfo">[docs]</a><span class="k">class</span> <span class="nc">PmacCsKinematicsInfo</span><span class="p">(</span><span class="n">Info</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Coordinate sys kinematics programs and Q variable values</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cs_port: the port name for this coordinate system</span>
+<span class="sd">        q_variables: i variable list</span>
+<span class="sd">        forward: forward kinematic code</span>
+<span class="sd">        inverse: inverse kinematic code</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">cs_port</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">q_variables</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">forward</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">inverse</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cs_port</span> <span class="o">=</span> <span class="n">cs_port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q_variables</span> <span class="o">=</span> <span class="n">q_variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forward</span> <span class="o">=</span> <span class="n">forward</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inverse</span> <span class="o">=</span> <span class="n">inverse</span></div>
+
+
+<span class="k">class</span> <span class="nc">MotorInfo</span><span class="p">(</span><span class="n">Info</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">cs_axis</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">cs_port</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">acceleration</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">resolution</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">max_velocity</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">current_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">scannable</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">velocity_settle</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">units</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">user_high_limit</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">user_low_limit</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">dial_high_limit</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">dial_low_limit</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cs_axis</span> <span class="o">=</span> <span class="n">cs_axis</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cs_port</span> <span class="o">=</span> <span class="n">cs_port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">acceleration</span> <span class="o">=</span> <span class="n">acceleration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span> <span class="o">=</span> <span class="n">resolution</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="n">offset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_velocity</span> <span class="o">=</span> <span class="n">max_velocity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_position</span> <span class="o">=</span> <span class="n">current_position</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scannable</span> <span class="o">=</span> <span class="n">scannable</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">velocity_settle</span> <span class="o">=</span> <span class="n">velocity_settle</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="n">units</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user_high_limit</span> <span class="o">=</span> <span class="n">user_high_limit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user_low_limit</span> <span class="o">=</span> <span class="n">user_low_limit</span>
+        <span class="c1"># Check if soft limits are disabled</span>
+        <span class="k">if</span> <span class="n">dial_high_limit</span> <span class="o">==</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">dial_low_limit</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">soft_limits_enabled</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">soft_limits_enabled</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">acceleration_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">):</span>
+        <span class="c1"># The time taken to ramp from v1 to pad_velocity</span>
+        <span class="n">ramp_time</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">v2</span> <span class="o">-</span> <span class="n">v1</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">acceleration</span>
+        <span class="k">return</span> <span class="n">ramp_time</span>
+
+    <span class="k">def</span> <span class="nf">ramp_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">ramp_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">min_ramp_time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># The distance moved in the first part of the ramp</span>
+        <span class="k">if</span> <span class="n">ramp_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ramp_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">acceleration_time</span><span class="p">(</span><span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">min_ramp_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ramp_time</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">ramp_time</span><span class="p">,</span> <span class="n">min_ramp_time</span><span class="p">)</span>
+        <span class="n">ramp_distance</span> <span class="o">=</span> <span class="p">(</span><span class="n">v1</span> <span class="o">+</span> <span class="n">v2</span><span class="p">)</span> <span class="o">*</span> <span class="n">ramp_time</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="k">return</span> <span class="n">ramp_distance</span>
+
+    <span class="k">def</span> <span class="nf">make_velocity_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">min_time</span><span class="p">,</span> <span class="n">min_interval</span><span class="o">=</span><span class="mf">0.002</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate PVT points that will perform the move within motor params</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            v1 (float): Starting velocity in EGUs/s</span>
+<span class="sd">            v2 (float): Ending velocity in EGUs/s</span>
+<span class="sd">            distance (float): Relative distance to travel in EGUs</span>
+<span class="sd">            min_time (float): The minimum time the move should take</span>
+<span class="sd">            min_interval (float): Minimum time between profile points</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            VelocityProfile: defining a list of times and velocities</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Create the time and velocity arrays</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">VelocityProfile</span><span class="p">(</span>
+            <span class="n">v1</span><span class="p">,</span>
+            <span class="n">v2</span><span class="p">,</span>
+            <span class="n">distance</span><span class="p">,</span>
+            <span class="n">min_time</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">acceleration</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">max_velocity</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">velocity_settle</span><span class="p">,</span>
+            <span class="n">min_interval</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">get_profile</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">p</span>
+
+    <span class="k">def</span> <span class="nf">in_cts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">position</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return the position (in EGUs) translated to counts&quot;&quot;&quot;</span>
+        <span class="n">cts</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">((</span><span class="n">position</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">cts</span>
+
+    <span class="k">def</span> <span class="nf">check_position_within_soft_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">position</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Check a position (in EGUs) against the soft limits and return True/False&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">soft_limits_enabled</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">position</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_high_limit</span> <span class="ow">or</span> <span class="n">position</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_low_limit</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

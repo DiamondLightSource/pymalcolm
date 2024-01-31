@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.modules.ca.util &mdash; malcolm 6.2.1+17.g7ae84dd1 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                6.2.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>malcolm.modules.ca.util</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for malcolm.modules.ca.util</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">Array</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+    <span class="n">Alarm</span><span class="p">,</span>
+    <span class="n">AlarmStatus</span><span class="p">,</span>
+    <span class="n">AMetaDescription</span><span class="p">,</span>
+    <span class="n">APartName</span><span class="p">,</span>
+    <span class="n">Hook</span><span class="p">,</span>
+    <span class="n">Loggable</span><span class="p">,</span>
+    <span class="n">PartRegistrar</span><span class="p">,</span>
+    <span class="n">TimeStamp</span><span class="p">,</span>
+    <span class="n">VMeta</span><span class="p">,</span>
+    <span class="n">sleep</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules</span> <span class="kn">import</span> <span class="n">builtin</span>
+
+<span class="n">Hooks</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">Hook</span><span class="p">],</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">Hook</span><span class="p">]]]</span>
+<span class="n">Register</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Hooks</span><span class="p">,</span> <span class="n">Callable</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
+
+<span class="c1"># Store them here for re-export</span>
+<span class="n">APartName</span> <span class="o">=</span> <span class="n">APartName</span>
+<span class="n">AMetaDescription</span> <span class="o">=</span> <span class="n">AMetaDescription</span>
+<span class="n">AWidget</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">AWidget</span>
+<span class="n">AGroup</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">AGroup</span>
+<span class="n">AConfig</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">AConfig</span>
+<span class="n">ASinkPort</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">ASinkPort</span>
+<span class="n">APortBadge</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">APortBadge</span>
+
+
+<div class="viewcode-block" id="CatoolsDeferred"><a class="viewcode-back" href="../../../../build/ca/util_api.html#malcolm.modules.ca.util.CatoolsDeferred">[docs]</a><span class="k">class</span> <span class="nc">CatoolsDeferred</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Deferred gets of catools things&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">cothread</span> <span class="kn">import</span> <span class="n">catools</span>
+
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">catools</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span></div>
+
+
+<span class="n">catools</span> <span class="o">=</span> <span class="n">CatoolsDeferred</span><span class="p">()</span>
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Full pv of demand and default for rbv&quot;</span><span class="p">):</span>
+    <span class="n">APv</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Override for rbv&quot;</span><span class="p">):</span>
+    <span class="n">ARbv</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;List of PVs to monitor&quot;</span><span class="p">):</span>
+    <span class="n">APvList</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;List of names to give to monitored PVs&quot;</span><span class="p">):</span>
+    <span class="n">ANameList</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Set rbv to pv + rbv_suffix&quot;</span><span class="p">):</span>
+    <span class="n">ARbvSuffix</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Minimum time between attribute updates in seconds&quot;</span><span class="p">):</span>
+    <span class="n">AMinDelta</span> <span class="o">=</span> <span class="nb">float</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Max time to wait for puts to complete, &lt;0 is forever&quot;</span><span class="p">):</span>
+    <span class="n">ATimeout</span> <span class="o">=</span> <span class="nb">float</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Get limits from PV (HOPR &amp; LOPR)&quot;</span><span class="p">):</span>
+    <span class="n">AGetLimits</span> <span class="o">=</span> <span class="nb">bool</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;throw error if PV not found&quot;</span><span class="p">):</span>
+    <span class="n">AThrow</span> <span class="o">=</span> <span class="nb">bool</span>
+
+
+<span class="k">class</span> <span class="nc">CABase</span><span class="p">(</span><span class="n">Loggable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">meta</span><span class="p">:</span> <span class="n">VMeta</span><span class="p">,</span>
+        <span class="n">datatype</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">writeable</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">min_delta</span><span class="p">:</span> <span class="n">AMinDelta</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+        <span class="n">timeout</span><span class="p">:</span> <span class="n">ATimeout</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+        <span class="n">sink_port</span><span class="p">:</span> <span class="n">ASinkPort</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">widget</span><span class="p">:</span> <span class="n">AWidget</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">group</span><span class="p">:</span> <span class="n">AGroup</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">AConfig</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">on_connect</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">throw</span><span class="p">:</span> <span class="n">AThrow</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">port_badge</span><span class="p">:</span> <span class="n">APortBadge</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="n">writeable</span>
+        <span class="n">builtin</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">set_tags</span><span class="p">(</span>
+            <span class="n">meta</span><span class="p">,</span> <span class="n">writeable</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">widget</span><span class="p">,</span> <span class="n">sink_port</span><span class="p">,</span> <span class="n">port_badge</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">throw</span> <span class="o">=</span> <span class="n">throw</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">datatype</span> <span class="o">=</span> <span class="n">datatype</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_delta</span> <span class="o">=</span> <span class="n">min_delta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_connect</span> <span class="o">=</span> <span class="n">on_connect</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attr</span> <span class="o">=</span> <span class="n">meta</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">()</span>
+        <span class="c1"># Camonitor subscription</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">monitor</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_after</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_local_value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CATable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_user_callback</span> <span class="o">=</span> <span class="n">callback</span>
+
+    <span class="k">def</span> <span class="nf">disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">monitor</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">monitor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitor</span><span class="p">:</span>
+                    <span class="n">monitor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">monitor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">monitor</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_update_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="c1"># Attribute value might not be raw PV, PV which triggered update is</span>
+        <span class="c1"># passed as status</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_user_callback</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="o">.</span><span class="n">ok</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attr</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">attr</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">alarm</span><span class="o">=</span><span class="n">Alarm</span><span class="o">.</span><span class="n">disconnected</span><span class="p">(</span><span class="s2">&quot;PV disconnected&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">severity</span><span class="p">:</span>
+                <span class="n">alarm</span> <span class="o">=</span> <span class="n">Alarm</span><span class="p">(</span>
+                    <span class="n">severity</span><span class="o">=</span><span class="n">value</span><span class="o">.</span><span class="n">severity</span><span class="p">,</span>
+                    <span class="n">status</span><span class="o">=</span><span class="n">AlarmStatus</span><span class="o">.</span><span class="n">RECORD_STATUS</span><span class="p">,</span>
+                    <span class="n">message</span><span class="o">=</span><span class="s2">&quot;PV in alarm state&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">alarm</span> <span class="o">=</span> <span class="n">Alarm</span><span class="o">.</span><span class="n">ok</span>
+            <span class="c1"># We only have a raw_stamp attr on monitor, the initial</span>
+            <span class="c1"># caget with CTRL doesn&#39;t give us a timestamp</span>
+            <span class="n">ts</span> <span class="o">=</span> <span class="n">TimeStamp</span><span class="p">(</span><span class="o">*</span><span class="nb">getattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">&quot;raw_stamp&quot;</span><span class="p">,</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)))</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attr</span><span class="o">.</span><span class="n">set_value_alarm_ts</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">alarm</span><span class="p">,</span> <span class="n">ts</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">reconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">caput</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">registrar</span><span class="p">:</span> <span class="n">PartRegistrar</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">register_hooked</span><span class="p">:</span> <span class="n">Register</span><span class="p">,</span>
+        <span class="n">writeable_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">writeable</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">writeable_func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">writeable_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">caput</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">writeable_func</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr</span><span class="p">,</span> <span class="n">writeable_func</span><span class="p">)</span>
+        <span class="n">register_hooked</span><span class="p">(</span><span class="n">builtin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">DisableHook</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">disconnect</span><span class="p">)</span>
+        <span class="n">register_hooked</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">builtin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">InitHook</span><span class="p">,</span> <span class="n">builtin</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ResetHook</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">reconnect</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_monitor_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">value_index</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">now</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_after</span>
+        <span class="k">if</span> <span class="n">value_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;name_list&quot;</span><span class="p">):</span>
+            <span class="n">value_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_list</span><span class="p">[</span><span class="n">value_index</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_local_value</span><span class="p">[</span><span class="n">value_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_local_value</span><span class="o">.</span><span class="n">raw_stamp</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">&quot;raw_stamp&quot;</span><span class="p">,</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_local_value</span><span class="o">.</span><span class="n">ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_local_value</span><span class="o">.</span><span class="n">ok</span> <span class="ow">or</span> <span class="n">value</span><span class="o">.</span><span class="n">ok</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_local_value</span><span class="o">.</span><span class="n">severity</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_local_value</span><span class="o">.</span><span class="n">severity</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">severity</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_local_value</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="c1"># See how long to sleep for to make sure we don&#39;t get more than one</span>
+        <span class="c1"># update at &lt; min_delta interval</span>
+        <span class="k">if</span> <span class="n">delta</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_delta</span><span class="p">:</span>
+            <span class="c1"># If we were more than min_delta late then reset next update time</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_after</span> <span class="o">=</span> <span class="n">now</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_delta</span>
+        <span class="k">elif</span> <span class="n">delta</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># If delta is less than zero sleep for a bit</span>
+            <span class="n">sleep</span><span class="p">(</span><span class="o">-</span><span class="n">delta</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># If we were within the delta window just increment next update</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_after</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_delta</span>
+
+
+<span class="k">class</span> <span class="nc">CAAttribute</span><span class="p">(</span><span class="n">CABase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">meta</span><span class="p">:</span> <span class="n">VMeta</span><span class="p">,</span>
+        <span class="n">datatype</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">pv</span><span class="p">:</span> <span class="n">APv</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">rbv</span><span class="p">:</span> <span class="n">ARbv</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">rbv_suffix</span><span class="p">:</span> <span class="n">ARbvSuffix</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">min_delta</span><span class="p">:</span> <span class="n">AMinDelta</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+        <span class="n">timeout</span><span class="p">:</span> <span class="n">ATimeout</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+        <span class="n">sink_port</span><span class="p">:</span> <span class="n">ASinkPort</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">widget</span><span class="p">:</span> <span class="n">AWidget</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">group</span><span class="p">:</span> <span class="n">AGroup</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">AConfig</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">on_connect</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">throw</span><span class="p">:</span> <span class="n">AThrow</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">port_badge</span><span class="p">:</span> <span class="n">APortBadge</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_logger</span><span class="p">(</span><span class="n">pv</span><span class="o">=</span><span class="n">pv</span><span class="p">,</span> <span class="n">rbv</span><span class="o">=</span><span class="n">rbv</span><span class="p">)</span>
+        <span class="n">writeable</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">pv</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">meta</span><span class="p">,</span>
+            <span class="n">datatype</span><span class="p">,</span>
+            <span class="n">writeable</span><span class="p">,</span>
+            <span class="n">min_delta</span><span class="p">,</span>
+            <span class="n">timeout</span><span class="p">,</span>
+            <span class="n">sink_port</span><span class="p">,</span>
+            <span class="n">widget</span><span class="p">,</span>
+            <span class="n">group</span><span class="p">,</span>
+            <span class="n">config</span><span class="p">,</span>
+            <span class="n">on_connect</span><span class="p">,</span>
+            <span class="n">throw</span><span class="p">,</span>
+            <span class="n">callback</span><span class="p">,</span>
+            <span class="n">port_badge</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rbv</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">pv</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must pass pv or rbv&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rbv</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">rbv_suffix</span><span class="p">:</span>
+                <span class="n">rbv</span> <span class="o">=</span> <span class="n">pv</span> <span class="o">+</span> <span class="n">rbv_suffix</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rbv</span> <span class="o">=</span> <span class="n">pv</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pv</span> <span class="o">=</span> <span class="n">pv</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rbv</span> <span class="o">=</span> <span class="n">rbv</span>
+        <span class="c1"># Camonitor subscription</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">monitor</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">reconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># release old monitor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span>
+        <span class="c1"># make the connection in cothread&#39;s thread, use caget for initial value</span>
+        <span class="n">pvs</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">rbv</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pv</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">pv</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rbv</span><span class="p">:</span>
+            <span class="n">pvs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pv</span><span class="p">)</span>
+        <span class="n">ca_values</span> <span class="o">=</span> <span class="n">assert_connected</span><span class="p">(</span>
+            <span class="n">catools</span><span class="o">.</span><span class="n">caget</span><span class="p">(</span>
+                <span class="n">pvs</span><span class="p">,</span>
+                <span class="nb">format</span><span class="o">=</span><span class="n">catools</span><span class="o">.</span><span class="n">FORMAT_CTRL</span><span class="p">,</span>
+                <span class="n">datatype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">datatype</span><span class="p">,</span>
+                <span class="n">throw</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">throw</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">throw</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_connect</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">on_connect</span><span class="p">(</span><span class="n">ca_values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_value</span><span class="p">(</span><span class="n">ca_values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="c1"># now setup monitor on rbv</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">monitor</span> <span class="o">=</span> <span class="n">catools</span><span class="o">.</span><span class="n">camonitor</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rbv</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_monitor_callback</span><span class="p">,</span>
+            <span class="nb">format</span><span class="o">=</span><span class="n">catools</span><span class="o">.</span><span class="n">FORMAT_TIME</span><span class="p">,</span>
+            <span class="n">datatype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">datatype</span><span class="p">,</span>
+            <span class="n">notify_disconnect</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">caput</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">timeout</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">timeout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;caput </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pv</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="n">catools</span><span class="o">.</span><span class="n">caput</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pv</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">datatype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">datatype</span>
+        <span class="p">)</span>
+        <span class="c1"># now do a caget</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">catools</span><span class="o">.</span><span class="n">caget</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rbv</span><span class="p">,</span>
+            <span class="nb">format</span><span class="o">=</span><span class="n">catools</span><span class="o">.</span><span class="n">FORMAT_TIME</span><span class="p">,</span>
+            <span class="n">datatype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">datatype</span><span class="p">,</span>
+            <span class="n">throw</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">throw</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">CATable</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+    <span class="n">ok</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">severity</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">raw_stamp</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">WaveformTableAttribute</span><span class="p">(</span><span class="n">CABase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">meta</span><span class="p">:</span> <span class="n">VMeta</span><span class="p">,</span>
+        <span class="n">datatype</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">pv_list</span><span class="p">:</span> <span class="n">APvList</span> <span class="o">=</span> <span class="p">(),</span>
+        <span class="n">name_list</span><span class="p">:</span> <span class="n">ANameList</span> <span class="o">=</span> <span class="p">(),</span>
+        <span class="n">min_delta</span><span class="p">:</span> <span class="n">AMinDelta</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+        <span class="n">timeout</span><span class="p">:</span> <span class="n">ATimeout</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+        <span class="n">widget</span><span class="p">:</span> <span class="n">AWidget</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">group</span><span class="p">:</span> <span class="n">AGroup</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">AConfig</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">limits_from_pv</span><span class="p">:</span> <span class="n">AGetLimits</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">on_connect</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">throw</span><span class="p">:</span> <span class="n">AThrow</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">port_badge</span><span class="p">:</span> <span class="n">APortBadge</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">pv</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pv_list</span><span class="p">):</span>
+            <span class="n">logs</span><span class="p">[</span><span class="n">name_list</span><span class="p">[</span><span class="n">ind</span><span class="p">]]</span> <span class="o">=</span> <span class="n">pv</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_logger</span><span class="p">(</span><span class="o">**</span><span class="n">logs</span><span class="p">)</span>
+        <span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">meta</span><span class="p">,</span>
+            <span class="n">datatype</span><span class="p">,</span>
+            <span class="n">writeable</span><span class="p">,</span>
+            <span class="n">min_delta</span><span class="p">,</span>
+            <span class="n">timeout</span><span class="p">,</span>
+            <span class="kc">None</span><span class="p">,</span>
+            <span class="n">widget</span><span class="p">,</span>
+            <span class="n">group</span><span class="p">,</span>
+            <span class="n">config</span><span class="p">,</span>
+            <span class="n">on_connect</span><span class="p">,</span>
+            <span class="n">throw</span><span class="p">,</span>
+            <span class="n">callback</span><span class="p">,</span>
+            <span class="n">port_badge</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pv_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must pass at least one PV&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pv_list</span> <span class="o">=</span> <span class="n">pv_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name_list</span> <span class="o">=</span> <span class="n">name_list</span>
+        <span class="c1"># Camonitor subscriptions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">monitor</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_local_value</span> <span class="o">=</span> <span class="n">CATable</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">name_list</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_local_value</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_after</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">limits_from_pv</span> <span class="o">=</span> <span class="n">limits_from_pv</span>
+
+    <span class="k">def</span> <span class="nf">reconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># release old monitor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span>
+        <span class="c1"># make the connection in cothread&#39;s thread, use caget for initial</span>
+        <span class="n">ca_values</span> <span class="o">=</span> <span class="n">assert_connected</span><span class="p">(</span>
+            <span class="n">catools</span><span class="o">.</span><span class="n">caget</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pv_list</span><span class="p">,</span>
+                <span class="nb">format</span><span class="o">=</span><span class="n">catools</span><span class="o">.</span><span class="n">FORMAT_CTRL</span><span class="p">,</span>
+                <span class="n">datatype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">datatype</span><span class="p">,</span>
+                <span class="n">throw</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">throw</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">throw</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ca_values</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_connect</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">on_connect</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_local_value</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name_list</span><span class="p">[</span><span class="n">ind</span><span class="p">]]</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_local_value</span><span class="o">.</span><span class="n">severity</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_local_value</span><span class="o">.</span><span class="n">severity</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">severity</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_local_value</span><span class="o">.</span><span class="n">ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_local_value</span><span class="o">.</span><span class="n">ok</span> <span class="ow">or</span> <span class="n">value</span><span class="o">.</span><span class="n">ok</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_local_value</span><span class="p">)</span>
+        <span class="c1"># now setup monitors for all the things</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">monitor</span> <span class="o">=</span> <span class="n">catools</span><span class="o">.</span><span class="n">camonitor</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pv_list</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_monitor_callback</span><span class="p">,</span>
+            <span class="nb">format</span><span class="o">=</span><span class="n">catools</span><span class="o">.</span><span class="n">FORMAT_TIME</span><span class="p">,</span>
+            <span class="n">datatype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">datatype</span><span class="p">,</span>
+            <span class="n">notify_disconnect</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">assert_connected</span><span class="p">(</span><span class="n">ca_values</span><span class="p">,</span> <span class="n">throw</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="c1"># check connection is ok</span>
+    <span class="k">if</span> <span class="n">throw</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">ca_values</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">v</span><span class="o">.</span><span class="n">ok</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;CA connect failed with </span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">state_strings</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">state</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="n">ca_values</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

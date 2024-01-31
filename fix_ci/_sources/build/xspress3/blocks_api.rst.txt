@@ -1,0 +1,6 @@
+
+malcolm.modules.xspress3.blocks
+===============================
+
+.. automodule:: malcolm.modules.xspress3.blocks
+    :members:

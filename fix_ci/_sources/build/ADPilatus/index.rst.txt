@@ -1,0 +1,11 @@
+
+ADPilatus
+=========
+
+.. module:: malcolm.modules.ADPilatus
+
+.. toctree::
+    :maxdepth: 1
+    :caption: malcolm.modules.ADPilatus
+
+    blocks <blocks_api.rst>

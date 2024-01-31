@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.modules.ADOdin.parts.odinwriterpart &mdash; malcolm 6.2.1+17.g7ae84dd1 documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../../../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                6.2.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+      <li>malcolm.modules.ADOdin.parts.odinwriterpart</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for malcolm.modules.ADOdin.parts.odinwriterpart</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">h5py</span>
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">add_call_types</span>
+<span class="kn">from</span> <span class="nn">scanpointgenerator</span> <span class="kn">import</span> <span class="n">CompoundGenerator</span>
+<span class="kn">from</span> <span class="nn">vdsgen</span> <span class="kn">import</span> <span class="n">InterleaveVDSGenerator</span><span class="p">,</span> <span class="n">ReshapeVDSGenerator</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="n">APartName</span><span class="p">,</span> <span class="n">BadValueError</span><span class="p">,</span> <span class="n">Future</span><span class="p">,</span> <span class="n">Info</span><span class="p">,</span> <span class="n">PartRegistrar</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules</span> <span class="kn">import</span> <span class="n">builtin</span><span class="p">,</span> <span class="n">scanning</span>
+
+<span class="n">PartInfo</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Info</span><span class="p">]]</span>
+
+<span class="c1"># If the HDF writer doesn&#39;t get new frames in this time (seconds), consider it</span>
+<span class="c1"># stalled and raise</span>
+<span class="n">FRAME_TIMEOUT</span> <span class="o">=</span> <span class="mi">60</span>
+
+<span class="c1"># Pull re-used annotypes into our namespace in case we are subclassed</span>
+<span class="n">APartName</span> <span class="o">=</span> <span class="n">APartName</span>
+<span class="n">AMri</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">AMri</span>
+<span class="n">AInitialVisibility</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">AInitialVisibility</span>
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;name of uid dataset&quot;</span><span class="p">):</span>
+    <span class="n">AUidName</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;name of sum dataset&quot;</span><span class="p">):</span>
+    <span class="n">ASumName</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;name of secondary dataset (e.g. sum)&quot;</span><span class="p">):</span>
+    <span class="n">ASecondaryDataset</span> <span class="o">=</span> <span class="nb">str</span>
+
+
+<span class="k">def</span> <span class="nf">greater_than_zero</span><span class="p">(</span><span class="n">v</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">v</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+
+<span class="k">def</span> <span class="nf">create_dataset_infos</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">generator</span><span class="p">:</span> <span class="n">CompoundGenerator</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">secondary_set</span><span class="p">:</span> <span class="nb">str</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Info</span><span class="p">]:</span>
+    <span class="c1"># Update the dataset table</span>
+    <span class="n">generator_rank</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">generator</span><span class="o">.</span><span class="n">dimensions</span><span class="p">)</span>
+
+    <span class="c1"># Add the primary datasource</span>
+    <span class="k">yield</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">DatasetProducedInfo</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.data&quot;</span><span class="p">,</span>
+        <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">DatasetType</span><span class="o">.</span><span class="n">PRIMARY</span><span class="p">,</span>
+        <span class="n">rank</span><span class="o">=</span><span class="n">generator_rank</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">path</span><span class="o">=</span><span class="s2">&quot;/entry/detector/data&quot;</span><span class="p">,</span>
+        <span class="n">uniqueid</span><span class="o">=</span><span class="s2">&quot;/entry/detector_uid/uid&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Add other datasources</span>
+    <span class="k">yield</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">DatasetProducedInfo</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">secondary_set</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">DatasetType</span><span class="o">.</span><span class="n">SECONDARY</span><span class="p">,</span>
+        <span class="n">rank</span><span class="o">=</span><span class="n">generator_rank</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">path</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;/entry/detector_</span><span class="si">{</span><span class="n">secondary_set</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">secondary_set</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">uniqueid</span><span class="o">=</span><span class="s2">&quot;/entry/detector_uid/uid&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Add any setpoint dimensions</span>
+    <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">generator</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">DatasetProducedInfo</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dim</span><span class="si">}</span><span class="s2">.value_set&quot;</span><span class="p">,</span>
+            <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
+            <span class="nb">type</span><span class="o">=</span><span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">DatasetType</span><span class="o">.</span><span class="n">POSITION_SET</span><span class="p">,</span>
+            <span class="n">rank</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">path</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;/entry/detector/</span><span class="si">{</span><span class="n">dim</span><span class="si">}</span><span class="s2">_set&quot;</span><span class="p">,</span>
+            <span class="n">uniqueid</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">files_shape</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="n">block_size</span><span class="p">,</span> <span class="n">file_count</span><span class="p">):</span>
+    <span class="c1"># all files get at least per_file blocks</span>
+    <span class="n">per_file</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">frames</span><span class="p">)</span> <span class="o">/</span> <span class="nb">int</span><span class="p">(</span><span class="n">file_count</span> <span class="o">*</span> <span class="n">block_size</span><span class="p">)</span>
+    <span class="c1"># this is the remainder once per_file blocks have been distributed</span>
+    <span class="n">remainder</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">frames</span><span class="p">)</span> <span class="o">%</span> <span class="nb">int</span><span class="p">(</span><span class="n">file_count</span> <span class="o">*</span> <span class="n">block_size</span><span class="p">)</span>
+
+    <span class="c1"># distribute the remainder</span>
+    <span class="n">remainders</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">block_size</span> <span class="k">if</span> <span class="n">remains</span> <span class="o">&gt;</span> <span class="n">block_size</span> <span class="k">else</span> <span class="n">remains</span>
+        <span class="k">for</span> <span class="n">remains</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">remainder</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">block_size</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="c1"># pad the remainders list with zeros</span>
+    <span class="n">remainders</span> <span class="o">+=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">file_count</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">remainders</span><span class="p">))</span>
+
+    <span class="n">shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">per_file</span> <span class="o">*</span> <span class="n">block_size</span> <span class="o">+</span> <span class="n">remainders</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">file_count</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">shape</span>
+
+
+<span class="k">def</span> <span class="nf">one_vds</span><span class="p">(</span>
+    <span class="n">vds_folder</span><span class="p">,</span>
+    <span class="n">vds_name</span><span class="p">,</span>
+    <span class="n">files</span><span class="p">,</span>
+    <span class="n">width</span><span class="p">,</span>
+    <span class="n">height</span><span class="p">,</span>
+    <span class="n">shape</span><span class="p">,</span>
+    <span class="n">generator</span><span class="p">,</span>
+    <span class="n">alternates</span><span class="p">,</span>
+    <span class="n">block_size</span><span class="p">,</span>
+    <span class="n">source_node</span><span class="p">,</span>
+    <span class="n">target_node</span><span class="p">,</span>
+    <span class="n">d_type</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="c1"># this vds reshapes from 1 file per data writer to a single 1D data set</span>
+    <span class="n">gen</span> <span class="o">=</span> <span class="n">InterleaveVDSGenerator</span><span class="p">(</span>
+        <span class="n">vds_folder</span><span class="p">,</span>
+        <span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">,</span>
+        <span class="n">source</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;height&quot;</span><span class="p">:</span> <span class="n">width</span><span class="p">,</span> <span class="s2">&quot;width&quot;</span><span class="p">:</span> <span class="n">height</span><span class="p">,</span> <span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">d_type</span><span class="p">,</span> <span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="n">shape</span><span class="p">},</span>
+        <span class="n">output</span><span class="o">=</span><span class="n">vds_name</span><span class="p">,</span>
+        <span class="n">source_node</span><span class="o">=</span><span class="n">source_node</span><span class="p">,</span>
+        <span class="n">target_node</span><span class="o">=</span><span class="s2">&quot;process/&quot;</span> <span class="o">+</span> <span class="n">target_node</span> <span class="o">+</span> <span class="s2">&quot;_interleave&quot;</span><span class="p">,</span>
+        <span class="n">block_size</span><span class="o">=</span><span class="n">block_size</span><span class="p">,</span>
+        <span class="n">log_level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">gen</span><span class="o">.</span><span class="n">generate_vds</span><span class="p">()</span>
+
+    <span class="c1"># this VDS shapes the data to match the dimensions of the scan</span>
+    <span class="n">gen</span> <span class="o">=</span> <span class="n">ReshapeVDSGenerator</span><span class="p">(</span>
+        <span class="n">path</span><span class="o">=</span><span class="n">vds_folder</span><span class="p">,</span>
+        <span class="n">files</span><span class="o">=</span><span class="p">[</span><span class="n">vds_name</span><span class="p">],</span>
+        <span class="n">source_node</span><span class="o">=</span><span class="s2">&quot;process/&quot;</span> <span class="o">+</span> <span class="n">target_node</span> <span class="o">+</span> <span class="s2">&quot;_interleave&quot;</span><span class="p">,</span>
+        <span class="n">target_node</span><span class="o">=</span><span class="n">target_node</span><span class="p">,</span>
+        <span class="n">output</span><span class="o">=</span><span class="n">vds_name</span><span class="p">,</span>
+        <span class="n">shape</span><span class="o">=</span><span class="n">generator</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+        <span class="n">alternate</span><span class="o">=</span><span class="n">alternates</span><span class="p">,</span>
+        <span class="n">log_level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">gen</span><span class="o">.</span><span class="n">generate_vds</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">create_vds</span><span class="p">(</span><span class="n">generator</span><span class="p">,</span> <span class="n">raw_name</span><span class="p">,</span> <span class="n">vds_path</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="n">uid_name</span><span class="p">,</span> <span class="n">sum_name</span><span class="p">):</span>
+    <span class="n">vds_folder</span><span class="p">,</span> <span class="n">vds_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">vds_path</span><span class="p">)</span>
+
+    <span class="n">image_width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">imageWidth</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+    <span class="n">image_height</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">imageHeight</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+    <span class="n">block_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">blockSize</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+    <span class="n">hdf_count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">numProcesses</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+    <span class="n">data_type</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">dataType</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="c1"># hdf_shape tuple represents the number of images in each file</span>
+    <span class="n">hdf_shape</span> <span class="o">=</span> <span class="n">files_shape</span><span class="p">(</span><span class="n">generator</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">block_size</span><span class="p">,</span> <span class="n">hdf_count</span><span class="p">)</span>
+
+    <span class="c1"># The first dimension alternating has no meaning. If any subsequent ones</span>
+    <span class="c1"># alternate then it will radically slow down the VDS creation and reading.</span>
+    <span class="c1"># We rely on a scanning.parts.UnrollingPart to</span>
+    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">dim</span><span class="o">.</span><span class="n">alternate</span> <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">generator</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+        <span class="k">raise</span> <span class="n">BadValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Snake scans are not supported as the VDS is not performant. You &quot;</span>
+            <span class="s2">&quot;can add a scanning.parts.UnrollingPart to the top level scan &quot;</span>
+            <span class="s2">&quot;block to unroll the scan into one long line&quot;</span>
+        <span class="p">)</span>
+    <span class="n">alternates</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">files</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">vds_folder</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">raw_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="si">:</span><span class="s2">06d</span><span class="si">}</span><span class="s2">.h5&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">hdf_count</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">hdf_shape</span><span class="p">,</span> <span class="n">image_height</span><span class="p">,</span> <span class="n">image_width</span><span class="p">)</span>
+
+    <span class="c1"># prepare a vds for the image data</span>
+    <span class="n">one_vds</span><span class="p">(</span>
+        <span class="n">vds_folder</span><span class="p">,</span>
+        <span class="n">vds_name</span><span class="p">,</span>
+        <span class="n">files</span><span class="p">,</span>
+        <span class="n">image_width</span><span class="p">,</span>
+        <span class="n">image_height</span><span class="p">,</span>
+        <span class="n">shape</span><span class="p">,</span>
+        <span class="n">generator</span><span class="p">,</span>
+        <span class="n">alternates</span><span class="p">,</span>
+        <span class="n">block_size</span><span class="p">,</span>
+        <span class="s2">&quot;data&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;data&quot;</span><span class="p">,</span>
+        <span class="n">data_type</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span>
+    <span class="p">)</span>
+
+    <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">hdf_shape</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># prepare a vds for the unique IDs</span>
+    <span class="n">one_vds</span><span class="p">(</span>
+        <span class="n">vds_folder</span><span class="p">,</span>
+        <span class="n">vds_name</span><span class="p">,</span>
+        <span class="n">files</span><span class="p">,</span>
+        <span class="mi">1</span><span class="p">,</span>
+        <span class="mi">1</span><span class="p">,</span>
+        <span class="n">shape</span><span class="p">,</span>
+        <span class="n">generator</span><span class="p">,</span>
+        <span class="n">alternates</span><span class="p">,</span>
+        <span class="n">block_size</span><span class="p">,</span>
+        <span class="n">uid_name</span><span class="p">,</span>
+        <span class="s2">&quot;uid&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;uint64&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="c1"># prepare a vds for the sums</span>
+    <span class="n">one_vds</span><span class="p">(</span>
+        <span class="n">vds_folder</span><span class="p">,</span>
+        <span class="n">vds_name</span><span class="p">,</span>
+        <span class="n">files</span><span class="p">,</span>
+        <span class="mi">1</span><span class="p">,</span>
+        <span class="mi">1</span><span class="p">,</span>
+        <span class="n">shape</span><span class="p">,</span>
+        <span class="n">generator</span><span class="p">,</span>
+        <span class="n">alternates</span><span class="p">,</span>
+        <span class="n">block_size</span><span class="p">,</span>
+        <span class="n">sum_name</span><span class="p">,</span>
+        <span class="s2">&quot;sum&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;uint64&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="n">set_bases</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;/entry/detector/&quot;</span><span class="p">,</span> <span class="s2">&quot;/entry/detector_sum/&quot;</span><span class="p">,</span> <span class="s2">&quot;/entry/detector_uid/&quot;</span><span class="p">]</span>
+<span class="n">set_data</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;/data&quot;</span><span class="p">,</span> <span class="s2">&quot;/sum&quot;</span><span class="p">,</span> <span class="s2">&quot;/uid&quot;</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">add_nexus_nodes</span><span class="p">(</span><span class="n">generator</span><span class="p">,</span> <span class="n">vds_file_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Add in the additional information to make this into a standard nexus</span>
+<span class="sd">    format file:-</span>
+<span class="sd">    (a) create the standard structure under the &#39;entry&#39; group with a</span>
+<span class="sd">    subgroup for each dataset. &#39;set_bases&#39; lists the data sets we make here.</span>
+<span class="sd">    (b) save a dataset for each axis in each of the dimensions of the scan</span>
+<span class="sd">    representing the demand position at every point in the scan.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># create the axes dimensions attribute, a comma separated list giving size</span>
+    <span class="c1"># of the axis dimensions padded with . for the detector dimensions and</span>
+    <span class="c1"># multidimensional dimensions</span>
+    <span class="n">pad_dims</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">generator</span><span class="o">.</span><span class="n">dimensions</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">pad_dims</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">d</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">_set&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pad_dims</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+
+    <span class="n">pad_dims</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;.&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span>  <span class="c1"># assume a 2 dimensional detector</span>
+
+    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">vds_file_path</span><span class="p">,</span> <span class="s2">&quot;r+&quot;</span><span class="p">,</span> <span class="n">libver</span><span class="o">=</span><span class="s2">&quot;latest&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">vds</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">data</span><span class="p">,</span> <span class="n">node</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">set_data</span><span class="p">,</span> <span class="n">set_bases</span><span class="p">):</span>
+            <span class="c1"># create a group for this entry</span>
+            <span class="n">vds</span><span class="o">.</span><span class="n">require_group</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+            <span class="c1"># points to the axis demand data sets</span>
+            <span class="n">vds</span><span class="p">[</span><span class="n">node</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;axes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pad_dims</span>
+            <span class="n">vds</span><span class="p">[</span><span class="n">node</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;NX_class&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;NXdata&quot;</span><span class="p">]</span>
+
+            <span class="c1"># points to the detector dataset for this entry</span>
+            <span class="n">vds</span><span class="p">[</span><span class="n">node</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;signal&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="c1"># a hard link from this entry &#39;signal&#39; to the actual data</span>
+            <span class="n">vds</span><span class="p">[</span><span class="n">node</span> <span class="o">+</span> <span class="n">data</span><span class="p">]</span> <span class="o">=</span> <span class="n">vds</span><span class="p">[</span><span class="n">data</span><span class="p">]</span>
+
+            <span class="n">axis_sets</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="c1"># iterate the axes in each dimension of the generator to create the</span>
+            <span class="c1"># axis information nodes</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">generator</span><span class="o">.</span><span class="n">dimensions</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
+                    <span class="c1"># add signal data dimension for axis</span>
+                    <span class="n">axis_indices</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">axis</span><span class="si">}</span><span class="s2">_set_indices&quot;</span>
+                    <span class="n">vds</span><span class="p">[</span><span class="n">node</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">axis_indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+
+                    <span class="c1"># demand positions for axis</span>
+                    <span class="n">axis_set</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">axis</span><span class="si">}</span><span class="s2">_set&quot;</span>
+                    <span class="k">if</span> <span class="n">axis_sets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">axis_set</span><span class="p">):</span>
+                        <span class="c1"># link to the first entry&#39;s demand list</span>
+                        <span class="n">vds</span><span class="p">[</span><span class="n">node</span> <span class="o">+</span> <span class="n">axis_set</span><span class="p">]</span> <span class="o">=</span> <span class="n">axis_sets</span><span class="p">[</span><span class="n">axis_set</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># create the demand list for the first entry only</span>
+                        <span class="n">axis_demands</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_positions</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span>
+                        <span class="n">vds</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">node</span> <span class="o">+</span> <span class="n">axis_set</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">axis_demands</span><span class="p">)</span>
+                        <span class="n">vds</span><span class="p">[</span><span class="n">node</span> <span class="o">+</span> <span class="n">axis_set</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">units</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span>
+                    <span class="n">axis_sets</span><span class="p">[</span><span class="n">axis_set</span><span class="p">]</span> <span class="o">=</span> <span class="n">vds</span><span class="p">[</span><span class="n">node</span> <span class="o">+</span> <span class="n">axis_set</span><span class="p">]</span>
+
+        <span class="n">vds</span><span class="p">[</span><span class="s2">&quot;entry&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;NX_class&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;NXentry&quot;</span><span class="p">]</span>
+
+
+<span class="c1"># We will set these attributes on the child block, so don&#39;t save them</span>
+<div class="viewcode-block" id="OdinWriterPart"><a class="viewcode-back" href="../../../../../build/ADOdin/parts_api.html#malcolm.modules.ADOdin.parts.OdinWriterPart">[docs]</a><span class="nd">@builtin</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">no_save</span><span class="p">(</span><span class="s2">&quot;fileName&quot;</span><span class="p">,</span> <span class="s2">&quot;filePath&quot;</span><span class="p">,</span> <span class="s2">&quot;numCapture&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">OdinWriterPart</span><span class="p">(</span><span class="n">builtin</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">ChildPart</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Part for controlling an `hdf_writer_block` in a Device&quot;&quot;&quot;</span>
+
+    <span class="c1"># Future for the start action</span>
+    <span class="n">start_future</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Future</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">array_future</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Future</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">done_when_reaches</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">unique_id_offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># The HDF5 layout file we write to say where the datasets go</span>
+    <span class="n">layout_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">exposure_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">APartName</span><span class="p">,</span>
+        <span class="n">mri</span><span class="p">:</span> <span class="n">AMri</span><span class="p">,</span>
+        <span class="n">initial_visibility</span><span class="p">:</span> <span class="n">AInitialVisibility</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">uid_name</span><span class="p">:</span> <span class="n">AUidName</span> <span class="o">=</span> <span class="s2">&quot;uid&quot;</span><span class="p">,</span>
+        <span class="n">sum_name</span><span class="p">:</span> <span class="n">ASumName</span> <span class="o">=</span> <span class="s2">&quot;sum&quot;</span><span class="p">,</span>
+        <span class="n">secondary_set</span><span class="p">:</span> <span class="n">ASecondaryDataset</span> <span class="o">=</span> <span class="s2">&quot;sum&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uid_name</span> <span class="o">=</span> <span class="n">uid_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sum_name</span> <span class="o">=</span> <span class="n">sum_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">secondary_set</span> <span class="o">=</span> <span class="n">secondary_set</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">mri</span><span class="p">,</span> <span class="n">initial_visibility</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OdinWriterPart.on_reset"><a class="viewcode-back" href="../../../../../build/ADOdin/parts_api.html#malcolm.modules.ADOdin.parts.OdinWriterPart.on_reset">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_reset</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_abort</span><span class="p">(</span><span class="n">context</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">registrar</span><span class="p">:</span> <span class="n">PartRegistrar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">registrar</span><span class="p">)</span>
+        <span class="c1"># Tell the controller to expose some extra configure parameters</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ConfigureHook</span><span class="o">.</span><span class="n">create_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_configure</span><span class="p">))</span>
+        <span class="c1"># Hooks</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ConfigureHook</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_configure</span><span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">SeekHook</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_seek</span><span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">RunHook</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_run</span><span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">PostRunArmedHook</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_post_run_armed</span><span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">PostRunReadyHook</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_post_run_ready</span><span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AbortHook</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_abort</span><span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">PauseHook</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_pause</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OdinWriterPart.on_pause"><a class="viewcode-back" href="../../../../../build/ADOdin/parts_api.html#malcolm.modules.ADOdin.parts.OdinWriterPart.on_pause">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_pause</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Pause not implemented&quot;</span><span class="p">)</span></div>
+
+    <span class="c1"># Allow CamelCase as these parameters will be serialized</span>
+    <span class="c1"># noinspection PyPep8Naming</span>
+<div class="viewcode-block" id="OdinWriterPart.on_configure"><a class="viewcode-back" href="../../../../../build/ADOdin/parts_api.html#malcolm.modules.ADOdin.parts.OdinWriterPart.on_configure">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_configure</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">,</span>
+        <span class="n">completed_steps</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ACompletedSteps</span><span class="p">,</span>
+        <span class="n">steps_to_do</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AStepsToDo</span><span class="p">,</span>
+        <span class="n">generator</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AGenerator</span><span class="p">,</span>
+        <span class="n">fileDir</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AFileDir</span><span class="p">,</span>
+        <span class="n">formatName</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AFormatName</span> <span class="o">=</span> <span class="s2">&quot;odin&quot;</span><span class="p">,</span>
+        <span class="n">fileTemplate</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AFileTemplate</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.h5&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">UInfos</span><span class="p">:</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">exposure_time</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">duration</span>
+
+        <span class="c1"># On initial configure, expect to get the demanded number of frames</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">done_when_reaches</span> <span class="o">=</span> <span class="n">completed_steps</span> <span class="o">+</span> <span class="n">steps_to_do</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unique_id_offset</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+        <span class="n">file_dir</span> <span class="o">=</span> <span class="n">fileDir</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+
+        <span class="c1"># derive file path from template as AreaDetector would normally do</span>
+        <span class="n">fileName</span> <span class="o">=</span> <span class="n">fileTemplate</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">formatName</span><span class="p">)</span>
+
+        <span class="c1"># this is path to the requested file which will be a VDS</span>
+        <span class="n">vds_full_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fileDir</span><span class="p">,</span> <span class="n">fileName</span><span class="p">)</span>
+
+        <span class="c1"># this is the path to underlying file the odin writer will write to</span>
+        <span class="n">raw_file_name</span> <span class="o">=</span> <span class="n">fileTemplate</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">formatName</span> <span class="o">+</span> <span class="s2">&quot;_raw_data&quot;</span><span class="p">)</span>
+        <span class="n">raw_file_basename</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">raw_file_name</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="s2">&quot;.&quot;</span> <span class="ow">in</span> <span class="n">vds_full_filename</span>
+        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;File extension for </span><span class="si">{</span><span class="n">vds_full_filename</span><span class="si">!r}</span><span class="s2"> should be supplied&quot;</span>
+        <span class="n">futures</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">put_attribute_values_async</span><span class="p">(</span>
+            <span class="nb">dict</span><span class="p">(</span>
+                <span class="n">numCapture</span><span class="o">=</span><span class="n">generator</span><span class="o">.</span><span class="n">size</span><span class="p">,</span>
+                <span class="n">filePath</span><span class="o">=</span><span class="n">file_dir</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">,</span>
+                <span class="n">fileName</span><span class="o">=</span><span class="n">raw_file_basename</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">wait_all_futures</span><span class="p">(</span><span class="n">futures</span><span class="p">)</span>
+
+        <span class="c1"># Start the plugin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_future</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">start_async</span><span class="p">()</span>
+        <span class="c1"># Start a future waiting for the first array</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">array_future</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">when_value_matches_async</span><span class="p">(</span>
+            <span class="s2">&quot;numCaptured&quot;</span><span class="p">,</span> <span class="n">greater_than_zero</span>
+        <span class="p">)</span>
+
+        <span class="n">create_vds</span><span class="p">(</span>
+            <span class="n">generator</span><span class="p">,</span>
+            <span class="n">raw_file_basename</span><span class="p">,</span>
+            <span class="n">vds_full_filename</span><span class="p">,</span>
+            <span class="n">child</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">uid_name</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sum_name</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">add_nexus_nodes</span><span class="p">(</span><span class="n">generator</span><span class="p">,</span> <span class="n">vds_full_filename</span><span class="p">)</span>
+
+        <span class="c1"># Return the dataset information</span>
+        <span class="n">dataset_infos</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="n">create_dataset_infos</span><span class="p">(</span><span class="n">formatName</span><span class="p">,</span> <span class="n">generator</span><span class="p">,</span> <span class="n">fileName</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">secondary_set</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">dataset_infos</span></div>
+
+<div class="viewcode-block" id="OdinWriterPart.on_seek"><a class="viewcode-back" href="../../../../../build/ADOdin/parts_api.html#malcolm.modules.ADOdin.parts.OdinWriterPart.on_seek">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_seek</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">,</span>
+        <span class="n">completed_steps</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ACompletedSteps</span><span class="p">,</span>
+        <span class="n">steps_to_do</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AStepsToDo</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># This is rewinding or setting up for another batch, so the detector</span>
+        <span class="c1"># will skip to a uniqueID that has not been produced yet</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unique_id_offset</span> <span class="o">=</span> <span class="n">completed_steps</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">done_when_reaches</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">done_when_reaches</span> <span class="o">+=</span> <span class="n">steps_to_do</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+        <span class="c1"># Just reset the array counter_block</span>
+        <span class="n">child</span><span class="o">.</span><span class="n">arrayCounter</span><span class="o">.</span><span class="n">put_value</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># Start a future waiting for the first array</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">array_future</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">when_value_matches_async</span><span class="p">(</span>
+            <span class="s2">&quot;numCaptured&quot;</span><span class="p">,</span> <span class="n">greater_than_zero</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="OdinWriterPart.on_run"><a class="viewcode-back" href="../../../../../build/ADOdin/parts_api.html#malcolm.modules.ADOdin.parts.OdinWriterPart.on_run">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">wait_all_futures</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array_future</span><span class="p">)</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">unsubscribe_all</span><span class="p">()</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+        <span class="n">child</span><span class="o">.</span><span class="n">numCaptured</span><span class="o">.</span><span class="n">subscribe_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">update_completed_steps</span><span class="p">)</span>
+        <span class="n">child</span><span class="o">.</span><span class="n">when_value_matches</span><span class="p">(</span>
+            <span class="s2">&quot;numCaptured&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">done_when_reaches</span><span class="p">,</span>
+            <span class="n">event_timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">exposure_time</span> <span class="o">+</span> <span class="n">FRAME_TIMEOUT</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="OdinWriterPart.on_post_run_armed"><a class="viewcode-back" href="../../../../../build/ADOdin/parts_api.html#malcolm.modules.ADOdin.parts.OdinWriterPart.on_post_run_armed">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_post_run_armed</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">,</span>
+        <span class="n">steps_to_do</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AStepsToDo</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">done_when_reaches</span> <span class="o">+=</span> <span class="n">steps_to_do</span></div>
+
+<div class="viewcode-block" id="OdinWriterPart.on_post_run_ready"><a class="viewcode-back" href="../../../../../build/ADOdin/parts_api.html#malcolm.modules.ADOdin.parts.OdinWriterPart.on_post_run_ready">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_post_run_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># If this is the last one, wait until the file is closed</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">wait_all_futures</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_future</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OdinWriterPart.on_abort"><a class="viewcode-back" href="../../../../../build/ADOdin/parts_api.html#malcolm.modules.ADOdin.parts.OdinWriterPart.on_abort">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_abort</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+        <span class="n">child</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">update_completed_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">completed_steps</span> <span class="o">=</span> <span class="n">value</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">unique_id_offset</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">registrar</span><span class="p">,</span> <span class="s2">&quot;No registrar&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">registrar</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">RunProgressInfo</span><span class="p">(</span><span class="n">completed_steps</span><span class="p">))</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>
