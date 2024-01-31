@@ -43,11 +43,11 @@ License
 APACHE License. (see `LICENSE`_)
 
 
-.. |code_ci| image:: https://github.com/dls-controls/pymalcolm/workflows/Code%20CI/badge.svg?branch=master
+.. |code_ci| image:: https://github.com/dls-controls/pymalcolm/actions/workflows/code.yml/badge.svg?branch=master
     :target: https://github.com/dls-controls/pymalcolm/actions?query=workflow%3A%22Code+CI%22
     :alt: Code CI
 
-.. |docs_ci| image:: https://github.com/dls-controls/pymalcolm/workflows/Docs%20CI/badge.svg?branch=master
+.. |docs_ci| image::  https://github.com/dls-controls/pymalcolm/actions/workflows/docs.yml/badge.svg?branch=master
     :target: https://github.com/dls-controls/pymalcolm/actions?query=workflow%3A%22Docs+CI%22
     :alt: Docs CI
 
