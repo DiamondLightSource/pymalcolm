@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.scanning.hooks &mdash; malcolm 6.2.1+4.g408ab2b6 documentation</title>
+  <title>malcolm.modules.scanning.hooks &mdash; malcolm 6.2.1+20.g31b9fc2b documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -163,7 +163,7 @@
 <li><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
 <li><p><strong>part_info</strong> – The Infos returned from other Parts</p></li>
 <li><p><strong>generator</strong> (<em>CompoundGenerator</em>) – Generator instance providing specification for scan</p></li>
-<li><p><strong>axesToMove</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – List of axes in inner dimension of generator that should be moved</p></li>
+<li><p><strong>axesToMove</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – List of axes in inner dimension of generator that should be moved</p></li>
 <li><p><strong>breakpoints</strong> (<em>int32</em>) – List of points at which the run will return in Armed state</p></li>
 </ul>
 </dd>
@@ -223,11 +223,11 @@ report status and run configure. Typically will load a saved design.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>part</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
 <li><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
-<li><p><strong>completed_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Number of steps already completed</p></li>
-<li><p><strong>steps_to_do</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Number of steps we should configure for</p></li>
+<li><p><strong>completed_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Number of steps already completed</p></li>
+<li><p><strong>steps_to_do</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Number of steps we should configure for</p></li>
 <li><p><strong>part_info</strong> – The Infos returned from other Parts</p></li>
 <li><p><strong>generator</strong> (<em>CompoundGenerator</em>) – Generator instance providing specification for scan</p></li>
-<li><p><strong>axesToMove</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – List of axes in inner dimension of generator that should be moved</p></li>
+<li><p><strong>axesToMove</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – List of axes in inner dimension of generator that should be moved</p></li>
 <li><p><strong>breakpoints</strong> (<em>int32</em>) – List of points at which the run will return in Armed state</p></li>
 </ul>
 </dd>
@@ -300,11 +300,11 @@ in the Configure hook</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>part</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
 <li><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
-<li><p><strong>completed_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Number of steps already completed</p></li>
-<li><p><strong>steps_to_do</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Number of steps we should configure for</p></li>
+<li><p><strong>completed_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Number of steps already completed</p></li>
+<li><p><strong>steps_to_do</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Number of steps we should configure for</p></li>
 <li><p><strong>part_info</strong> – The Infos returned from other Parts</p></li>
 <li><p><strong>generator</strong> (<em>CompoundGenerator</em>) – Generator instance providing specification for scan</p></li>
-<li><p><strong>axesToMove</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – List of axes in inner dimension of generator that should be moved</p></li>
+<li><p><strong>axesToMove</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – List of axes in inner dimension of generator that should be moved</p></li>
 </ul>
 </dd>
 </dl>
@@ -348,11 +348,11 @@ number of completed_steps</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>part</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Part" title="malcolm.core.Part"><em>Part</em></a>) – The part that has attached to the Hook</p></li>
 <li><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
-<li><p><strong>completed_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Number of steps already completed</p></li>
-<li><p><strong>steps_to_do</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Number of steps we should configure for</p></li>
+<li><p><strong>completed_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Number of steps already completed</p></li>
+<li><p><strong>steps_to_do</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Number of steps we should configure for</p></li>
 <li><p><strong>part_info</strong> – The Infos returned from other Parts</p></li>
 <li><p><strong>generator</strong> (<em>CompoundGenerator</em>) – Generator instance providing specification for scan</p></li>
-<li><p><strong>axesToMove</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – List of axes in inner dimension of generator that should be moved</p></li>
+<li><p><strong>axesToMove</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – List of axes in inner dimension of generator that should be moved</p></li>
 </ul>
 </dd>
 </dl>

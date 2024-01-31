@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.ADCore.parts.hdfwriterpart &mdash; malcolm 6.2.1+4.g408ab2b6 documentation</title>
+  <title>malcolm.modules.ADCore.parts.hdfwriterpart &mdash; malcolm 6.2.1+20.g31b9fc2b documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -108,6 +108,7 @@
   <h1>Source code for malcolm.modules.ADCore.parts.hdfwriterpart</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">h5py</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
 <span class="kn">from</span> <span class="nn">xml.etree</span> <span class="kn">import</span> <span class="n">cElementTree</span> <span class="k">as</span> <span class="n">ET</span>
 
@@ -149,6 +150,9 @@
 <span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Toggle writing of all ND attributes to HDF file&quot;</span><span class="p">):</span>
     <span class="n">AWriteAllNDAttributes</span> <span class="o">=</span> <span class="nb">bool</span>
 
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Toggle whether demand positions are in XML&quot;</span><span class="p">):</span>
+    <span class="n">ARemoveDemandXml</span> <span class="o">=</span> <span class="nb">bool</span>
+
 <span class="c1"># Pull re-used annotypes into our namespace in case we are subclassed</span>
 <span class="n">APartName</span> <span class="o">=</span> <span class="n">APartName</span>
 <span class="n">AMri</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">AMri</span>
@@ -164,6 +168,8 @@
     <span class="n">part_info</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">APartInfo</span><span class="p">,</span>
     <span class="n">generator</span><span class="p">:</span> <span class="n">CompoundGenerator</span><span class="p">,</span>
     <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">remove_demand_positions_from_xml</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">set_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Info</span><span class="p">]:</span>
     <span class="c1"># Update the dataset table</span>
     <span class="n">uniqueid</span> <span class="o">=</span> <span class="s2">&quot;/entry/NDAttributes/NDArrayUniqueId&quot;</span>
@@ -222,15 +228,20 @@
             <span class="n">path</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;/entry/</span><span class="si">{</span><span class="n">dataset_info</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">dataset_info</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
             <span class="n">uniqueid</span><span class="o">=</span><span class="n">uniqueid</span><span class="p">,</span>
         <span class="p">)</span>
-
     <span class="c1"># Add any setpoint dimensions</span>
     <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">generator</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">remove_demand_positions_from_xml</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">file_name</span> <span class="o">=</span> <span class="n">filename</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;additional.&quot;</span><span class="p">)</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">set_path</span> <span class="o">%</span> <span class="n">dim</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">file_name</span> <span class="o">=</span> <span class="n">filename</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/entry/detector/</span><span class="si">{</span><span class="n">dim</span><span class="si">}</span><span class="s2">_set&quot;</span>
         <span class="k">yield</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">DatasetProducedInfo</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dim</span><span class="si">}</span><span class="s2">.value_set&quot;</span><span class="p">,</span>
-            <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
+            <span class="n">filename</span><span class="o">=</span><span class="n">file_name</span><span class="p">,</span>
             <span class="nb">type</span><span class="o">=</span><span class="n">scanning</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">DatasetType</span><span class="o">.</span><span class="n">POSITION_SET</span><span class="p">,</span>
             <span class="n">rank</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-            <span class="n">path</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;/entry/detector/</span><span class="si">{</span><span class="n">dim</span><span class="si">}</span><span class="s2">_set&quot;</span><span class="p">,</span>
+            <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span>
             <span class="n">uniqueid</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -285,6 +296,7 @@
     <span class="n">rank</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">entry_el</span><span class="p">:</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span><span class="p">,</span>
     <span class="n">generator</span><span class="p">:</span> <span class="n">CompoundGenerator</span><span class="p">,</span>
+    <span class="n">remove_demand_positions_from_xml</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">link</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span><span class="p">:</span>
     <span class="c1"># Make a dataset for the data</span>
@@ -297,57 +309,80 @@
         <span class="n">value</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">pad_dims</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">generator</span><span class="o">.</span><span class="n">dimensions</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">pad_dims</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">d</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">_set&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">pad_dims</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">remove_demand_positions_from_xml</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="n">pad_dims</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">generator</span><span class="o">.</span><span class="n">dimensions</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">pad_dims</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">d</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">_set&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">pad_dims</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
 
-    <span class="n">pad_dims</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;.&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">rank</span>
-    <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
-        <span class="n">data_el</span><span class="p">,</span>
-        <span class="s2">&quot;attribute&quot;</span><span class="p">,</span>
-        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;axes&quot;</span><span class="p">,</span>
-        <span class="n">source</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">,</span>
-        <span class="n">value</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pad_dims</span><span class="p">),</span>
-        <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
-        <span class="n">data_el</span><span class="p">,</span>
-        <span class="s2">&quot;attribute&quot;</span><span class="p">,</span>
-        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;NX_class&quot;</span><span class="p">,</span>
-        <span class="n">source</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">,</span>
-        <span class="n">value</span><span class="o">=</span><span class="s2">&quot;NXdata&quot;</span><span class="p">,</span>
-        <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="c1"># Add in the indices into the dimensions array that our axes refer to</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">generator</span><span class="o">.</span><span class="n">dimensions</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
-            <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
-                <span class="n">data_el</span><span class="p">,</span>
-                <span class="s2">&quot;attribute&quot;</span><span class="p">,</span>
-                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">axis</span><span class="si">}</span><span class="s2">_set_indices&quot;</span><span class="p">,</span>
-                <span class="n">source</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">,</span>
-                <span class="n">value</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span>
-                <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
-            <span class="p">)</span>
-            <span class="k">if</span> <span class="n">link</span><span class="p">:</span>
+        <span class="n">pad_dims</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;.&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">rank</span>
+        <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
+            <span class="n">data_el</span><span class="p">,</span>
+            <span class="s2">&quot;attribute&quot;</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;axes&quot;</span><span class="p">,</span>
+            <span class="n">source</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">,</span>
+            <span class="n">value</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pad_dims</span><span class="p">),</span>
+            <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
+            <span class="n">data_el</span><span class="p">,</span>
+            <span class="s2">&quot;attribute&quot;</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;NX_class&quot;</span><span class="p">,</span>
+            <span class="n">source</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">,</span>
+            <span class="n">value</span><span class="o">=</span><span class="s2">&quot;NXdata&quot;</span><span class="p">,</span>
+            <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># Add in the indices into the dimensions array that our axes refer to</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">generator</span><span class="o">.</span><span class="n">dimensions</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
                 <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
                     <span class="n">data_el</span><span class="p">,</span>
-                    <span class="s2">&quot;hardlink&quot;</span><span class="p">,</span>
-                    <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">axis</span><span class="si">}</span><span class="s2">_set&quot;</span><span class="p">,</span>
-                    <span class="n">target</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;/entry/detector/</span><span class="si">{</span><span class="n">axis</span><span class="si">}</span><span class="s2">_set&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attribute&quot;</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">axis</span><span class="si">}</span><span class="s2">_set_indices&quot;</span><span class="p">,</span>
+                    <span class="n">source</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">,</span>
+                    <span class="n">value</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span>
+                    <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
                 <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">make_set_points</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">data_el</span><span class="p">,</span> <span class="n">generator</span><span class="o">.</span><span class="n">units</span><span class="p">[</span><span class="n">axis</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">link</span><span class="p">:</span>
+                    <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
+                        <span class="n">data_el</span><span class="p">,</span>
+                        <span class="s2">&quot;hardlink&quot;</span><span class="p">,</span>
+                        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">axis</span><span class="si">}</span><span class="s2">_set&quot;</span><span class="p">,</span>
+                        <span class="n">target</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;/entry/detector/</span><span class="si">{</span><span class="n">axis</span><span class="si">}</span><span class="s2">_set&quot;</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">make_set_points</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">data_el</span><span class="p">,</span> <span class="n">generator</span><span class="o">.</span><span class="n">units</span><span class="p">[</span><span class="n">axis</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">data_el</span>
+
+
+<span class="k">def</span> <span class="nf">_write_additional_hdf</span><span class="p">(</span>
+    <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">generator</span><span class="p">:</span> <span class="n">CompoundGenerator</span><span class="p">,</span>
+    <span class="n">h5_file_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">set_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">filepath</span> <span class="o">=</span> <span class="n">h5_file_dir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;additional.&quot;</span><span class="p">)</span>
+    <span class="c1"># Open the file with the latest libver so SWMR works</span>
+    <span class="n">hdf</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">libver</span><span class="o">=</span><span class="s2">&quot;latest&quot;</span><span class="p">)</span>
+    <span class="c1"># Make the setpoint dataset</span>
+    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">generator</span><span class="o">.</span><span class="n">dimensions</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
+            <span class="c1"># Make a data set for the axes, holding an array holding</span>
+            <span class="c1"># floating point data, for each point specified in the generator</span>
+            <span class="n">ds</span> <span class="o">=</span> <span class="n">hdf</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">set_path</span> <span class="o">%</span> <span class="n">axis</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">get_positions</span><span class="p">(</span><span class="n">axis</span><span class="p">))</span>
+            <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">units</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span>
+    <span class="c1"># Datasets made, we can switch to SWMR mode now</span>
+    <span class="n">hdf</span><span class="o">.</span><span class="n">swmr_mode</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="n">hdf</span>
 
 
 <span class="k">def</span> <span class="nf">make_layout_xml</span><span class="p">(</span>
     <span class="n">generator</span><span class="p">:</span> <span class="n">CompoundGenerator</span><span class="p">,</span>
     <span class="n">part_info</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">APartInfo</span><span class="p">,</span>
     <span class="n">write_all_nd_attributes</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">remove_demand_positions_from_xml</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="c1"># Make a root element with an NXEntry</span>
     <span class="n">root_el</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="s2">&quot;hdf5_layout&quot;</span><span class="p">)</span>
@@ -373,7 +408,9 @@
 
     <span class="c1"># Make an NXData element with the detector data in it in</span>
     <span class="c1"># /entry/detector/detector</span>
-    <span class="n">data_el</span> <span class="o">=</span> <span class="n">make_nxdata</span><span class="p">(</span><span class="s2">&quot;detector&quot;</span><span class="p">,</span> <span class="n">primary_rank</span><span class="p">,</span> <span class="n">entry_el</span><span class="p">,</span> <span class="n">generator</span><span class="p">)</span>
+    <span class="n">data_el</span> <span class="o">=</span> <span class="n">make_nxdata</span><span class="p">(</span>
+        <span class="s2">&quot;detector&quot;</span><span class="p">,</span> <span class="n">primary_rank</span><span class="p">,</span> <span class="n">entry_el</span><span class="p">,</span> <span class="n">generator</span><span class="p">,</span> <span class="n">remove_demand_positions_from_xml</span>
+    <span class="p">)</span>
     <span class="n">det_el</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
         <span class="n">data_el</span><span class="p">,</span> <span class="s2">&quot;dataset&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;detector&quot;</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s2">&quot;detector&quot;</span><span class="p">,</span> <span class="n">det_default</span><span class="o">=</span><span class="s2">&quot;true&quot;</span>
     <span class="p">)</span>
@@ -393,7 +430,12 @@
     <span class="k">for</span> <span class="n">calc_dataset_info</span> <span class="ow">in</span> <span class="n">calc_dataset_infos</span><span class="p">:</span>
         <span class="c1"># if we are a secondary source, use the same rank as the det</span>
         <span class="n">attr_el</span> <span class="o">=</span> <span class="n">make_nxdata</span><span class="p">(</span>
-            <span class="n">calc_dataset_info</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">primary_rank</span><span class="p">,</span> <span class="n">entry_el</span><span class="p">,</span> <span class="n">generator</span><span class="p">,</span> <span class="n">link</span><span class="o">=</span><span class="kc">True</span>
+            <span class="n">calc_dataset_info</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">primary_rank</span><span class="p">,</span>
+            <span class="n">entry_el</span><span class="p">,</span>
+            <span class="n">generator</span><span class="p">,</span>
+            <span class="n">remove_demand_positions_from_xml</span><span class="p">,</span>
+            <span class="n">link</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
             <span class="n">attr_el</span><span class="p">,</span>
@@ -410,7 +452,12 @@
     <span class="k">for</span> <span class="n">dataset_info</span> <span class="ow">in</span> <span class="n">dataset_infos</span><span class="p">:</span>
         <span class="c1"># if we are a secondary source, use the same rank as the det</span>
         <span class="n">attr_el</span> <span class="o">=</span> <span class="n">make_nxdata</span><span class="p">(</span>
-            <span class="n">dataset_info</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">primary_rank</span><span class="p">,</span> <span class="n">entry_el</span><span class="p">,</span> <span class="n">generator</span><span class="p">,</span> <span class="n">link</span><span class="o">=</span><span class="kc">True</span>
+            <span class="n">dataset_info</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">primary_rank</span><span class="p">,</span>
+            <span class="n">entry_el</span><span class="p">,</span>
+            <span class="n">generator</span><span class="p">,</span>
+            <span class="n">remove_demand_positions_from_xml</span><span class="p">,</span>
+            <span class="n">link</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
             <span class="n">attr_el</span><span class="p">,</span>
@@ -482,6 +529,7 @@
         <span class="n">mri</span><span class="p">:</span> <span class="n">AMri</span><span class="p">,</span>
         <span class="n">runs_on_windows</span><span class="p">:</span> <span class="n">APartRunsOnWindows</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">write_all_nd_attributes</span><span class="p">:</span> <span class="n">AWriteAllNDAttributes</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">remove_demand_positions_from_xml</span><span class="p">:</span> <span class="n">ARemoveDemandXml</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">required_version</span><span class="p">:</span> <span class="n">AVersionRequirement</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">mri</span><span class="p">)</span>
@@ -495,6 +543,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">num_captured_offset</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="c1"># The HDF5 layout file we write to say where the datasets go</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">layout_filename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hdf</span><span class="p">:</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span> <span class="o">=</span> <span class="kc">None</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">runs_on_windows</span> <span class="o">=</span> <span class="n">runs_on_windows</span>
         <span class="c1"># How long to wait between frame updates before error</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">frame_timeout</span> <span class="o">=</span> <span class="mf">0.0</span>
@@ -505,6 +555,12 @@
             <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">Widget</span><span class="o">.</span><span class="n">CHECKBOX</span><span class="o">.</span><span class="n">tag</span><span class="p">(),</span> <span class="n">config_tag</span><span class="p">()],</span>
         <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">(</span><span class="n">write_all_nd_attributes</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">required_version</span> <span class="o">=</span> <span class="n">required_version</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">remove_demand_positions_from_xml</span> <span class="o">=</span> <span class="n">BooleanMeta</span><span class="p">(</span>
+            <span class="s2">&quot;Toggles whether to remove demand positions from xml&quot;</span>
+            <span class="s2">&quot;Large scans should use remove them&quot;</span><span class="p">,</span>
+            <span class="n">writeable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">Widget</span><span class="o">.</span><span class="n">CHECKBOX</span><span class="o">.</span><span class="n">tag</span><span class="p">(),</span> <span class="n">config_tag</span><span class="p">()],</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">(</span><span class="n">remove_demand_positions_from_xml</span><span class="p">)</span>
 
 <div class="viewcode-block" id="HDFWriterPart.on_validate"><a class="viewcode-back" href="../../../../../build/ADCore/parts_api.html#malcolm.modules.ADCore.parts.HDFWriterPart.on_validate">[docs]</a>    <span class="nd">@add_call_types</span>
     <span class="k">def</span> <span class="nf">on_validate</span><span class="p">(</span>
@@ -524,6 +580,10 @@
         <span class="c1"># can&#39;t wait for it, so just wait for the running attribute to be false</span>
         <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
         <span class="n">child</span><span class="o">.</span><span class="n">when_value_matches</span><span class="p">(</span><span class="s2">&quot;running&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="c1"># Close the hdf file, if necessary</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hdf</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hdf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hdf</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="c1"># Delete the layout XML file</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout_filename</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layout_filename</span><span class="p">):</span>
             <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layout_filename</span><span class="p">)</span>
@@ -545,6 +605,11 @@
             <span class="s2">&quot;writeAllNdAttributes&quot;</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write_all_nd_attributes</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write_all_nd_attributes</span><span class="o">.</span><span class="n">set_value</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span>
+            <span class="s2">&quot;removeDemandXml&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">remove_demand_positions_from_xml</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">remove_demand_positions_from_xml</span><span class="o">.</span><span class="n">set_value</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="c1"># Tell the controller to expose some extra configure parameters</span>
         <span class="n">registrar</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ConfigureHook</span><span class="o">.</span><span class="n">create_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_configure</span><span class="p">))</span>
@@ -600,7 +665,12 @@
             <span class="p">)</span>
         <span class="p">)</span>
         <span class="n">futures</span> <span class="o">+=</span> <span class="n">set_dimensions</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">generator</span><span class="p">)</span>
-        <span class="n">xml</span> <span class="o">=</span> <span class="n">make_layout_xml</span><span class="p">(</span><span class="n">generator</span><span class="p">,</span> <span class="n">part_info</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_all_nd_attributes</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">xml</span> <span class="o">=</span> <span class="n">make_layout_xml</span><span class="p">(</span>
+            <span class="n">generator</span><span class="p">,</span>
+            <span class="n">part_info</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_all_nd_attributes</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">remove_demand_positions_from_xml</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">layout_filename</span> <span class="o">=</span> <span class="n">make_xml_filename</span><span class="p">(</span><span class="n">file_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;layout&quot;</span><span class="p">)</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">layout_filename</span><span class="p">,</span> <span class="s2">&quot;No layout filename&quot;</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layout_filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
@@ -628,10 +698,22 @@
             <span class="s2">&quot;arrayCounterReadback&quot;</span><span class="p">,</span> <span class="n">greater_than_zero</span>
         <span class="p">)</span>
         <span class="c1"># Check XML</span>
+        <span class="n">set_path</span> <span class="o">=</span> <span class="s2">&quot;/entry/</span><span class="si">%s</span><span class="s2">_set&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_demand_positions_from_xml</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hdf</span> <span class="o">=</span> <span class="n">_write_additional_hdf</span><span class="p">(</span>
+                <span class="n">filename</span><span class="p">,</span> <span class="n">generator</span><span class="p">,</span> <span class="n">h5_file_dir</span><span class="p">,</span> <span class="n">set_path</span>
+            <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_xml_is_valid</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
         <span class="c1"># Return the dataset information</span>
         <span class="n">dataset_infos</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
-            <span class="n">create_dataset_infos</span><span class="p">(</span><span class="n">formatName</span><span class="p">,</span> <span class="n">part_info</span><span class="p">,</span> <span class="n">generator</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+            <span class="n">create_dataset_infos</span><span class="p">(</span>
+                <span class="n">formatName</span><span class="p">,</span>
+                <span class="n">part_info</span><span class="p">,</span>
+                <span class="n">generator</span><span class="p">,</span>
+                <span class="n">filename</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">remove_demand_positions_from_xml</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="n">set_path</span><span class="p">,</span>
+            <span class="p">)</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">dataset_infos</span></div>
 
