@@ -3,6 +3,19 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
+`6.3`_ -
+------------------
+Fixed:
+
+- Changed PandA acquire RBV to avoid disarming error
+- Updated CI to avoid constant failures
+
+Added:
+
+- Added Detector settable attribute to remove the position set values from the
+AreaDetector XML. This avoids errors when running very large scans.
+- Added 'min' option to time units on the PandA.
+
 `6.2.1`_ - 2022-11-09
 -------------------
 
@@ -852,6 +865,7 @@ Added:
 
 - Initial release with hello world and websocket comms
 
+.. _6.3: https://github.com/dls-controls/pymalcolm/compare/6.2...6.3
 .. _6.2.1: https://github.com/dls-controls/pymalcolm/compare/6.2...6.2.1
 .. _6.2: https://github.com/dls-controls/pymalcolm/compare/6.1...6.2
 .. _6.1: https://github.com/dls-controls/pymalcolm/compare/6.0...6.1
