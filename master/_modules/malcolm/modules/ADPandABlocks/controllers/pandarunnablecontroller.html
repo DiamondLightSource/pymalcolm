@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.ADPandABlocks.controllers.pandarunnablecontroller &mdash; malcolm 6.2.1+20.g31b9fc2b documentation</title>
+  <title>malcolm.modules.ADPandABlocks.controllers.pandarunnablecontroller &mdash; malcolm 6.2.1+23.g5847cc9a documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -108,7 +108,7 @@
   <h1>Source code for malcolm.modules.ADPandABlocks.controllers.pandarunnablecontroller</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span>
 
-<span class="kn">from</span> <span class="nn">malcolm.modules</span> <span class="kn">import</span> <span class="n">ADCore</span><span class="p">,</span> <span class="n">builtin</span><span class="p">,</span> <span class="n">pandablocks</span><span class="p">,</span> <span class="n">scanning</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules</span> <span class="kn">import</span> <span class="n">ADCore</span><span class="p">,</span> <span class="n">ADPandABlocks</span><span class="p">,</span> <span class="n">builtin</span><span class="p">,</span> <span class="n">pandablocks</span><span class="p">,</span> <span class="n">scanning</span>
 
 <span class="kn">from</span> <span class="nn">..parts.pandadatasetbussespart</span> <span class="kn">import</span> <span class="n">PandADatasetBussesPart</span>
 
@@ -169,7 +169,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">,</span> <span class="n">block_name</span><span class="p">,</span> <span class="n">block_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_doc_url_base</span>
             <span class="p">)</span>
             <span class="c1"># Add the areaDetector control parts</span>
-            <span class="n">_</span><span class="p">,</span> <span class="n">ps</span> <span class="o">=</span> <span class="n">ADCore</span><span class="o">.</span><span class="n">includes</span><span class="o">.</span><span class="n">adbase_parts</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">)</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">ps</span> <span class="o">=</span> <span class="n">ADPandABlocks</span><span class="o">.</span><span class="n">includes</span><span class="o">.</span><span class="n">panda_adbase_parts</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">ps</span><span class="p">:</span>
                 <span class="n">controller</span><span class="o">.</span><span class="n">add_part</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
             <span class="n">child_part</span> <span class="o">=</span> <span class="n">ADCore</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">DetectorDriverPart</span><span class="p">(</span>
