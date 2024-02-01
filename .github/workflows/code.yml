@@ -6,6 +6,7 @@ on:
     branches:
       - master
       - main
+      - ci_test
     tags:
       - "*"
   pull_request:
@@ -28,7 +29,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.7.2"]
-        # pipenv: ["skip-lock"] # Use latest available dependencies
+        pipenv: ["skip-lock"] # Use latest available dependencies
         # Extra job for publishing using Pipfile.lock
         include:
           - python-version: "3.7.2"
@@ -98,12 +99,12 @@ jobs:
         set -o pipefail
         pipenv run tests
 
-    # - name: Coverage
-    #   if: matrix.publish
-    #   uses: codecov/codecov-action@v2
-    #   with:
-    #     fail_ci_if_error: true # optional (default = false)
-    #     files: ./coverage.xml
+    - name: Coverage
+      if: matrix.publish
+      uses: codecov/codecov-action@v2
+      with:
+        fail_ci_if_error: true # optional (default = false)
+        files: ./coverage.xml
 
     - name: Publish Sdist and Wheel to PyPI
       # Only once when on a tag
