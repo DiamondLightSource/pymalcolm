@@ -79,12 +79,6 @@
     description: type of the pixel data
     rbv: $(prefix):DataType
 
-#- ca.parts.CALongPa#-rt:
-#    name: flushData# PerNFrames
-#    description: Nu# mber of frames to capture between HDF dataset flushes
-#    pv: $(prefix):N# umFramesFlush
-#    rbv_suffix: _RB# V
-
 # Filename
 - ca.parts.CACharArrayPart:
     name: filePath
