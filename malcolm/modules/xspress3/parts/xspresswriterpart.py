@@ -370,7 +370,6 @@ class XspressWriterPart(builtin.parts.ChildPart):
         self.exposure_time = generator.duration
         # On initial configure, expect to get the demanded number of frames
         self.done_when_reaches = completed_steps + self.num_pairs * steps_to_do
-
         self.unique_id_offset = 0
         child = context.block_view(self.mri)
         file_dir = fileDir.rstrip(os.sep)
@@ -481,7 +480,7 @@ class XspressWriterPart(builtin.parts.ChildPart):
         context: scanning.hooks.AContext,
         steps_to_do: scanning.hooks.AStepsToDo,
     ) -> None:
-        self.done_when_reaches += steps_to_do
+        self.done_when_reaches += self.num_pairs * steps_to_do
 
     @add_call_types
     def on_post_run_ready(self, context: scanning.hooks.AContext) -> None:
