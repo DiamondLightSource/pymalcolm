@@ -167,7 +167,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         child.when_value_matches(
             "arrayCounterReadback",
             self.done_when_reaches,
-            event_timeout=event_timeout + 60, # Adding extra time to try and avoid PCAP timeout issue.
+            event_timeout=event_timeout,
         )
 
     def abort_detector(self, context: Context) -> None:
