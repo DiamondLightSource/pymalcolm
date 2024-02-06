@@ -269,7 +269,7 @@ class PandABlockController(builtin.controllers.BasicController):
         self._make_field_part(field_name, meta, writeable, iteration=2)
         meta = ChoiceMeta(
             description + " time units",
-            ["s", "ms", "us"],
+            ["min", "s", "ms", "us"],
             tags=[group, Widget.COMBO.tag()],
         )
         self._make_field_part(field_name + ".UNITS", meta, writeable=True)

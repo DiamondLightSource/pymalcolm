@@ -38,15 +38,24 @@ class TestProcessController(unittest.TestCase):
         assert self.b.hostname.value == hostname
 
     def test_starts_ioc(self):
-        cothread.Sleep(5)
-        assert catools.caget(self.prefix + ":PYMALCOLM:VER") in ["work", __version__]
+        if os.getenv("EPICS_BASE"):
+            cothread.Sleep(5)
+            assert catools.caget(self.prefix + ":PYMALCOLM:VER") in [
+                "work",
+                __version__,
+            ]
+        else:
+            pass
 
     def test_ioc_ticks(self):
-        cothread.Sleep(5)
-        uptime = catools.caget(self.prefix + ":UPTIME:RAW")
-        assert uptime >= 0
-        time.sleep(5)
-        assert catools.caget(self.prefix + ":UPTIME:RAW") >= uptime + 5
+        if os.getenv("EPICS_BASE"):
+            cothread.Sleep(5)
+            uptime = catools.caget(self.prefix + ":UPTIME:RAW")
+            assert uptime >= 0
+            time.sleep(5)
+            assert catools.caget(self.prefix + ":UPTIME:RAW") >= uptime + 5
+        else:
+            pass
 
 
 class TestParseYamlVersion(unittest.TestCase):

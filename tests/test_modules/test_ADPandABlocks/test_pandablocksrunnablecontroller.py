@@ -27,7 +27,7 @@ class DSGather(Part):
 
 
 class PandABlocksRunnableControllerTest(unittest.TestCase):
-    @patch("malcolm.modules.ADCore.includes.adbase_parts")
+    @patch("malcolm.modules.ADPandABlocks.includes.panda_adbase_parts")
     @patch(
         "malcolm.modules.pandablocks.controllers."
         "pandamanagercontroller.PandABlocksClient"

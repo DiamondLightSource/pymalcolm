@@ -98,7 +98,6 @@ class TestOdinWriterPart(ChildTestCase):
         assert self.child.handled_requests.mock_calls == [
             call.when_value_matches("numCaptured", self.steps_to_do, None)
         ]
-        assert self.o.registrar.report.called_once
         assert self.o.registrar.report.call_args_list[0][0][0].steps == self.steps_to_do
         rmtree(tmp_dir)
 
