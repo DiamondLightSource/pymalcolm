@@ -223,7 +223,7 @@ def create_vds(generator, raw_name, vds_path, child, num_datasets):
             if chan >= (chan_per_file * (file_counter + 1)):
                 file_counter += 1
             vds["raw/mca" + str(chan)] = h5py.ExternalLink(
-                files[file_counter], "/mca_{}".format(str(chan))
+                files[file_counter], f"/mca_{chan}"
             )
 
         # UIDs will have one dataset per writer shaped like [num_frames]
@@ -231,10 +231,10 @@ def create_vds(generator, raw_name, vds_path, child, num_datasets):
         for f in range(hdf_count):
             vds["raw/uid" + str(f)] = h5py.ExternalLink(files[f], "/uid")
 
-        # Scalars will have one dataset per scalar with shape [num_frames, num_channels]
+        # Scalars will have one dataset per scalar (nine in total) qwith shape [num_frames, num_channels]
         for scalar in range(9):
             vds["raw/scalar_" + str(scalar)] = h5py.ExternalLink(
-                metafile, "/scalar_{}".format(str(scalar))
+                metafile, f"/scalar_{scalar}"
             )
 
         # DTC has only one dataset shaped like [num_frames, num_channels]
@@ -494,6 +494,5 @@ class XspressWriterPart(builtin.parts.ChildPart):
 
     def update_completed_steps(self, value: int) -> None:
         completed_steps = value + self.unique_id_offset
-        # print('completed_steps = {}'.format(completed_steps))
         assert self.registrar, "No registrar"
         self.registrar.report(scanning.infos.RunProgressInfo(completed_steps))
