@@ -11,9 +11,24 @@
     description: Where to store saved configs
 
 - builtin.parameters.string:
+    name: drv_suffix
+    description: PV suffix for detector driver
+    default: DET
+
+- builtin.parameters.string:
     name: label
     description: Beamline specific label for the detector
     default: Merlin
+
+- builtin.parameters.string:
+    name: readout_time
+    description: Readout time of the detector
+    default: 1e-3
+
+- builtin.parameters.string:
+    name: frequency_accuracy
+    description: Frequency accuracy of the detector
+    default: 50
 
 - builtin.defines.docstring:
     value: |
@@ -35,7 +50,7 @@
 
 - ADMerlin.blocks.merlin_driver_block:
     mri: $(mri_prefix):DRV
-    prefix: $(pv_prefix):DET
+    prefix: $(pv_prefix):$(drv_suffix)
 
 - ADCore.parts.DetectorDriverPart:
     name: DRV
@@ -43,7 +58,8 @@
 
 - scanning.parts.ExposureDeadtimePart:
     name: DEADTIME
-    readout_time: 1e-3
+    readout_time: $(readout_time)
+    frequency_accuracy: $(frequency_accuracy)
 
 - ADCore.blocks.stats_plugin_block:
     mri: $(mri_prefix):STAT
