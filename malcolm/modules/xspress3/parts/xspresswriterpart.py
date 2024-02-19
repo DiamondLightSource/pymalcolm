@@ -1,8 +1,6 @@
 import os
 from typing import Dict, Iterator, List, Optional
 
-import time
-
 import h5py
 from annotypes import Anno, add_call_types
 from scanpointgenerator import CompoundGenerator
@@ -231,7 +229,8 @@ def create_vds(generator, raw_name, vds_path, child, num_datasets):
         for f in range(hdf_count):
             vds["raw/uid" + str(f)] = h5py.ExternalLink(files[f], "/uid")
 
-        # Scalars will have one dataset per scalar (nine in total) qwith shape [num_frames, num_channels]
+        # Scalars will have one dataset per scalar (nine in total) with
+        # shape [num_frames, num_channels]
         for scalar in range(9):
             vds["raw/scalar_" + str(scalar)] = h5py.ExternalLink(
                 metafile, f"/scalar_{scalar}"

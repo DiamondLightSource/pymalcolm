@@ -79,16 +79,16 @@ def create_raw_dataset_infos(
             filename=filename,
             type=scanning.infos.DatasetType.RAW,
             rank=rank,
-            path="/raw" + str(i+1),
+            path="/raw" + str(i + 1),
             uniqueid="",
         )
-    for i in range(n_raw+1):
+    for i in range(n_raw + 1):
         yield scanning.infos.DatasetProducedInfo(
             name=f"{name}.uid{i+1}",
             filename=filename,
             type=scanning.infos.DatasetType.RAW,
             rank=rank,
-            path="/uid" + str(i+1),
+            path="/uid" + str(i + 1),
             uniqueid="",
         )
 
