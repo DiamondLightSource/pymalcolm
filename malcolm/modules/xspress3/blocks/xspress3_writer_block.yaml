@@ -43,7 +43,7 @@
     description: Width of the data frames
     pv: $(prefix):ImageWidth
     rbv_suffix: _RBV
-
+    
 - ca.parts.CALongPart:
     name: numFramesChunks
     description: Size of chunks in frames

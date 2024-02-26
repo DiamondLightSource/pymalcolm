@@ -1,9 +1,9 @@
 import os
 import time
-import h5py
 from typing import Dict, Iterator, List, Optional
 from xml.etree import cElementTree as ET
 
+import h5py
 from annotypes import Anno, add_call_types
 from scanpointgenerator import CompoundGenerator, Dimension
 

@@ -1,0 +1,83 @@
+- builtin.parameters.string:
+    name: mri_prefix
+    description: Malcolm resource id of the Block and prefix for children
+
+- builtin.parameters.string:
+    name: pv_prefix
+    description: PV prefix for driver and all plugins
+
+- builtin.parameters.string:
+    name: config_dir
+    description: Where to store saved configs
+
+- builtin.parameters.string:
+    name: label
+    description: Beamline specific label for the detector
+    default: Xspress 3
+
+- builtin.parameters.string:
+    name: drv_suffix
+    description: PV suffix for detector driver
+
+- builtin.parameters.int32:
+    name: processes
+    description: Number of FR/FP pairs
+
+- builtin.parameters.int32:
+    name: num_datasets
+    description: Total number of datasets that will be writen
+
+- builtin.parameters.string:
+    name: writer_suffix
+    description: PV suffix for Odin data writer
+    default: OD
+
+- scanning.controllers.RunnableController:
+    mri: $(mri_prefix)
+    config_dir: $(config_dir)
+    description: |
+      Xspress3 is a solid state detector capable of acquiring at high count rates
+
+- builtin.parameters.string:
+    name: sum_name
+    description: name of the sum dataset
+
+- builtin.parts.LabelPart:
+    value: $(label)
+
+- xspress3.blocks.xspress3_driver_block:
+    mri: $(mri_prefix):$(drv_suffix)
+    prefix: $(pv_prefix):$(drv_suffix)
+
+- ADCore.parts.DetectorDriverPart:
+    name: Xspress3Odin
+    mri: $(mri_prefix):$(drv_suffix)
+
+- scanning.parts.ExposureDeadtimePart:
+    name: DEADTIME
+    readout_time: 7e-5
+
+- builtin.parts.IconPart:
+    svg: $(yamldir)/../icons/quantum_detectors.svg
+
+# Adding what might be needed for the Xspress3 Odin writer
+
+- builtin.parameters.string:
+    name: secondary_set
+    description: Name of secondary dataset to link in nxs file
+    default: sum
+
+- xspress3.blocks.xspress3_writer_block:
+    mri: $(mri_prefix):$(writer_suffix)
+    prefix: $(pv_prefix):$(writer_suffix)
+
+- xspress3.parts.XspressWriterPart:
+    name: XSPRESSWRITER
+    mri: $(mri_prefix):$(writer_suffix)
+    sum_name: $(sum_name)
+    secondary_set: $(secondary_set)
+    num_pairs: $(processes)
+    num_datasets: $(num_datasets)
+
+- scanning.parts.DatasetTablePart:
+    name: DSET

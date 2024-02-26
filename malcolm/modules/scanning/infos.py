@@ -11,6 +11,8 @@ class DatasetType(Enum):
     PRIMARY = "primary"
     #: Calculated from detector data, like the sum of each frame
     SECONDARY = "secondary"
+    #: Raw data sets (used when linking to raw odin datasets)
+    RAW = "raw"
     #: Data that only makes sense when considered with detector data, like a
     #: measure of beam current with an ion chamber
     MONITOR = "monitor"

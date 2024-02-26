@@ -20,12 +20,17 @@ APartName = APartName
 AMri = builtin.parts.AMri
 AInitialVisibility = builtin.parts.AInitialVisibility
 
-with Anno("name of uid dataset"):
-    AUidName = str
 with Anno("name of sum dataset"):
     ASumName = str
 with Anno("name of secondary dataset (e.g. sum)"):
     ASecondaryDataset = str
+with Anno("number of FR/FP pairs"):
+    ANumberPairs = int
+
+with Anno("number of mca datasets to be written in total"):
+    ANumberDataset = int
+
+dict_filewriter = ["A", "B", "C", "D", "E", "F", "G", "H"]
 
 
 def greater_than_zero(v: int) -> bool:
@@ -35,27 +40,16 @@ def greater_than_zero(v: int) -> bool:
 def create_dataset_infos(
     name: str, generator: CompoundGenerator, filename: str, secondary_set: str
 ) -> Iterator[Info]:
-    # Update the dataset table
+    # Update the dataset tableExternalLink
     generator_rank = len(generator.dimensions)
-
     # Add the primary datasource
     yield scanning.infos.DatasetProducedInfo(
         name=f"{name}.data",
         filename=filename,
         type=scanning.infos.DatasetType.PRIMARY,
         rank=generator_rank + 2,
-        path="/entry/detector/data",
-        uniqueid="/entry/detector_uid/uid",
-    )
-
-    # Add other datasources
-    yield scanning.infos.DatasetProducedInfo(
-        name=f"{name}.{secondary_set}",
-        filename=filename,
-        type=scanning.infos.DatasetType.SECONDARY,
-        rank=generator_rank + 2,
-        path=f"/entry/detector_{secondary_set}/{secondary_set}",
-        uniqueid="/entry/detector_uid/uid",
+        path="/entry/xspress/data",
+        uniqueid="/entry/xspress/uid",
     )
 
     # Add any setpoint dimensions
@@ -65,32 +59,52 @@ def create_dataset_infos(
             filename=filename,
             type=scanning.infos.DatasetType.POSITION_SET,
             rank=1,
-            path=f"/entry/detector/{dim}_set",
+            path=f"/entry/xspress/{dim}_set",
             uniqueid="",
         )
 
 
 def create_raw_dataset_infos(
-    name: str, rank: int, filename: str, n_raw: int
+    name: str, rank: int, filename: str, num_datasets: int, pairs: int
 ) -> Iterator[Info]:
-    for i in range(n_raw + 1):
+    for i in range(num_datasets):
         yield scanning.infos.DatasetProducedInfo(
-            name=f"{name}.raw{i+1}",
+            name=f"{name}.raw_mca{i}",
             filename=filename,
             type=scanning.infos.DatasetType.RAW,
             rank=rank,
-            path="/raw" + str(i + 1),
+            path="/raw/mca" + str(i),
             uniqueid="",
         )
-    for i in range(n_raw + 1):
+
+    for i in range(9):
+        yield scanning.infos.DatasetProducedInfo(
+            name=f"{name}.scalar_{i}",
+            filename=filename,
+            type=scanning.infos.DatasetType.RAW,
+            rank=rank,
+            path="/raw/scalar_" + str(i),
+            uniqueid="",
+        )
+
+    for i in range(pairs):
         yield scanning.infos.DatasetProducedInfo(
             name=f"{name}.uid{i+1}",
             filename=filename,
             type=scanning.infos.DatasetType.RAW,
             rank=rank,
-            path="/uid" + str(i + 1),
+            path="/raw/uid" + str(i),
             uniqueid="",
         )
+
+    yield scanning.infos.DatasetProducedInfo(
+        name=f"{name}.dtc",
+        filename=filename,
+        type=scanning.infos.DatasetType.RAW,
+        rank=rank,
+        path="/raw/dtc",
+        uniqueid="",
+    )
 
 
 def files_shape(frames, block_size, file_count):
@@ -153,9 +167,8 @@ def one_vds(
     gen.generate_vds()
 
 
-def create_vds(generator, raw_name, vds_path, child, uid_name, sum_name):
+def create_vds(generator, raw_name, vds_path, child, num_datasets):
     vds_folder, vds_name = os.path.split(vds_path)
-
     image_width = int(child.imageWidth.value)
     image_height = int(child.imageHeight.value)
     block_size = int(child.blockSize.value)
@@ -177,10 +190,13 @@ def create_vds(generator, raw_name, vds_path, child, uid_name, sum_name):
     alternates = None
 
     files = [
-        os.path.join(vds_folder, f"{raw_name}_{i + 1:06d}.h5") for i in range(hdf_count)
+        os.path.join(vds_folder, f"{raw_name}_{dict_filewriter[i]}_{0:06d}.h5")
+        for i in range(hdf_count)
     ]
-    shape = (hdf_shape, image_height, image_width)
 
+    metafile = os.path.join(vds_folder, f"{raw_name}_meta.h5")
+
+    shape = (hdf_shape, image_height, image_width)
     # prepare a vds for the image data
     one_vds(
         vds_folder,
@@ -196,49 +212,36 @@ def create_vds(generator, raw_name, vds_path, child, uid_name, sum_name):
         "data",
         data_type.lower(),
     )
+
+    chan_per_file = int(num_datasets / hdf_count)
+    file_counter = 0
     with h5py.File(vds_path, "r+", libver="latest") as vds:
-        count = 1
-        for f in files:
-            vds["raw" + str(count)] = h5py.ExternalLink(f, "/data")
-            vds["uid" + str(count)] = h5py.ExternalLink(f, "/uid")
-            count += 1
+        # MCA will have one dataset per channels shaped like [num_frames, 1]
+        for chan in range(num_datasets):
+            if chan >= (chan_per_file * (file_counter + 1)):
+                file_counter += 1
+            vds["raw/mca" + str(chan)] = h5py.ExternalLink(
+                files[file_counter], f"/mca_{chan}"
+            )
 
-    shape = (hdf_shape, 1, 1)
+        # UIDs will have one dataset per writer shaped like [num_frames]
+        file_counter = 0
+        for f in range(hdf_count):
+            vds["raw/uid" + str(f)] = h5py.ExternalLink(files[f], "/uid")
 
-    # prepare a vds for the unique IDs
-    one_vds(
-        vds_folder,
-        vds_name,
-        files,
-        1,
-        1,
-        shape,
-        generator,
-        alternates,
-        block_size,
-        uid_name,
-        "uid",
-        "uint64",
-    )
-    # prepare a vds for the sums
-    one_vds(
-        vds_folder,
-        vds_name,
-        files,
-        1,
-        1,
-        shape,
-        generator,
-        alternates,
-        block_size,
-        sum_name,
-        "sum",
-        "uint64",
-    )
+        # Scalars will have one dataset per scalar (nine in total) with
+        # shape [num_frames, num_channels]
+        for scalar in range(9):
+            vds["raw/scalar_" + str(scalar)] = h5py.ExternalLink(
+                metafile, f"/scalar_{scalar}"
+            )
+
+        # DTC has only one dataset shaped like [num_frames, num_channels]
+        vds["raw/dtc"] = h5py.ExternalLink(metafile, "/dtc")
 
 
-set_bases = ["/entry/detector/", "/entry/detector_sum/", "/entry/detector_uid/"]
-set_data = ["/data", "/sum", "/uid"]
+set_bases = ["/entry/xspress/"]
+set_data = ["/data"]
 
 
 def add_nexus_nodes(generator, vds_file_path):
@@ -263,6 +266,7 @@ def add_nexus_nodes(generator, vds_file_path):
     pad_dims += ["."] * 2  # assume a 2 dimensional detector
 
     with h5py.File(vds_file_path, "r+", libver="latest") as vds:
+        vds.swmr_mode = True
         for data, node in zip(set_data, set_bases):
             # create a group for this entry
             vds.require_group(node)
@@ -300,14 +304,12 @@ def add_nexus_nodes(generator, vds_file_path):
 
 
 # We will set these attributes on the child block, so don't save them
-@builtin.util.no_save("fileName", "filePath", "numCapture")
-class OdinWriterPart(builtin.parts.ChildPart):
-    """Part for controlling an `hdf_writer_block` in a Device"""
+@builtin.util.no_save("fileName", "filePath", "numCapture", "numFramesChunks")
+class XspressWriterPart(builtin.parts.ChildPart):
+    """Part for controlling an `xspress3_writer_block` in a Device"""
 
     # Future for the start action
     start_future: Optional[Future] = None
-    array_future: Optional[Future] = None
-    done_when_reaches: int = 0
     unique_id_offset: int = 0
     # The HDF5 layout file we write to say where the datasets go
     layout_filename: str = ""
@@ -318,13 +320,15 @@ class OdinWriterPart(builtin.parts.ChildPart):
         name: APartName,
         mri: AMri,
         initial_visibility: AInitialVisibility = True,
-        uid_name: AUidName = "uid",
         sum_name: ASumName = "sum",
         secondary_set: ASecondaryDataset = "sum",
+        num_pairs: ANumberPairs = 1,
+        num_datasets: ANumberDataset = 1,
     ) -> None:
-        self.uid_name = uid_name
         self.sum_name = sum_name
         self.secondary_set = secondary_set
+        self.num_pairs = num_pairs
+        self.num_datasets = num_datasets
         super().__init__(name, mri, initial_visibility)
 
     @add_call_types
@@ -359,25 +363,29 @@ class OdinWriterPart(builtin.parts.ChildPart):
         steps_to_do: scanning.hooks.AStepsToDo,
         generator: scanning.hooks.AGenerator,
         fileDir: scanning.hooks.AFileDir,
-        formatName: scanning.hooks.AFormatName = "odin",
+        formatName: scanning.hooks.AFormatName = "xspress3",
         fileTemplate: scanning.hooks.AFileTemplate = "%s.h5",
     ) -> scanning.hooks.UInfos:
-
         self.exposure_time = generator.duration
-
         # On initial configure, expect to get the demanded number of frames
-        self.done_when_reaches = completed_steps + steps_to_do
+        self.done_when_reaches = completed_steps + self.num_pairs * steps_to_do
         self.unique_id_offset = 0
         child = context.block_view(self.mri)
         file_dir = fileDir.rstrip(os.sep)
 
+        chunk = int(1 / float(self.exposure_time))
+        if chunk < 1:
+            chunk = 1
+        if chunk >= 4000:
+            chunk = 4096
+        child.numFramesChunks.put_value(chunk)
         # derive file path from template as AreaDetector would normally do
         fileName = fileTemplate.replace("%s", formatName)
 
         # this is path to the requested file which will be a VDS
         vds_full_filename = os.path.join(fileDir, fileName)
 
-        # this is the path to underlying file the odin writer will write to
+        # this is the path to underlying file the xspress3 writer will write to
         raw_file_name = fileTemplate.replace("%s", formatName + "_raw_data")
         raw_file_basename, _ = os.path.splitext(raw_file_name)
 
@@ -405,8 +413,7 @@ class OdinWriterPart(builtin.parts.ChildPart):
             raw_file_basename,
             vds_full_filename,
             child,
-            self.uid_name,
-            self.sum_name,
+            self.num_datasets,
         )
         add_nexus_nodes(generator, vds_full_filename)
 
@@ -414,13 +421,18 @@ class OdinWriterPart(builtin.parts.ChildPart):
         dataset_infos = list(
             create_dataset_infos(formatName, generator, fileName, self.secondary_set)
         )
-
+        raw_file_names = [
+            f"{raw_file_basename}_{dict_filewriter[i]}_{0:06d}.h5"
+            for i in range(self.num_pairs)
+        ]
+        raw_file_names += [f"{raw_file_basename}_meta.h5"]
         dataset_infos += list(
             create_raw_dataset_infos(
                 formatName,
                 len(generator.dimensions) + 2,
                 fileName,
-                int(child.numProcesses.value),
+                int(self.num_datasets),
+                self.num_pairs,
             )
         )
 
@@ -463,7 +475,7 @@ class OdinWriterPart(builtin.parts.ChildPart):
         context: scanning.hooks.AContext,
         steps_to_do: scanning.hooks.AStepsToDo,
     ) -> None:
-        self.done_when_reaches += steps_to_do
+        self.done_when_reaches += self.num_pairs * steps_to_do
 
     @add_call_types
     def on_post_run_ready(self, context: scanning.hooks.AContext) -> None:
