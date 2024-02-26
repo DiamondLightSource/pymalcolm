@@ -9,3 +9,4 @@ xspress3
     :caption: malcolm.modules.xspress3
 
     blocks <blocks_api.rst>
+    parts <parts_api.rst>

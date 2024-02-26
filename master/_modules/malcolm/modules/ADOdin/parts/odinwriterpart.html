@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.ADOdin.parts.odinwriterpart &mdash; malcolm 6.2.1+27.g7f50f031 documentation</title>
+  <title>malcolm.modules.ADOdin.parts.odinwriterpart &mdash; malcolm 6.2.1+57.g30b25366 documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -178,6 +178,29 @@
         <span class="p">)</span>
 
 
+<span class="k">def</span> <span class="nf">create_raw_dataset_infos</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">rank</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">n_raw</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Info</span><span class="p">]:</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_raw</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">DatasetProducedInfo</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.raw</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
+            <span class="nb">type</span><span class="o">=</span><span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">DatasetType</span><span class="o">.</span><span class="n">RAW</span><span class="p">,</span>
+            <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span>
+            <span class="n">path</span><span class="o">=</span><span class="s2">&quot;/raw&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">uniqueid</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_raw</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">DatasetProducedInfo</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.uid</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
+            <span class="nb">type</span><span class="o">=</span><span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">DatasetType</span><span class="o">.</span><span class="n">RAW</span><span class="p">,</span>
+            <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span>
+            <span class="n">path</span><span class="o">=</span><span class="s2">&quot;/uid&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">uniqueid</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+
 <span class="k">def</span> <span class="nf">files_shape</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="n">block_size</span><span class="p">,</span> <span class="n">file_count</span><span class="p">):</span>
     <span class="c1"># all files get at least per_file blocks</span>
     <span class="n">per_file</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">frames</span><span class="p">)</span> <span class="o">/</span> <span class="nb">int</span><span class="p">(</span><span class="n">file_count</span> <span class="o">*</span> <span class="n">block_size</span><span class="p">)</span>
@@ -281,6 +304,12 @@
         <span class="s2">&quot;data&quot;</span><span class="p">,</span>
         <span class="n">data_type</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span>
     <span class="p">)</span>
+    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">vds_path</span><span class="p">,</span> <span class="s2">&quot;r+&quot;</span><span class="p">,</span> <span class="n">libver</span><span class="o">=</span><span class="s2">&quot;latest&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">vds</span><span class="p">:</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="n">vds</span><span class="p">[</span><span class="s2">&quot;raw&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">count</span><span class="p">)]</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">ExternalLink</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="s2">&quot;/data&quot;</span><span class="p">)</span>
+            <span class="n">vds</span><span class="p">[</span><span class="s2">&quot;uid&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">count</span><span class="p">)]</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">ExternalLink</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="s2">&quot;/uid&quot;</span><span class="p">)</span>
+            <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
 
     <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">hdf_shape</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
@@ -493,6 +522,16 @@
         <span class="n">dataset_infos</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
             <span class="n">create_dataset_infos</span><span class="p">(</span><span class="n">formatName</span><span class="p">,</span> <span class="n">generator</span><span class="p">,</span> <span class="n">fileName</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">secondary_set</span><span class="p">)</span>
         <span class="p">)</span>
+
+        <span class="n">dataset_infos</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="n">create_raw_dataset_infos</span><span class="p">(</span>
+                <span class="n">formatName</span><span class="p">,</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">generator</span><span class="o">.</span><span class="n">dimensions</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">fileName</span><span class="p">,</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">numProcesses</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
         <span class="k">return</span> <span class="n">dataset_infos</span></div>
 
 <div class="viewcode-block" id="OdinWriterPart.on_seek"><a class="viewcode-back" href="../../../../../build/ADOdin/parts_api.html#malcolm.modules.ADOdin.parts.OdinWriterPart.on_seek">[docs]</a>    <span class="nd">@add_call_types</span>

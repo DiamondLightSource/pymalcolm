@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.xspress3.blocks &mdash; malcolm 6.2.1+27.g7f50f031 documentation</title>
+  <title>malcolm.modules.xspress3.blocks &mdash; malcolm 6.2.1+57.g30b25366 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -21,7 +21,7 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="zebra" href="../zebra/index.html" />
+    <link rel="next" title="malcolm.modules.xspress3.parts" href="parts_api.html" />
     <link rel="prev" title="xspress3" href="index.html" /> 
 </head>
 
@@ -107,6 +107,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../xmap/index.html">xmap</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">xspress3</a><ul class="current">
 <li class="toctree-l3 current"><a class="current reference internal" href="#">blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="parts_api.html">parts</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../zebra/index.html">zebra</a></li>
@@ -178,6 +179,27 @@
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="malcolm.modules.xspress3.blocks.xspress3_odin_runnable_block">
+<span class="sig-prename descclassname"><span class="pre">malcolm.modules.xspress3.blocks.</span></span><span class="sig-name descname"><span class="pre">xspress3_odin_runnable_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mri_prefix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pv_prefix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drv_suffix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_datasets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sum_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Xspress</span> <span class="pre">3'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">writer_suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'OD'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">secondary_set</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sum'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#malcolm.modules.xspress3.blocks.xspress3_odin_runnable_block" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mri_prefix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Malcolm resource id of the Block and prefix for children</p></li>
+<li><p><strong>pv_prefix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – PV prefix for driver and all plugins</p></li>
+<li><p><strong>config_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Where to store saved configs</p></li>
+<li><p><strong>drv_suffix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – PV suffix for detector driver</p></li>
+<li><p><strong>processes</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Number of FR/FP pairs</p></li>
+<li><p><strong>num_datasets</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Total number of datasets that will be writen</p></li>
+<li><p><strong>sum_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – name of the sum dataset</p></li>
+<li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Beamline specific label for the detector</p></li>
+<li><p><strong>writer_suffix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – PV suffix for Odin data writer</p></li>
+<li><p><strong>secondary_set</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Name of secondary dataset to link in nxs file</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="malcolm.modules.xspress3.blocks.xspress3_runnable_block">
 <span class="sig-prename descclassname"><span class="pre">malcolm.modules.xspress3.blocks.</span></span><span class="sig-name descname"><span class="pre">xspress3_runnable_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mri_prefix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pv_prefix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Xspress</span> <span class="pre">3'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#malcolm.modules.xspress3.blocks.xspress3_runnable_block" title="Permalink to this definition"></a></dt>
 <dd><dl class="field-list simple">
@@ -192,6 +214,23 @@
 </dl>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="malcolm.modules.xspress3.blocks.xspress3_writer_block">
+<span class="sig-prename descclassname"><span class="pre">malcolm.modules.xspress3.blocks.</span></span><span class="sig-name descname"><span class="pre">xspress3_writer_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mri</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#malcolm.modules.xspress3.blocks.xspress3_writer_block" title="Permalink to this definition"></a></dt>
+<dd><p>Hardware block corresponding to PVs used for Odin File Writer</p>
+<ul class="simple">
+<li><p>OdinDataDriver.template should have pv prefix $(prefix)</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mri</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Malcolm resource id of the Block</p></li>
+<li><p><strong>prefix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The root PV for the all records</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 
@@ -199,7 +238,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="index.html" class="btn btn-neutral float-left" title="xspress3" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../zebra/index.html" class="btn btn-neutral float-right" title="zebra" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="parts_api.html" class="btn btn-neutral float-right" title="malcolm.modules.xspress3.parts" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
