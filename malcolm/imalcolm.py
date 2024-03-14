@@ -219,7 +219,7 @@ def main():
         pass
 
     # Import the Malcolm process
-    q = queue.Queue()
+    q = queue.SimpleQueue()
     t = threading.Thread(target=try_prepare_locals, args=(q, args))
     t.start()
     process = q.get(timeout=65)
