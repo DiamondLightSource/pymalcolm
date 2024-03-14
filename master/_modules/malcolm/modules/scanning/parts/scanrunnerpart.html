@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.scanning.parts.scanrunnerpart &mdash; malcolm 6.2.1+62.g03577182 documentation</title>
+  <title>malcolm.modules.scanning.parts.scanrunnerpart &mdash; malcolm 6.2.1+65.gcee1d99d documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
@@ -252,7 +252,6 @@
         <span class="n">registrar</span><span class="o">.</span><span class="n">add_method_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">abort</span><span class="p">,</span> <span class="n">needs_context</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">get_file_contents</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-
         <span class="k">try</span><span class="p">:</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scan_file</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">input_file</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">input_file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
@@ -311,7 +310,6 @@
 
     <span class="c1"># noinspection PyPep8Naming</span>
     <span class="k">def</span> <span class="nf">loadFile</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-
         <span class="c1"># Update state</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_runner_state</span><span class="p">(</span><span class="n">RunnerStates</span><span class="o">.</span><span class="n">LOADING</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">runner_status_message</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s2">&quot;Loading scan file&quot;</span><span class="p">)</span>
@@ -380,7 +378,6 @@
 
 <div class="viewcode-block" id="ScanRunnerPart.run"><a class="viewcode-back" href="../../../../../build/scanning/parts_api.html#malcolm.modules.scanning.parts.ScanRunnerPart.run">[docs]</a>    <span class="nd">@add_call_types</span>
     <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">AContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-
         <span class="c1"># Check that we have loaded some scan sets</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scan_sets</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">runner_status_message</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s2">&quot;No scan file loaded&quot;</span><span class="p">)</span>
@@ -546,7 +543,6 @@
         <span class="n">start_time</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">end_time</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-
         <span class="n">report_str</span> <span class="o">=</span> <span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">set_name</span><span class="si">:</span><span class="s2">&lt;30</span><span class="si">}{</span><span class="n">scan_number</span><span class="si">:</span><span class="s2">&lt;10</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">get_enum_label</span><span class="p">(</span><span class="n">scan_outcome</span><span class="p">)</span><span class="si">:</span><span class="s2">&lt;14</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">start_time</span><span class="si">:</span><span class="s2">&lt;20</span><span class="si">}{</span><span class="n">end_time</span><span class="si">}</span><span class="s2">&quot;</span>
