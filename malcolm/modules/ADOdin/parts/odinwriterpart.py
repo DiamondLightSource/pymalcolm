@@ -362,7 +362,6 @@ class OdinWriterPart(builtin.parts.ChildPart):
         formatName: scanning.hooks.AFormatName = "odin",
         fileTemplate: scanning.hooks.AFileTemplate = "%s.h5",
     ) -> scanning.hooks.UInfos:
-
         self.exposure_time = generator.duration
 
         # On initial configure, expect to get the demanded number of frames

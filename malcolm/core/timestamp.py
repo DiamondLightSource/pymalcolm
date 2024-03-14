@@ -17,7 +17,6 @@ zero32 = np.int32(0)
 
 @Serializable.register_subclass("time_t")
 class TimeStamp(Serializable):
-
     __slots__ = ["secondsPastEpoch", "nanoseconds", "userTag"]
 
     # noinspection PyPep8Naming

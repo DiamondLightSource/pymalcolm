@@ -129,7 +129,6 @@ class Notifier(Loggable):
 
 
 class NotifierNode:
-
     # Define slots so it uses less resources to make these
     __slots__ = ["delta_requests", "update_requests", "children", "parent", "data"]
 

@@ -48,7 +48,7 @@ class FieldRegistry:
 
     def get_field(self, name: str) -> Field:
         for fields in self.fields.values():
-            for (n, field, _, _) in fields:
+            for n, field, _, _ in fields:
                 if n == name:
                     return field
         raise ValueError(f"No field named {name} found")

@@ -224,7 +224,6 @@ class SeqTriggers:
         for points in self._overlapping_points_range(
             self.generator, loaded_up_to, scan_up_to
         ):
-
             if not self.axis_mapping:
                 # No position compare or row triggering required
                 durations = points.duration[1:] if self.last_point else points.duration

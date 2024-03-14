@@ -144,7 +144,6 @@ class ScanRunnerPart(ChildPart):
         registrar.add_method_model(self.abort, needs_context=True)
 
     def get_file_contents(self) -> str:
-
         try:
             with open(self.scan_file.value, "r") as input_file:
                 return input_file.read()
@@ -203,7 +202,6 @@ class ScanRunnerPart(ChildPart):
 
     # noinspection PyPep8Naming
     def loadFile(self) -> None:
-
         # Update state
         self.set_runner_state(RunnerStates.LOADING)
         self.runner_status_message.set_value("Loading scan file")
@@ -272,7 +270,6 @@ class ScanRunnerPart(ChildPart):
 
     @add_call_types
     def run(self, context: AContext) -> None:
-
         # Check that we have loaded some scan sets
         if len(self.scan_sets) == 0:
             self.runner_status_message.set_value("No scan file loaded")
@@ -438,7 +435,6 @@ class ScanRunnerPart(ChildPart):
         start_time: str,
         end_time: str,
     ) -> str:
-
         report_str = (
             f"{set_name:<30}{scan_number:<10}{self.get_enum_label(scan_outcome):<14}"
             f"{start_time:<20}{end_time}"

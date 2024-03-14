@@ -101,7 +101,6 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         part_info: scanning.hooks.APartInfo,
         fileTemplate: scanning.hooks.AFileTemplate = "%s.nxs",
     ) -> scanning.hooks.UInfos:
-
         self.p_vars = []
         self.use_min_max = True
         self.savu_variables = {}
@@ -209,7 +208,6 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
     def on_post_configure(
         self, context: scanning.hooks.AContext, part_info: scanning.hooks.APartInfo
     ) -> None:
-
         # Map these in the file
         dataset_infos = scanning.infos.DatasetProducedInfo.filter_values(part_info)
         for scannable, axis_num in self.axis_numbers.items():

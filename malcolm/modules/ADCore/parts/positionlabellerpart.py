@@ -159,7 +159,6 @@ class PositionLabellerPart(builtin.parts.ChildPart):
                 self.loading = False
 
     def _make_xml(self, start_index: int) -> Tuple[str, int]:
-
         # Make xml root
         xml = '<?xml version="1.0" ?><pos_layout><dimensions>'
 

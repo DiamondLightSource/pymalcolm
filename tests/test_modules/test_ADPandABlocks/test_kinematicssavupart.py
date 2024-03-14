@@ -23,7 +23,6 @@ AXES = AAxesToMove(["x", "y"])
 
 class TestKinematicsSavuPart(ChildTestCase):
     def setUp(self):
-
         self.process = Process("Process")
         self.context = Context(self.process)
 

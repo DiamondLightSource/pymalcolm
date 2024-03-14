@@ -29,7 +29,6 @@ class TestBlockHandler(unittest.TestCase):
     def test_rpc_handle_post_response_nested_function_with_bad_response(
         self, post_mock
     ):
-
         # Set up the mocked Post class to return a mocked instance
         post_instance_mock = MagicMock(name="post_instance_mock")
         post_mock.return_value = post_instance_mock

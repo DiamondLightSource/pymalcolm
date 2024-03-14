@@ -11,6 +11,7 @@ sys.path.append(os.path.dirname(__file__))
 
 import malcolm
 
+
 # Autodoc event handlers
 def skip_member(app, what, name, obj, skip, options):
     # Override enums to always be documented
@@ -28,9 +29,9 @@ def setup(app):
 # -- General configuration ------------------------------------------------
 
 # General information about the project.
-project = u"malcolm"
-copyright = u"2015, Diamond Light Source"
-author = u"Tom Cobb"
+project = "malcolm"
+copyright = "2015, Diamond Light Source"
+author = "Tom Cobb"
 
 # The short X.Y version.
 version = malcolm.__version__.split("+")[0]

@@ -239,7 +239,6 @@ class DoubleBuffer:
             # The template sets repeats to 1 however older designs may not have
             # been updated.
             for table in self._table_map.values():
-
                 if table.repeats.value != 1:
                     logging.warning(
                         f"Repeats on Seq table {table.label.value} should be set to "

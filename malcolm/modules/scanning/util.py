@@ -67,7 +67,6 @@ class ConfigureParams(Serializable):
 @Serializable.register_subclass("malcolm:core/PointGeneratorMeta:1.0")
 @VMeta.register_annotype_converter(CompoundGenerator)
 class PointGeneratorMeta(VMeta):
-
     attribute_class = NTUnion
 
     def doc_type_string(self):
