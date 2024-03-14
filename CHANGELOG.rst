@@ -3,18 +3,20 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
-`6.3`_ -
-------------------
+`6.3`_ - 2024-03-14
+-------------------
 Fixed:
 
 - Changed PandA acquire RBV to avoid disarming error
-- Updated CI to avoid constant failures
+- Updated CI to avoid constant failure
+- Fixed patch to fully change queue to simpleQueue.
 
 Added:
 
 - Added Detector settable attribute to remove the position set values from the
 AreaDetector XML. This avoids errors when running very large scans.
 - Added 'min' option to time units on the PandA.
+- Added Xspress Odin Support.
 
 `6.2.1`_ - 2022-11-09
 -------------------
