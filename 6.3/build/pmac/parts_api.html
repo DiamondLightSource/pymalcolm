@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.modules.pmac.parts &mdash; malcolm 6.3 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="malcolm.modules.pmac.util" href="util_api.html" />
+    <link rel="prev" title="malcolm.modules.pmac.infos" href="infos_api.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                6.3
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../modules_api.html">malcolm.modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../ADAndor/index.html">ADAndor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADAndor3/index.html">ADAndor3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADCore/index.html">ADCore</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADEiger/index.html">ADEiger</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADEthercat/index.html">ADEthercat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADMerlin/index.html">ADMerlin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADOdin/index.html">ADOdin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADPandABlocks/index.html">ADPandABlocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADPco/index.html">ADPco</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADPilatus/index.html">ADPilatus</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADSimDetector/index.html">ADSimDetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADTetrAMM/index.html">ADTetrAMM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ADTucsen/index.html">ADTucsen</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../adUtil/index.html">adUtil</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../aravisGigE/index.html">aravisGigE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../asyn/index.html">asyn</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../builtin/index.html">builtin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ca/index.html">ca</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demo/index.html">demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dtacq/index.html">dtacq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pandablocks/index.html">pandablocks</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">pmac</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="blocks_api.html">blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="includes_api.html">includes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="infos_api.html">infos</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">parts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="util_api.html">util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../profiling/index.html">profiling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pva/index.html">pva</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../scanning/index.html">scanning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../system/index.html">system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../web/index.html">web</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../xmap/index.html">xmap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../xspress3/index.html">xspress3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../zebra/index.html">zebra</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../modules_api.html">malcolm.modules</a> &raquo;</li>
+          <li><a href="index.html">pmac</a> &raquo;</li>
+      <li>malcolm.modules.pmac.parts</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/build/pmac/parts_api.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-malcolm.modules.pmac.parts">
+<span id="malcolm-modules-pmac-parts"></span><h1>malcolm.modules.pmac.parts<a class="headerlink" href="#module-malcolm.modules.pmac.parts" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.BeamSelectorPart">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.pmac.parts.</span></span><span class="sig-name descname"><span class="pre">BeamSelectorPart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">Anno(name='APartName'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Part</span> <span class="pre">within</span> <span class="pre">the</span> <span class="pre">Controller')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mri:</span> <span class="pre">Anno(name='AMri'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Malcolm</span> <span class="pre">resource</span> <span class="pre">id</span> <span class="pre">of</span> <span class="pre">child</span> <span class="pre">object')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selector_axis:</span> <span class="pre">Anno(name='ASelectorAxis'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">selector</span> <span class="pre">axis</span> <span class="pre">scannable')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imaging_angle:</span> <span class="pre">Anno(name='ATomoAngle'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Angle</span> <span class="pre">of</span> <span class="pre">for</span> <span class="pre">the</span> <span class="pre">tomography</span> <span class="pre">detector</span> <span class="pre">position')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diffraction_angle:</span> <span class="pre">Anno(name='ADiffAngle'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Angle</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">diffraction</span> <span class="pre">detector</span> <span class="pre">position')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imaging_detector:</span> <span class="pre">Anno(name='ATomoDetector'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">tomography</span> <span class="pre">detector</span> <span class="pre">(should</span> <span class="pre">match</span> <span class="pre">DetectorChildPart)')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diffraction_detector:</span> <span class="pre">Anno(name='ADiffDetector'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">diffraction</span> <span class="pre">detector</span> <span class="pre">(should</span> <span class="pre">match</span> <span class="pre">DetectorChildPart)')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">move_time:</span> <span class="pre">Anno(name='AMoveTime'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Minimum</span> <span class="pre">move</span> <span class="pre">time</span> <span class="pre">between</span> <span class="pre">the</span> <span class="pre">two</span> <span class="pre">positions</span> <span class="pre">in</span> <span class="pre">seconds')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_visibility:</span> <span class="pre">Anno(name='AInitialVisibility'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Whether</span> <span class="pre">the</span> <span class="pre">part</span> <span class="pre">is</span> <span class="pre">initially</span> <span class="pre">visible</span> <span class="pre">with</span> <span class="pre">no</span> <span class="pre">config</span> <span class="pre">loaded</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">None</span> <span class="pre">means</span> <span class="pre">only</span> <span class="pre">if</span> <span class="pre">child</span> <span class="pre">Source/Sink</span> <span class="pre">Ports</span> <span class="pre">connect</span> <span class="pre">to</span> <span class="pre">another</span> <span class="pre">Block')</span> <span class="pre">=</span> <span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/beamselectorpart.html#BeamSelectorPart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.BeamSelectorPart" title="Permalink to this definition"></a></dt>
+<dd><p>This part is for the K11 beam selector scan.</p>
+<p>It moves a motor between two positions, holding at each position for the exposure
+time of a particular detector before moving.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The name of the Part within the Controller</p></li>
+<li><p><strong>mri</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Malcolm resource id of child object</p></li>
+<li><p><strong>selector_axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Name of the selector axis scannable</p></li>
+<li><p><strong>imaging_angle</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Angle of for the tomography detector position</p></li>
+<li><p><strong>diffraction_angle</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Angle of the diffraction detector position</p></li>
+<li><p><strong>imaging_detector</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Name of the tomography detector (should match DetectorChildPart)</p></li>
+<li><p><strong>diffraction_detector</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Name of the diffraction detector (should match DetectorChildPart)</p></li>
+<li><p><strong>move_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Minimum move time between the two positions in seconds</p></li>
+<li><p><strong>initial_visibility</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – Whether the part is initially visible with no config loaded, None means only if child Source/Sink Ports connect to another Block</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.BeamSelectorPart.on_validate">
+<span class="sig-name descname"><span class="pre">on_validate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">generator:</span> <span class="pre">Anno(name='AGenerator'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'scanpointgenerator.core.compoundgenerator.CompoundGenerator'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Generator</span> <span class="pre">instance</span> <span class="pre">providing</span> <span class="pre">specification</span> <span class="pre">for</span> <span class="pre">scan')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">part_info:</span> <span class="pre">Anno(name='APartInfo'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=(&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotypes._array.Array[malcolm.core.info.Info])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">Infos</span> <span class="pre">returned</span> <span class="pre">from</span> <span class="pre">other</span> <span class="pre">Parts')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detectors:</span> <span class="pre">Anno(name='ADetectorTable'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.modules.scanning.util.DetectorTable'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">detectors</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">active</span> <span class="pre">and</span> <span class="pre">their</span> <span class="pre">exposures')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional[Union[Anno(name='AParameterTweakInfos',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.modules.scanning.infos.ParameterTweakInfo'&gt;,</span> <span class="pre">description='Parameters</span> <span class="pre">that</span> <span class="pre">need</span> <span class="pre">to</span> <span class="pre">be</span> <span class="pre">changed</span> <span class="pre">to</span> <span class="pre">make</span> <span class="pre">them</span> <span class="pre">compatible'),</span> <span class="pre">Sequence[malcolm.modules.scanning.infos.ParameterTweakInfo],</span> <span class="pre">malcolm.modules.scanning.infos.ParameterTweakInfo]]</span></span></span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/beamselectorpart.html#BeamSelectorPart.on_validate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.BeamSelectorPart.on_validate" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>generator</strong> (<em>CompoundGenerator</em>) – Generator instance providing specification for scan</p></li>
+<li><p><strong>part_info</strong> – The Infos returned from other Parts</p></li>
+<li><p><strong>detectors</strong> (<a class="reference internal" href="../scanning/util_api.html#malcolm.modules.scanning.util.DetectorTable" title="malcolm.modules.scanning.util.DetectorTable"><em>DetectorTable</em></a>) – The detectors that should be active and their exposures</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Parameters that need to be changed to make them compatible</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../scanning/infos_api.html#malcolm.modules.scanning.infos.ParameterTweakInfo" title="malcolm.modules.scanning.infos.ParameterTweakInfo">ParameterTweakInfo</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.BeamSelectorPart.on_configure">
+<span class="sig-name descname"><span class="pre">on_configure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">completed_steps:</span> <span class="pre">Anno(name='ACompletedSteps'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'int'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Number</span> <span class="pre">of</span> <span class="pre">steps</span> <span class="pre">already</span> <span class="pre">completed')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps_to_do:</span> <span class="pre">Anno(name='AStepsToDo'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'int'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Number</span> <span class="pre">of</span> <span class="pre">steps</span> <span class="pre">we</span> <span class="pre">should</span> <span class="pre">configure</span> <span class="pre">for')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">part_info:</span> <span class="pre">Anno(name='APartInfo'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=(&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotypes._array.Array[malcolm.core.info.Info])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">Infos</span> <span class="pre">returned</span> <span class="pre">from</span> <span class="pre">other</span> <span class="pre">Parts')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generator:</span> <span class="pre">Anno(name='AGenerator'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'scanpointgenerator.core.compoundgenerator.CompoundGenerator'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Generator</span> <span class="pre">instance</span> <span class="pre">providing</span> <span class="pre">specification</span> <span class="pre">for</span> <span class="pre">scan')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detectors:</span> <span class="pre">Anno(name='ADetectorTable'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.modules.scanning.util.DetectorTable'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">detectors</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">active</span> <span class="pre">and</span> <span class="pre">their</span> <span class="pre">exposures')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axesToMove:</span> <span class="pre">Anno(name='AAxesToMove'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='List</span> <span class="pre">of</span> <span class="pre">axes</span> <span class="pre">in</span> <span class="pre">inner</span> <span class="pre">dimension</span> <span class="pre">of</span> <span class="pre">generator</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">moved')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/beamselectorpart.html#BeamSelectorPart.on_configure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.BeamSelectorPart.on_configure" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+<li><p><strong>completed_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Number of steps already completed</p></li>
+<li><p><strong>steps_to_do</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Number of steps we should configure for</p></li>
+<li><p><strong>part_info</strong> – The Infos returned from other Parts</p></li>
+<li><p><strong>generator</strong> (<em>CompoundGenerator</em>) – Generator instance providing specification for scan</p></li>
+<li><p><strong>detectors</strong> (<a class="reference internal" href="../scanning/util_api.html#malcolm.modules.scanning.util.DetectorTable" title="malcolm.modules.scanning.util.DetectorTable"><em>DetectorTable</em></a>) – The detectors that should be active and their exposures</p></li>
+<li><p><strong>axesToMove</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – List of axes in inner dimension of generator that should be moved</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.CSPart">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.pmac.parts.</span></span><span class="sig-name descname"><span class="pre">CSPart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mri:</span> <span class="pre">Anno(name='AMri'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Malcolm</span> <span class="pre">resource</span> <span class="pre">id</span> <span class="pre">of</span> <span class="pre">child</span> <span class="pre">object')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cs:</span> <span class="pre">Anno(name='ACS'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'int'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Co-ordinate</span> <span class="pre">system</span> <span class="pre">number')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/cspart.html#CSPart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.CSPart" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mri</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Malcolm resource id of child object</p></li>
+<li><p><strong>cs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Co-ordinate system number</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.CSPart.report_status">
+<span class="sig-name descname"><span class="pre">report_status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional[Union[Anno(name='AInfos',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.info.Info'&gt;,</span> <span class="pre">description='Infos</span> <span class="pre">about</span> <span class="pre">current</span> <span class="pre">Part</span> <span class="pre">status</span> <span class="pre">to</span> <span class="pre">be</span> <span class="pre">passed</span> <span class="pre">to</span> <span class="pre">other</span> <span class="pre">parts'),</span> <span class="pre">Sequence[malcolm.core.info.Info],</span> <span class="pre">malcolm.core.info.Info]]</span></span></span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/cspart.html#CSPart.report_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.CSPart.report_status" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Infos about current Part status to be passed to other parts</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../../api/core_api.html#malcolm.core.Info" title="malcolm.core.Info">Info</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.CSPart.on_init">
+<span class="sig-name descname"><span class="pre">on_init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/cspart.html#CSPart.on_init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.CSPart.on_init" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.CSPart.move">
+<span class="sig-name descname"><span class="pre">move</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a:</span> <span class="pre">Optional[Anno(name='ADemandPosition'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Motor</span> <span class="pre">position</span> <span class="pre">to</span> <span class="pre">move</span> <span class="pre">to</span> <span class="pre">in</span> <span class="pre">EGUs')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b:</span> <span class="pre">Optional[Anno(name='ADemandPosition'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Motor</span> <span class="pre">position</span> <span class="pre">to</span> <span class="pre">move</span> <span class="pre">to</span> <span class="pre">in</span> <span class="pre">EGUs')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c:</span> <span class="pre">Optional[Anno(name='ADemandPosition'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Motor</span> <span class="pre">position</span> <span class="pre">to</span> <span class="pre">move</span> <span class="pre">to</span> <span class="pre">in</span> <span class="pre">EGUs')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u:</span> <span class="pre">Optional[Anno(name='ADemandPosition'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Motor</span> <span class="pre">position</span> <span class="pre">to</span> <span class="pre">move</span> <span class="pre">to</span> <span class="pre">in</span> <span class="pre">EGUs')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v:</span> <span class="pre">Optional[Anno(name='ADemandPosition'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Motor</span> <span class="pre">position</span> <span class="pre">to</span> <span class="pre">move</span> <span class="pre">to</span> <span class="pre">in</span> <span class="pre">EGUs')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w:</span> <span class="pre">Optional[Anno(name='ADemandPosition'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Motor</span> <span class="pre">position</span> <span class="pre">to</span> <span class="pre">move</span> <span class="pre">to</span> <span class="pre">in</span> <span class="pre">EGUs')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x:</span> <span class="pre">Optional[Anno(name='ADemandPosition'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Motor</span> <span class="pre">position</span> <span class="pre">to</span> <span class="pre">move</span> <span class="pre">to</span> <span class="pre">in</span> <span class="pre">EGUs')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y:</span> <span class="pre">Optional[Anno(name='ADemandPosition'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Motor</span> <span class="pre">position</span> <span class="pre">to</span> <span class="pre">move</span> <span class="pre">to</span> <span class="pre">in</span> <span class="pre">EGUs')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z:</span> <span class="pre">Optional[Anno(name='ADemandPosition'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Motor</span> <span class="pre">position</span> <span class="pre">to</span> <span class="pre">move</span> <span class="pre">to</span> <span class="pre">in</span> <span class="pre">EGUs')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">moveTime:</span> <span class="pre">Anno(name='AMoveTime'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Time</span> <span class="pre">to</span> <span class="pre">take</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">move</span> <span class="pre">in</span> <span class="pre">seconds')</span> <span class="pre">=</span> <span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/cspart.html#CSPart.move"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.CSPart.move" title="Permalink to this definition"></a></dt>
+<dd><p>Move the given CS axes using a deferred co-ordinated move</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+<li><p><strong>a</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Motor position to move to in EGUs</p></li>
+<li><p><strong>b</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Motor position to move to in EGUs</p></li>
+<li><p><strong>c</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Motor position to move to in EGUs</p></li>
+<li><p><strong>u</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Motor position to move to in EGUs</p></li>
+<li><p><strong>v</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Motor position to move to in EGUs</p></li>
+<li><p><strong>w</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Motor position to move to in EGUs</p></li>
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Motor position to move to in EGUs</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Motor position to move to in EGUs</p></li>
+<li><p><strong>z</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Motor position to move to in EGUs</p></li>
+<li><p><strong>moveTime</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – Time to take to perform move in seconds</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.CSSourcePortsPart">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.pmac.parts.</span></span><span class="sig-name descname"><span class="pre">CSSourcePortsPart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">Anno(name='APartName'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Part</span> <span class="pre">within</span> <span class="pre">the</span> <span class="pre">Controller')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rbv:</span> <span class="pre">Anno(name='ARbv'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Override</span> <span class="pre">for</span> <span class="pre">rbv')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group:</span> <span class="pre">Optional[Anno(name='AGroup'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='If</span> <span class="pre">given</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">which</span> <span class="pre">GUI</span> <span class="pre">group</span> <span class="pre">should</span> <span class="pre">we</span> <span class="pre">attach</span> <span class="pre">to')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/cssourceportspart.html#CSSourcePortsPart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.CSSourcePortsPart" title="Permalink to this definition"></a></dt>
+<dd><p>Defines a string <a class="reference internal" href="../../api/core_api.html#malcolm.core.Attribute" title="malcolm.core.Attribute"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Attribute</span></code></a> for the CS Port name, and 10 Source Ports
+for the axes A-Z and I for the axis assignments</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The name of the Part within the Controller</p></li>
+<li><p><strong>rbv</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Override for rbv</p></li>
+<li><p><strong>group</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – If given, which GUI group should we attach to</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.CompoundMotorSinkPortsPart">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.pmac.parts.</span></span><span class="sig-name descname"><span class="pre">CompoundMotorSinkPortsPart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">Anno(name='APartName'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Part</span> <span class="pre">within</span> <span class="pre">the</span> <span class="pre">Controller')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rbv:</span> <span class="pre">Anno(name='ARbv'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Override</span> <span class="pre">for</span> <span class="pre">rbv')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group:</span> <span class="pre">Optional[Anno(name='AGroup'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='If</span> <span class="pre">given</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">which</span> <span class="pre">GUI</span> <span class="pre">group</span> <span class="pre">should</span> <span class="pre">we</span> <span class="pre">attach</span> <span class="pre">to')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/compoundmotorsinkportspart.html#CompoundMotorSinkPortsPart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.CompoundMotorSinkPortsPart" title="Permalink to this definition"></a></dt>
+<dd><p>Defines a string <a class="reference internal" href="../../api/core_api.html#malcolm.core.Attribute" title="malcolm.core.Attribute"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Attribute</span></code></a> representing the CS this compound motor
+is permanently assigned to by reading its motor record OUT link</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The name of the Part within the Controller</p></li>
+<li><p><strong>rbv</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Override for rbv</p></li>
+<li><p><strong>group</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – If given, which GUI group should we attach to</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.MotorPreMovePart">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.pmac.parts.</span></span><span class="sig-name descname"><span class="pre">MotorPreMovePart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">Anno(name='APartName'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Part</span> <span class="pre">within</span> <span class="pre">the</span> <span class="pre">Controller')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mri:</span> <span class="pre">Anno(name='AMri'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Malcolm</span> <span class="pre">resource</span> <span class="pre">id</span> <span class="pre">of</span> <span class="pre">child</span> <span class="pre">object')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">demand:</span> <span class="pre">Anno(name='ADemand'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">demand</span> <span class="pre">value</span> <span class="pre">to</span> <span class="pre">move</span> <span class="pre">the</span> <span class="pre">axis</span> <span class="pre">to')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_visibility:</span> <span class="pre">Anno(name='AInitialVisibility'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Whether</span> <span class="pre">the</span> <span class="pre">part</span> <span class="pre">is</span> <span class="pre">initially</span> <span class="pre">visible</span> <span class="pre">with</span> <span class="pre">no</span> <span class="pre">config</span> <span class="pre">loaded</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">None</span> <span class="pre">means</span> <span class="pre">only</span> <span class="pre">if</span> <span class="pre">child</span> <span class="pre">Source/Sink</span> <span class="pre">Ports</span> <span class="pre">connect</span> <span class="pre">to</span> <span class="pre">another</span> <span class="pre">Block')</span> <span class="pre">=</span> <span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/motorpremovepart.html#MotorPreMovePart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.MotorPreMovePart" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The name of the Part within the Controller</p></li>
+<li><p><strong>mri</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Malcolm resource id of child object</p></li>
+<li><p><strong>demand</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – The demand value to move the axis to</p></li>
+<li><p><strong>initial_visibility</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – Whether the part is initially visible with no config loaded, None means only if child Source/Sink Ports connect to another Block</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.MotorPreMovePart.on_configure">
+<span class="sig-name descname"><span class="pre">on_configure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/motorpremovepart.html#MotorPreMovePart.on_configure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.MotorPreMovePart.on_configure" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.PmacChildPart">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.pmac.parts.</span></span><span class="sig-name descname"><span class="pre">PmacChildPart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">Anno(name='APartName'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Part</span> <span class="pre">within</span> <span class="pre">the</span> <span class="pre">Controller')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mri:</span> <span class="pre">Anno(name='AMri'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Malcolm</span> <span class="pre">resource</span> <span class="pre">id</span> <span class="pre">of</span> <span class="pre">child</span> <span class="pre">object')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_visibility:</span> <span class="pre">Anno(name='AInitialVisibility'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Whether</span> <span class="pre">the</span> <span class="pre">part</span> <span class="pre">is</span> <span class="pre">initially</span> <span class="pre">visible</span> <span class="pre">with</span> <span class="pre">no</span> <span class="pre">config</span> <span class="pre">loaded</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">None</span> <span class="pre">means</span> <span class="pre">only</span> <span class="pre">if</span> <span class="pre">child</span> <span class="pre">Source/Sink</span> <span class="pre">Ports</span> <span class="pre">connect</span> <span class="pre">to</span> <span class="pre">another</span> <span class="pre">Block')</span> <span class="pre">=</span> <span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/pmacchildpart.html#PmacChildPart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.PmacChildPart" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The name of the Part within the Controller</p></li>
+<li><p><strong>mri</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Malcolm resource id of child object</p></li>
+<li><p><strong>initial_visibility</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – Whether the part is initially visible with no config loaded, None means only if child Source/Sink Ports connect to another Block</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.PmacChildPart.on_reset">
+<span class="sig-name descname"><span class="pre">on_reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/pmacchildpart.html#PmacChildPart.on_reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.PmacChildPart.on_reset" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.PmacChildPart.on_validate">
+<span class="sig-name descname"><span class="pre">on_validate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generator:</span> <span class="pre">Anno(name='AGenerator'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'scanpointgenerator.core.compoundgenerator.CompoundGenerator'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Generator</span> <span class="pre">instance</span> <span class="pre">providing</span> <span class="pre">specification</span> <span class="pre">for</span> <span class="pre">scan')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axesToMove:</span> <span class="pre">Anno(name='AAxesToMove'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='List</span> <span class="pre">of</span> <span class="pre">axes</span> <span class="pre">in</span> <span class="pre">inner</span> <span class="pre">dimension</span> <span class="pre">of</span> <span class="pre">generator</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">moved')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">part_info:</span> <span class="pre">Anno(name='APartInfo'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=(&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotypes._array.Array[malcolm.core.info.Info])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">Infos</span> <span class="pre">returned</span> <span class="pre">from</span> <span class="pre">other</span> <span class="pre">Parts')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional[Union[Anno(name='AParameterTweakInfos',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.modules.scanning.infos.ParameterTweakInfo'&gt;,</span> <span class="pre">description='Parameters</span> <span class="pre">that</span> <span class="pre">need</span> <span class="pre">to</span> <span class="pre">be</span> <span class="pre">changed</span> <span class="pre">to</span> <span class="pre">make</span> <span class="pre">them</span> <span class="pre">compatible'),</span> <span class="pre">Sequence[malcolm.modules.scanning.infos.ParameterTweakInfo],</span> <span class="pre">malcolm.modules.scanning.infos.ParameterTweakInfo]]</span></span></span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/pmacchildpart.html#PmacChildPart.on_validate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.PmacChildPart.on_validate" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+<li><p><strong>generator</strong> (<em>CompoundGenerator</em>) – Generator instance providing specification for scan</p></li>
+<li><p><strong>axesToMove</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – List of axes in inner dimension of generator that should be moved</p></li>
+<li><p><strong>part_info</strong> – The Infos returned from other Parts</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Parameters that need to be changed to make them compatible</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../scanning/infos_api.html#malcolm.modules.scanning.infos.ParameterTweakInfo" title="malcolm.modules.scanning.infos.ParameterTweakInfo">ParameterTweakInfo</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.PmacChildPart.calculate_generator_duration">
+<span class="sig-name descname"><span class="pre">calculate_generator_duration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">context:</span> <span class="pre">Anno(name='AContext',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;,</span> <span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks'),</span> <span class="pre">generator:</span> <span class="pre">Anno(name='AGenerator',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'scanpointgenerator.core.compoundgenerator.CompoundGenerator'&gt;,</span> <span class="pre">description='Generator</span> <span class="pre">instance</span> <span class="pre">providing</span> <span class="pre">specification</span> <span class="pre">for</span> <span class="pre">scan'),</span> <span class="pre">part_info:</span> <span class="pre">Anno(name='APartInfo',</span> <span class="pre">typ=(&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">annotypes._array.Array[malcolm.core.info.Info]),</span> <span class="pre">description='The</span> <span class="pre">Infos</span> <span class="pre">returned</span> <span class="pre">from</span> <span class="pre">other</span> <span class="pre">Parts'),</span> <span class="pre">motion_axes:</span> <span class="pre">List[str]</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/pmacchildpart.html#PmacChildPart.calculate_generator_duration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.PmacChildPart.calculate_generator_duration" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate a generator duration based on the generator and axes we are moving</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.PmacChildPart.calculate_duration_from_first_two_points">
+<span class="sig-name descname"><span class="pre">calculate_duration_from_first_two_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axis_mapping</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/external_api.html#Dict" title="Dict"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">malcolm.modules.pmac.infos.MotorInfo</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">scanpointgenerator.core.point.Point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">second_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">scanpointgenerator.core.point.Point</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/pmacchildpart.html#PmacChildPart.calculate_duration_from_first_two_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.PmacChildPart.calculate_duration_from_first_two_points" title="Permalink to this definition"></a></dt>
+<dd><p>Guess a duration by using the distance between two points and the max velocities</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.PmacChildPart.get_cs_port">
+<span class="sig-name descname"><span class="pre">get_cs_port</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">context:</span> <span class="pre">Anno(name='AContext',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;,</span> <span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks'),</span> <span class="pre">motion_axes:</span> <span class="pre">List[str]</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/pmacchildpart.html#PmacChildPart.get_cs_port"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.PmacChildPart.get_cs_port" title="Permalink to this definition"></a></dt>
+<dd><p>Work out the cs_port and motion_axes we should be using</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.PmacChildPart.on_configure">
+<span class="sig-name descname"><span class="pre">on_configure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">completed_steps:</span> <span class="pre">Anno(name='ACompletedSteps'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'int'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Number</span> <span class="pre">of</span> <span class="pre">steps</span> <span class="pre">already</span> <span class="pre">completed')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps_to_do:</span> <span class="pre">Anno(name='AStepsToDo'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'int'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Number</span> <span class="pre">of</span> <span class="pre">steps</span> <span class="pre">we</span> <span class="pre">should</span> <span class="pre">configure</span> <span class="pre">for')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">part_info:</span> <span class="pre">Anno(name='APartInfo'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=(&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotypes._array.Array[malcolm.core.info.Info])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">Infos</span> <span class="pre">returned</span> <span class="pre">from</span> <span class="pre">other</span> <span class="pre">Parts')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generator:</span> <span class="pre">Anno(name='AGenerator'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'scanpointgenerator.core.compoundgenerator.CompoundGenerator'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Generator</span> <span class="pre">instance</span> <span class="pre">providing</span> <span class="pre">specification</span> <span class="pre">for</span> <span class="pre">scan')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axesToMove:</span> <span class="pre">Anno(name='AAxesToMove'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='List</span> <span class="pre">of</span> <span class="pre">axes</span> <span class="pre">in</span> <span class="pre">inner</span> <span class="pre">dimension</span> <span class="pre">of</span> <span class="pre">generator</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">moved')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/pmacchildpart.html#PmacChildPart.on_configure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.PmacChildPart.on_configure" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+<li><p><strong>completed_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Number of steps already completed</p></li>
+<li><p><strong>steps_to_do</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Number of steps we should configure for</p></li>
+<li><p><strong>part_info</strong> – The Infos returned from other Parts</p></li>
+<li><p><strong>generator</strong> (<em>CompoundGenerator</em>) – Generator instance providing specification for scan</p></li>
+<li><p><strong>axesToMove</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – List of axes in inner dimension of generator that should be moved</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.PmacChildPart.on_run">
+<span class="sig-name descname"><span class="pre">on_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/pmacchildpart.html#PmacChildPart.on_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.PmacChildPart.on_run" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.PmacChildPart.on_abort">
+<span class="sig-name descname"><span class="pre">on_abort</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/pmacchildpart.html#PmacChildPart.on_abort"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.PmacChildPart.on_abort" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.PmacChildPart.write_profile_points">
+<span class="sig-name descname"><span class="pre">write_profile_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">child</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cs_port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/pmacchildpart.html#PmacChildPart.write_profile_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.PmacChildPart.write_profile_points" title="Permalink to this definition"></a></dt>
+<dd><p>Build profile using given data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>child</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Block" title="malcolm.core.Block"><em>Block</em></a>) – Child block for running</p></li>
+<li><p><strong>cs_port</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – CS Port if this is a build rather than append</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.PmacChildPart.add_sparse_point">
+<span class="sig-name descname"><span class="pre">add_sparse_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_num</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points_are_joined</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">same_velocities</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/pmacchildpart.html#PmacChildPart.add_sparse_point"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.PmacChildPart.add_sparse_point" title="Permalink to this definition"></a></dt>
+<dd><p>Add in points but skip those that are linear to create a sparse
+trajectory. Add the upper bound when the points are non-linear.
+Always add the upper bound for the last point in a row (not joined to
+the next point).</p>
+<p>Joined| Same Vel|| Add Point | Add Upper
+0     | 0       || Y         | Y
+0     | 1       || N         | Y
+1     | 0       || Y         | Y
+1     | 1       || N         | N</p>
+<p>NOTE:
+This function may be called millions of times during the configure
+phase and hence is highly optimized. In particular the use of variable
+‘point’ looks like it may be referenced before assignment. The paths
+controlled by the matrix above show that it will be always be assigned
+or not used at all. Indexing into points[] is expensive so this is
+intentional.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.PmacStatusPart">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.pmac.parts.</span></span><span class="sig-name descname"><span class="pre">PmacStatusPart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">Anno(name='APartName'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Part</span> <span class="pre">within</span> <span class="pre">the</span> <span class="pre">Controller')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mri:</span> <span class="pre">Anno(name='AMri'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Malcolm</span> <span class="pre">resource</span> <span class="pre">id</span> <span class="pre">of</span> <span class="pre">child</span> <span class="pre">object')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_visibility:</span> <span class="pre">Optional[Anno(name='AInitialVisibility'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Whether</span> <span class="pre">the</span> <span class="pre">part</span> <span class="pre">is</span> <span class="pre">initially</span> <span class="pre">visible</span> <span class="pre">with</span> <span class="pre">no</span> <span class="pre">config</span> <span class="pre">loaded</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">None</span> <span class="pre">means</span> <span class="pre">only</span> <span class="pre">if</span> <span class="pre">child</span> <span class="pre">Source/Sink</span> <span class="pre">Ports</span> <span class="pre">connect</span> <span class="pre">to</span> <span class="pre">another</span> <span class="pre">Block')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stateful:</span> <span class="pre">Anno(name='AStateful'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'bool'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='If</span> <span class="pre">the</span> <span class="pre">child</span> <span class="pre">is</span> <span class="pre">a</span> <span class="pre">StatefulController</span> <span class="pre">then</span> <span class="pre">this</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">True')</span> <span class="pre">=</span> <span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/pmacstatuspart.html#PmacStatusPart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.PmacStatusPart" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The name of the Part within the Controller</p></li>
+<li><p><strong>mri</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Malcolm resource id of child object</p></li>
+<li><p><strong>initial_visibility</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – Whether the part is initially visible with no config loaded, None means only if child Source/Sink Ports connect to another Block</p></li>
+<li><p><strong>stateful</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – If the child is a StatefulController then this should be True</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.PmacStatusPart.servo_frequency">
+<span class="sig-name descname"><span class="pre">servo_frequency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks'))</span> <span class="pre">-&gt;</span> <span class="pre">Anno(name='AServoFrequency'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'float'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">Servo</span> <span class="pre">Frequency</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">PMAC</span> <span class="pre">in</span> <span class="pre">Hz'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/pmacstatuspart.html#PmacStatusPart.servo_frequency"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.PmacStatusPart.servo_frequency" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The Servo Frequency of the PMAC in Hz</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.PmacStatusPart.report_status">
+<span class="sig-name descname"><span class="pre">report_status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional[Union[Anno(name='AInfos',</span> <span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.info.Info'&gt;,</span> <span class="pre">description='Infos</span> <span class="pre">about</span> <span class="pre">current</span> <span class="pre">Part</span> <span class="pre">status</span> <span class="pre">to</span> <span class="pre">be</span> <span class="pre">passed</span> <span class="pre">to</span> <span class="pre">other</span> <span class="pre">parts'),</span> <span class="pre">Sequence[malcolm.core.info.Info],</span> <span class="pre">malcolm.core.info.Info]]</span></span></span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/pmacstatuspart.html#PmacStatusPart.report_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.PmacStatusPart.report_status" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Infos about current Part status to be passed to other parts</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../../api/core_api.html#malcolm.core.Info" title="malcolm.core.Info">Info</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.PmacTrajectoryPart">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.pmac.parts.</span></span><span class="sig-name descname"><span class="pre">PmacTrajectoryPart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">Anno(name='APartName'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Part</span> <span class="pre">within</span> <span class="pre">the</span> <span class="pre">Controller')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mri:</span> <span class="pre">Anno(name='AMri'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Malcolm</span> <span class="pre">resource</span> <span class="pre">id</span> <span class="pre">of</span> <span class="pre">child</span> <span class="pre">object')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/pmactrajectorypart.html#PmacTrajectoryPart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.PmacTrajectoryPart" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The name of the Part within the Controller</p></li>
+<li><p><strong>mri</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Malcolm resource id of child object</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.PmacTrajectoryPart.write_profile">
+<span class="sig-name descname"><span class="pre">write_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeArray:</span> <span class="pre">Anno(name='ATimeArray'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'numpy.int32'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">relative</span> <span class="pre">time</span> <span class="pre">points</span> <span class="pre">to</span> <span class="pre">scan</span> <span class="pre">in</span> <span class="pre">microseconds')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">csPort:</span> <span class="pre">Optional[Anno(name='ACSPort'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">Asyn</span> <span class="pre">Port</span> <span class="pre">name</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">Co-ordinate</span> <span class="pre">system</span> <span class="pre">port</span> <span class="pre">we</span> <span class="pre">want</span> <span class="pre">to</span> <span class="pre">scan')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocityMode:</span> <span class="pre">Optional[Anno(name='AVelocityMode'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'numpy.int32'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">velocity</span> <span class="pre">mode</span> <span class="pre">of</span> <span class="pre">each</span> <span class="pre">point')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">userPrograms:</span> <span class="pre">Optional[Anno(name='AUserPrograms'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'numpy.int32'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Which</span> <span class="pre">user</span> <span class="pre">program</span> <span class="pre">to</span> <span class="pre">run</span> <span class="pre">for</span> <span class="pre">each</span> <span class="pre">point')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a:</span> <span class="pre">Optional[Anno(name='ADemandTrajectory'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'numpy.float64'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">position</span> <span class="pre">the</span> <span class="pre">axis</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">at</span> <span class="pre">for</span> <span class="pre">each</span> <span class="pre">point</span> <span class="pre">in</span> <span class="pre">the</span> <span class="pre">scan')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b:</span> <span class="pre">Optional[Anno(name='ADemandTrajectory'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'numpy.float64'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">position</span> <span class="pre">the</span> <span class="pre">axis</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">at</span> <span class="pre">for</span> <span class="pre">each</span> <span class="pre">point</span> <span class="pre">in</span> <span class="pre">the</span> <span class="pre">scan')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c:</span> <span class="pre">Optional[Anno(name='ADemandTrajectory'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'numpy.float64'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">position</span> <span class="pre">the</span> <span class="pre">axis</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">at</span> <span class="pre">for</span> <span class="pre">each</span> <span class="pre">point</span> <span class="pre">in</span> <span class="pre">the</span> <span class="pre">scan')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u:</span> <span class="pre">Optional[Anno(name='ADemandTrajectory'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'numpy.float64'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">position</span> <span class="pre">the</span> <span class="pre">axis</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">at</span> <span class="pre">for</span> <span class="pre">each</span> <span class="pre">point</span> <span class="pre">in</span> <span class="pre">the</span> <span class="pre">scan')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v:</span> <span class="pre">Optional[Anno(name='ADemandTrajectory'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'numpy.float64'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">position</span> <span class="pre">the</span> <span class="pre">axis</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">at</span> <span class="pre">for</span> <span class="pre">each</span> <span class="pre">point</span> <span class="pre">in</span> <span class="pre">the</span> <span class="pre">scan')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w:</span> <span class="pre">Optional[Anno(name='ADemandTrajectory'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'numpy.float64'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">position</span> <span class="pre">the</span> <span class="pre">axis</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">at</span> <span class="pre">for</span> <span class="pre">each</span> <span class="pre">point</span> <span class="pre">in</span> <span class="pre">the</span> <span class="pre">scan')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x:</span> <span class="pre">Optional[Anno(name='ADemandTrajectory'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'numpy.float64'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">position</span> <span class="pre">the</span> <span class="pre">axis</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">at</span> <span class="pre">for</span> <span class="pre">each</span> <span class="pre">point</span> <span class="pre">in</span> <span class="pre">the</span> <span class="pre">scan')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y:</span> <span class="pre">Optional[Anno(name='ADemandTrajectory'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'numpy.float64'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">position</span> <span class="pre">the</span> <span class="pre">axis</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">at</span> <span class="pre">for</span> <span class="pre">each</span> <span class="pre">point</span> <span class="pre">in</span> <span class="pre">the</span> <span class="pre">scan')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z:</span> <span class="pre">Optional[Anno(name='ADemandTrajectory'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'numpy.float64'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='The</span> <span class="pre">position</span> <span class="pre">the</span> <span class="pre">axis</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">at</span> <span class="pre">for</span> <span class="pre">each</span> <span class="pre">point</span> <span class="pre">in</span> <span class="pre">the</span> <span class="pre">scan')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/pmactrajectorypart.html#PmacTrajectoryPart.write_profile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.PmacTrajectoryPart.write_profile" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p></li>
+<li><p><strong>timeArray</strong> (<em>int32</em>) – The relative time points to scan in microseconds</p></li>
+<li><p><strong>csPort</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The Asyn Port name of the Co-ordinate system port we want to scan</p></li>
+<li><p><strong>velocityMode</strong> (<em>int32</em>) – The velocity mode of each point</p></li>
+<li><p><strong>userPrograms</strong> (<em>int32</em>) – Which user program to run for each point</p></li>
+<li><p><strong>a</strong> (<em>float64</em>) – The position the axis should be at for each point in the scan</p></li>
+<li><p><strong>b</strong> (<em>float64</em>) – The position the axis should be at for each point in the scan</p></li>
+<li><p><strong>c</strong> (<em>float64</em>) – The position the axis should be at for each point in the scan</p></li>
+<li><p><strong>u</strong> (<em>float64</em>) – The position the axis should be at for each point in the scan</p></li>
+<li><p><strong>v</strong> (<em>float64</em>) – The position the axis should be at for each point in the scan</p></li>
+<li><p><strong>w</strong> (<em>float64</em>) – The position the axis should be at for each point in the scan</p></li>
+<li><p><strong>x</strong> (<em>float64</em>) – The position the axis should be at for each point in the scan</p></li>
+<li><p><strong>y</strong> (<em>float64</em>) – The position the axis should be at for each point in the scan</p></li>
+<li><p><strong>z</strong> (<em>float64</em>) – The position the axis should be at for each point in the scan</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.PmacTrajectoryPart.execute_profile">
+<span class="sig-name descname"><span class="pre">execute_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/pmactrajectorypart.html#PmacTrajectoryPart.execute_profile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.PmacTrajectoryPart.execute_profile" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.PmacTrajectoryPart.abort_profile">
+<span class="sig-name descname"><span class="pre">abort_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context:</span> <span class="pre">Anno(name='AContext'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'malcolm.core.context.Context'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='Context</span> <span class="pre">that</span> <span class="pre">should</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">perform</span> <span class="pre">operations</span> <span class="pre">on</span> <span class="pre">child</span> <span class="pre">blocks')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/pmactrajectorypart.html#PmacTrajectoryPart.abort_profile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.PmacTrajectoryPart.abort_profile" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>context</strong> (<a class="reference internal" href="../../api/core_api.html#malcolm.core.Context" title="malcolm.core.Context"><em>Context</em></a>) – Context that should be used to perform operations on child blocks</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="malcolm.modules.pmac.parts.RawMotorSinkPortsPart">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">malcolm.modules.pmac.parts.</span></span><span class="sig-name descname"><span class="pre">RawMotorSinkPortsPart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pv_prefix:</span> <span class="pre">Anno(name='APvPrefix'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='PV</span> <span class="pre">prefix</span> <span class="pre">for</span> <span class="pre">CSPort</span> <span class="pre">and</span> <span class="pre">CSAxis</span> <span class="pre">records')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group:</span> <span class="pre">Optional[Anno(name='AGroup'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ=&lt;class</span> <span class="pre">'str'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description='If</span> <span class="pre">given</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">which</span> <span class="pre">GUI</span> <span class="pre">group</span> <span class="pre">should</span> <span class="pre">we</span> <span class="pre">attach</span> <span class="pre">to')]</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/malcolm/modules/pmac/parts/rawmotorsinkportspart.html#RawMotorSinkPortsPart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#malcolm.modules.pmac.parts.RawMotorSinkPortsPart" title="Permalink to this definition"></a></dt>
+<dd><p>Defines a string <a class="reference internal" href="../../api/core_api.html#malcolm.core.Attribute" title="malcolm.core.Attribute"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Attribute</span></code></a> representing a asyn port that should be
+depicted as a Source Port on a Block</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pv_prefix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – PV prefix for CSPort and CSAxis records</p></li>
+<li><p><strong>group</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – If given, which GUI group should we attach to</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="infos_api.html" class="btn btn-neutral float-left" title="malcolm.modules.pmac.infos" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="util_api.html" class="btn btn-neutral float-right" title="malcolm.modules.pmac.util" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

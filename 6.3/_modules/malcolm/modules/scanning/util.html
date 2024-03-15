@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.modules.scanning.util &mdash; malcolm 6.3 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                6.3
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>malcolm.modules.scanning.util</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for malcolm.modules.scanning.util</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; scanning.utils provides shared utility functions and classes.</span>
+<span class="sd">For consistency and to avoid circular dependencies, the following</span>
+<span class="sd">rules are applied:</span>
+<span class="sd">- All types required to initialize hook classes are in the hooks namespace</span>
+<span class="sd">- All types required to initialize info classes are in the infos namespace</span>
+<span class="sd">- util depends on hooks and infos (not vice versa)&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">Array</span><span class="p">,</span> <span class="n">Serializable</span>
+<span class="kn">from</span> <span class="nn">scanpointgenerator</span> <span class="kn">import</span> <span class="n">CompoundGenerator</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AttributeModel</span><span class="p">,</span>
+    <span class="n">Display</span><span class="p">,</span>
+    <span class="n">NTUnion</span><span class="p">,</span>
+    <span class="n">NumberMeta</span><span class="p">,</span>
+    <span class="n">Table</span><span class="p">,</span>
+    <span class="n">VMeta</span><span class="p">,</span>
+    <span class="n">Widget</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules</span> <span class="kn">import</span> <span class="n">builtin</span>
+
+<span class="kn">from</span> <span class="nn">.hooks</span> <span class="kn">import</span> <span class="n">AAxesToMove</span><span class="p">,</span> <span class="n">ABreakpoints</span><span class="p">,</span> <span class="n">AGenerator</span><span class="p">,</span> <span class="n">UAxesToMove</span>
+<span class="kn">from</span> <span class="nn">.infos</span> <span class="kn">import</span> <span class="n">DatasetType</span><span class="p">,</span> <span class="n">ParameterTweakInfo</span>
+
+
+<span class="k">def</span> <span class="nf">exposure_attribute</span><span class="p">(</span><span class="n">min_exposure</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AttributeModel</span><span class="p">:</span>
+    <span class="n">meta</span> <span class="o">=</span> <span class="n">NumberMeta</span><span class="p">(</span>
+        <span class="s2">&quot;float64&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;The calculated exposure for this run&quot;</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">Widget</span><span class="o">.</span><span class="n">TEXTUPDATE</span><span class="o">.</span><span class="n">tag</span><span class="p">()],</span>
+        <span class="n">display</span><span class="o">=</span><span class="n">Display</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">,</span> <span class="n">limitLow</span><span class="o">=</span><span class="n">min_exposure</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">meta</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="ConfigureParams"><a class="viewcode-back" href="../../../../build/scanning/util_api.html#malcolm.modules.scanning.util.ConfigureParams">[docs]</a><span class="k">class</span> <span class="nc">ConfigureParams</span><span class="p">(</span><span class="n">Serializable</span><span class="p">):</span>
+    <span class="c1"># This will be serialized, so maintain camelCase for axesToMove</span>
+    <span class="c1"># noinspection PyPep8Naming</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">generator</span><span class="p">:</span> <span class="n">AGenerator</span><span class="p">,</span>
+        <span class="n">axesToMove</span><span class="p">:</span> <span class="n">UAxesToMove</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">breakpoints</span><span class="p">:</span> <span class="n">ABreakpoints</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="c1"># Got some additional args to report</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">call_types</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Anno</span><span class="p">]</span> <span class="o">=</span> <span class="n">ConfigureParams</span><span class="o">.</span><span class="n">call_types</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                <span class="c1"># We don&#39;t use this apart from its presence,</span>
+                <span class="c1"># so no need to fill in description, typ, etc.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">call_types</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generator</span> <span class="o">=</span> <span class="n">generator</span>
+        <span class="k">if</span> <span class="n">axesToMove</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">axesToMove</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">axes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axesToMove</span> <span class="o">=</span> <span class="n">AAxesToMove</span><span class="p">(</span><span class="n">axesToMove</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">breakpoints</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">breakpoints</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">breakpoints</span> <span class="o">=</span> <span class="n">ABreakpoints</span><span class="p">(</span><span class="n">breakpoints</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PointGeneratorMeta"><a class="viewcode-back" href="../../../../build/scanning/util_api.html#malcolm.modules.scanning.util.PointGeneratorMeta">[docs]</a><span class="nd">@Serializable</span><span class="o">.</span><span class="n">register_subclass</span><span class="p">(</span><span class="s2">&quot;malcolm:core/PointGeneratorMeta:1.0&quot;</span><span class="p">)</span>
+<span class="nd">@VMeta</span><span class="o">.</span><span class="n">register_annotype_converter</span><span class="p">(</span><span class="n">CompoundGenerator</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">PointGeneratorMeta</span><span class="p">(</span><span class="n">VMeta</span><span class="p">):</span>
+    <span class="n">attribute_class</span> <span class="o">=</span> <span class="n">NTUnion</span>
+
+    <span class="k">def</span> <span class="nf">doc_type_string</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;CompoundGenerator&quot;</span>
+
+    <span class="k">def</span> <span class="nf">default_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Widget</span><span class="o">.</span><span class="n">TREE</span>
+
+    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">CompoundGenerator</span><span class="p">([],</span> <span class="p">[],</span> <span class="p">[])</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">CompoundGenerator</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">value</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">CompoundGenerator</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Value </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> must be a Generator object or dictionary&quot;</span><span class="p">)</span></div>
+
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Dataset names&quot;</span><span class="p">):</span>
+    <span class="n">ADatasetNames</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Filenames of HDF files relative to fileDir&quot;</span><span class="p">):</span>
+    <span class="n">AFilenames</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Types of dataset&quot;</span><span class="p">):</span>
+    <span class="n">ADatasetTypes</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="n">DatasetType</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Rank (number of dimensions) of the dataset&quot;</span><span class="p">):</span>
+    <span class="n">ARanks</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Dataset paths within HDF files&quot;</span><span class="p">):</span>
+    <span class="n">APaths</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;UniqueID array paths within HDF files&quot;</span><span class="p">):</span>
+    <span class="n">AUniqueIDs</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="n">UDatasetNames</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">ADatasetNames</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="n">UFilenames</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">AFilenames</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="n">UDatasetTypes</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">ADatasetTypes</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">DatasetType</span><span class="p">]]</span>
+<span class="n">URanks</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">ARanks</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">]]</span>
+<span class="n">UPaths</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">APaths</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="n">UUniqueIDs</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">AUniqueIDs</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+
+
+<div class="viewcode-block" id="DatasetTable"><a class="viewcode-back" href="../../../../build/scanning/util_api.html#malcolm.modules.scanning.util.DatasetTable">[docs]</a><span class="k">class</span> <span class="nc">DatasetTable</span><span class="p">(</span><span class="n">Table</span><span class="p">):</span>
+    <span class="c1"># This will be serialized so we need type to be called type</span>
+    <span class="c1"># noinspection PyShadowingBuiltins</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">UDatasetNames</span><span class="p">,</span>
+        <span class="n">filename</span><span class="p">:</span> <span class="n">UFilenames</span><span class="p">,</span>
+        <span class="nb">type</span><span class="p">:</span> <span class="n">UDatasetTypes</span><span class="p">,</span>
+        <span class="n">rank</span><span class="p">:</span> <span class="n">URanks</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="n">UPaths</span><span class="p">,</span>
+        <span class="n">uniqueid</span><span class="p">:</span> <span class="n">UUniqueIDs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">ADatasetNames</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">AFilenames</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">ADatasetTypes</span><span class="p">(</span><span class="nb">type</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">=</span> <span class="n">ARanks</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">APaths</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uniqueid</span> <span class="o">=</span> <span class="n">AUniqueIDs</span><span class="p">(</span><span class="n">uniqueid</span><span class="p">)</span></div>
+
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Whether the detectors are enabled or not&quot;</span><span class="p">):</span>
+    <span class="n">AEnable</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">bool</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Detector names&quot;</span><span class="p">):</span>
+    <span class="n">ADetectorNames</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Detector block mris&quot;</span><span class="p">):</span>
+    <span class="n">ADetectorMris</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Exposure of each detector frame for the current scan&quot;</span><span class="p">):</span>
+    <span class="n">AExposures</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Number of detector frames for each generator point&quot;</span><span class="p">):</span>
+    <span class="n">AFramesPerStep</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">]]</span>
+<span class="n">UEnable</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">AEnable</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">bool</span><span class="p">]]</span>
+<span class="n">UDetectorNames</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">ADetectorNames</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="n">UDetectorMris</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">ADetectorMris</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="n">UExposures</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">AExposures</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span>
+<span class="n">UFramesPerStep</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">AFramesPerStep</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">]]</span>
+
+
+<div class="viewcode-block" id="DetectorTable"><a class="viewcode-back" href="../../../../build/scanning/util_api.html#malcolm.modules.scanning.util.DetectorTable">[docs]</a><span class="k">class</span> <span class="nc">DetectorTable</span><span class="p">(</span><span class="n">Table</span><span class="p">):</span>
+    <span class="c1"># Will be serialized so use camelCase</span>
+    <span class="c1"># noinspection PyPep8Naming</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">enable</span><span class="p">:</span> <span class="n">UEnable</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">UDetectorNames</span><span class="p">,</span>
+        <span class="n">mri</span><span class="p">:</span> <span class="n">UDetectorMris</span><span class="p">,</span>
+        <span class="n">exposure</span><span class="p">:</span> <span class="n">UExposures</span><span class="p">,</span>
+        <span class="n">framesPerStep</span><span class="p">:</span> <span class="n">UFramesPerStep</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enable</span> <span class="o">=</span> <span class="n">AEnable</span><span class="p">(</span><span class="n">enable</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">ADetectorNames</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mri</span> <span class="o">=</span> <span class="n">ADetectorMris</span><span class="p">(</span><span class="n">mri</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="n">AExposures</span><span class="p">(</span><span class="n">exposure</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">framesPerStep</span> <span class="o">=</span> <span class="n">AFramesPerStep</span><span class="p">(</span><span class="n">framesPerStep</span><span class="p">)</span></div>
+
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;The detectors that should be active and their exposures&quot;</span><span class="p">):</span>
+    <span class="n">ADetectorTable</span> <span class="o">=</span> <span class="n">DetectorTable</span>
+
+
+<div class="viewcode-block" id="RunnableStates"><a class="viewcode-back" href="../../../../reference/statesets.html#malcolm.modules.scanning.util.RunnableStates">[docs]</a><span class="k">class</span> <span class="nc">RunnableStates</span><span class="p">(</span><span class="n">builtin</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">ManagerStates</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This state set covers controllers and parts that can be configured and</span>
+<span class="sd">    then run, and have the ability to pause and rewind&quot;&quot;&quot;</span>
+
+    <span class="n">CONFIGURING</span> <span class="o">=</span> <span class="s2">&quot;Configuring&quot;</span>
+    <span class="n">ARMED</span> <span class="o">=</span> <span class="s2">&quot;Armed&quot;</span>
+    <span class="n">RUNNING</span> <span class="o">=</span> <span class="s2">&quot;Running&quot;</span>
+    <span class="n">POSTRUN</span> <span class="o">=</span> <span class="s2">&quot;PostRun&quot;</span>
+    <span class="n">FINISHED</span> <span class="o">=</span> <span class="s2">&quot;Finished&quot;</span>
+    <span class="n">PAUSED</span> <span class="o">=</span> <span class="s2">&quot;Paused&quot;</span>
+    <span class="n">SEEKING</span> <span class="o">=</span> <span class="s2">&quot;Seeking&quot;</span>
+    <span class="n">ABORTING</span> <span class="o">=</span> <span class="s2">&quot;Aborting&quot;</span>
+    <span class="n">ABORTED</span> <span class="o">=</span> <span class="s2">&quot;Aborted&quot;</span>
+
+    <span class="k">def</span> <span class="nf">create_block_transitions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">create_block_transitions</span><span class="p">()</span>
+        <span class="c1"># Set transitions for normal states</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_allowed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">READY</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">CONFIGURING</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_allowed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CONFIGURING</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ARMED</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_allowed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ARMED</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">SEEKING</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">RESETTING</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_allowed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">POSTRUN</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">SEEKING</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_allowed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">POSTRUN</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ARMED</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">SEEKING</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_allowed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">SEEKING</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">RESETTING</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">CONFIGURING</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_allowed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SEEKING</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ARMED</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">PAUSED</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_allowed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">PAUSED</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">SEEKING</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">)</span>
+
+        <span class="c1"># Add Abort to all normal states</span>
+        <span class="n">normal_states</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">READY</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">CONFIGURING</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ARMED</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">POSTRUN</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">PAUSED</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">SEEKING</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">normal_states</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_allowed</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ABORTING</span><span class="p">)</span>
+
+        <span class="c1"># Set transitions for aborted states</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_allowed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ABORTING</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ABORTED</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_allowed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ABORTED</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">RESETTING</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">resolve_generator_tweaks</span><span class="p">(</span>
+    <span class="n">generator_tweaks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ParameterTweakInfo</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ParameterTweakInfo</span><span class="p">:</span>
+    <span class="c1"># Only one tweak is simple</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">generator_tweaks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">generator_tweaks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Look for the largest duration in the tweaks</span>
+        <span class="n">largest_duration</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">tweak</span> <span class="ow">in</span> <span class="n">generator_tweaks</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">tweak</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">duration</span> <span class="o">&gt;</span> <span class="n">largest_duration</span><span class="p">:</span>
+                <span class="n">largest_duration</span> <span class="o">=</span> <span class="n">tweak</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">duration</span>
+        <span class="n">generator</span> <span class="o">=</span> <span class="n">generator_tweaks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">generator</span><span class="o">.</span><span class="n">duration</span> <span class="o">=</span> <span class="n">largest_duration</span>
+        <span class="k">return</span> <span class="n">ParameterTweakInfo</span><span class="p">(</span><span class="s2">&quot;generator&quot;</span><span class="p">,</span> <span class="n">generator</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

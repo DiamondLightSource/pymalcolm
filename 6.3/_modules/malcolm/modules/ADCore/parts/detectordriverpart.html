@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>malcolm.modules.ADCore.parts.detectordriverpart &mdash; malcolm 6.3 documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../../../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../../../../../contents.html" class="icon icon-home"> malcolm
+            <img src="../../../../../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                6.3
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../contents.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+      <li>malcolm.modules.ADCore.parts.detectordriverpart</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for malcolm.modules.ADCore.parts.detectordriverpart</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">xml.etree</span> <span class="kn">import</span> <span class="n">cElementTree</span> <span class="k">as</span> <span class="n">ET</span>
+
+<span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">Anno</span><span class="p">,</span> <span class="n">Array</span><span class="p">,</span> <span class="n">add_call_types</span>
+<span class="kn">from</span> <span class="nn">scanpointgenerator</span> <span class="kn">import</span> <span class="n">CompoundGenerator</span>
+
+<span class="kn">from</span> <span class="nn">malcolm.compat</span> <span class="kn">import</span> <span class="n">et_to_string</span>
+<span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+    <span class="n">APartName</span><span class="p">,</span>
+    <span class="n">BadValueError</span><span class="p">,</span>
+    <span class="n">Context</span><span class="p">,</span>
+    <span class="n">Future</span><span class="p">,</span>
+    <span class="n">Info</span><span class="p">,</span>
+    <span class="n">NumberMeta</span><span class="p">,</span>
+    <span class="n">PartRegistrar</span><span class="p">,</span>
+    <span class="n">TableMeta</span><span class="p">,</span>
+    <span class="n">config_tag</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules</span> <span class="kn">import</span> <span class="n">builtin</span><span class="p">,</span> <span class="n">scanning</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules.scanning.infos</span> <span class="kn">import</span> <span class="n">ExposureDeadtimeInfo</span>
+<span class="kn">from</span> <span class="nn">malcolm.modules.scanning.parts</span> <span class="kn">import</span> <span class="n">ADetectorFramesPerStep</span>
+
+<span class="kn">from</span> <span class="nn">..infos</span> <span class="kn">import</span> <span class="n">FilePathTranslatorInfo</span><span class="p">,</span> <span class="n">NDArrayDatasetInfo</span><span class="p">,</span> <span class="n">NDAttributeDatasetInfo</span>
+<span class="kn">from</span> <span class="nn">..util</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">FRAME_TIMEOUT</span><span class="p">,</span>
+    <span class="n">APartRunsOnWindows</span><span class="p">,</span>
+    <span class="n">AVersionRequirement</span><span class="p">,</span>
+    <span class="n">DataType</span><span class="p">,</span>
+    <span class="n">ExtraAttributesTable</span><span class="p">,</span>
+    <span class="n">SourceType</span><span class="p">,</span>
+    <span class="n">check_driver_version</span><span class="p">,</span>
+    <span class="n">make_xml_filename</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Minimum acquire period the detector is capable of&quot;</span><span class="p">):</span>
+    <span class="n">AMinAcquirePeriod</span> <span class="o">=</span> <span class="nb">float</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Is main detector dataset useful to publish in DatasetTable?&quot;</span><span class="p">):</span>
+    <span class="n">AMainDatasetUseful</span> <span class="o">=</span> <span class="nb">bool</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;List of trigger modes that do not use hardware triggers&quot;</span><span class="p">):</span>
+    <span class="n">ASoftTriggerModes</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Array</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="n">USoftTriggerModes</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">ASoftTriggerModes</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+<span class="k">with</span> <span class="n">Anno</span><span class="p">(</span><span class="s2">&quot;Name of image mode for taking multiple images&quot;</span><span class="p">):</span>
+    <span class="n">AMultipleImageMode</span> <span class="o">=</span> <span class="nb">str</span>
+
+<span class="c1"># Pull re-used annotypes into our namespace in case we are subclassed</span>
+<span class="n">AMri</span> <span class="o">=</span> <span class="n">builtin</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">AMri</span>
+
+
+<span class="c1"># We will set these attributes on the child block, so don&#39;t save them</span>
+<div class="viewcode-block" id="DetectorDriverPart"><a class="viewcode-back" href="../../../../../build/ADCore/parts_api.html#malcolm.modules.ADCore.parts.DetectorDriverPart">[docs]</a><span class="nd">@builtin</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">no_save</span><span class="p">(</span>
+    <span class="s2">&quot;acquirePeriod&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;arrayCallbacks&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;arrayCounter&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;attributesFile&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;exposure&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;imageMode&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;numImages&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="k">class</span> <span class="nc">DetectorDriverPart</span><span class="p">(</span><span class="n">builtin</span><span class="o">.</span><span class="n">parts</span><span class="o">.</span><span class="n">ChildPart</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">APartName</span><span class="p">,</span>
+        <span class="n">mri</span><span class="p">:</span> <span class="n">AMri</span><span class="p">,</span>
+        <span class="n">soft_trigger_modes</span><span class="p">:</span> <span class="n">USoftTriggerModes</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">multiple_image_mode</span><span class="p">:</span> <span class="n">AMultipleImageMode</span> <span class="o">=</span> <span class="s2">&quot;Multiple&quot;</span><span class="p">,</span>
+        <span class="n">main_dataset_useful</span><span class="p">:</span> <span class="n">AMainDatasetUseful</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">runs_on_windows</span><span class="p">:</span> <span class="n">APartRunsOnWindows</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">required_version</span><span class="p">:</span> <span class="n">AVersionRequirement</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">min_acquire_period</span><span class="p">:</span> <span class="n">AMinAcquirePeriod</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">mri</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">required_version</span> <span class="o">=</span> <span class="n">required_version</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_acquire_period</span> <span class="o">=</span> <span class="n">min_acquire_period</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">soft_trigger_modes</span> <span class="o">=</span> <span class="n">soft_trigger_modes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">multiple_image_mode</span> <span class="o">=</span> <span class="n">multiple_image_mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_hardware_triggered</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">main_dataset_useful</span> <span class="o">=</span> <span class="n">main_dataset_useful</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attributes_filename</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extra_attributes</span> <span class="o">=</span> <span class="n">TableMeta</span><span class="o">.</span><span class="n">from_table</span><span class="p">(</span>
+            <span class="n">ExtraAttributesTable</span><span class="p">,</span>
+            <span class="s2">&quot;Extra attributes to be added to the dataset&quot;</span><span class="p">,</span>
+            <span class="n">writeable</span><span class="o">=</span><span class="p">[</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;pv&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sourceId&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;sourceType&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;dataType&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;datasetType&quot;</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="n">extra_tags</span><span class="o">=</span><span class="p">[</span><span class="n">config_tag</span><span class="p">()],</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_attribute_model</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runs_on_windows</span> <span class="o">=</span> <span class="n">runs_on_windows</span>
+        <span class="c1"># How long to wait between frame updates before error</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frame_timeout</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="c1"># When arrayCounter gets to here we are done</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">done_when_reaches</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># CompletedSteps = arrayCounter + self.uniqueid_offset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uniqueid_offset</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># A future that completes when detector start calls back</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_future</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Future</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">setup_detector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="n">Context</span><span class="p">,</span>
+        <span class="n">completed_steps</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ACompletedSteps</span><span class="p">,</span>
+        <span class="n">steps_to_do</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AStepsToDo</span><span class="p">,</span>
+        <span class="n">num_images</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">part_info</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">APartInfo</span><span class="p">,</span>
+        <span class="n">initial_configure</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">initial_configure</span><span class="p">:</span>
+            <span class="c1"># This is an initial configure, so reset arrayCounter to 0</span>
+            <span class="n">array_counter</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">done_when_reaches</span> <span class="o">=</span> <span class="n">steps_to_do</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># This is rewinding or setting up for another batch,</span>
+            <span class="c1"># skip to a uniqueID that has not been produced yet</span>
+            <span class="n">array_counter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">done_when_reaches</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">done_when_reaches</span> <span class="o">+=</span> <span class="n">steps_to_do</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uniqueid_offset</span> <span class="o">=</span> <span class="n">completed_steps</span> <span class="o">-</span> <span class="n">array_counter</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">arrayCounter</span><span class="o">=</span><span class="n">array_counter</span><span class="p">,</span>
+            <span class="n">imageMode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">multiple_image_mode</span><span class="p">,</span>
+            <span class="n">numImages</span><span class="o">=</span><span class="n">num_images</span><span class="p">,</span>
+            <span class="n">arrayCallbacks</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">child</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+        <span class="n">child</span><span class="o">.</span><span class="n">put_attribute_values</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># Might need to reset acquirePeriod as it&#39;s sometimes wrong</span>
+        <span class="c1"># in some detectors</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">info</span><span class="p">:</span> <span class="n">ExposureDeadtimeInfo</span> <span class="o">=</span> <span class="n">ExposureDeadtimeInfo</span><span class="o">.</span><span class="n">filter_single_value</span><span class="p">(</span>
+                <span class="n">part_info</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="n">BadValueError</span><span class="p">:</span>
+            <span class="c1"># This is ok, no exposure info</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">exposure</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;exposure&quot;</span><span class="p">,</span> <span class="n">info</span><span class="o">.</span><span class="n">calculate_exposure</span><span class="p">(</span><span class="n">duration</span><span class="p">))</span>
+            <span class="n">child</span><span class="o">.</span><span class="n">acquirePeriod</span><span class="o">.</span><span class="n">put_value</span><span class="p">(</span><span class="n">exposure</span> <span class="o">+</span> <span class="n">info</span><span class="o">.</span><span class="n">readout_time</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">arm_detector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">Context</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_future</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">start_async</span><span class="p">()</span>
+        <span class="n">child</span><span class="o">.</span><span class="n">when_value_matches</span><span class="p">(</span><span class="s2">&quot;acquiring&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">wait_for_detector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="n">Context</span><span class="p">,</span>
+        <span class="n">registrar</span><span class="p">:</span> <span class="n">PartRegistrar</span><span class="p">,</span>
+        <span class="n">event_timeout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+        <span class="n">child</span><span class="o">.</span><span class="n">arrayCounterReadback</span><span class="o">.</span><span class="n">subscribe_value</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_completed_steps</span><span class="p">,</span> <span class="n">registrar</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Wait for the array counter to reach the desired value. If any one frame takes</span>
+        <span class="c1"># more than event_timeout to appear, consider scan dead</span>
+        <span class="n">child</span><span class="o">.</span><span class="n">when_value_matches</span><span class="p">(</span>
+            <span class="s2">&quot;arrayCounterReadback&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">done_when_reaches</span><span class="p">,</span>
+            <span class="n">event_timeout</span><span class="o">=</span><span class="n">event_timeout</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">abort_detector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">Context</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+        <span class="n">child</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+        <span class="c1"># Stop is a put to a busy record which returns immediately</span>
+        <span class="c1"># The detector might take a while to actually stop so use the</span>
+        <span class="c1"># acquiring pv (which is the same asyn parameter as the busy record</span>
+        <span class="c1"># that stop() pokes) to check that it has finished</span>
+        <span class="n">child</span><span class="o">.</span><span class="n">when_value_matches</span><span class="p">(</span><span class="s2">&quot;acquiring&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">update_completed_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">registrar</span><span class="p">:</span> <span class="n">PartRegistrar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">completed_steps</span> <span class="o">=</span> <span class="n">value</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">uniqueid_offset</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">RunProgressInfo</span><span class="p">(</span><span class="n">completed_steps</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">build_attribute_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">root_el</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="s2">&quot;Attributes&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">s_type</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extra_attributes</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">sourceType</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">s_type</span> <span class="o">==</span> <span class="n">SourceType</span><span class="o">.</span><span class="n">PV</span><span class="p">:</span>
+                <span class="n">dbr_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra_attributes</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">dataType</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">dbr_type</span> <span class="o">==</span> <span class="n">DataType</span><span class="o">.</span><span class="n">INT</span><span class="p">:</span>
+                    <span class="n">dbr_type</span> <span class="o">=</span> <span class="s2">&quot;DBR_LONG&quot;</span>
+                <span class="k">elif</span> <span class="n">dbr_type</span> <span class="o">==</span> <span class="n">DataType</span><span class="o">.</span><span class="n">DOUBLE</span><span class="p">:</span>
+                    <span class="n">dbr_type</span> <span class="o">=</span> <span class="s2">&quot;DBR_DOUBLE&quot;</span>
+                <span class="k">elif</span> <span class="n">dbr_type</span> <span class="o">==</span> <span class="n">DataType</span><span class="o">.</span><span class="n">STRING</span><span class="p">:</span>
+                    <span class="n">dbr_type</span> <span class="o">=</span> <span class="s2">&quot;DBR_STRING&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">dbr_type</span> <span class="o">=</span> <span class="n">dbr_type</span><span class="o">.</span><span class="n">value</span>
+                <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
+                    <span class="n">root_el</span><span class="p">,</span>
+                    <span class="s2">&quot;Attribute&quot;</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">extra_attributes</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">name</span><span class="p">[</span><span class="n">index</span><span class="p">],</span>
+                    <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;EPICS_PV&quot;</span><span class="p">,</span>
+                    <span class="n">dbrtype</span><span class="o">=</span><span class="n">dbr_type</span><span class="p">,</span>
+                    <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">extra_attributes</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">description</span><span class="p">[</span><span class="n">index</span><span class="p">],</span>
+                    <span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">extra_attributes</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">sourceId</span><span class="p">[</span><span class="n">index</span><span class="p">],</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">s_type</span> <span class="o">==</span> <span class="n">SourceType</span><span class="o">.</span><span class="n">PARAM</span><span class="p">:</span>
+                <span class="n">ET</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
+                    <span class="n">root_el</span><span class="p">,</span>
+                    <span class="s2">&quot;Attribute&quot;</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">extra_attributes</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">name</span><span class="p">[</span><span class="n">index</span><span class="p">],</span>
+                    <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;PARAM&quot;</span><span class="p">,</span>
+                    <span class="n">datatype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">extra_attributes</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">dataType</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                    <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">extra_attributes</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">description</span><span class="p">[</span><span class="n">index</span><span class="p">],</span>
+                    <span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">extra_attributes</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">sourceId</span><span class="p">[</span><span class="n">index</span><span class="p">],</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="n">et_to_string</span><span class="p">(</span><span class="n">root_el</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set_extra_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">row</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">sourceType</span><span class="p">[</span><span class="n">row</span><span class="p">]</span> <span class="o">==</span> <span class="n">SourceType</span><span class="o">.</span><span class="n">PARAM</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">dataType</span><span class="p">[</span><span class="n">row</span><span class="p">]</span> <span class="o">==</span> <span class="n">DataType</span><span class="o">.</span><span class="n">DBRNATIVE</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;data type DBR_NATIVE invalid for asyn param attribute&quot;</span>
+                    <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extra_attributes</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">registrar</span><span class="p">:</span> <span class="n">PartRegistrar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">registrar</span><span class="p">)</span>
+        <span class="c1"># Hooks</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ReportStatusHook</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_report_status</span><span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ValidateHook</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_validate</span><span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span>
+            <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ConfigureHook</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">on_configure</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">configure_args_with_exposure</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span>
+            <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">SeekHook</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">on_seek</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">configure_args_with_exposure</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">RunHook</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_run</span><span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">PostRunArmedHook</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_post_run_armed</span><span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">hook</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">PauseHook</span><span class="p">,</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AbortHook</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_abort</span>
+        <span class="p">)</span>
+        <span class="c1"># Attributes</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">add_attribute_model</span><span class="p">(</span>
+            <span class="s2">&quot;attributesToCapture&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra_attributes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_extra_attributes</span>
+        <span class="p">)</span>
+        <span class="c1"># Tell the controller to pass &quot;exposure&quot; and &quot;frames_per_step&quot; to configure</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="n">scanning</span><span class="o">.</span><span class="n">infos</span><span class="o">.</span><span class="n">ConfigureParamsInfo</span><span class="p">(</span>
+            <span class="n">metas</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                <span class="n">frames_per_step</span><span class="o">=</span><span class="n">NumberMeta</span><span class="o">.</span><span class="n">from_annotype</span><span class="p">(</span>
+                    <span class="n">ADetectorFramesPerStep</span><span class="p">,</span> <span class="n">writeable</span><span class="o">=</span><span class="kc">False</span>
+                <span class="p">),</span>
+            <span class="p">),</span>
+            <span class="n">required</span><span class="o">=</span><span class="p">[],</span>
+            <span class="n">defaults</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">frames_per_step</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">registrar</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DetectorDriverPart.on_validate"><a class="viewcode-back" href="../../../../../build/ADCore/parts_api.html#malcolm.modules.ADCore.parts.DetectorDriverPart.on_validate">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_validate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">,</span>
+        <span class="n">generator</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AGenerator</span><span class="p">,</span>
+        <span class="n">frames_per_step</span><span class="p">:</span> <span class="n">ADetectorFramesPerStep</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">UParameterTweakInfos</span><span class="p">:</span>
+        <span class="c1"># Check if we have a minimum acquire period</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">required_version</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+            <span class="n">check_driver_version</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">driverVersion</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">required_version</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_acquire_period</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">duration</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">duration</span>
+            <span class="c1"># Check if we need to guess the generator duration</span>
+            <span class="k">if</span> <span class="n">duration</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                <span class="c1"># Use the minimum acquire period as an estimate of readout time. We</span>
+                <span class="c1"># also need to multiple by frames_per_step as the DetectorChildPart</span>
+                <span class="c1"># divides the generator down to the duration for a single detector</span>
+                <span class="c1"># frame.</span>
+                <span class="n">duration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_acquire_period</span> <span class="o">*</span> <span class="n">frames_per_step</span>
+                <span class="n">serialized</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+                <span class="n">new_generator</span> <span class="o">=</span> <span class="n">CompoundGenerator</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">serialized</span><span class="p">)</span>
+                <span class="n">new_generator</span><span class="o">.</span><span class="n">duration</span> <span class="o">=</span> <span class="n">duration</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: tweaking generator duration from &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">generator</span><span class="o">.</span><span class="n">duration</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+                <span class="k">return</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ParameterTweakInfo</span><span class="p">(</span><span class="s2">&quot;generator&quot;</span><span class="p">,</span> <span class="n">new_generator</span><span class="p">)</span>
+            <span class="c1"># Otherwise check the provided duration is long enough</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">generator</span><span class="o">.</span><span class="n">duration</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_acquire_period</span><span class="p">,</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Duration </span><span class="si">{</span><span class="n">generator</span><span class="o">.</span><span class="n">duration</span><span class="si">}</span><span class="s2"> per frame is less than minimum &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;acquire period </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">min_acquire_period</span><span class="si">}</span><span class="s2">s&quot;</span>
+                <span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="DetectorDriverPart.on_reset"><a class="viewcode-back" href="../../../../../build/ADCore/parts_api.html#malcolm.modules.ADCore.parts.DetectorDriverPart.on_reset">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_reset</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">abort_detector</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="c1"># Delete the layout XML file</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes_filename</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attributes_filename</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attributes_filename</span><span class="p">)</span>
+            <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+            <span class="n">child</span><span class="o">.</span><span class="n">attributesFile</span><span class="o">.</span><span class="n">put_value</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DetectorDriverPart.on_report_status"><a class="viewcode-back" href="../../../../../build/ADCore/parts_api.html#malcolm.modules.ADCore.parts.DetectorDriverPart.on_report_status">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_report_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">UInfos</span><span class="p">:</span>
+        <span class="n">ret</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Info</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">main_dataset_useful</span><span class="p">:</span>
+            <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">NDArrayDatasetInfo</span><span class="p">(</span><span class="n">rank</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">dataset_type</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">extra_attributes</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra_attributes</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">datasetType</span>
+        <span class="p">):</span>
+            <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">NDAttributeDatasetInfo</span><span class="o">.</span><span class="n">from_attribute_type</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">attr</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">dataset_type</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">ret</span></div>
+
+    <span class="k">def</span> <span class="nf">configure_args_with_exposure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
+        <span class="n">need_keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_configure</span><span class="o">.</span><span class="n">call_types</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;exposure&quot;</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="n">need_keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;exposure&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">need_keys</span>
+
+    <span class="c1"># Allow CamelCase as fileDir parameter will be serialized</span>
+    <span class="c1"># noinspection PyPep8Naming</span>
+<div class="viewcode-block" id="DetectorDriverPart.on_seek"><a class="viewcode-back" href="../../../../../build/ADCore/parts_api.html#malcolm.modules.ADCore.parts.DetectorDriverPart.on_seek">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_seek</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">,</span>
+        <span class="n">completed_steps</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ACompletedSteps</span><span class="p">,</span>
+        <span class="n">steps_to_do</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AStepsToDo</span><span class="p">,</span>
+        <span class="n">part_info</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">APartInfo</span><span class="p">,</span>
+        <span class="n">generator</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AGenerator</span><span class="p">,</span>
+        <span class="n">fileDir</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AFileDir</span><span class="p">,</span>
+        <span class="n">breakpoints</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">ABreakpoints</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">unsubscribe_all</span><span class="p">()</span>
+
+        <span class="c1"># If detector is hardware triggered, and we aren&#39;t using breakpoints, we can</span>
+        <span class="c1"># configure the detector for all frames now. This is instead of configuring and</span>
+        <span class="c1"># arming the detector for each inner scan, so we save some time</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_hardware_triggered</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">breakpoints</span><span class="p">:</span>
+            <span class="n">num_images</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="n">completed_steps</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">num_images</span> <span class="o">=</span> <span class="n">steps_to_do</span>
+
+        <span class="c1"># Set up the detector</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup_detector</span><span class="p">(</span>
+            <span class="n">context</span><span class="p">,</span>
+            <span class="n">completed_steps</span><span class="p">,</span>
+            <span class="n">steps_to_do</span><span class="p">,</span>
+            <span class="n">num_images</span><span class="p">,</span>
+            <span class="n">generator</span><span class="o">.</span><span class="n">duration</span><span class="p">,</span>
+            <span class="n">part_info</span><span class="p">,</span>
+            <span class="n">initial_configure</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Start now if we are hardware triggered</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_hardware_triggered</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">arm_detector</span><span class="p">(</span><span class="n">context</span><span class="p">)</span></div>
+
+    <span class="c1"># Allow CamelCase as fileDir parameter will be serialized</span>
+    <span class="c1"># noinspection PyPep8Naming</span>
+<div class="viewcode-block" id="DetectorDriverPart.on_configure"><a class="viewcode-back" href="../../../../../build/ADCore/parts_api.html#malcolm.modules.ADCore.parts.DetectorDriverPart.on_configure">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_configure</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">,</span>
+        <span class="n">completed_steps</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ACompletedSteps</span><span class="p">,</span>
+        <span class="n">steps_to_do</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AStepsToDo</span><span class="p">,</span>
+        <span class="n">part_info</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">APartInfo</span><span class="p">,</span>
+        <span class="n">generator</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AGenerator</span><span class="p">,</span>
+        <span class="n">fileDir</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AFileDir</span><span class="p">,</span>
+        <span class="n">breakpoints</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">ABreakpoints</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">unsubscribe_all</span><span class="p">()</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+
+        <span class="c1"># Calculate how long to wait before marking this scan as stalled</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frame_timeout</span> <span class="o">=</span> <span class="n">FRAME_TIMEOUT</span>
+        <span class="k">if</span> <span class="n">generator</span><span class="o">.</span><span class="n">duration</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">frame_timeout</span> <span class="o">+=</span> <span class="n">generator</span><span class="o">.</span><span class="n">duration</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Double it to be safe</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">frame_timeout</span> <span class="o">+=</span> <span class="n">FRAME_TIMEOUT</span>
+
+        <span class="c1"># If detector can be soft triggered, then we might need to defer</span>
+        <span class="c1"># starting it until run. Check triggerMode to find out</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">soft_trigger_modes</span><span class="p">:</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">triggerMode</span><span class="o">.</span><span class="n">value</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">is_hardware_triggered</span> <span class="o">=</span> <span class="n">mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">soft_trigger_modes</span>
+
+        <span class="c1"># If detector is hardware triggered, and we aren&#39;t using breakpoints, we can</span>
+        <span class="c1"># configure the detector for all frames now. This is instead of configuring and</span>
+        <span class="c1"># arming the detector for each inner scan, so we save some time</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_hardware_triggered</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">breakpoints</span><span class="p">:</span>
+            <span class="n">num_images</span> <span class="o">=</span> <span class="n">generator</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="n">completed_steps</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">num_images</span> <span class="o">=</span> <span class="n">steps_to_do</span>
+
+        <span class="c1"># Set up the detector</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup_detector</span><span class="p">(</span>
+            <span class="n">context</span><span class="p">,</span>
+            <span class="n">completed_steps</span><span class="p">,</span>
+            <span class="n">steps_to_do</span><span class="p">,</span>
+            <span class="n">num_images</span><span class="p">,</span>
+            <span class="n">generator</span><span class="o">.</span><span class="n">duration</span><span class="p">,</span>
+            <span class="n">part_info</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Tell detector to store NDAttributes if table given</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extra_attributes</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">sourceId</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">attribute_xml</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_attribute_xml</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attributes_filename</span> <span class="o">=</span> <span class="n">make_xml_filename</span><span class="p">(</span><span class="n">fileDir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attributes_filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">xml</span><span class="p">:</span>
+                <span class="n">xml</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">attribute_xml</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="s2">&quot;attributesFile&quot;</span><span class="p">),</span> <span class="p">(</span>
+                <span class="s2">&quot;Block doesn&#39;t have &#39;attributesFile&#39; attribute &quot;</span>
+                <span class="s2">&quot;(was it instantiated properly with adbase_parts?)&quot;</span>
+            <span class="p">)</span>
+            <span class="n">attributes_filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes_filename</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">runs_on_windows</span><span class="p">:</span>
+                <span class="n">attributes_filename</span> <span class="o">=</span> <span class="n">FilePathTranslatorInfo</span><span class="o">.</span><span class="n">translate_filepath</span><span class="p">(</span>
+                    <span class="n">part_info</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes_filename</span>
+                <span class="p">)</span>
+            <span class="n">child</span><span class="o">.</span><span class="n">attributesFile</span><span class="o">.</span><span class="n">put_value</span><span class="p">(</span><span class="n">attributes_filename</span><span class="p">)</span>
+
+        <span class="c1"># Start now if we are hardware triggered</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_hardware_triggered</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">arm_detector</span><span class="p">(</span><span class="n">context</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DetectorDriverPart.on_run"><a class="viewcode-back" href="../../../../../build/ADCore/parts_api.html#malcolm.modules.ADCore.parts.DetectorDriverPart.on_run">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_hardware_triggered</span><span class="p">:</span>
+            <span class="c1"># Start now if we are software triggered</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">arm_detector</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">registrar</span><span class="p">,</span> <span class="s2">&quot;No assigned registrar&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mri</span><span class="si">}</span><span class="s2">: Done when reaches: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">done_when_reaches</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wait_for_detector</span><span class="p">(</span>
+            <span class="n">context</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">registrar</span><span class="p">,</span> <span class="n">event_timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_timeout</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="DetectorDriverPart.on_post_run_armed"><a class="viewcode-back" href="../../../../../build/ADCore/parts_api.html#malcolm.modules.ADCore.parts.DetectorDriverPart.on_post_run_armed">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_post_run_armed</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">,</span>
+        <span class="n">completed_steps</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">ACompletedSteps</span><span class="p">,</span>
+        <span class="n">steps_to_do</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AStepsToDo</span><span class="p">,</span>
+        <span class="n">part_info</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">APartInfo</span><span class="p">,</span>
+        <span class="n">generator</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AGenerator</span><span class="p">,</span>
+        <span class="n">breakpoints</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">controllers</span><span class="o">.</span><span class="n">ABreakpoints</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># We may need to set up the detector again based on two conditions:</span>
+        <span class="c1">#   - breakpoints can be an uneven number of steps</span>
+        <span class="c1">#   - if pause has been called for a software-triggered detector which</span>
+        <span class="c1">#     will set a different number of steps to do</span>
+        <span class="k">if</span> <span class="n">breakpoints</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_hardware_triggered</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setup_detector</span><span class="p">(</span>
+                <span class="n">context</span><span class="p">,</span>
+                <span class="n">completed_steps</span><span class="p">,</span>
+                <span class="n">steps_to_do</span><span class="p">,</span>
+                <span class="n">steps_to_do</span><span class="p">,</span>
+                <span class="n">generator</span><span class="o">.</span><span class="n">duration</span><span class="p">,</span>
+                <span class="n">part_info</span><span class="p">,</span>
+                <span class="n">initial_configure</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_hardware_triggered</span><span class="p">:</span>
+                <span class="c1"># We can now re-arm hardware-triggered detectors</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">arm_detector</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="c1"># Otherwise if we have hardware triggers and no breakpoints then</span>
+        <span class="c1"># seek should have set up the correct number of images for the</span>
+        <span class="c1"># remainder of the scan and we do not need to re-arm</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">done_when_reaches</span> <span class="o">+=</span> <span class="n">steps_to_do</span></div>
+
+<div class="viewcode-block" id="DetectorDriverPart.on_abort"><a class="viewcode-back" href="../../../../../build/ADCore/parts_api.html#malcolm.modules.ADCore.parts.DetectorDriverPart.on_abort">[docs]</a>    <span class="nd">@add_call_types</span>
+    <span class="k">def</span> <span class="nf">on_abort</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">scanning</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">AContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">abort_detector</span><span class="p">(</span><span class="n">context</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

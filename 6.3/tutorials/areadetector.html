@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AreaDetector Tutorial &mdash; malcolm 6.3 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="PMAC Master Tutorial" href="pmac.html" />
+    <link rel="prev" title="Scanning Tutorial" href="scanning.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../contents.html" class="icon icon-home"> malcolm
+            <img src="../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                6.3
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">AreaDetector Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#acquisition-strategy">Acquisition Strategy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#creating-the-blocks">Creating the Blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#device-block">Device Block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hardware-blocks">Hardware Blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#template-designs">Template Designs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#scan-block-design">Scan Block Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-a-scan">Running a Scan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../reference/glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/structure.html">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../contents.html" class="icon icon-home"></a> &raquo;</li>
+      <li>AreaDetector Tutorial</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorials/areadetector.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="areadetector-tutorial">
+<span id="id1"></span><h1>AreaDetector Tutorial<a class="headerlink" href="#areadetector-tutorial" title="Permalink to this headline"></a></h1>
+<p>You should already know how to create a <a class="reference internal" href="../reference/glossary.html#block"><span class="std std-ref">Block</span></a> in the <a class="reference internal" href="../reference/glossary.html#device-layer"><span class="std std-ref">Device Layer</span></a> that
+looks like a detector, and how to integrate it into a <a class="reference internal" href="../reference/glossary.html#scan-layer"><span class="std std-ref">Scan Layer</span></a> Block, using
+a <a class="reference internal" href="../build/scanning/parts_api.html#malcolm.modules.scanning.parts.DetectorChildPart" title="malcolm.modules.scanning.parts.DetectorChildPart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DetectorChildPart</span></code></a>.  Now let’s build a Detector Block to control an
+<a class="reference external" href="https://epics.anl.gov/">EPICS</a> <a class="reference external" href="https://cars9.uchicago.edu/software/epics/areaDetector.html">areaDetector</a> <a class="reference external" href="http://cars.uchicago.edu/software/epics/simDetectorDoc.html">simDetector</a> and its <a class="reference external" href="http://cars.uchicago.edu/software/epics/pluginDoc.html">plugin chain</a>, and integrate
+it into a scan.</p>
+<p>While we use <a class="reference external" href="http://cars.uchicago.edu/software/epics/simDetectorDoc.html">simDetector</a> for this tutorial, support for other detectors can
+be found in the <code class="docutils literal notranslate"><span class="pre">./malcolm/modules</span></code> directory.</p>
+<section id="acquisition-strategy">
+<h2>Acquisition Strategy<a class="headerlink" href="#acquisition-strategy" title="Permalink to this headline"></a></h2>
+<p>The application we have in mind is a multi-dimensional continuous scan, so we
+want to be able to take a number of frames with the detector driver, calculate
+some statistics on them, and write them in the same dimensionality as the scan
+suggests into a <a class="reference external" href="https://www.nexusformat.org/">NeXus</a> formatted <a class="reference external" href="http://portal.hdfgroup.org/display/support">HDF5</a> file. The driver and each plugin in
+the chain will be represented by a Block in the <a class="reference internal" href="../reference/glossary.html#hardware-layer"><span class="std std-ref">Hardware Layer</span></a>, and they will
+all be controlled detector Block in the <a class="reference internal" href="../reference/glossary.html#device-layer"><span class="std std-ref">Device Layer</span></a>. This is best viewed as
+a diagram:</p>
+<div class="graphviz"><object data="../_images/graphviz-efc76601a8b1f6a228974bb7568876a40d39342d.svg" type="image/svg+xml" class="graphviz">
+<p class="warning">digraph simDetector_child_connections {
+bgcolor=transparent
+compound=true
+node [fontname=Arial fontsize=10 shape=rect style=filled fillcolor=&quot;#8BC4E9&quot;]
+graph [fontname=Arial fontsize=10]
+edge [fontname=Arial fontsize=10 arrowhead=vee]
+
+subgraph cluster_device {
+    label=&quot;Device Layer&quot;
+            style=filled
+            color=lightgrey
+
+    subgraph cluster_detector {
+        label=&quot;DETECTOR&quot;
+        ranksep=0.1
+                color=white
+        detector_c [label=&quot;RunnableController&quot;]
+        DRV [label=&lt;SimDetectorDriverPart&lt;BR/&gt;name: 'DRV'&gt;]
+        POS [label=&lt;PositionLabellerPart&lt;BR/&gt;name: 'POS'&gt;]
+        STAT [label=&lt;StatsPluginPart&lt;BR/&gt;name: 'STAT'&gt;]
+        HDF [label=&lt;HDFWriterPart&lt;BR/&gt;name: 'HDF'&gt;]
+        DSET [label=&lt;DatasetTablePart&lt;BR/&gt;name: 'DSET'&gt;]
+        detector_c -&gt; DRV [style=invis]
+        detector_c -&gt; HDF [style=invis]
+        DRV -&gt; DSET [style=invis]
+        {rank=same; DRV -&gt; POS -&gt; STAT -&gt; HDF}
+    }
+}
+
+subgraph cluster_hardware {
+    label=&quot;Hardware Layer&quot;
+            style=filled
+            color=lightgrey
+
+    subgraph cluster_drv {
+        label=&quot;DETECTOR:DRV&quot;
+        color=white
+        drv_c [label=&quot;StatefulController&quot;]
+        drv_p [label=&quot;CAParts&quot;]
+        drv_c -&gt; drv_p [style=invis]
+    }
+
+    subgraph cluster_pos {
+        label=&quot;DETECTOR:POS&quot;
+        color=white
+        pos_c [label=&quot;StatefulController&quot;]
+        pos_p [label=&quot;CAParts&quot;]
+        pos_c -&gt; pos_p [style=invis]
+    }
+
+    subgraph cluster_stat {
+        label=&quot;DETECTOR:STAT&quot;
+        color=white
+        stat_c [label=&quot;StatefulController&quot;]
+        stat_p [label=&quot;CAParts&quot;]
+        stat_c -&gt; stat_p [style=invis]
+    }
+
+    subgraph cluster_hdf {
+        label=&quot;DETECTOR:HDF&quot;
+        color=white
+        hdf_c [label=&quot;StatefulController&quot;]
+        hdf_p [label=&quot;CAParts&quot;]
+        hdf_c -&gt; hdf_p [style=invis]
+    }
+}
+
+DRV -&gt; drv_c [lhead=cluster_drv minlen=3 style=dashed]
+POS -&gt; pos_c [lhead=cluster_pos minlen=3 style=dashed]
+STAT -&gt; stat_c [lhead=cluster_stat minlen=3 style=dashed]
+HDF -&gt; hdf_c [lhead=cluster_hdf minlen=3 style=dashed]
+}</p></object></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>There is a separation and hence an interface between <a class="reference internal" href="../reference/glossary.html#part"><span class="std std-ref">Part</span></a> and child
+<a class="reference internal" href="../reference/glossary.html#block"><span class="std std-ref">Block</span></a>. The interface goes in the child Block, and the logic goes in the
+controlling Part. This is desirable because we could potentially have many
+possible logic Parts that could control the same kind of child Block, and
+making this split keeps the Parts small and more readable.</p>
+</div>
+<p>Each Hardware Block is responsible for controlling a group of <a class="reference external" href="https://docs.epics-controls.org/en/latest/specs/ca_protocol.html#process-variables">PVs</a> that make
+up a single plugin or driver:</p>
+<ul class="simple">
+<li><p>The DRV Block corresponds to the <a class="reference external" href="http://cars.uchicago.edu/software/epics/simDetectorDoc.html">simDetector</a> driver, which is responsible
+for producing the right number of <a class="reference external" href="http://cars.uchicago.edu/software/epics/areaDetectorDoc.html#NDArray">NDArrays</a>, each tagged with a unique ID.</p></li>
+<li><p>The POS Block corresponds to the <a class="reference external" href="http://cars.uchicago.edu/software/epics/NDPosPlugin.html">NDPosPlugin</a> plugin which tags each NDArray
+with a number of attributes that can be used to determine its position within
+the dataset dimensions.</p></li>
+<li><p>The STAT Block corresponds to the <a class="reference external" href="http://cars.uchicago.edu/software/epics/NDPluginStats.html">NDPluginStats</a> plugin which tags each
+NDArray with a number of statistics that can be calculated from the data.</p></li>
+<li><p>The HDF Block corresponds to the <a class="reference external" href="http://cars.uchicago.edu/software/epics/NDFileHDF5.html">NDFileHDF5</a> plugin which writes NDArrays
+into an HDF file, getting the position within the dataset dimensions from an
+attribute attached to the NDArray.</p></li>
+</ul>
+<p>The detector Device Block contains 4 Parts, one for each Hardware Block, that
+are responsible for setting <a class="reference internal" href="../reference/glossary.html#attribute"><span class="std std-ref">Attributes</span></a> on the relevant child
+Block in the right order. The Controller is responsible for calling each of its
+Parts <a class="reference internal" href="../reference/glossary.html#hook"><span class="std std-ref">Hooked</span></a> methods in the right order.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Malcolm’s role in this application is purely supervisory, it just sets up
+the underlying plugins and presses Acquire. <a class="reference external" href="https://epics.anl.gov/">EPICS</a> is responsible for
+writing data</p>
+</div>
+</section>
+<section id="creating-the-blocks">
+<h2>Creating the Blocks<a class="headerlink" href="#creating-the-blocks" title="Permalink to this headline"></a></h2>
+<p>So let’s start with the <a class="reference internal" href="../reference/glossary.html#process-definition"><span class="std std-ref">Process Definition</span></a>
+<code class="docutils literal notranslate"><span class="pre">./malcolm/modules/demo/DEMO-AREADETECTOR.yaml</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># To start the IOC, run Launcher -&gt; Utilities -&gt; GDA AreaDetector Simulation</span>
+<span class="p p-Indicator">-</span> <span class="nt">builtin.defines.cmd_string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">hostname</span>
+    <span class="nt">cmd</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">hostname -s</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.defines.export_env_string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">EPICS_CA_SERVER_PORT</span>
+    <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">6064</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.defines.export_env_string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">EPICS_CA_REPEATER_PORT</span>
+    <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">6065</span>
+
+<span class="c1"># Define a directory to store config in</span>
+<span class="p p-Indicator">-</span> <span class="nt">builtin.defines.tmp_dir</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">config_dir</span>
+
+<span class="c1"># Create some Blocks</span>
+<span class="p p-Indicator">-</span> <span class="nt">demo.blocks.motion_block</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(hostname)-ML-MOT-01</span>
+    <span class="nt">config_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(config_dir)</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">demo.blocks.detector_block</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(hostname)-ML-DET-01</span>
+    <span class="nt">config_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(config_dir)</span>
+    <span class="nt">label</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Interference detector</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">ADSimDetector.blocks.sim_detector_runnable_block</span><span class="p">:</span>
+    <span class="nt">mri_prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(hostname)-ML-DET-02</span>
+    <span class="nt">config_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(config_dir)</span>
+    <span class="nt">pv_prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(hostname)-AD-SIM-01</span>
+    <span class="nt">label</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Ramp detector</span>
+    <span class="nt">drv_suffix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">CAM</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">demo.blocks.scan_2det_block</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(hostname)-ML-SCAN-01</span>
+    <span class="nt">config_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(config_dir)</span>
+    <span class="nt">initial_design</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">template_both_detectors</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">system.blocks.system_block</span><span class="p">:</span>
+    <span class="nt">mri_prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(hostname)-ML-MALC-01</span>
+    <span class="nt">iocs</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(hostname)-EA-IOC-01</span>
+    <span class="nt">pv_prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(hostname)-ML-MALC-01</span>
+    <span class="nt">subnet_validation</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
+    <span class="nt">config_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(config_dir)</span>
+</pre></div>
+</div>
+<p>We have a couple more items to explain than in previous examples:</p>
+<ul class="simple">
+<li><p>The <a class="reference internal" href="../build/builtin/defines_api.html#malcolm.modules.builtin.defines.cmd_string" title="malcolm.modules.builtin.defines.cmd_string"><code class="xref any py py-func docutils literal notranslate"><span class="pre">builtin.defines.cmd_string</span></code></a> entry runs the shell command <code class="docutils literal notranslate"><span class="pre">hostname</span> <span class="pre">-s</span></code>
+and makes it available inside this YAML file as <code class="docutils literal notranslate"><span class="pre">$(hostname)</span></code>. This is
+needed because we are interfacing to an IOC that calculates the PV prefix
+based on the machine we are currently running on.</p></li>
+<li><p>The <a class="reference internal" href="../build/builtin/defines_api.html#malcolm.modules.builtin.defines.export_env_string" title="malcolm.modules.builtin.defines.export_env_string"><code class="xref any py py-func docutils literal notranslate"><span class="pre">builtin.defines.export_env_string</span></code></a> entries are so that we can export the
+EPICS server and repeater ports, again required as the IOC runs on these
+ports.</p></li>
+</ul>
+<p>The other items are Blocks just like we encountered in previous tutorials.</p>
+</section>
+<section id="device-block">
+<h2>Device Block<a class="headerlink" href="#device-block" title="Permalink to this headline"></a></h2>
+<p>The top level Device Block is a <a class="reference internal" href="../build/ADSimDetector/blocks_api.html#malcolm.modules.ADSimDetector.blocks.sim_detector_runnable_block" title="malcolm.modules.ADSimDetector.blocks.sim_detector_runnable_block"><code class="xref any py py-func docutils literal notranslate"><span class="pre">sim_detector_runnable_block</span></code></a>. Let’s take a look
+at <code class="docutils literal notranslate"><span class="pre">./malcolm/modules/ADSimDetector/blocks/sim_detector_runnable_block.yaml</span></code>
+to see what one of those looks like:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mri_prefix</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Malcolm resource id of the Block and prefix for children</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">pv_prefix</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">PV prefix for driver and all plugins</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">config_dir</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Where to store saved configs</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">label</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Beamline specific label for the detector</span>
+    <span class="nt">default</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">SimDetector</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">drv_suffix</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">PV suffix for detector driver</span>
+    <span class="nt">default</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">DET</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.defines.docstring</span><span class="p">:</span>
+    <span class="nt">value</span><span class="p">:</span> <span class="p p-Indicator">|</span>
+      <span class="no">Device Block corresponding to SimDetector + stat + pos + hdf writer.</span>
+
+      <span class="no">- Detector driver should have pv prefix $(pv_prefix):$(drv_suffix)</span>
+      <span class="no">- Pos should have pv prefix $(pv_prefix):POS</span>
+      <span class="no">- Stat should have pv prefix $(pv_prefix):STAT</span>
+      <span class="no">- HDF should have pv prefix $(pv_prefix):HDF5</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">scanning.controllers.RunnableController</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(mri_prefix)</span>
+    <span class="nt">config_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(config_dir)</span>
+    <span class="nt">template_designs</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(yamldir)/$(yamlname)_designs</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="p p-Indicator">|</span>
+      <span class="no">SimDetector produces a simulated detector image, with either a Linear</span>
+      <span class="no">ramp, array of peaks, or sine wave function used to make the 2D image</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parts.LabelPart</span><span class="p">:</span>
+    <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(label)</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">ADSimDetector.blocks.sim_detector_driver_block</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(mri_prefix):DRV</span>
+    <span class="nt">prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(pv_prefix):$(drv_suffix)</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">ADCore.parts.DetectorDriverPart</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">DRV</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(mri_prefix):DRV</span>
+    <span class="nt">soft_trigger_modes</span><span class="p">:</span>
+        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">Internal</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">scanning.parts.ExposureDeadtimePart</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">DEADTIME</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">ADCore.blocks.stats_plugin_block</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(mri_prefix):STAT</span>
+    <span class="nt">prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(pv_prefix):STAT</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">ADCore.parts.StatsPluginPart</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">STAT</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(mri_prefix):STAT</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">ADCore.includes.filewriting_collection</span><span class="p">:</span>
+    <span class="nt">pv_prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(pv_prefix)</span>
+    <span class="nt">mri_prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(mri_prefix)</span>
+</pre></div>
+</div>
+<p>The top of the file tells us what parameters should be passed, and defines a
+docstring for the Block. After that we instantiate the <a class="reference internal" href="../build/scanning/controllers_api.html#malcolm.modules.scanning.controllers.RunnableController" title="malcolm.modules.scanning.controllers.RunnableController"><code class="xref any py py-class docutils literal notranslate"><span class="pre">RunnableController</span></code></a>,
+<a class="reference internal" href="../build/ADSimDetector/blocks_api.html#malcolm.modules.ADSimDetector.blocks.sim_detector_driver_block" title="malcolm.modules.ADSimDetector.blocks.sim_detector_driver_block"><code class="xref any py py-func docutils literal notranslate"><span class="pre">sim_detector_driver_block</span></code></a> and its corresponding <a class="reference internal" href="../build/ADCore/parts_api.html#malcolm.modules.ADCore.parts.DetectorDriverPart" title="malcolm.modules.ADCore.parts.DetectorDriverPart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DetectorDriverPart</span></code></a>, and
+then a <a class="reference internal" href="../build/ADCore/blocks_api.html#malcolm.modules.ADCore.blocks.stats_plugin_block" title="malcolm.modules.ADCore.blocks.stats_plugin_block"><code class="xref any py py-func docutils literal notranslate"><span class="pre">stats_plugin_block</span></code></a> with is corresponding <a class="reference internal" href="../build/ADCore/parts_api.html#malcolm.modules.ADCore.parts.StatsPluginPart" title="malcolm.modules.ADCore.parts.StatsPluginPart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">StatsPluginPart</span></code></a>.</p>
+<p>The entry after this is an <a class="reference internal" href="../reference/glossary.html#include"><span class="std std-ref">Include</span></a>. It lets us take some commonly used Blocks
+and Parts and instantiate them at the level of the currently defined Block. If
+we look at <code class="docutils literal notranslate"><span class="pre">./malcolm/modules/ADCore/includes/filewriting_collection.yaml</span></code>
+we’ll see how it does this:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">pv_prefix</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">PV prefix for all the other plugins</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mri_prefix</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Malcolm resource id prefix for all created blocks</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">runs_on_windows</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Translate directory paths if IOC runs on Windows</span>
+    <span class="nt">default</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">False</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">scanning.parts.DatasetTablePart</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">DSET</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">ADCore.blocks.position_labeller_block</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(mri_prefix):POS</span>
+    <span class="nt">prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(pv_prefix):POS</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">ADCore.parts.PositionLabellerPart</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">POS</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(mri_prefix):POS</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">ADCore.blocks.hdf_writer_block</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(mri_prefix):HDF5</span>
+    <span class="nt">prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(pv_prefix):HDF5</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">ADCore.parts.HDFWriterPart</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">HDF5</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(mri_prefix):HDF5</span>
+    <span class="nt">runs_on_windows</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(runs_on_windows)</span>
+    <span class="nt">required_version</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">3.12</span>
+</pre></div>
+</div>
+<p>This will also instantiate the <a class="reference internal" href="../build/scanning/parts_api.html#malcolm.modules.scanning.parts.DatasetTablePart" title="malcolm.modules.scanning.parts.DatasetTablePart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DatasetTablePart</span></code></a>, <a class="reference internal" href="../build/ADCore/blocks_api.html#malcolm.modules.ADCore.blocks.position_labeller_block" title="malcolm.modules.ADCore.blocks.position_labeller_block"><code class="xref any py py-func docutils literal notranslate"><span class="pre">position_labeller_block</span></code></a> and
+it corresponding <a class="reference internal" href="../build/ADCore/parts_api.html#malcolm.modules.ADCore.parts.PositionLabellerPart" title="malcolm.modules.ADCore.parts.PositionLabellerPart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">PositionLabellerPart</span></code></a>, and then <a class="reference internal" href="../build/ADCore/blocks_api.html#malcolm.modules.ADCore.blocks.hdf_writer_block" title="malcolm.modules.ADCore.blocks.hdf_writer_block"><code class="xref any py py-func docutils literal notranslate"><span class="pre">hdf_writer_block</span></code></a> with its
+corresponding <a class="reference internal" href="../build/ADCore/parts_api.html#malcolm.modules.ADCore.parts.HDFWriterPart" title="malcolm.modules.ADCore.parts.HDFWriterPart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">HDFWriterPart</span></code></a>.</p>
+<p>The reason we use an include file is so that other detectors can use this same
+filewriting collection without having to copy and paste into the top level
+object. There is some duplication in the parameter descriptions, but it ensures
+that each YAML file is a self contained description of this level downwards.</p>
+</section>
+<section id="hardware-blocks">
+<h2>Hardware Blocks<a class="headerlink" href="#hardware-blocks" title="Permalink to this headline"></a></h2>
+<p>If we look at the next level down at something like
+<code class="docutils literal notranslate"><span class="pre">./malcolm/modules/ADSimDetector/blocks/sim_detector_driver_block.yaml</span></code> we
+will see our PV interface:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mri</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Malcolm resource id of the Block</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">prefix</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">The root PV for the all records</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.defines.docstring</span><span class="p">:</span>
+    <span class="nt">value</span><span class="p">:</span> <span class="p p-Indicator">|</span>
+      <span class="no">Hardware Block corresponding to PVs used for SimDetector detector driver</span>
+
+      <span class="no">- simDetector.template should have pv prefix $(prefix)</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.controllers.StatefulController</span><span class="p">:</span>
+    <span class="nt">mri</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(mri)</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(docstring)</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">ADCore.includes.adbase_parts</span><span class="p">:</span>
+    <span class="nt">prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(prefix)</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">ca.parts.CADoublePart</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">gainX</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Gain in the X direction for generating image</span>
+    <span class="nt">pv</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(prefix):GainX</span>
+    <span class="nt">rbv_suffix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">_RBV</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">ca.parts.CADoublePart</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">gainY</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Gain in the Y direction for generating image</span>
+    <span class="nt">pv</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(prefix):GainY</span>
+    <span class="nt">rbv_suffix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">_RBV</span>
+</pre></div>
+</div>
+<p>After the parameters, defines and <a class="reference internal" href="../build/builtin/controllers_api.html#malcolm.modules.builtin.controllers.StatefulController" title="malcolm.modules.builtin.controllers.StatefulController"><code class="xref any py py-class docutils literal notranslate"><span class="pre">StatefulController</span></code></a> definition, most of our
+CAPart objects are instantiated in
+<code class="docutils literal notranslate"><span class="pre">./malcolm/modules/ADCore/includes/adbase_parts.yaml</span></code>. Let’s look at the
+start of that file:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">prefix</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">The root PV for the all records</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">post_acquire_status</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">The value of ADStatus when acquire returns at the end of an acquisition</span>
+    <span class="nt">default</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Idle</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">builtin.parameters.string</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">num_images_pv_suffix</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">The PV suffix for number of images</span>
+    <span class="nt">default</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">NumImages</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">ADCore.includes.ndarraybase_parts</span><span class="p">:</span>
+    <span class="nt">prefix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(prefix)</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">ca.parts.CAChoicePart</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">imageMode</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Whether to take 1, many, or unlimited images at start</span>
+    <span class="nt">pv</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(prefix):ImageMode</span>
+    <span class="nt">rbv_suffix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">_RBV</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">ca.parts.CALongPart</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">numImages</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Number of images to take if imageMode=Multiple</span>
+    <span class="nt">pv</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(prefix):$(num_images_pv_suffix)</span>
+    <span class="nt">rbv_suffix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">_RBV</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">ca.parts.CAActionPart</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">start</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Demand for starting acquisition</span>
+    <span class="nt">pv</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(prefix):Acquire</span>
+    <span class="nt">status_pv</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(prefix):DetectorState_RBV</span>
+    <span class="nt">good_status</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(post_acquire_status)</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">ca.parts.CAActionPart</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">stop</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Stop acquisition</span>
+    <span class="nt">pv</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(prefix):Acquire</span>
+    <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
+    <span class="nt">wait</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">False</span>
+</pre></div>
+</div>
+<p>This include structure mirrors that of the underlying templates, and allows us
+to maintain a one to one mapping of YAML file to template file. If you look at
+all of these CAParts you will see that they wrap up small numbers of PVs into
+recognisable Attributes and Methods.</p>
+<p>For instance:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">ca.parts.CAChoicePart</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">imageMode</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Whether to take 1, many, or unlimited images at start</span>
+    <span class="nt">pv</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(prefix):ImageMode</span>
+    <span class="nt">rbv_suffix</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">_RBV</span>
+</pre></div>
+</div>
+<p>This corresponds to an <a class="reference internal" href="../reference/glossary.html#attribute"><span class="std std-ref">Attribute</span></a> that caputs to the <code class="docutils literal notranslate"><span class="pre">ImageMode</span></code> pv with
+callback when set, and uses <code class="docutils literal notranslate"><span class="pre">ImageMode_RBV</span></code> as the current value.</p>
+<p>Alternatively:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">ca.parts.CAActionPart</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">start</span>
+    <span class="nt">description</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Demand for starting acquisition</span>
+    <span class="nt">pv</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(prefix):Acquire</span>
+    <span class="nt">status_pv</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(prefix):DetectorState_RBV</span>
+    <span class="nt">good_status</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$(post_acquire_status)</span>
+</pre></div>
+</div>
+<p>This corresponds to a <a class="reference internal" href="../reference/glossary.html#method"><span class="std std-ref">Method</span></a> that caputs to the <code class="docutils literal notranslate"><span class="pre">Acquire</span></code> pv with callback,
+and when it completes checks <code class="docutils literal notranslate"><span class="pre">DetectorState_RBV</span></code> to see if the detector
+completed successfully or with an error.</p>
+</section>
+<section id="template-designs">
+<h2>Template Designs<a class="headerlink" href="#template-designs" title="Permalink to this headline"></a></h2>
+<p>One of the benefits of splitting the Hardware Layer from the Device Layer is
+that we now get a useful interface that tells us what to load and save. We
+tag all writeable CAParts as config Attributes by default, which will mean that
+when we <code class="docutils literal notranslate"><span class="pre">save()</span></code> the Device Block, it will write the current value of all
+these Attributes of all its child Hardware Blocks to a <a class="reference internal" href="../reference/glossary.html#design"><span class="std std-ref">Design</span></a> file.</p>
+<p>We learned in the <a class="reference internal" href="motion.html#motion-tutorial"><span class="std std-ref">Motion Tutorial</span></a> that Designs are JSON formatted files stored
+in the <code class="docutils literal notranslate"><span class="pre">config_dir</span></code> on <code class="docutils literal notranslate"><span class="pre">save()</span></code>, and that they can be loaded by setting
+the <code class="docutils literal notranslate"><span class="pre">design</span></code> Attribute at runtime. We now introduce the concept of a
+<a class="reference internal" href="../reference/glossary.html#template-design"><span class="std std-ref">Template Design</span></a>. This is a read-only Design that demonstrates how a Block
+might be used to implement a particular use case. It always starts with the
+text <code class="docutils literal notranslate"><span class="pre">template_</span></code>.</p>
+<p>In our demo, we want our simDetector wired up in such a way that we can
+implement the Acquisition Strategy set out earlier. The <code class="docutils literal notranslate"><span class="pre">ADSimDetector</span></code>
+module provides a design <code class="docutils literal notranslate"><span class="pre">template_software_triggered</span></code> that will do this for
+us. We would discover this by running up Malcolm, and seeing the possible values
+in the <code class="docutils literal notranslate"><span class="pre">design</span></code> drop-down list. If you are interested you can click
+below to expand the text of
+<code class="docutils literal notranslate"><span class="pre">blocks/sim_detector_runnable_block_designs/template_software_triggered.json</span></code>
+in <code class="docutils literal notranslate"><span class="pre">./malcolm/modules/ADSimDetector/</span></code> to see what it will load:</p>
+<div class="toggle docutils container">
+<div class="header docutils container">
+<p>Template Design JSON: template_software_triggered</p>
+</div>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="nt">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;layout&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;DRV&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;x&quot;</span><span class="p">:</span> <span class="mf">-321.0</span><span class="p">,</span> 
+        <span class="nt">&quot;y&quot;</span><span class="p">:</span> <span class="mf">4.024997711181641</span><span class="p">,</span> 
+        <span class="nt">&quot;visible&quot;</span><span class="p">:</span> <span class="kc">true</span>
+      <span class="p">},</span> 
+      <span class="nt">&quot;STAT&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;x&quot;</span><span class="p">:</span> <span class="mf">107.0</span><span class="p">,</span> 
+        <span class="nt">&quot;y&quot;</span><span class="p">:</span> <span class="mf">-4.024997711181641</span><span class="p">,</span> 
+        <span class="nt">&quot;visible&quot;</span><span class="p">:</span> <span class="kc">true</span>
+      <span class="p">},</span> 
+      <span class="nt">&quot;POS&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;x&quot;</span><span class="p">:</span> <span class="mf">-107.0</span><span class="p">,</span> 
+        <span class="nt">&quot;y&quot;</span><span class="p">:</span> <span class="mf">4.024997711181641</span><span class="p">,</span> 
+        <span class="nt">&quot;visible&quot;</span><span class="p">:</span> <span class="kc">true</span>
+      <span class="p">},</span> 
+      <span class="nt">&quot;HDF5&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;x&quot;</span><span class="p">:</span> <span class="mf">321.0</span><span class="p">,</span> 
+        <span class="nt">&quot;y&quot;</span><span class="p">:</span> <span class="mf">-4.024997711181641</span><span class="p">,</span> 
+        <span class="nt">&quot;visible&quot;</span><span class="p">:</span> <span class="kc">true</span>
+      <span class="p">}</span>
+    <span class="p">},</span> 
+    <span class="nt">&quot;exports&quot;</span><span class="p">:</span> <span class="p">{},</span> 
+    <span class="nt">&quot;attributesToCapture&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;typeid&quot;</span><span class="p">:</span> <span class="s2">&quot;malcolm:core/Table:1.0&quot;</span><span class="p">,</span> 
+      <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="p">[],</span> 
+      <span class="nt">&quot;sourceId&quot;</span><span class="p">:</span> <span class="p">[],</span> 
+      <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="p">[],</span> 
+      <span class="nt">&quot;sourceType&quot;</span><span class="p">:</span> <span class="p">[],</span> 
+      <span class="nt">&quot;dataType&quot;</span><span class="p">:</span> <span class="p">[],</span> 
+      <span class="nt">&quot;datasetType&quot;</span><span class="p">:</span> <span class="p">[]</span>
+    <span class="p">},</span> 
+    <span class="nt">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Ramping SimDetector&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;exposure&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> 
+    <span class="nt">&quot;writeAllNdAttributes&quot;</span><span class="p">:</span> <span class="kc">true</span>
+  <span class="p">},</span> 
+  <span class="nt">&quot;children&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;DRV&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;attributesFile&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> 
+      <span class="nt">&quot;triggerMode&quot;</span><span class="p">:</span> <span class="s2">&quot;Internal&quot;</span><span class="p">,</span> 
+      <span class="nt">&quot;gainX&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> 
+      <span class="nt">&quot;gainY&quot;</span><span class="p">:</span> <span class="mf">1.0</span>
+    <span class="p">},</span> 
+    <span class="nt">&quot;STAT&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;arrayCallbacks&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span> 
+      <span class="nt">&quot;input&quot;</span><span class="p">:</span> <span class="s2">&quot;ADSIM.POS&quot;</span>
+    <span class="p">},</span> 
+    <span class="nt">&quot;POS&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;arrayCallbacks&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span> 
+      <span class="nt">&quot;attributesFile&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;input&quot;</span><span class="p">:</span> <span class="s2">&quot;ADSIM.CAM&quot;</span>
+    <span class="p">},</span> 
+    <span class="nt">&quot;HDF5&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;arrayCallbacks&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span> 
+      <span class="nt">&quot;attributesFile&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> 
+      <span class="nt">&quot;input&quot;</span><span class="p">:</span> <span class="s2">&quot;ADSIM.stat&quot;</span><span class="p">,</span> 
+      <span class="nt">&quot;cacheFramesPerChunk&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> 
+      <span class="nt">&quot;xmlLayout&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>This Design will setup the plugin chain correctly for areaDetector to work the
+way that Malcolm expects. In particular it makes sure that the plugins are in
+the correct way that the HDF writer gets the tags it expects on each NDArray
+that it receives. There may be many template designs associated with a
+particular type of Block to support different use cases.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>areaDetector plugin chain wiring is done in the Design file rather than in
+each plugin Part. This means that the chain can be rewired for different
+scan use cases without having to change the code contained plugin Part.</p>
+</div>
+</section>
+<section id="scan-block-design">
+<h2>Scan Block Design<a class="headerlink" href="#scan-block-design" title="Permalink to this headline"></a></h2>
+<p>Scan Blocks can have saved <a class="reference internal" href="../reference/glossary.html#design"><span class="std std-ref">Design</span></a> files just like Device Blocks. The
+difference is that they have far fewer entries as their children typically save
+their config in their own Design files. If we look at
+<code class="docutils literal notranslate"><span class="pre">./malcolm/modules/demo/blocks/scan_2det_block_designs/template_both_detectors.json</span></code>
+we will see just how few entries there are:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="nt">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;layout&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;INTERFERENCE&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;x&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> 
+        <span class="nt">&quot;y&quot;</span><span class="p">:</span> <span class="mf">-139.60000610351562</span><span class="p">,</span> 
+        <span class="nt">&quot;visible&quot;</span><span class="p">:</span> <span class="kc">true</span>
+      <span class="p">},</span> 
+      <span class="nt">&quot;RAMP&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;x&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> 
+        <span class="nt">&quot;y&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> 
+        <span class="nt">&quot;visible&quot;</span><span class="p">:</span> <span class="kc">true</span>
+      <span class="p">},</span> 
+      <span class="nt">&quot;MOT&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;x&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> 
+        <span class="nt">&quot;y&quot;</span><span class="p">:</span> <span class="mf">139.60000610351562</span><span class="p">,</span> 
+        <span class="nt">&quot;visible&quot;</span><span class="p">:</span> <span class="kc">true</span>
+      <span class="p">}</span>
+    <span class="p">},</span> 
+    <span class="nt">&quot;exports&quot;</span><span class="p">:</span> <span class="p">{},</span> 
+    <span class="nt">&quot;simultaneousAxes&quot;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="s2">&quot;x&quot;</span><span class="p">,</span> 
+      <span class="s2">&quot;y&quot;</span>
+    <span class="p">],</span> 
+    <span class="nt">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Mapping x, y with Interference and Ramp detectors&quot;</span>
+  <span class="p">},</span> 
+  <span class="nt">&quot;children&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;INTERFERENCE&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;design&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+    <span class="p">},</span> 
+    <span class="nt">&quot;RAMP&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;design&quot;</span><span class="p">:</span> <span class="s2">&quot;template_software_triggered&quot;</span>
+    <span class="p">},</span> 
+    <span class="nt">&quot;MOT&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;design&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>There are a couple of scan Block Attributes that are saved here:</p>
+<ul class="simple">
+<li><p>simultaneousAxes: The superset of axes that are allowed in axesToMove. This
+is used to specify the set of axes that are currently movable in a single
+run()</p></li>
+<li><p>label: A short human readable label that identifies to a user what the scan
+will do if run</p></li>
+</ul>
+<p>The reason that these are saved rather than specified in the scan Block
+definition or Process Definition is that multiple instances of this scan can
+be created with different values for these Attributes.</p>
+<p>We imagine that each Device Block will have a number of designs for
+hardware or software triggering or different motor setups, and the Scan Block
+will say “I need DET with the hardware_trigger design and MOTORS with
+hkl_geometry”.</p>
+<p>The Scan Block will not load its children’s designs at init, but will set them
+before every <code class="docutils literal notranslate"><span class="pre">configure()</span></code> call, ensuring the Device Blocks are all setup
+correctly at the beginning of every scan.</p>
+<p>Now we know what we need to load, we need to work out when to load it. There is
+an <code class="docutils literal notranslate"><span class="pre">initial_design</span></code> parameter that we pass to any <a class="reference internal" href="../build/builtin/controllers_api.html#malcolm.modules.builtin.controllers.ManagerController" title="malcolm.modules.builtin.controllers.ManagerController"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ManagerController</span></code></a> or
+<a class="reference internal" href="../build/scanning/controllers_api.html#malcolm.modules.scanning.controllers.RunnableController" title="malcolm.modules.scanning.controllers.RunnableController"><code class="xref any py py-class docutils literal notranslate"><span class="pre">RunnableController</span></code></a> that will tell it what design to load when Malcolm starts
+up, and we have two layers that are able to load an <a class="reference internal" href="../reference/glossary.html#initial-design"><span class="std std-ref">Initial Design</span></a>:</p>
+<ol class="arabic simple">
+<li><p>In the detector (Device Layer). In this case, the design will be loaded as
+soon as Malcolm starts, but if there is not a clear single design that all
+scans use then it is not clear what to set it to.</p></li>
+<li><p>In the scan (Scan Layer). As child designs are loaded on <code class="docutils literal notranslate"><span class="pre">configure()</span></code>,
+the initial_design loading will be deferred until the first time the scan
+is run. This means that different scan Blocks can use different initial
+designs for their children. For instance one scan Block could require a
+Detector to be in software triggered mode, and another scan Block could
+require the Detector to be in hardware triggered mode.</p></li>
+</ol>
+<p>In a production system we will generally set the <code class="docutils literal notranslate"><span class="pre">initial_design</span></code> of our
+scan Blocks (case 2), but we may additionally set the <code class="docutils literal notranslate"><span class="pre">initial_design</span></code> of our
+child Blocks (case 1) if we want to ensure a particular configuration on Malcolm
+startup.</p>
+<p>The detector setting at startup is not relevant to us here, so we will set the
+<code class="docutils literal notranslate"><span class="pre">initial_design</span></code> only on the scan Block.</p>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>If you set <code class="docutils literal notranslate"><span class="pre">initial_design</span></code> on a Block in the <code class="docutils literal notranslate"><span class="pre">device_layer</span></code>, including
+detector Blocks, then PVs will change when you restart Malcolm. This may or
+may not be what you want.</p>
+</div>
+<p>It is worth pointing out that we are only likely to set <code class="docutils literal notranslate"><span class="pre">initial_design</span></code>
+once a scan is working. Once a design is set, it will be restored every
+<code class="docutils literal notranslate"><span class="pre">configure()</span></code>, so a <code class="docutils literal notranslate"><span class="pre">save()</span></code> or unsetting the design is required to keep
+any manual changes to child Blocks.</p>
+</section>
+<section id="running-a-scan">
+<h2>Running a Scan<a class="headerlink" href="#running-a-scan" title="Permalink to this headline"></a></h2>
+<p>First you need an areaDetector IOC. From the Diamond launcher, select
+<code class="docutils literal notranslate"><span class="pre">Utilities</span> <span class="pre">-&gt;</span> <span class="pre">GDA</span> <span class="pre">AreaDetector</span> <span class="pre">Simulation</span></code>, then click the <code class="docutils literal notranslate"><span class="pre">Start</span> <span class="pre">IOC</span></code>
+button.</p>
+<p>Let’s start up the example and see it in action:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[me@mypc pymalcolm]$ pipenv run imalcolm malcolm/modules/demo/DEMO-AREADETECTOR.yaml
+Loading malcolm...
+Python 3.7.2 (default, Jan 20 2020, 11:03:41)
+Type &#39;copyright&#39;, &#39;credits&#39; or &#39;license&#39; for more information
+IPython 7.19.0 -- An enhanced Interactive Python. Type &#39;?&#39; for help.
+
+
+Welcome to iMalcolm.
+
+self.mri_list:
+    [&#39;mypc-ML-MOT-01:COUNTERX&#39;, &#39;mypc-ML-MOT-01:COUNTERY&#39;, &#39;mypc-ML-MOT-01&#39;, &#39;mypc-ML-DET-01&#39;, &#39;mypc-ML-DET-02:DRV&#39;, &#39;mypc-ML-DET-02:STAT&#39;, &#39;mypc-ML-DET-02:POS&#39;, &#39;mypc-ML-DET-02:HDF5&#39;, &#39;mypc-ML-DET-02&#39;, &#39;mypc-ML-SCAN-01&#39;, &#39;mypc:WEB&#39;, &#39;mypc:PVA&#39;]
+
+# To create a view of an existing Block
+block = self.block_view(&quot;&lt;mri&gt;&quot;)
+
+# To create a proxy of a Block in another Malcolm
+self.make_proxy(&quot;&lt;client_comms_mri&gt;&quot;, &quot;&lt;mri&gt;&quot;)
+block = self.block_view(&quot;&lt;mri&gt;&quot;)
+
+# To view state of Blocks in a GUI
+!firefox localhost:8008
+
+In [1]:
+</pre></div>
+</div>
+<p>This time we will configure from the commandline. You may have some of these
+lines in your history from earlier tutorials. Note you will need to replace
+‘mypc’ with the name of your pc:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">scanpointgenerator</span> <span class="kn">import</span> <span class="n">LineGenerator</span><span class="p">,</span> <span class="n">CompoundGenerator</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">scan</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_view</span><span class="p">(</span><span class="s2">&quot;mypc-ML-SCAN-01&quot;</span><span class="p">)</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">yline</span> <span class="o">=</span> <span class="n">LineGenerator</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;mm&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">xline</span> <span class="o">=</span> <span class="n">LineGenerator</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;mm&quot;</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">alternate</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="n">generator</span> <span class="o">=</span> <span class="n">CompoundGenerator</span><span class="p">([</span><span class="n">yline</span><span class="p">,</span> <span class="n">xline</span><span class="p">],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="n">duration</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="n">scan</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">generator</span><span class="p">,</span> <span class="s2">&quot;/tmp&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>After configure, the detector will also report the datasets that it is about
+to write in the <code class="docutils literal notranslate"><span class="pre">datasets</span></code> Attribute:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">annotypes</span> <span class="kn">import</span> <span class="n">json_encode</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">8</span><span class="p">]:</span> <span class="nb">print</span><span class="p">(</span><span class="n">json_encode</span><span class="p">(</span><span class="n">scan</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
+<span class="p">{</span>
+    <span class="s2">&quot;typeid&quot;</span><span class="p">:</span> <span class="s2">&quot;malcolm:core/Table:1.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;INTERFERENCE.data&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;INTERFERENCE.sum&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;y.value_set&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;x.value_set&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;RAMP.data&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;RAMP.sum&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;y.value_set&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;x.value_set&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;INTERFERENCE.h5&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;INTERFERENCE.h5&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;INTERFERENCE.h5&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;INTERFERENCE.h5&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;RAMP.h5&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;RAMP.h5&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;RAMP.h5&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;RAMP.h5&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;primary&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;secondary&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;position_set&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;position_set&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;primary&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;secondary&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;position_set&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;position_set&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;rank&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="mi">4</span><span class="p">,</span>
+        <span class="mi">4</span><span class="p">,</span>
+        <span class="mi">1</span><span class="p">,</span>
+        <span class="mi">1</span><span class="p">,</span>
+        <span class="mi">4</span><span class="p">,</span>
+        <span class="mi">4</span><span class="p">,</span>
+        <span class="mi">1</span><span class="p">,</span>
+        <span class="mi">1</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;/entry/data&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;/entry/sum&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;/entry/y_set&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;/entry/x_set&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;/entry/detector/detector&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;/entry/sum/sum&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;/entry/detector/y_set&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;/entry/detector/x_set&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;uniqueid&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;/entry/uid&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;/entry/uid&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;/entry/NDAttributes/NDArrayUniqueId&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;/entry/NDAttributes/NDArrayUniqueId&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>This is very similar to the <a class="reference internal" href="scanning.html#scanning-tutorial"><span class="std std-ref">Scanning Tutorial</span></a>, but now datasets are reported
+from both detectors. Their setpoints are also reported for every scannable in
+every file. This is to allow a triggering scheme where a detector produces
+multiple frames for each scan point (explained in a future tutorial).</p>
+<p>Now that you have the files open, you can use the <a class="reference external" href="https://support.hdfgroup.org/HDF5/doc/RM/Tools/h5watch.htm">h5watch</a> command to monitor
+the dataset and see it grow:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[me@mypc pymalcolm]$ h5watch /tmp/INTERFERENCE.h5/entry/uid
+Opened &quot;/tmp/INTERFERENCE.h5&quot; with sec2 driver.
+Monitoring dataset /entry/uid...
+</pre></div>
+</div>
+<p>You will be able to run a the same h5watch command on
+<code class="docutils literal notranslate"><span class="pre">/tmp/RAMP.h5/entry/NDAttributes/NDArrayUniqueId</span></code> to see the areaDetector
+dataset grow, but only when the scan has started as the HDF writer can’t write
+the datasets until it knows the size of the first detector frame.</p>
+<p>You can open the web GUI again to inspect the state of the various objects,
+and you will see that both the <code class="docutils literal notranslate"><span class="pre">RAMP</span></code> and <code class="docutils literal notranslate"><span class="pre">INTERFERENCE</span></code> detector objects
+are in state <code class="docutils literal notranslate"><span class="pre">Armed</span></code>, as is the <code class="docutils literal notranslate"><span class="pre">SCAN</span></code>. You can then run a scan, either from
+the web GUI or the commandline. Other than h5watch, the commandline tools are
+not SWMR aware, so a reset is required in order to read the updated files:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="n">scan</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">10</span><span class="p">]:</span> <span class="n">scan</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This will write 30 frames of data to <code class="docutils literal notranslate"><span class="pre">/tmp/INTERFERENCE.h5</span></code> directly, and
+supervise the writing of 30 frames of data to <code class="docutils literal notranslate"><span class="pre">/tmp/RAMP.h5</span></code> via areaDetector.
+You can take a look at the <a class="reference external" href="http://portal.hdfgroup.org/display/support">HDF5</a> files to see what has been written:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[me@mypc pymalcolm]$ module load hdf5/1-10-4
+[me@mypc pymalcolm]$ h5dump -n /tmp/RAMP.h5
+HDF5 &quot;/tmp/RAMP.h5&quot; {
+FILE_CONTENTS {
+ group      /
+ group      /entry
+ group      /entry/NDAttributes
+ dataset    /entry/NDAttributes/ColorMode
+ dataset    /entry/NDAttributes/NDArrayEpicsTSSec
+ dataset    /entry/NDAttributes/NDArrayEpicsTSnSec
+ dataset    /entry/NDAttributes/NDArrayTimeStamp
+ dataset    /entry/NDAttributes/NDArrayUniqueId
+ dataset    /entry/NDAttributes/d0
+ dataset    /entry/NDAttributes/d1
+ dataset    /entry/NDAttributes/timestamp
+ group      /entry/detector
+ dataset    /entry/detector/detector
+ dataset    /entry/detector/x_set
+ dataset    /entry/detector/y_set
+ group      /entry/sum
+ dataset    /entry/sum/sum
+ dataset    /entry/sum/x_set -&gt; /entry/detector/x_set
+ dataset    /entry/sum/y_set -&gt; /entry/detector/y_set
+ }
+}
+</pre></div>
+</div>
+<p>This corresponds to the dataset table that the Block reported before run() was
+called. You can examine the uniqueid dataset to see the order that the frames
+were written:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[me@mypc pymalcolm]$ h5dump -d /entry/NDAttributes/NDArrayUniqueId /tmp/RAMP.h5
+HDF5 &quot;/tmp/RAMP.h5&quot; {
+DATASET &quot;/entry/NDAttributes/NDArrayUniqueId&quot; {
+   DATATYPE  H5T_STD_I32LE
+   DATASPACE  SIMPLE { ( 6, 5, 1, 1 ) / ( H5S_UNLIMITED, H5S_UNLIMITED, 1, 1 ) }
+   DATA {
+   (0,0,0,0): 1,
+   (0,1,0,0): 2,
+   (0,2,0,0): 3,
+   (0,3,0,0): 4,
+   (0,4,0,0): 5,
+   (1,0,0,0): 10,
+   (1,1,0,0): 9,
+   (1,2,0,0): 8,
+   (1,3,0,0): 7,
+   (1,4,0,0): 6,
+   (2,0,0,0): 11,
+   (2,1,0,0): 12,
+   (2,2,0,0): 13,
+   (2,3,0,0): 14,
+   (2,4,0,0): 15,
+   (3,0,0,0): 20,
+   (3,1,0,0): 19,
+   (3,2,0,0): 18,
+   (3,3,0,0): 17,
+   (3,4,0,0): 16,
+   (4,0,0,0): 21,
+   (4,1,0,0): 22,
+   (4,2,0,0): 23,
+   (4,3,0,0): 24,
+   (4,4,0,0): 25,
+   (5,0,0,0): 30,
+   (5,1,0,0): 29,
+   (5,2,0,0): 28,
+   (5,3,0,0): 27,
+   (5,4,0,0): 26
+   }
+   ...
+</pre></div>
+</div>
+<p>This tells us that it was written in a snake fashion, with the first row
+written 1-5 left-to-right, the second row 6-10 right-to-left, etc.</p>
+<p>The detector will always increment the uniqueid number when it writes a new
+frame, so if you try pausing and setting the Completed Steps Attribute, you
+will see the uniqueID number jump where you overwrite existing frames with new
+frames with a greater uniqueID. The two detectors will end up with matching
+uniqueID datasets.</p>
+</section>
+<section id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline"></a></h2>
+<p>This tutorial has given us an understanding of how <a class="reference external" href="https://cars9.uchicago.edu/software/epics/areaDetector.html">areaDetector</a> plugin
+chains can be controlled in Malcolm, and how multiple detectors interface into
+a scan and can be paused and rewound together. The next tutorial will focus
+on using real hardware to perform a continuous scan.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="scanning.html" class="btn btn-neutral float-left" title="Scanning Tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pmac.html" class="btn btn-neutral float-right" title="PMAC Master Tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>

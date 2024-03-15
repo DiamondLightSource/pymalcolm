@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Block Structure &mdash; malcolm 6.3 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/malcolm-logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Message Structure" href="messages.html" />
+    <link rel="prev" title="Glossary" href="glossary.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgb(7, 43, 93)" >
+            <a href="../contents.html" class="icon icon-home"> malcolm
+            <img src="../_static/malcolm-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                6.3
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/hello.html">Hello World Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/counter.html">Counter Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/motion.html">Motion Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/detector.html">Detector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/scanning.html">Scanning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/areadetector.html">AreaDetector Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/pmac.html">PMAC Master Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/panda.html">PandA Master Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Block Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="messages.html">Message Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tags.html">Supported Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="statesets.html">State Sets and Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="infos.html">Infos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datasets.html">Datasets and Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="triggering.html">Trajectory Scan Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">Change Log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/core_api.html">malcolm.core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/yamlutil_api.html">malcolm.yamlutil</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../build/modules_api.html">malcolm.modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/external_api.html">External modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="genindex.html#http://">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgb(7, 43, 93)" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../contents.html">malcolm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../contents.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Block Structure</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/reference/structure.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="block-structure">
+<span id="id1"></span><h1>Block Structure<a class="headerlink" href="#block-structure" title="Permalink to this headline"></a></h1>
+<p>To describe how a Block is structured, we will use the <a class="reference external" href="http://epics-pvdata.sourceforge.net/docbuild/pvDataJava/tip/documentation/pvDataJava.html#pvdata_meta_language">pvData Meta Language</a>.
+It is important to note that although many EPICS conventions are followed in
+Malcolm, it is not a required part of it. The typeid of structures (before the
+indented block) will appear as a string typeid field in JSON serialized
+messages, and as the typeid in pvData serialized messages.</p>
+<p>There are a number of operations that can be performed on the Block structure,
+such as Get, Put, Subscribe, Post. These will be described in the
+<a class="reference internal" href="messages.html#message-structure"><span class="std std-ref">Message Structure</span></a> section.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Operations such as Get and Subscribe will by default operate on the entire
+Block structure to avoid race conditions between substructure updates, but
+some of the protocols supported (like pvAccess) will allow the substructures
+to be operated on independently.</p>
+</div>
+<p>Also note the placement of meta objects in the Block structure. The presence of
+a meta element in the structure allows separation of the current value from the
+metadata about the element.</p>
+<p>A Block looks like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Block</span> <span class="o">:=</span>
+
+<span class="n">malcolm</span><span class="p">:</span><span class="n">core</span><span class="o">/</span><span class="n">Block</span><span class="p">:</span><span class="mf">1.0</span>
+    <span class="n">BlockMeta</span>   <span class="n">meta</span>
+    <span class="n">Attribute</span>   <span class="n">health</span>      <span class="o">//</span> <span class="n">HealthMeta</span>
+    <span class="p">{</span><span class="n">Attribute</span> <span class="o">|</span> <span class="n">Method</span>  <span class="o">&lt;</span><span class="n">field</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span><span class="p">}</span><span class="mi">0</span><span class="o">+</span>
+
+
+<span class="n">BlockMeta</span> <span class="o">:=</span>
+
+<span class="n">malcolm</span><span class="p">:</span><span class="n">core</span><span class="o">/</span><span class="n">BlockMeta</span><span class="p">:</span><span class="mf">1.0</span>
+    <span class="n">string</span>      <span class="n">description</span>     <span class="o">//</span> <span class="n">Description</span> <span class="n">of</span> <span class="n">Block</span>
+    <span class="n">string</span><span class="p">[]</span>    <span class="n">tags</span>       <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="n">For</span> <span class="n">future</span> <span class="n">use</span>
+    <span class="nb">bool</span>        <span class="n">writeable</span>  <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="n">For</span> <span class="n">future</span> <span class="n">use</span>
+    <span class="n">string</span>      <span class="n">label</span>      <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="n">Short</span> <span class="n">label</span> <span class="k">if</span> <span class="n">different</span> <span class="n">to</span> <span class="n">name</span>
+    <span class="n">string</span><span class="p">[]</span>    <span class="n">fields</span>     <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="n">The</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">fields</span> <span class="n">currently</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">Block</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">health</span></code> <a class="reference internal" href="../api/core_api.html#malcolm.core.Attribute" title="malcolm.core.Attribute"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Attribute</span></code></a> will have value “OK” if everything is fine, otherwise
+will be in alarm status and report what is wrong. The other <a class="reference internal" href="../api/core_api.html#malcolm.core.Attribute" title="malcolm.core.Attribute"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Attribute</span></code></a> and
+<a class="reference internal" href="../api/core_api.html#malcolm.core.Method" title="malcolm.core.Method"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Method</span></code></a> objects define the interface for this particular <a class="reference internal" href="../api/core_api.html#malcolm.core.Block" title="malcolm.core.Block"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Block</span></code></a> and may
+change, appear and disappear depending on the state of the Block.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">meta</span></code> <a class="reference internal" href="../api/core_api.html#malcolm.core.BlockMeta" title="malcolm.core.BlockMeta"><code class="xref any py py-class docutils literal notranslate"><span class="pre">BlockMeta</span></code></a> defines a description and label for this Block. All
+meta objects have <a class="reference internal" href="glossary.html#tags"><span class="std std-ref">Tags</span></a> that are defined in the <a class="reference internal" href="tags.html#supported-tags"><span class="std std-ref">Supported Tags</span></a> page.</p>
+<p>An Attribute looks like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Attribute</span> <span class="o">:=</span> <span class="n">Scalar</span> <span class="o">|</span> <span class="n">ScalarArray</span> <span class="o">|</span> <span class="n">Table</span> <span class="o">|</span> <span class="n">PointGenerator</span>
+
+
+<span class="n">Scalar</span> <span class="o">:=</span>
+
+<span class="n">epics</span><span class="p">:</span><span class="n">nt</span><span class="o">/</span><span class="n">NTScalar</span><span class="p">:</span><span class="mf">1.0</span> <span class="o">//</span> <span class="n">Conformant</span> <span class="n">but</span> <span class="n">optional</span> <span class="n">fields</span> <span class="o">-&gt;</span> <span class="n">meta</span>
+    <span class="n">scalar_t</span>    <span class="n">value</span>
+    <span class="n">alarm_t</span>     <span class="n">alarm</span>       <span class="p">:</span><span class="n">opt</span>
+    <span class="n">time_t</span>      <span class="n">timeStamp</span>   <span class="p">:</span><span class="n">opt</span>
+    <span class="n">ScalarMeta</span>  <span class="n">meta</span>        <span class="p">:</span><span class="n">opt</span>
+
+
+<span class="n">ScalarArray</span> <span class="o">:=</span>
+
+<span class="n">epics</span><span class="p">:</span><span class="n">nt</span><span class="o">/</span><span class="n">NTScalarArray</span><span class="p">:</span><span class="mf">1.0</span> <span class="o">//</span> <span class="n">Conformant</span> <span class="n">but</span> <span class="n">optional</span> <span class="n">fields</span> <span class="o">-&gt;</span> <span class="n">meta</span>
+    <span class="n">scalar_t</span><span class="p">[]</span>      <span class="n">value</span>
+    <span class="n">alarm_t</span>         <span class="n">alarm</span>       <span class="p">:</span><span class="n">opt</span>
+    <span class="n">time_t</span>          <span class="n">timeStamp</span>   <span class="p">:</span><span class="n">opt</span>
+    <span class="n">ScalarArrayMeta</span> <span class="n">meta</span>        <span class="p">:</span><span class="n">opt</span>
+
+
+<span class="n">Table</span> <span class="o">:=</span>
+
+<span class="n">malcolm</span><span class="p">:</span><span class="n">core</span><span class="o">/</span><span class="n">NTTable</span><span class="p">:</span><span class="mf">1.0</span> <span class="o">//</span> <span class="n">Conformant</span> <span class="n">but</span> <span class="n">optional</span> <span class="n">fields</span> <span class="o">-&gt;</span> <span class="n">meta</span>
+    <span class="n">string</span><span class="p">[]</span>    <span class="n">labels</span>
+    <span class="n">TableValue</span>  <span class="n">value</span>
+    <span class="n">alarm_t</span>     <span class="n">alarm</span>       <span class="p">:</span><span class="n">opt</span>
+    <span class="n">time_t</span>      <span class="n">timeStamp</span>   <span class="p">:</span><span class="n">opt</span>
+    <span class="n">TableMeta</span>   <span class="n">meta</span>        <span class="p">:</span><span class="n">opt</span>
+
+
+<span class="n">TableValue</span> <span class="o">:=</span>
+
+<span class="n">structure</span>
+    <span class="p">{</span><span class="n">scalar_t</span><span class="p">[]</span> <span class="o">&lt;</span><span class="n">colname</span><span class="o">&gt;</span><span class="p">}</span><span class="mi">0</span><span class="o">+</span>
+
+
+<span class="n">PointGenerator</span> <span class="o">:=</span>
+
+<span class="n">malcolm</span><span class="p">:</span><span class="n">core</span><span class="o">/</span><span class="n">PointGenerator</span><span class="p">:</span><span class="mf">1.0</span>
+    <span class="n">PointGeneratorValue</span> <span class="n">value</span>
+    <span class="n">alarm_t</span>             <span class="n">alarm</span>       <span class="p">:</span><span class="n">opt</span>
+    <span class="n">time_t</span>              <span class="n">timeStamp</span>   <span class="p">:</span><span class="n">opt</span>
+    <span class="n">PointGeneratorMeta</span>  <span class="n">meta</span>        <span class="p">:</span><span class="n">opt</span>
+</pre></div>
+</div>
+<p>The structures are very similar, and all hold the current value in whatever
+type is appropriate for the Attribute. Each structure contains a <code class="docutils literal notranslate"><span class="pre">meta</span></code> field
+that describes the values that are allowed to be passed to the value field of
+the structure:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ScalarMeta</span> <span class="o">:=</span> <span class="n">BooleanMeta</span> <span class="o">|</span> <span class="n">StringMeta</span> <span class="o">|</span> <span class="n">ChoiceMeta</span> <span class="o">|</span> <span class="n">NumberMeta</span>
+
+
+<span class="n">BooleanMeta</span> <span class="o">:=</span>
+
+<span class="n">malcolm</span><span class="p">:</span><span class="n">core</span><span class="o">/</span><span class="n">BooleanMeta</span><span class="p">:</span><span class="mf">1.0</span>
+    <span class="n">string</span>      <span class="n">description</span>     <span class="o">//</span> <span class="n">Description</span> <span class="n">of</span> <span class="n">attribute</span>
+    <span class="n">string</span><span class="p">[]</span>    <span class="n">tags</span>       <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="s2">&quot;widget:led&quot;</span>
+    <span class="nb">bool</span>        <span class="n">writeable</span>  <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">you</span> <span class="n">can</span> <span class="n">Put</span> <span class="n">at</span> <span class="n">the</span> <span class="n">moment</span>
+    <span class="n">string</span>      <span class="n">label</span>      <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="n">Short</span> <span class="n">label</span> <span class="k">if</span> <span class="n">different</span> <span class="n">to</span> <span class="n">name</span>
+
+
+<span class="n">StringMeta</span> <span class="o">:=</span>
+
+<span class="n">malcolm</span><span class="p">:</span><span class="n">core</span><span class="o">/</span><span class="n">StringMeta</span><span class="p">:</span><span class="mf">1.0</span>
+    <span class="n">string</span>      <span class="n">description</span>     <span class="o">//</span> <span class="n">Description</span> <span class="n">of</span> <span class="n">attribute</span>
+    <span class="n">string</span><span class="p">[]</span>    <span class="n">tags</span>       <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="s2">&quot;widget:textinput&quot;</span>
+    <span class="nb">bool</span>        <span class="n">writeable</span>  <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">you</span> <span class="n">can</span> <span class="n">Put</span> <span class="n">at</span> <span class="n">the</span> <span class="n">moment</span>
+    <span class="n">string</span>      <span class="n">label</span>      <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="n">Short</span> <span class="n">label</span> <span class="k">if</span> <span class="n">different</span> <span class="n">to</span> <span class="n">name</span>
+
+
+<span class="n">ChoiceMeta</span> <span class="o">:=</span>
+
+<span class="n">malcolm</span><span class="p">:</span><span class="n">core</span><span class="o">/</span><span class="n">ChoiceMeta</span><span class="p">:</span><span class="mf">1.0</span>
+    <span class="n">string</span><span class="p">[]</span>    <span class="n">choices</span>         <span class="o">//</span> <span class="n">Value</span> <span class="n">will</span> <span class="n">be</span> <span class="n">one</span> <span class="n">of</span> <span class="n">these</span>
+    <span class="n">string</span>      <span class="n">description</span>     <span class="o">//</span> <span class="n">Description</span> <span class="n">of</span> <span class="n">attribute</span>
+    <span class="n">string</span><span class="p">[]</span>    <span class="n">tags</span>       <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="s2">&quot;widget:combo&quot;</span>
+    <span class="nb">bool</span>        <span class="n">writeable</span>  <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">you</span> <span class="n">can</span> <span class="n">Put</span> <span class="n">at</span> <span class="n">the</span> <span class="n">moment</span>
+    <span class="n">string</span>      <span class="n">label</span>      <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="n">Short</span> <span class="n">label</span> <span class="k">if</span> <span class="n">different</span> <span class="n">to</span> <span class="n">name</span>
+
+
+<span class="n">NumberMeta</span> <span class="o">:=</span>
+
+<span class="n">malcolm</span><span class="p">:</span><span class="n">core</span><span class="o">/</span><span class="n">NumberMeta</span><span class="p">:</span><span class="mf">1.0</span>
+    <span class="n">string</span>      <span class="n">dtype</span>           <span class="o">//</span> <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="n">int8</span><span class="p">,</span> <span class="n">uint32</span><span class="p">,</span> <span class="n">float64</span>
+    <span class="n">string</span>      <span class="n">description</span>     <span class="o">//</span> <span class="n">Description</span> <span class="n">of</span> <span class="n">attribute</span>
+    <span class="n">string</span><span class="p">[]</span>    <span class="n">tags</span>       <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="s2">&quot;widget:textupdate&quot;</span>
+    <span class="nb">bool</span>        <span class="n">writeable</span>  <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">you</span> <span class="n">can</span> <span class="n">Put</span> <span class="n">at</span> <span class="n">the</span> <span class="n">moment</span>
+    <span class="n">string</span>      <span class="n">label</span>      <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="n">Short</span> <span class="n">label</span> <span class="k">if</span> <span class="n">different</span> <span class="n">to</span> <span class="n">name</span>
+    <span class="n">display_t</span>   <span class="n">display</span>    <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="n">Display</span> <span class="n">limits</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">etc</span>
+</pre></div>
+</div>
+<p>The ScalarArrayMeta structures are identical to the ScalarMeta structures, but
+have “Array” in their typeid. TableMeta has similar fields:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">TableMeta</span> <span class="o">:=</span>
+
+<span class="n">malcolm</span><span class="p">:</span><span class="n">core</span><span class="o">/</span><span class="n">TableMeta</span><span class="p">:</span><span class="mf">1.0</span>
+    <span class="n">structure</span>   <span class="n">elements</span>        <span class="o">//</span> <span class="n">Metadata</span> <span class="k">for</span> <span class="n">each</span> <span class="n">column</span>
+        <span class="p">{</span><span class="n">ScalarArrayMeta</span> <span class="o">&lt;</span><span class="n">elname</span><span class="o">&gt;</span><span class="p">}</span><span class="mi">0</span><span class="o">+</span>
+    <span class="n">string</span>      <span class="n">description</span>     <span class="o">//</span> <span class="n">Description</span> <span class="n">of</span> <span class="n">attribute</span>
+    <span class="n">string</span><span class="p">[]</span>    <span class="n">tags</span>       <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="s2">&quot;widget:table&quot;</span>
+    <span class="nb">bool</span>        <span class="n">writeable</span>  <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">you</span> <span class="n">can</span> <span class="n">Put</span> <span class="n">at</span> <span class="n">the</span> <span class="n">moment</span>
+    <span class="n">string</span>      <span class="n">label</span>      <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="n">Short</span> <span class="n">label</span> <span class="k">if</span> <span class="n">different</span> <span class="n">to</span> <span class="n">name</span>
+</pre></div>
+</div>
+<p>It contains a structure of elements that describe the subelements that are
+allowed in the Table.</p>
+<p>A PointGeneratorMeta looks similar:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PointGeneratorMeta</span> <span class="o">:=</span>
+
+<span class="n">malcolm</span><span class="p">:</span><span class="n">core</span><span class="o">/</span><span class="n">PointGeneratorMeta</span><span class="p">:</span><span class="mf">1.0</span>
+    <span class="n">string</span>      <span class="n">description</span>     <span class="o">//</span> <span class="n">Description</span> <span class="n">of</span> <span class="n">attribute</span>
+    <span class="n">string</span><span class="p">[]</span>    <span class="n">tags</span>       <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="s2">&quot;widget:generatorpicker&quot;</span>
+    <span class="nb">bool</span>        <span class="n">writeable</span>  <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">you</span> <span class="n">can</span> <span class="n">Put</span> <span class="n">at</span> <span class="n">the</span> <span class="n">moment</span>
+    <span class="n">string</span>      <span class="n">label</span>      <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="n">Short</span> <span class="n">label</span> <span class="k">if</span> <span class="n">different</span> <span class="n">to</span> <span class="n">name</span>
+</pre></div>
+</div>
+<p>A Method looks like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Method</span> <span class="o">:=</span>
+
+<span class="n">malcolm</span><span class="p">:</span><span class="n">core</span><span class="o">/</span><span class="n">Method</span><span class="p">:</span><span class="mf">1.1</span>
+    <span class="n">MethodMeta</span>  <span class="n">meta</span>            <span class="o">//</span> <span class="n">Spec</span> <span class="k">for</span> <span class="n">args</span> <span class="ow">and</span> <span class="n">returns</span>
+    <span class="n">MethodLog</span>   <span class="n">took</span>       <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="n">The</span> <span class="n">last</span> <span class="n">args</span> <span class="n">the</span> <span class="n">method</span> <span class="n">was</span> <span class="n">called</span> <span class="k">with</span>
+    <span class="n">MethodLog</span>   <span class="n">returned</span>   <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="n">The</span> <span class="n">last</span> <span class="k">return</span> <span class="n">value</span> <span class="n">the</span> <span class="n">method</span> <span class="n">produced</span>
+
+<span class="n">Argument</span> <span class="o">:=</span> <span class="n">scalar_t</span> <span class="o">|</span> <span class="n">scalar_t</span><span class="p">[]</span> <span class="o">|</span> <span class="n">TableValue</span> <span class="o">|</span> <span class="n">PointGeneratorValue</span>
+
+<span class="n">MethodMeta</span> <span class="o">:=</span>
+
+<span class="n">malcolm</span><span class="p">:</span><span class="n">core</span><span class="o">/</span><span class="n">MethodMeta</span><span class="p">:</span><span class="mf">1.1</span>
+    <span class="n">MapMeta</span>     <span class="n">takes</span>           <span class="o">//</span> <span class="n">Argument</span> <span class="n">spec</span>
+    <span class="n">structure</span>   <span class="n">defaults</span>
+        <span class="p">{</span><span class="n">Argument</span>   <span class="o">&lt;</span><span class="n">argname</span><span class="o">&gt;</span><span class="p">}</span><span class="mi">0</span><span class="o">+</span>    <span class="o">//</span> <span class="n">The</span> <span class="n">defaults</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">supplied</span>
+    <span class="n">string</span>      <span class="n">description</span>     <span class="o">//</span> <span class="n">Docstring</span>
+    <span class="n">string</span><span class="p">[]</span>    <span class="n">tags</span>       <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="s2">&quot;widget:confirmbutton&quot;</span>
+    <span class="nb">bool</span>        <span class="n">writeable</span>  <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">you</span> <span class="n">can</span> <span class="n">Post</span> <span class="n">at</span> <span class="n">the</span> <span class="n">moment</span>
+    <span class="n">string</span>      <span class="n">label</span>      <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="n">Short</span> <span class="n">label</span> <span class="k">if</span> <span class="n">different</span> <span class="n">to</span> <span class="n">name</span>
+    <span class="n">MapMeta</span>     <span class="n">returns</span>    <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="n">Return</span> <span class="n">value</span> <span class="n">spec</span> <span class="k">if</span> <span class="nb">any</span>
+
+<span class="n">ArgumentMeta</span> <span class="o">:=</span> <span class="n">ScalarMeta</span> <span class="o">|</span> <span class="n">ScalarArrayMeta</span> <span class="o">|</span> <span class="n">TableMeta</span> <span class="o">|</span>
+    <span class="n">PointGeneratorMeta</span>
+
+
+<span class="n">MapMeta</span> <span class="o">:=</span>
+
+<span class="n">malcolm</span><span class="p">:</span><span class="n">core</span><span class="o">/</span><span class="n">MapMeta</span><span class="p">:</span><span class="mf">1.0</span>
+    <span class="n">structure</span>   <span class="n">elements</span>            <span class="o">//</span> <span class="n">Metadata</span> <span class="k">for</span> <span class="n">each</span> <span class="n">element</span> <span class="ow">in</span> <span class="nb">map</span>
+        <span class="p">{</span><span class="n">ArgumentMeta</span> <span class="o">&lt;</span><span class="n">elname</span><span class="o">&gt;</span><span class="p">}</span><span class="mi">0</span><span class="o">+</span>
+    <span class="n">string</span><span class="p">[]</span>    <span class="n">required</span>       <span class="p">:</span><span class="n">opt</span> <span class="o">//</span> <span class="n">These</span> <span class="n">fields</span> <span class="n">will</span> <span class="n">always</span> <span class="n">be</span> <span class="n">present</span>
+
+<span class="n">MethodLog</span> <span class="o">:=</span>
+
+<span class="n">malcolm</span><span class="p">:</span><span class="n">core</span><span class="o">/</span><span class="n">MethodLog</span><span class="p">:</span><span class="mf">1.0</span>
+    <span class="n">structure</span>   <span class="n">value</span>               <span class="o">//</span> <span class="n">The</span> <span class="n">arguments</span> <span class="n">supplied</span> <span class="ow">or</span> <span class="n">returned</span>
+        <span class="p">{</span><span class="n">Argument</span>   <span class="o">&lt;</span><span class="n">argname</span><span class="o">&gt;</span><span class="p">}</span><span class="mi">0</span><span class="o">+</span>    <span class="o">//</span> <span class="n">Including</span> <span class="nb">any</span> <span class="n">server</span> <span class="n">defaults</span>
+    <span class="n">string</span><span class="p">[]</span>    <span class="n">present</span>             <span class="o">//</span> <span class="n">The</span> <span class="n">keys</span> <span class="n">of</span> <span class="n">value</span> <span class="n">sent</span>
+    <span class="n">alarm_t</span>     <span class="n">alarm</span>       <span class="p">:</span><span class="n">opt</span>    <span class="o">//</span> <span class="n">If</span> <span class="n">something</span> <span class="n">went</span> <span class="n">wrong</span><span class="p">,</span> <span class="n">what</span>
+    <span class="n">time_t</span>      <span class="n">timeStamp</span>   <span class="p">:</span><span class="n">opt</span>    <span class="o">//</span> <span class="n">Time</span> <span class="n">it</span> <span class="n">was</span> <span class="n">called</span><span class="o">/</span><span class="n">returned</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">takes</span></code> structure describes the arguments that should be passed to the
+Method. The <code class="docutils literal notranslate"><span class="pre">returns</span></code> structure describes what will be returned as a result.
+The <code class="docutils literal notranslate"><span class="pre">defaults</span></code> structure contains default values that will be used if the
+argument is not supplied.</p>
+<p>Methods are called by sending a Post message to the block with the name of the
+method and the arguments described in the takes MapMeta.</p>
+<p>The Map just looks like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Map</span> <span class="o">:=</span>
+
+<span class="n">structure</span>
+    <span class="p">{</span><span class="n">Argument</span>   <span class="o">&lt;</span><span class="n">argname</span><span class="o">&gt;</span><span class="p">}</span><span class="mi">0</span><span class="o">+</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="glossary.html" class="btn btn-neutral float-left" title="Glossary" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="messages.html" class="btn btn-neutral float-right" title="Message Structure" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015, Diamond Light Source.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ <script type="text/javascript">
+    $(document).ready(function() {
+        $(".toggle > *").hide();
+        $(".toggle .header").show();
+        $(".toggle .header").click(function() {
+            $(this).parent().children().not(".header").toggle(400);
+            $(this).parent().children(".header").toggleClass("open");
+        })
+    });
+</script>
+
+
+</body>
+</html>
