@@ -45,8 +45,7 @@
 - ca.parts.CABooleanPart:
     name: acquiring
     description: If detector is currently acquiring
-    rbv: $(prefix):Acquire
-    # rbv: $(prefix):DetectorState_RBV
+    rbv: $(prefix):DetectorState_RBV
 
 - ca.parts.CAChoicePart:
     name: triggerMode
