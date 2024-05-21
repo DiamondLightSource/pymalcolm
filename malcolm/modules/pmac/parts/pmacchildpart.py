@@ -672,8 +672,7 @@ class PmacChildPart(builtin.parts.ChildPart):
         for k, v in velocity_points.items():
             cs_axis_vel = self.axis_mapping[k].cs_axis.lower() + "_vel"
             cs_axis = self.axis_mapping[k].cs_axis.lower()
-            if self.profile[cs_axis]:
-                self.profile[cs_axis_vel].append(v)
+            self.profile[cs_axis_vel].append(v)
         for k, v in axis_points.items():
             cs_axis = self.axis_mapping[k].cs_axis.lower()
             self.profile[cs_axis].append(v)
