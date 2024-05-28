@@ -19,7 +19,7 @@ AreaDetector XML. This avoids errors when running very large scans.
 - Added Xspress Odin Support.
 
 `6.2.1`_ - 2022-11-09
--------------------
+---------------------
 
 Fixed:
 
