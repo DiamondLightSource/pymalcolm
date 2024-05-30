@@ -1025,7 +1025,7 @@ class PmacChildPart(builtin.parts.ChildPart):
                 f"soft limits {motor_info.user_low_limit, motor_info.user_high_limit}"
             )
             axis_points[axis_name] = tail_off_pos
-            velocity_points[axis_name] = velocity
+            velocity_points[axis_name] = 0
         # Do the last move
         user_program = self.get_user_program(PointType.TURNAROUND)
         self.add_profile_point(
