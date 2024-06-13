@@ -54,7 +54,7 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
             ["COUNTER.OUT.UNITS", ""],
             ["TTLIN1.VAL", "0"],
             ["TTLIN2.VAL", "0"],
-            ["*METADATA.LAYOUT", ""]
+            ["*METADATA.LAYOUT", ""],
         ]
         self.client.get_changes.return_value = changes
         pcap_bit_fields = {
@@ -260,22 +260,26 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
     def test_layout(self):
         panda = self.process.block_view("P")
         layout = panda.layout.value
-        assert layout.name == ['PCOMP', 'COUNTER', 'TTLIN1', 'TTLIN2', 'PCAP']
-        assert layout.x == [0., 0., 0., 0., 0.]
-        assert layout.y == [0., 0., 0., 0., 0.]
+        assert layout.name == ["PCOMP", "COUNTER", "TTLIN1", "TTLIN2", "PCAP"]
+        assert layout.x == [0.0, 0.0, 0.0, 0.0, 0.0]
+        assert layout.y == [0.0, 0.0, 0.0, 0.0, 0.0]
         assert layout.visible == [False, False, False, False, False]
         # Change coming from PandA
-        self.o.handle_changes([("*METADATA.LAYOUT", '{"COUNTER": {"x": 1.2, "y": 2.3}}')])
+        self.o.handle_changes(
+            [("*METADATA.LAYOUT", '{"COUNTER": {"x": 1.2, "y": 2.3}}')]
+        )
         layout = panda.layout.value
-        assert layout.name == ['PCOMP', 'COUNTER', 'TTLIN1', 'TTLIN2', 'PCAP']
-        assert layout.x == [0., 1.2, 0., 0., 0.]
-        assert layout.y == [0., 2.3, 0., 0., 0.]
+        assert layout.name == ["PCOMP", "COUNTER", "TTLIN1", "TTLIN2", "PCAP"]
+        assert layout.x == [0.0, 1.2, 0.0, 0.0, 0.0]
+        assert layout.y == [0.0, 2.3, 0.0, 0.0, 0.0]
         assert layout.visible == [False, True, False, False, False]
         # Change coming from Malcolm
         layout = panda.layout.value
         layout.visible = [False, True, True, False, False]
-        layout.y = [0., 2.3, 5.6, 0., 0.]
+        layout.y = [0.0, 2.3, 5.6, 0.0, 0.0]
         panda.layout.put_value(layout)
         self.client.set_field.assert_called_once_with(
-            "*METADATA", "LAYOUT", '{"COUNTER": {"x": 1.2, "y": 2.3}, "TTLIN1": {"x": 0.0, "y": 5.6}}'
+            "*METADATA",
+            "LAYOUT",
+            '{"COUNTER": {"x": 1.2, "y": 2.3}, "TTLIN1": {"x": 0.0, "y": 5.6}}',
         )
