@@ -319,6 +319,7 @@ class PandAManagerController(builtin.controllers.ManagerController):
 
     def set_layout(self, value):
         super().set_layout(value)
+
         json_layout = {}
         for name, _, x, y, visible in self.layout.value.rows():
             if visible:
