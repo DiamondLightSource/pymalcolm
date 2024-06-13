@@ -1,3 +1,5 @@
+import copy
+import json
 import time
 from typing import Any, Dict, Sequence, Set, Tuple
 
@@ -6,6 +8,7 @@ from cothread.cosocket import socket
 
 from malcolm.core import Display, NumberMeta, Queue, TimeoutError, TimeStamp, Widget
 from malcolm.modules import builtin
+from malcolm.modules.builtin.util import LayoutTable
 
 from ..pandablocksclient import PandABlocksClient
 from ..parts.pandaactionpart import PandAActionPart
@@ -67,6 +70,8 @@ class PandAManagerController(builtin.controllers.ManagerController):
         self._child_controllers: Dict[str, PandABlockController] = {}
         # The PandABlock client that does the comms
         self._client = PandABlocksClient(hostname, port, Queue)
+        # The json layout stored in PandA
+        self._json_layout: Dict[str, Dict[str, float]] = {}
         # Filled in on reset
         self._stop_queue = None
         self._poll_spawned = None
@@ -267,6 +272,20 @@ class PandAManagerController(builtin.controllers.ManagerController):
         if block_name == "*METADATA":
             if field_name.startswith("LABEL_"):
                 field_name, block_name = field_name.split("_", 1)
+            elif field_name == "LAYOUT" and v:
+                # Set the layout table first so that related fields are set after
+                # possible deletion
+                self._json_layout = json.loads(v)
+                x, y, visible = [], [], []
+                for name in self.layout.value.name:
+                    visible.append(name in self._json_layout)
+                    x.append(self._json_layout.get(name, {"x": 0.0})["x"])
+                    y.append(self._json_layout.get(name, {"y": 0.0})["y"])
+                new_layout = LayoutTable(
+                    self.layout.value.name, self.layout.value.mri, x, y, visible
+                )
+                self.set_layout(new_layout)
+                return
             else:
                 # Don't support any non-label metadata fields at the moment
                 return
@@ -297,3 +316,12 @@ class PandAManagerController(builtin.controllers.ManagerController):
             self.busses.handle_changes(bus_changes, ts)
         for block_name, block_changes_values in block_changes.items():
             self._child_controllers[block_name].handle_changes(block_changes_values, ts)
+
+    def set_layout(self, value):
+        super().set_layout(value)
+        json_layout = {}
+        for name, _, x, y, visible in self.layout.value.rows():
+            if visible:
+                json_layout[name] = dict(x=x, y=y)
+        if self._json_layout != json_layout:
+            self._client.set_field("*METADATA", "LAYOUT", json.dumps(json_layout))
