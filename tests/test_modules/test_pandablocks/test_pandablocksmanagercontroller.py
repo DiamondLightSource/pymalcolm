@@ -264,9 +264,9 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
         assert layout.x == [0.0, 0.0, 0.0, 0.0, 0.0]
         assert layout.y == [0.0, 0.0, 0.0, 0.0, 0.0]
         assert layout.visible == [False, False, False, False, False]
-        # Change coming from PandA
+        # Change coming from PandA with an extra block in it
         self.o.handle_changes(
-            [("*METADATA.LAYOUT", '{"COUNTER": {"x": 1.2, "y": 2.3}}')]
+            [("*METADATA.LAYOUT", '{"COUNTER": {"x": 1.2, "y": 2.3}, "HDF": {"x": 3.5, "y": 4.1}}')]
         )
         layout = panda.layout.value
         assert layout.name == ["PCOMP", "COUNTER", "TTLIN1", "TTLIN2", "PCAP"]
@@ -281,5 +281,5 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
         self.client.set_table.assert_called_once_with(
             "*METADATA",
             "LAYOUT",
-            ['{"COUNTER": {"x": 1.2, "y": 2.3}, "TTLIN1": {"x": 0.0, "y": 5.6}}'],
+            ['{"COUNTER": {"x": 1.2, "y": 2.3}, "HDF": {"x": 3.5, "y": 4.1}, "TTLIN1": {"x": 0.0, "y": 5.6}}'],
         )
