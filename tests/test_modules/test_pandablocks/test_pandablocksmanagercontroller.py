@@ -278,8 +278,8 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
         layout.visible = [False, True, True, False, False]
         layout.y = [0.0, 2.3, 5.6, 0.0, 0.0]
         panda.layout.put_value(layout)
-        self.client.set_field.assert_called_once_with(
+        self.client.set_table.assert_called_once_with(
             "*METADATA",
             "LAYOUT",
-            '{"COUNTER": {"x": 1.2, "y": 2.3}, "TTLIN1": {"x": 0.0, "y": 5.6}}',
+            ['{"COUNTER": {"x": 1.2, "y": 2.3}, "TTLIN1": {"x": 0.0, "y": 5.6}}'],
         )
