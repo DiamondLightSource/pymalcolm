@@ -325,4 +325,6 @@ class PandAManagerController(builtin.controllers.ManagerController):
             else:
                 self._json_layout.pop(name, "")
         if self._json_layout != old_json_layout:
-            self._client.set_table("*METADATA", "LAYOUT", [json.dumps(self._json_layout)])
+            self._client.set_table(
+                "*METADATA", "LAYOUT", [json.dumps(self._json_layout)]
+            )
