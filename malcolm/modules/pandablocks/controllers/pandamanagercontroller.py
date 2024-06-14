@@ -1,4 +1,5 @@
 import json
+import re
 import time
 from typing import Any, Dict, Sequence, Set, Tuple
 
@@ -325,6 +326,6 @@ class PandAManagerController(builtin.controllers.ManagerController):
             else:
                 self._json_layout.pop(name, "")
         if self._json_layout != old_json_layout:
-            self._client.set_table(
-                "*METADATA", "LAYOUT", [json.dumps(self._json_layout)]
-            )
+            # Custom encoding so the lines aren't too long and there aren't too many of them
+            lines = re.split(r'(?<=,) (?!"y")', json.dumps(self._json_layout))
+            self._client.set_table("*METADATA", "LAYOUT", lines)
