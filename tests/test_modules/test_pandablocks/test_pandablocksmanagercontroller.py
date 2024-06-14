@@ -269,7 +269,10 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
             [
                 (
                     "*METADATA.LAYOUT",
-                    '{"COUNTER": {"x": 1.2, "y": 2.3}, "HDF": {"x": 3.5, "y": 4.1}}',
+                    [
+                        '{"COUNTER": {"x": 1.2, "y": 2.3},',
+                        '"HDF": {"x": 3.5, "y": 4.1}}',
+                    ],
                 )
             ]
         )
@@ -287,8 +290,8 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
             "*METADATA",
             "LAYOUT",
             [
-                '{"COUNTER": {"x": 1.2, "y": 2.3},'
-                ' "HDF": {"x": 3.5, "y": 4.1},'
-                ' "TTLIN1": {"x": 0.0, "y": 5.6}}'
+                '{"COUNTER": {"x": 1.2, "y": 2.3},',
+                '"HDF": {"x": 3.5, "y": 4.1},',
+                '"TTLIN1": {"x": 0.0, "y": 5.6}}',
             ],
         )
