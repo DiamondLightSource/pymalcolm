@@ -324,4 +324,4 @@ class PandAManagerController(builtin.controllers.ManagerController):
             if visible:
                 json_layout[name] = dict(x=x, y=y)
         if self._json_layout != json_layout:
-            self._client.set_field("*METADATA", "LAYOUT", json.dumps(json_layout))
+            self._client.set_table("*METADATA", "LAYOUT", [json.dumps(json_layout)])
