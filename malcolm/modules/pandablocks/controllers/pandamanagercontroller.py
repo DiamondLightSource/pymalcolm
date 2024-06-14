@@ -274,7 +274,7 @@ class PandAManagerController(builtin.controllers.ManagerController):
             elif field_name == "LAYOUT" and v:
                 # Set the layout table first so that related fields are set after
                 # possible deletion
-                self._json_layout = json.loads(v)
+                self._json_layout = json.loads("".join(v))
                 x, y, visible = [], [], []
                 for name in self.layout.value.name:
                     visible.append(name in self._json_layout)
