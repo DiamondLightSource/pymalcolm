@@ -318,10 +318,11 @@ class PandAManagerController(builtin.controllers.ManagerController):
 
     def set_layout(self, value):
         super().set_layout(value)
-
-        json_layout = {}
+        old_json_layout = self._json_layout.copy()
         for name, _, x, y, visible in self.layout.value.rows():
             if visible:
-                json_layout[name] = dict(x=x, y=y)
-        if self._json_layout != json_layout:
-            self._client.set_table("*METADATA", "LAYOUT", [json.dumps(json_layout)])
+                self._json_layout[name] = dict(x=x, y=y)
+            else:
+                self._json_layout.pop(name, "")
+        if self._json_layout != old_json_layout:
+            self._client.set_table("*METADATA", "LAYOUT", [json.dumps(self._json_layout)])
