@@ -276,15 +276,9 @@ class PandAManagerController(builtin.controllers.ManagerController):
                 # Set the layout table first so that related fields are set after
                 # possible deletion
                 self._json_layout = json.loads("".join(v))
-                x, y, visible = [], [], []
-                for name in self.layout.value.name:
-                    visible.append(name in self._json_layout)
-                    x.append(self._json_layout.get(name, {"x": 0.0})["x"])
-                    y.append(self._json_layout.get(name, {"y": 0.0})["y"])
-                new_layout = LayoutTable(
-                    self.layout.value.name, self.layout.value.mri, x, y, visible
-                )
-                self.set_layout(new_layout)
+                if self.layout.value.name:
+                    # Only set the layout after the initial call to set_layout
+                    self.set_layout(LayoutTable([], [], [], [], []))
                 return
             else:
                 # Don't support any non-label metadata fields at the moment
@@ -318,6 +312,16 @@ class PandAManagerController(builtin.controllers.ManagerController):
             self._child_controllers[block_name].handle_changes(block_changes_values, ts)
 
     def set_layout(self, value):
+        if not value.name:
+            # Blank layout table means read from PandA provided json layout
+            # Called when PandA supplies a layout
+            x, y, visible = [], [], []
+            names = list(set(self.layout.value.name).union(self._json_layout))
+            for name in names:
+                visible.append(name in self._json_layout)
+                x.append(self._json_layout.get(name, {"x": 0.0})["x"])
+                y.append(self._json_layout.get(name, {"y": 0.0})["y"])
+            value = LayoutTable(names, names, x, y, visible)
         super().set_layout(value)
         old_json_layout = self._json_layout.copy()
         for name, _, x, y, visible in self.layout.value.rows():
