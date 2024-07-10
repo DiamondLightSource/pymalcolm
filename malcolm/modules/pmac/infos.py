@@ -1,6 +1,6 @@
 from malcolm.core import Info
 
-from .velocityprofile import VelocityProfile
+from velocity_profile import velocityprofile as vp
 
 
 class PmacVariablesInfo(Info):
@@ -103,7 +103,7 @@ class MotorInfo(Info):
         """
 
         # Create the time and velocity arrays
-        p = VelocityProfile(
+        p = vp.VelocityProfile(
             v1,
             v2,
             distance,
