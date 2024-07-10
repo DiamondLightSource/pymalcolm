@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>malcolm.modules.pmac.infos &mdash; malcolm 6.3+13.g2c3d7048 documentation</title>
+  <title>malcolm.modules.pmac.infos &mdash; malcolm 6.3+14.gb8009223 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
@@ -108,7 +108,7 @@
   <h1>Source code for malcolm.modules.pmac.infos</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">malcolm.core</span> <span class="kn">import</span> <span class="n">Info</span>
 
-<span class="kn">from</span> <span class="nn">.velocityprofile</span> <span class="kn">import</span> <span class="n">VelocityProfile</span>
+<span class="kn">from</span> <span class="nn">velocity_profile</span> <span class="kn">import</span> <span class="n">velocityprofile</span> <span class="k">as</span> <span class="n">vp</span>
 
 
 <div class="viewcode-block" id="PmacVariablesInfo"><a class="viewcode-back" href="../../../../build/pmac/infos_api.html#malcolm.modules.pmac.infos.PmacVariablesInfo">[docs]</a><span class="k">class</span> <span class="nc">PmacVariablesInfo</span><span class="p">(</span><span class="n">Info</span><span class="p">):</span>
@@ -211,7 +211,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># Create the time and velocity arrays</span>
-        <span class="n">p</span> <span class="o">=</span> <span class="n">VelocityProfile</span><span class="p">(</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">VelocityProfile</span><span class="p">(</span>
             <span class="n">v1</span><span class="p">,</span>
             <span class="n">v2</span><span class="p">,</span>
             <span class="n">distance</span><span class="p">,</span>
