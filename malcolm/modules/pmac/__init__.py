@@ -1,2 +1,2 @@
 from . import infos, parts, util
-from .velocityprofile import VelocityProfile
+from velocity_profile import velocityprofile as vp
