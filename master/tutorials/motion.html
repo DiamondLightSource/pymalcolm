@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Motion Tutorial &mdash; malcolm 6.3+14.gb8009223 documentation</title>
+  <title>Motion Tutorial &mdash; malcolm 6.3+16.g104baed6 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
@@ -483,14 +483,14 @@ Methods and shouldn’t appear in the design when we <code class="docutils liter
 <p>The CounterMovePart subclasses <a class="reference internal" href="../build/builtin/parts_api.html#malcolm.modules.builtin.parts.ChildPart" title="malcolm.modules.builtin.parts.ChildPart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ChildPart</span></code></a>, but this time we do some extra work in
 the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method. Whenever we override <code class="docutils literal notranslate"><span class="pre">__init__</span></code> it is important to
 call the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> that we have just overridden, and that is what the
-<a class="reference external" href="https://docs.python.org/3/library/functions.html#super" title="(in Python v3.12)"><code class="xref any docutils literal notranslate"><span class="pre">super</span></code></a> call does. This is a Python construct that lets us reliably call methods
+<a class="reference external" href="https://docs.python.org/3/library/functions.html#super" title="(in Python v3.13)"><code class="xref any docutils literal notranslate"><span class="pre">super</span></code></a> call does. This is a Python construct that lets us reliably call methods
 of our superclass that we have just overridden, even if multiple inheritance is
 used. If someone instantiates CounterMovePart, then
 <code class="docutils literal notranslate"><span class="pre">super(CounterMovePart,</span> <span class="pre">self).__init__</span></code> will return the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> function of
 <a class="reference internal" href="../build/builtin/parts_api.html#malcolm.modules.builtin.parts.ChildPart" title="malcolm.modules.builtin.parts.ChildPart"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ChildPart</span></code></a>, bound so that <code class="docutils literal notranslate"><span class="pre">self</span></code> does not need to be passed into it.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>It’s not necessary to understand what <a class="reference external" href="https://docs.python.org/3/library/functions.html#super" title="(in Python v3.12)"><code class="xref any docutils literal notranslate"><span class="pre">super</span></code></a> does, but it is necessary to
+<p>It’s not necessary to understand what <a class="reference external" href="https://docs.python.org/3/library/functions.html#super" title="(in Python v3.13)"><code class="xref any docutils literal notranslate"><span class="pre">super</span></code></a> does, but it is necessary to
 use it when you need to call the method you have just overridden, otherwise
 your class may not behave correctly if subclassed and multiple inheritance
 is used.</p>
@@ -504,10 +504,10 @@ to the base class and their types. Looking at the docs and sources of
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The name of the Part within the Controller</p></li>
-<li><p><strong>mri</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Malcolm resource id of child object</p></li>
-<li><p><strong>initial_visibility</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – Whether the part is initially visible with no config loaded, None means only if child Source/Sink Ports connect to another Block</p></li>
-<li><p><strong>stateful</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – If the child is a StatefulController then this should be True</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The name of the Part within the Controller</p></li>
+<li><p><strong>mri</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Malcolm resource id of child object</p></li>
+<li><p><strong>initial_visibility</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether the part is initially visible with no config loaded, None means only if child Source/Sink Ports connect to another Block</p></li>
+<li><p><strong>stateful</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – If the child is a StatefulController then this should be True</p></li>
 </ul>
 </dd>
 </dl>
