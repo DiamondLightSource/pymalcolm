@@ -218,3 +218,9 @@
     description: the version number of the pmac's trajectory program
     rbv: $(pv_prefix):ProgramVersion_RBV
     config: False
+
+- ca.parts.CAChoicePart:
+    name: calculateVelocities
+    description: Does the brick need to calculate the velocity profile
+    pv: $(pv_prefix):ProfileCalcVel
+    config: False
