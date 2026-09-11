@@ -778,7 +778,7 @@ class ChoiceArrayMeta(ChoiceMeta, VArrayMeta):
     def validate(self, value: Any) -> Array[str]:
         """Check if the value is valid returns it"""
         if value is None:
-            return Array[self.enum_cls]()
+            return Array[self.enum_cls](typ=self.enum_cls)
         else:
             ret = []
             if isinstance(value, str):

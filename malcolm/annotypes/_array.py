@@ -1,9 +1,7 @@
 import array
 
 from ._compat import str_
-from ._typing import TYPE_CHECKING, overload, Sequence, TypeVar, Generic, \
-    NEW_TYPING
-from ._stackinfo import find_caller_class
+from ._typing import TYPE_CHECKING, overload, Sequence, TypeVar, Generic
 
 if TYPE_CHECKING:  # pragma: no cover
     from typing import Union, Type
@@ -36,16 +34,12 @@ class Array(Sequence[T], Generic[T]):
         # type () -> int
         return len(self.seq)
 
-    def __init__(self, seq=None):
+    def __init__(self, seq=None, typ=None):
         if seq is None:
             seq = []
         self.seq = seq  # type: Sequence[T]
-        if NEW_TYPING:
-            orig_class = find_caller_class(__file__)
-        else:
-            orig_class = getattr(self, "__orig_class__", None)
-        assert orig_class, "You should instantiate Array[<typ>](...)"
-        self.typ = array_type(orig_class)
+        assert typ, "Type must be passed explicitly in this work-around"
+        self.typ = typ
         # TODO: add type checking for array.array
         if hasattr(seq, "dtype"):
             assert self.typ == seq.dtype, \
@@ -87,19 +81,19 @@ def to_array(typ, seq=None):
     expected = array_type(typ)
     if hasattr(seq, "dtype") or isinstance(seq, array.array):
         # It's a numpy array or stdlib array
-        return typ(seq)
+        return typ(seq, typ=expected)
     elif isinstance(seq, Array):
         assert expected == seq.typ, \
             "Expected Array[%s], got Array[%s]" % (expected, seq.typ)
         return seq
     elif seq is None:
-        return typ()
+        return typ(typ=expected)
     elif isinstance(seq, str_) or not isinstance(seq, Sequence):
         # Wrap it in a list as it should be a sequence
-        return typ([seq])
+        return typ([seq], typ=expected)
     elif len(seq) == 0:
         # Zero length array
-        return typ()
+        return typ(typ=expected)
     else:
         # It's a sequence, so assume it's ok
-        return typ(seq)
+        return typ(seq, typ=expected)
