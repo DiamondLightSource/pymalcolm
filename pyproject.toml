@@ -1,4 +1,4 @@
 [build-system]
 # Pin versions compatible with dls-python3 for reproducible wheels
-requires = ["setuptools==44.1.1", "wheel==0.33.1"]
+requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
