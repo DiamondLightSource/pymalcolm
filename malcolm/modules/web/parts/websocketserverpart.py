@@ -6,9 +6,15 @@ import struct
 from typing import Dict, Optional
 
 import cothread
-from annotypes import Anno, add_call_types, deserialize_object, json_decode, json_encode
 from tornado.websocket import WebSocketError, WebSocketHandler
 
+from malcolm.annotypes import (
+    Anno,
+    add_call_types,
+    deserialize_object,
+    json_decode,
+    json_encode,
+)
 from malcolm.core import (
     Delta,
     Error,

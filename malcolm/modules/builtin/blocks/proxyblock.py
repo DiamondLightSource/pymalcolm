@@ -1,4 +1,4 @@
-from annotypes import Any
+from malcolm.annotypes import Any
 
 from ..controllers import AComms, AMri, APublish, ProxyController
 

@@ -1,6 +1,5 @@
 from typing import Optional, Tuple
 
-from annotypes import Anno, add_call_types
 from scanpointgenerator import (
     CompoundGenerator,
     Generator,
@@ -8,6 +7,7 @@ from scanpointgenerator import (
     StaticPointGenerator,
 )
 
+from malcolm.annotypes import Anno, add_call_types
 from malcolm.modules import builtin, scanning
 from malcolm.modules.scanning.util import ADetectorTable
 

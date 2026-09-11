@@ -1,8 +1,7 @@
 import time
 from typing import Dict, List, Optional
 
-from annotypes import Anno, add_call_types
-
+from malcolm.annotypes import Anno, add_call_types
 from malcolm.core import Block, Future, PartRegistrar
 from malcolm.modules import builtin, scanning
 

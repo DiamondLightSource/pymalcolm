@@ -1,6 +1,6 @@
-from malcolm.core import Info
-
 from velocity_profile import velocityprofile as vp
+
+from malcolm.core import Info
 
 
 class PmacVariablesInfo(Info):

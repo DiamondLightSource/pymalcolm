@@ -1,8 +1,7 @@
 import weakref
 from typing import Any, Mapping, Sequence, TypeVar, Union
 
-from annotypes import Anno, Array
-
+from malcolm.annotypes import Anno, Array
 from malcolm.core import Context, Hook, Part
 
 from .infos import LayoutInfo, PortInfo

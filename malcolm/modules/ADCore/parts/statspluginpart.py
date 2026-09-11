@@ -1,8 +1,7 @@
 import os
 from xml.etree import cElementTree as ET
 
-from annotypes import Anno, add_call_types
-
+from malcolm.annotypes import Anno, add_call_types
 from malcolm.compat import et_to_string
 from malcolm.core import APartName, PartRegistrar
 from malcolm.modules import builtin, scanning

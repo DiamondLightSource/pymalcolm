@@ -1,8 +1,7 @@
 import time
 from typing import Any, Callable, Optional, Sequence, Type, Union
 
-from annotypes import Anno, Array
-
+from malcolm.annotypes import Anno, Array
 from malcolm.core import (
     DEFAULT_TIMEOUT,
     Alarm,

@@ -1,12 +1,12 @@
 from typing import Any, Dict, Iterable, List, Optional, Tuple, cast
 
-from annotypes import Anno, add_call_types, stringify_error
 from scanpointgenerator import (
     CompoundGenerator,
     SquashingExcluder,
     StaticPointGenerator,
 )
 
+from malcolm.annotypes import Anno, add_call_types, stringify_error
 from malcolm.core import APartName, BadValueError, Future, Put, Request
 from malcolm.modules import builtin
 

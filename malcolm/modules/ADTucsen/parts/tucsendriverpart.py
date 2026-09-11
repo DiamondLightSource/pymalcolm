@@ -1,8 +1,8 @@
 from typing import Any
 
 import cothread
-from annotypes import Anno, add_call_types
 
+from malcolm.annotypes import Anno, add_call_types
 from malcolm.modules import ADCore, builtin, scanning
 
 # Pull re-used annotypes into our namespace in case we are subclassed

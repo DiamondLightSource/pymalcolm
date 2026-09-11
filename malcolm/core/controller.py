@@ -1,8 +1,7 @@
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Tuple, Union
 
-from annotypes import Anno, stringify_error
-
+from malcolm.annotypes import Anno, stringify_error
 from malcolm.compat import OrderedDict
 
 from .alarm import Alarm

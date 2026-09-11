@@ -2,8 +2,8 @@ from collections import namedtuple
 from typing import Union
 
 import numpy as np
-from annotypes import Anno, Array
 
+from malcolm.annotypes import Anno, Array
 from malcolm.core import Table
 from malcolm.modules import ADCore, pandablocks
 

@@ -4,9 +4,9 @@ from typing import Dict, Iterator, List, Optional
 from xml.etree import cElementTree as ET
 
 import h5py
-from annotypes import Anno, add_call_types
 from scanpointgenerator import CompoundGenerator, Dimension
 
+from malcolm.annotypes import Anno, add_call_types
 from malcolm.compat import et_to_string
 from malcolm.core import (
     APartName,

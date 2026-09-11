@@ -1,8 +1,7 @@
 import os
 from collections import OrderedDict
 
-from annotypes import Anno
-
+from malcolm.annotypes import Anno
 from malcolm.core import (
     Part,
     PartRegistrar,

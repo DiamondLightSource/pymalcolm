@@ -6,8 +6,8 @@ import tempfile
 from typing import Union
 
 import numpy as np
-from annotypes import Anno, add_call_types
 
+from malcolm.annotypes import Anno, add_call_types
 from malcolm.core import Define
 
 

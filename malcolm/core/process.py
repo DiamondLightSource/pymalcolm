@@ -1,7 +1,6 @@
 from typing import Any, Callable, List, Sequence, Set, TypeVar, Union
 
-from annotypes import Anno, Array
-
+from malcolm.annotypes import Anno, Array
 from malcolm.compat import OrderedDict
 
 from .concurrency import Spawned

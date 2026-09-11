@@ -1,7 +1,6 @@
 from typing import Tuple
 
-from annotypes import Any, add_call_types
-
+from malcolm.annotypes import Any, add_call_types
 from malcolm.core import PartRegistrar
 from malcolm.modules import builtin, scanning
 from malcolm.modules.scanning.hooks import AGenerator

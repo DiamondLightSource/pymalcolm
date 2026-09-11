@@ -2,7 +2,8 @@ import time
 from typing import Union
 
 import numpy as np
-from annotypes import Anno, Serializable
+
+from malcolm.annotypes import Anno, Serializable
 
 with Anno("Seconds since Jan 1, 1970 00:00:00 UTC"):
     ASecondsPastEpoch = Union[np.int64]

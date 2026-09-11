@@ -1,5 +1,4 @@
-from annotypes import Anno, add_call_types
-
+from malcolm.annotypes import Anno, add_call_types
 from malcolm.core import Part, PartRegistrar
 from malcolm.core import sleep as sleep_for
 

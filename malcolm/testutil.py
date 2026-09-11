@@ -1,10 +1,10 @@
 import unittest
 from typing import Any, Callable, List, Optional, Sequence, Type, Union
 
-from annotypes import add_call_types
 from mock import MagicMock as Mock
 from mock import patch
 
+from malcolm.annotypes import add_call_types
 from malcolm.core import (
     APublished,
     Controller,

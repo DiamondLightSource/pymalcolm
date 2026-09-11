@@ -1,6 +1,6 @@
 from typing import Union
 
-from annotypes import Anno, add_call_types
+from malcolm.annotypes import Anno, add_call_types
 
 default_desc = "Default value for parameter. If not specified, parameter is required"
 

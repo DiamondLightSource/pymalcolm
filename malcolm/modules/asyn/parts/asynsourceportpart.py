@@ -1,7 +1,6 @@
 from typing import Any
 
-from annotypes import Anno
-
+from malcolm.annotypes import Anno
 from malcolm.core import Part, PartRegistrar, Port, StringMeta
 from malcolm.modules import ca
 

@@ -1,5 +1,4 @@
-from annotypes import Anno
-
+from malcolm.annotypes import Anno
 from malcolm.core import Part, PartRegistrar, StringMeta
 
 from ..infos import LabelInfo

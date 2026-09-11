@@ -12,8 +12,7 @@ from typing import (
     Union,
 )
 
-from annotypes import Anno, add_call_types
-
+from malcolm.annotypes import Anno, add_call_types
 from malcolm.compat import OrderedDict
 from malcolm.core import (
     APartName,

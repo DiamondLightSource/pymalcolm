@@ -1,8 +1,8 @@
 import os
 
-from annotypes import Anno, add_call_types
 from tornado.web import RedirectHandler, StaticFileHandler
 
+from malcolm.annotypes import Anno, add_call_types
 from malcolm.core import APartName, Part, PartRegistrar
 
 from ..hooks import ReportHandlersHook, UHandlerInfos

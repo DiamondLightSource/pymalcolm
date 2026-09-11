@@ -1,10 +1,10 @@
 from typing import Optional
 
-from annotypes import Anno, add_call_types
 from cothread import cothread
 from tornado.httpserver import HTTPServer
 from tornado.web import Application
 
+from malcolm.annotypes import Anno, add_call_types
 from malcolm.core import APublished, Part, ProcessPublishHook, TableMeta
 from malcolm.modules import builtin
 

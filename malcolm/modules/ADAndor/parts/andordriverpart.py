@@ -1,8 +1,8 @@
 from typing import Any, Tuple
 
-from annotypes import Anno, add_call_types
 from scanpointgenerator import CompoundGenerator
 
+from malcolm.annotypes import Anno, add_call_types
 from malcolm.core import NumberMeta, PartRegistrar
 from malcolm.modules import ADCore, builtin, scanning
 from malcolm.modules.ADCore.parts.detectordriverpart import AMinAcquirePeriod

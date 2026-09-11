@@ -1,7 +1,6 @@
 from typing import Sequence, Union
 
-from annotypes import Anno, Array
-
+from malcolm.annotypes import Anno, Array
 from malcolm.core import Hook
 from malcolm.modules import builtin
 

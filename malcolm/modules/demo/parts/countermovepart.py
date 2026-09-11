@@ -1,7 +1,6 @@
 import time
 
-from annotypes import Anno, add_call_types
-
+from malcolm.annotypes import Anno, add_call_types
 from malcolm.core import PartRegistrar
 from malcolm.modules import builtin
 

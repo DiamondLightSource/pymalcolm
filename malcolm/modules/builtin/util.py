@@ -2,8 +2,7 @@ import collections.abc
 from typing import TYPE_CHECKING, Iterable, Sequence, Type, Union
 from xml.etree import cElementTree as ET
 
-from annotypes import Anno, Array
-
+from malcolm.annotypes import Anno, Array
 from malcolm.compat import et_to_string
 from malcolm.core import (
     DEFAULT_TIMEOUT,

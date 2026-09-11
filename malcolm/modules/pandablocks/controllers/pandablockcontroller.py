@@ -1,8 +1,7 @@
 import os
 from typing import Any, Dict, Optional, Union, cast
 
-from annotypes import Anno
-
+from malcolm.annotypes import Anno
 from malcolm.core import (
     Alarm,
     AMri,

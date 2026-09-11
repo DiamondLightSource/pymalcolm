@@ -1,5 +1,4 @@
-from annotypes import Anno
-
+from malcolm.annotypes import Anno
 from malcolm.modules import builtin
 
 from ..util import AClient

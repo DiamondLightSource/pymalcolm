@@ -2,10 +2,10 @@ import os
 from typing import Dict, Iterator, List, Optional
 
 import h5py
-from annotypes import Anno, add_call_types
 from scanpointgenerator import CompoundGenerator
 from vdsgen import InterleaveVDSGenerator, ReshapeVDSGenerator
 
+from malcolm.annotypes import Anno, add_call_types
 from malcolm.core import APartName, BadValueError, Future, Info, PartRegistrar
 from malcolm.modules import builtin, scanning
 

@@ -4,9 +4,9 @@ from typing import Dict, List, Optional, Union
 
 import cothread
 import numpy as np
-from annotypes import add_call_types
 from scanpointgenerator import CompoundGenerator, Point
 
+from malcolm.annotypes import add_call_types
 from malcolm.core import Block, Future, PartRegistrar, Put, Request
 from malcolm.modules import builtin, scanning
 from malcolm.modules.scanning.infos import MotionTrigger

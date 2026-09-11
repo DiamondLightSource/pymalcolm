@@ -3,9 +3,9 @@ import re
 import time
 from typing import Any, Dict, Sequence, Set, Tuple
 
-from annotypes import Anno
 from cothread.cosocket import socket
 
+from malcolm.annotypes import Anno
 from malcolm.core import Display, NumberMeta, Queue, TimeoutError, TimeStamp, Widget
 from malcolm.modules import builtin
 from malcolm.modules.builtin.util import LayoutTable

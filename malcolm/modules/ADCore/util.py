@@ -2,9 +2,9 @@ import os
 from enum import Enum
 from typing import Sequence, Union
 
-from annotypes import Anno, Array
 from packaging.version import Version
 
+from malcolm.annotypes import Anno, Array
 from malcolm.core import IncompatibleError, Table
 
 # If things don't get new frames in this time (seconds), consider them

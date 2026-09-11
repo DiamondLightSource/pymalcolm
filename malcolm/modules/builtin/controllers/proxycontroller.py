@@ -1,8 +1,7 @@
 import functools
 from typing import Optional
 
-from annotypes import Anno
-
+from malcolm.annotypes import Anno
 from malcolm.core import (
     Alarm,
     Context,

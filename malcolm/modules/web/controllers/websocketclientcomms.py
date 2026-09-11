@@ -1,10 +1,10 @@
 from typing import Callable, Dict, Optional, Tuple
 
-from annotypes import Anno, deserialize_object, json_decode, json_encode
 from cothread import cothread
 from tornado import gen
 from tornado.websocket import WebSocketClientConnection, websocket_connect
 
+from malcolm.annotypes import Anno, deserialize_object, json_decode, json_encode
 from malcolm.core import (
     DEFAULT_TIMEOUT,
     BlockMeta,

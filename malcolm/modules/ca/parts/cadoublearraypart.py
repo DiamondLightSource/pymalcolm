@@ -1,5 +1,4 @@
-from annotypes import Array
-
+from malcolm.annotypes import Array
 from malcolm.core import DEFAULT_TIMEOUT, Display, NumberArrayMeta, Part, PartRegistrar
 
 from .. import util

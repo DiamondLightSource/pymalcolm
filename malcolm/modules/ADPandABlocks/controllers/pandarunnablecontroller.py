@@ -1,5 +1,4 @@
-from annotypes import Anno
-
+from malcolm.annotypes import Anno
 from malcolm.modules import ADCore, ADPandABlocks, builtin, pandablocks, scanning
 
 from ..parts.pandadatasetbussespart import PandADatasetBussesPart

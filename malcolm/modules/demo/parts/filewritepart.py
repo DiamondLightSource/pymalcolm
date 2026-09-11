@@ -3,9 +3,9 @@ import time
 
 import h5py
 import numpy as np
-from annotypes import Anno, add_call_types
 from scanpointgenerator import Point
 
+from malcolm.annotypes import Anno, add_call_types
 from malcolm.core import APartName, Part, PartRegistrar
 from malcolm.modules import builtin, scanning
 

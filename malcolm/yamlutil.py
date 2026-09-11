@@ -5,9 +5,9 @@ import os
 from collections.abc import MutableSequence
 from typing import Any, Callable, Dict, List, Tuple
 
-from annotypes import NO_DEFAULT, Anno
 from ruamel.yaml import YAML
 
+from malcolm.annotypes import NO_DEFAULT, Anno
 from malcolm.compat import OrderedDict, raise_with_traceback
 from malcolm.core import Controller, Define, MethodMeta, Part, YamlError
 

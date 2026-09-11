@@ -12,8 +12,7 @@ from typing import (
     cast,
 )
 
-from annotypes import Anno
-
+from malcolm.annotypes import Anno
 from malcolm.compat import OrderedDict
 
 from .camel import CAMEL_RE

@@ -1,7 +1,6 @@
 from typing import List, Optional
 
-from annotypes import add_call_types
-
+from malcolm.annotypes import add_call_types
 from malcolm.core import AttributeModel, Part, PartRegistrar, TableMeta
 from malcolm.modules import builtin
 

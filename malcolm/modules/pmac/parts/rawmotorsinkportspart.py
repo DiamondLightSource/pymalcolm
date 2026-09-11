@@ -1,7 +1,6 @@
 from typing import List
 
-from annotypes import Anno
-
+from malcolm.annotypes import Anno
 from malcolm.core import (
     Alarm,
     ChoiceMeta,

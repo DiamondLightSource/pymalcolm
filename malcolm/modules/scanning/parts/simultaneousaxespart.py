@@ -1,7 +1,6 @@
 from typing import Sequence, Union
 
-from annotypes import Anno, Array, add_call_types
-
+from malcolm.annotypes import Anno, Array, add_call_types
 from malcolm.core import (
     APartName,
     Part,

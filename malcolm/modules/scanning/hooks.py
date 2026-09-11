@@ -1,9 +1,9 @@
 from typing import Any, Callable, Dict, Mapping, Sequence, TypeVar, Union
 
 import numpy as np
-from annotypes import NO_DEFAULT, Anno, Array
 from scanpointgenerator import CompoundGenerator
 
+from malcolm.annotypes import NO_DEFAULT, Anno, Array
 from malcolm.compat import OrderedDict
 from malcolm.core import VMeta
 from malcolm.modules import builtin

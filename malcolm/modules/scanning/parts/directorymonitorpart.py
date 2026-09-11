@@ -1,5 +1,4 @@
-from annotypes import Anno, add_call_types
-
+from malcolm.annotypes import Anno, add_call_types
 from malcolm.core import PartRegistrar
 from malcolm.modules.builtin.hooks import AContext
 from malcolm.modules.builtin.parts import AMri, APartName, ChildPart

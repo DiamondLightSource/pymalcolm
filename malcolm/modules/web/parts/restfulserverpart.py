@@ -1,8 +1,8 @@
-from annotypes import Anno, add_call_types, json_decode, json_encode
 from tornado import gen
 from tornado.queues import Queue
 from tornado.web import RequestHandler
 
+from malcolm.annotypes import Anno, add_call_types, json_decode, json_encode
 from malcolm.core import Error, Get, Part, PartRegistrar, Post, Return
 from malcolm.modules import builtin
 

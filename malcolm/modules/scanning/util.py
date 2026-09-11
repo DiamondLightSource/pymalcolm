@@ -8,9 +8,9 @@ rules are applied:
 from typing import Any, Dict, List, Sequence, Union
 
 import numpy as np
-from annotypes import Anno, Array, Serializable
 from scanpointgenerator import CompoundGenerator
 
+from malcolm.annotypes import Anno, Array, Serializable
 from malcolm.core import (
     AttributeModel,
     Display,

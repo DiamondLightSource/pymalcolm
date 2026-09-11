@@ -3,10 +3,10 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, Optional
 
-from annotypes import add_call_types
 from ruamel.yaml import YAML, YAMLError
 from scanpointgenerator import CompoundGenerator, LineGenerator
 
+from malcolm.annotypes import add_call_types
 from malcolm.core import (
     AbortedError,
     NotWriteableError,

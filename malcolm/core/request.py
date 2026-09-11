@@ -1,7 +1,7 @@
 import logging
 from typing import Any, Callable, List, Mapping, Sequence, Tuple, Union
 
-from annotypes import Anno, Array, Serializable
+from malcolm.annotypes import Anno, Array, Serializable
 
 from .response import Delta, Error, Response, Return, Update
 

@@ -1,6 +1,6 @@
 from typing import Any
 
-from annotypes import Anno, FrozenOrderedDict, Serializable, serialize_object
+from malcolm.annotypes import Anno, FrozenOrderedDict, Serializable, serialize_object
 
 with Anno("ID that the Request was sent with"):
     AId = int

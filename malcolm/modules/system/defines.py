@@ -1,7 +1,6 @@
 import re
 
-from annotypes import Anno, add_call_types
-
+from malcolm.annotypes import Anno, add_call_types
 from malcolm.modules.builtin.defines import ADefine, AName, Define
 
 with Anno("name of yaml file (used to get BL prefix)"):

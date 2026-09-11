@@ -1,6 +1,6 @@
-from annotypes import add_call_types
 from scanpointgenerator import CompoundGenerator, SquashingExcluder
 
+from malcolm.annotypes import add_call_types
 from malcolm.core import AMri, APartName, PartRegistrar
 from malcolm.modules.builtin.parts import ChildPart
 from malcolm.modules.builtin.parts.childpart import AStateful, UInitialVisibility

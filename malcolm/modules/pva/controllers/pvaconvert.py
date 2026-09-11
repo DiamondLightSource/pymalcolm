@@ -2,9 +2,9 @@ from enum import Enum
 from typing import Any, Dict, List, Tuple, Union
 
 import numpy as np
-from annotypes import Array
 from p4p import Type, Value
 
+from malcolm.annotypes import Array
 from malcolm.compat import OrderedDict
 from malcolm.core import AlarmSeverity, AlarmStatus
 from malcolm.core.models import NTTable

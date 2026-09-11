@@ -2,9 +2,9 @@ from operator import itemgetter
 from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple
 
 import numpy as np
-from annotypes import Anno, add_call_types
 from scanpointgenerator import CompoundGenerator, Point, Points
 
+from malcolm.annotypes import Anno, add_call_types
 from malcolm.core import APartName, Block, Context, PartRegistrar
 from malcolm.modules import builtin, pmac, scanning
 from malcolm.modules.pmac.util import MinTurnaround, get_min_turnaround

@@ -1,8 +1,7 @@
 from enum import Enum
 from typing import Sequence, Union
 
-from annotypes import Anno, Array
-
+from malcolm.annotypes import Anno, Array
 from malcolm.core import AMetaDescription, APartName, ChoiceMeta, Part, PartRegistrar
 
 from ..util import AConfig, AGroup, AWidget, AWriteable, set_tags

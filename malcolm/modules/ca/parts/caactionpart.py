@@ -1,8 +1,7 @@
 import time
 from typing import Optional
 
-from annotypes import Anno
-
+from malcolm.annotypes import Anno
 from malcolm.core import MethodModel, Part, PartRegistrar, Queue, TimeoutError, tags
 from malcolm.modules import builtin
 

@@ -3,10 +3,10 @@ from dataclasses import dataclass
 from typing import Dict, List, Set, Union
 
 import numpy as np
-from annotypes import Anno, Array, Sequence
 from scanpointgenerator import CompoundGenerator, Mutator, Point, StaticPointGenerator
 from scanpointgenerator.core.point import Points
 
+from malcolm.annotypes import Anno, Array, Sequence
 from malcolm.core import Context
 from malcolm.modules import builtin, scanning
 from malcolm.modules.scanning.infos import MotionTriggerInfo

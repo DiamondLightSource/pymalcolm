@@ -1,5 +1,4 @@
-from annotypes import Anno
-
+from malcolm.annotypes import Anno
 from malcolm.core import APartName, Part, PartRegistrar, StringMeta, Widget
 
 from ..util import set_tags

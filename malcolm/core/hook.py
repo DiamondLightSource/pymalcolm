@@ -15,8 +15,7 @@ from typing import (
     Union,
 )
 
-from annotypes import Anno, WithCallTypes
-
+from malcolm.annotypes import Anno, WithCallTypes
 from malcolm.compat import OrderedDict
 
 from .concurrency import Queue, Spawned

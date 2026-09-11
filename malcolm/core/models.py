@@ -16,7 +16,8 @@ from typing import (
 )
 
 import numpy as np
-from annotypes import (
+
+from malcolm.annotypes import (
     NO_DEFAULT,
     Anno,
     Array,
@@ -26,7 +27,6 @@ from annotypes import (
     deserialize_object,
     to_array,
 )
-
 from malcolm.compat import OrderedDict
 
 from .alarm import Alarm

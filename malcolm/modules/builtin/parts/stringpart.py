@@ -1,5 +1,4 @@
-from annotypes import Anno
-
+from malcolm.annotypes import Anno
 from malcolm.core import AMetaDescription, APartName, Part, PartRegistrar, StringMeta
 
 from ..util import AConfig, AGroup, AWidget, AWriteable, set_tags

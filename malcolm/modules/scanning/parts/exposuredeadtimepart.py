@@ -1,6 +1,6 @@
-from annotypes import Anno, add_call_types
 from scanpointgenerator import CompoundGenerator
 
+from malcolm.annotypes import Anno, add_call_types
 from malcolm.core import APartName, Display, NumberMeta, Part, PartRegistrar, Widget
 
 from ..hooks import (

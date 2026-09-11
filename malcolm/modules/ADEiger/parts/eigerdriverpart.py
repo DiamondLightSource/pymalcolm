@@ -1,5 +1,4 @@
-from annotypes import add_call_types
-
+from malcolm.annotypes import add_call_types
 from malcolm.core import Context, PartRegistrar
 from malcolm.modules import ADCore, builtin, scanning
 

@@ -1,7 +1,6 @@
 from typing import Optional, Sequence, Union
 
-from annotypes import Anno, Array
-
+from malcolm.annotypes import Anno, Array
 from malcolm.core import MethodModel, Part, PartRegistrar, snake_to_camel
 
 from ..pandablocksclient import PandABlocksClient

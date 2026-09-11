@@ -1,11 +1,11 @@
 from typing import Any, Dict, List, Optional, Set
 
-from annotypes import add_call_types, stringify_error
 from cothread import cothread
 from p4p import Value
 from p4p.server import DynamicProvider, Server, ServerOperation
 from p4p.server.cothread import Handler, SharedPV
 
+from malcolm.annotypes import add_call_types, stringify_error
 from malcolm.core import (
     APublished,
     BlockMeta,

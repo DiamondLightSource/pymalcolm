@@ -3,9 +3,9 @@ import atexit
 from threading import Thread
 from typing import Optional, Union
 
-from annotypes import Anno, Array
 from tornado.ioloop import IOLoop
 
+from malcolm.annotypes import Anno, Array
 from malcolm.core import Table
 
 

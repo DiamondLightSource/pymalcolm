@@ -2,9 +2,9 @@ import os
 from typing import Any, List, Optional, Sequence, Union
 from xml.etree import cElementTree as ET
 
-from annotypes import Anno, Array, add_call_types
 from scanpointgenerator import CompoundGenerator
 
+from malcolm.annotypes import Anno, Array, add_call_types
 from malcolm.compat import et_to_string
 from malcolm.core import (
     DEFAULT_TIMEOUT,

@@ -2,8 +2,13 @@ import os
 import subprocess
 from typing import Dict, List, Sequence, Set
 
-from annotypes import Anno, add_call_types, deserialize_object, json_decode, json_encode
-
+from malcolm.annotypes import (
+    Anno,
+    add_call_types,
+    deserialize_object,
+    json_decode,
+    json_encode,
+)
 from malcolm.compat import OrderedDict
 from malcolm.core import (
     CAMEL_RE,

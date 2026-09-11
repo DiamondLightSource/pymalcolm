@@ -1,7 +1,8 @@
 from enum import Enum
 
 import numpy as np
-from annotypes import Anno, Serializable, deserialize_object
+
+from malcolm.annotypes import Anno, Serializable, deserialize_object
 
 
 class AlarmSeverity(Enum):

@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Tuple
 
-from annotypes import Array, FrozenOrderedDict
+from malcolm.annotypes import Array, FrozenOrderedDict
 
 from .concurrency import RLock
 from .loggable import Loggable

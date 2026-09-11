@@ -1,5 +1,4 @@
-from annotypes import Anno
-
+from malcolm.annotypes import Anno
 from malcolm.core import DEFAULT_TIMEOUT, AMri, Part, PartRegistrar, StringMeta, tags
 
 from .. import util

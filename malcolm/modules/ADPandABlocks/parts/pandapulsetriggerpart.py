@@ -1,8 +1,8 @@
 from typing import Optional
 
-from annotypes import Anno, add_call_types
 from scanpointgenerator import CompoundGenerator
 
+from malcolm.annotypes import Anno, add_call_types
 from malcolm.core import CAMEL_RE, APartName, BadValueError, PartRegistrar
 from malcolm.modules import builtin, scanning
 

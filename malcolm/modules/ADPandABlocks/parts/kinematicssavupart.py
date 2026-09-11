@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING, Optional
 
 import h5py
 import numpy as np
-from annotypes import Anno, add_call_types
 
+from malcolm.annotypes import Anno, add_call_types
 from malcolm.core import APartName, Info, PartRegistrar
 from malcolm.modules import builtin, pandablocks, pmac, scanning
 from malcolm.modules.builtin.util import LayoutTable

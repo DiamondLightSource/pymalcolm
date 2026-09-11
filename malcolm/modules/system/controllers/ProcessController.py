@@ -3,9 +3,9 @@ import subprocess
 from collections import OrderedDict
 
 import cothread
-from annotypes import Anno
 
 from malcolm import __version__
+from malcolm.annotypes import Anno
 from malcolm.core import (
     Alarm,
     AlarmSeverity,

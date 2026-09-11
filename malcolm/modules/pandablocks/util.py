@@ -2,8 +2,7 @@ import os
 from enum import Enum
 from typing import Sequence, Union
 
-from annotypes import Anno, Array
-
+from malcolm.annotypes import Anno, Array
 from malcolm.core import Table
 
 from .pandablocksclient import PandABlocksClient

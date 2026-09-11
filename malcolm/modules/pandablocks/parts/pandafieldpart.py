@@ -1,7 +1,6 @@
 from typing import Any, Callable, Optional
 
-from annotypes import Anno
-
+from malcolm.annotypes import Anno
 from malcolm.core import (
     Alarm,
     BooleanMeta,
