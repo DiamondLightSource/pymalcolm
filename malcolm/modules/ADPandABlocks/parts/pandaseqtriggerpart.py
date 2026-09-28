@@ -450,6 +450,14 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         # Get panda Block, and the sequencer Blocks so we can do some checking
         self.panda, seqa, seqb = _get_blocks(context, self.panda_mri)
 
+
+        # Create an empty rows generator and initialise seq table
+        def empty_rows_gen():
+            yield SequencerRows()
+
+        self.db_seq_table = DoubleBuffer(context, seqa, seqb)
+        self.db_seq_table.configure(empty_rows_gen())
+
         # Fill in motor infos and trigger lookups
         motion_axes = pmac.util.get_motion_axes(generator, axesToMove)
         self.axis_mapping = {}
