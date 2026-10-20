@@ -21,9 +21,19 @@ class TetrAMMDriverPart(ADCore.parts.DetectorDriverPart):
             "0 for maximum, -1 for not controlling it.",
             tags=[Widget.TEXTINPUT.tag()],
         ).create_attribute_model()
+        self.minValuesPerRead = NumberMeta(
+            "uint32",
+            "Minimum number of vales per read ",
+            tags=[Widget.TEXTINPUT.tag()],
+        ).create_attribute_model(initial_value=TETRAMM_MIN_VALUES_PER_READ)
 
     def setup(self, registrar: PartRegistrar) -> None:
         super().setup(registrar)
+        registrar.add_attribute_model(
+            "minValuesPerRead",
+            self.minValuesPerRead,
+            self.minValuesPerRead.set_value,
+        )
         registrar.add_attribute_model(
             "targetSamplesPerFrame",
             self.targetSamplesPerFrame,
@@ -37,14 +47,14 @@ class TetrAMMDriverPart(ADCore.parts.DetectorDriverPart):
     def on_post_configure(self, context: scanning.hooks.AContext):
         child = context.block_view(self.mri)
         if self.targetSamplesPerFrame.value == 0:
-            child.valuesPerRead.put_value(TETRAMM_MIN_VALUES_PER_READ)
+            child.valuesPerRead.put_value(child.minValuesPerRead)
         elif self.targetSamplesPerFrame.value > 0:
             values_per_read = ceil(
                 TETRAMM_BASE_FREQ
                 * child.exposure.value
                 / self.targetSamplesPerFrame.value
             )
-            values_per_read = max(values_per_read, TETRAMM_MIN_VALUES_PER_READ)
+            values_per_read = max(values_per_read, child.minValuesPerRead)
             child.valuesPerRead.put_value(values_per_read)
 
     @add_call_types
